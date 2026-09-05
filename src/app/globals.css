@@ -36,6 +36,21 @@ button, a { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 
 .site-shell { overflow: hidden; }
+.routes-hero { display: flex; align-items: end; justify-content: space-between; gap: 32px; max-width: 1240px; min-height: 390px; margin: auto; padding: 72px 64px; background: var(--foreground); color: #fff; border-radius: 0 0 22px 22px; }
+.routes-hero h1 { color: #fff; font-size: clamp(54px, 7vw, 86px); line-height: .9; }
+.routes-hero > div:first-child > p:last-child { max-width: 420px; margin: 26px 0 0; color: #c2cbc0; font-size: 14px; line-height: 1.75; }
+.routes-hero-sign { display: flex; flex-direction: column; gap: 10px; min-width: 210px; padding: 26px; border: 1px solid #ffffff33; transform: rotate(3deg); }
+.routes-hero-sign span, .routes-hero-sign small { font: 800 10px var(--font-archivo); letter-spacing: .16em; color: var(--accent); }
+.routes-hero-sign strong { font: 800 36px var(--font-archivo); letter-spacing: -.07em; color: #fff; }
+.routes-hero-sign small { color: #c2cbc0; font-family: var(--font-vietnam); font-size: 9px; }
+.routes-page-content { padding-top: 76px; padding-bottom: 110px; }
+.route-filter { margin-bottom: 55px; padding: 28px; border: 1px solid var(--border); border-radius: 12px; background: #fffdf7; box-shadow: 0 14px 30px #102b3f0b; }
+.route-filter-heading, .route-results-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+.route-filter-heading h2 { margin-top: 9px; font-size: clamp(25px, 3vw, 36px); }
+.route-count { color: var(--muted-foreground); font-size: 12px; }.route-count strong { color: var(--foreground); font-family: var(--font-archivo); font-size: 20px; }
+.route-filter-fields { display: flex; align-items: end; gap: 12px; margin-top: 26px; }.route-select-field { display: flex; flex: 1; flex-direction: column; gap: 8px; min-width: 0; color: var(--muted-foreground); font-size: 11px; font-weight: 600; }.route-select-field select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 7px; background: var(--background); color: var(--foreground); font: 500 12px var(--font-vietnam); }.clear-filter { flex-shrink: 0; height: 42px; color: var(--primary); }
+.route-results-heading { margin-bottom: 22px; }.route-results-heading .section-label { margin: 0; }.route-results { display: flex; flex-direction: column; gap: 14px; }.route-empty { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 72px 24px; border: 1px dashed var(--border); border-radius: 10px; text-align: center; color: var(--muted-foreground); }.route-empty svg { color: var(--primary); }.route-empty h2 { font-size: 26px; }.route-empty p { margin: 0 0 8px; font-size: 13px; }
+@media (max-width: 800px) { .routes-hero { align-items: start; flex-direction: column; min-height: auto; padding: 52px 20px; }.routes-hero-sign { align-self: flex-end; }.route-filter { padding: 20px; }.route-filter-heading { align-items: start; flex-direction: column; }.route-filter-fields { align-items: stretch; flex-direction: column; }.clear-filter { align-self: flex-start; }.route-results-heading { align-items: start; flex-direction: column; } }
 .site-header { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; max-width: 1240px; margin: auto; padding: 20px 32px; background: var(--background); border-bottom: 1px solid var(--border); }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-archivo); font-size: 15px; font-weight: 800; letter-spacing: -.02em; color: var(--foreground); }
 .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--foreground); color: var(--accent); font-size: 11px; letter-spacing: -.06em; }
