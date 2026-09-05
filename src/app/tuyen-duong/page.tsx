@@ -25,7 +25,7 @@ import { SiteHeader, type NavItem } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 
 const navItems: NavItem[] = [
-  { label: "Tuyến đường", href: "/#routes" },
+  { label: "Tuyến đường", href: "/tuyen-duong" },
   { label: "Đội xe", href: "/#fleet" },
   { label: "Loại xe", href: "/#fleet" },
   { label: "Dịch vụ", href: "#" },
