@@ -11,7 +11,7 @@ import { emptyFilters, FilterState } from "@/types/route";
 import { routes } from "@/data/routes";
 import { navItems } from "@/data/nav";
 
-const footerLinkGroups = [{ title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Đội xe", href: "/#fleet" }, { label: "Cẩm nang đi đường", href: "/#blog" }] }, { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Chính sách huỷ chuyến", href: "#" }, { label: "Liên hệ", href: "/#booking" }] }];
+const footerLinkGroups = [{ title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Đội xe", href: "/doi-xe" }, { label: "Cẩm nang đi đường", href: "/#blog" }] }, { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Chính sách huỷ chuyến", href: "#" }, { label: "Liên hệ", href: "/#booking" }] }];
 
 export default function RoutesPage() {
   const [filters, setFilters] = useState<FilterState>(emptyFilters);
