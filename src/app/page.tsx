@@ -12,34 +12,33 @@ import {
   Clock3,
   Compass,
   MapPin,
-  Menu,
   Milestone,
-  Phone,
   Sparkles,
   ShieldCheck,
   Star,
   Ticket,
   Users,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SiteHeader, type NavItem } from "@/components/site-header";
+import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 
-const navItems = [
-  { label: "Tuyến đường", href: "#routes" },
-  { label: "Đội xe", href: "#fleet" },
-  { label: "Loại xe", href: "#fleet" },
+const navItems: NavItem[] = [
+  { label: "Tuyến đường", href: "/#routes" },
+  { label: "Đội xe", href: "/#fleet" },
+  { label: "Loại xe", href: "/#fleet" },
   { label: "Dịch vụ", href: "#" },
   { label: "Khuyến mãi", href: "#" },
-  { label: "Blog", href: "#blog" },
-  { label: "Đánh giá", href: "#stories" },
+  { label: "Blog", href: "/#blog" },
+  { label: "Đánh giá", href: "/#stories" },
   { label: "Liên hệ", href: "#" },
 ];
 
 const routes = [
-  { from: "TP. Hồ Chí Minh", to: "Vũng Tàu", time: "2h 15m", distance: "125 km", price: "900.000đ", vehicleTypes: "4–7 chỗ · 16–29 chỗ · 45 chỗ · Limousine" },
-  { from: "TP. Hồ Chí Minh", to: "Cần Thơ", time: "3h 30m", distance: "170 km", price: "1.200.000đ", vehicleTypes: "4–7 chỗ · 16–29 chỗ · 45 chỗ" },
-  { from: "TP. Hồ Chí Minh", to: "Đà Lạt", time: "6h 30m", distance: "300 km", price: "2.500.000đ", vehicleTypes: "4–7 chỗ · Limousine" },
+  { from: "TP. Hồ Chí Minh", to: "Vũng Tàu", time: "2h 15m", distance: "125 km", price: "Từ 140K", vehicleTypes: "4–7 chỗ · 16–29 chỗ · 45 chỗ · Limousine" },
+  { from: "TP. Hồ Chí Minh", to: "Cần Thơ", time: "3h 30m", distance: "170 km", price: "Từ 180K", vehicleTypes: "4–7 chỗ · 16–29 chỗ · 45 chỗ" },
+  { from: "TP. Hồ Chí Minh", to: "Đà Lạt", time: "6h 30m", distance: "300 km", price: "Từ 290K", vehicleTypes: "4–7 chỗ · Limousine" },
 ];
 
 const fleetTabs = ["Tất cả", "Đi một mình", "Đi cùng nhóm", "Thuê riêng"] as const;
@@ -65,6 +64,25 @@ const blogPosts = [
   { category: "Review", title: "Các trạm dừng chân trên cao tốc TP.HCM – Long Thành – Dầu Giây", icon: MapPin },
 ];
 
+const footerLinkGroups = [
+  {
+    title: "KHÁM PHÁ",
+    links: [
+      { label: "Tuyến đường", href: "/#routes" },
+      { label: "Đội xe", href: "/#fleet" },
+      { label: "Cẩm nang đi đường", href: "/#blog" },
+    ],
+  },
+  {
+    title: "HỖ TRỢ",
+    links: [
+      { label: "Tra cứu vé", href: "#" },
+      { label: "Chính sách hoàn vé", href: "#" },
+      { label: "Liên hệ", href: "/#booking" },
+    ],
+  },
+];
+
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="section-label">{children}</p>;
 }
@@ -87,30 +105,19 @@ function RouteCard({ route }: { route: (typeof routes)[number] }) {
 }
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<(typeof fleetTabs)[number]>("Tất cả");
 
   return (
     <main className="site-shell">
-      <header className="site-header">
-        <a href="#top" className="brand" aria-label="Xe Miền Nam trang chủ"><span className="brand-mark">XM</span><span>XE MIỀN NAM</span></a>
-        <nav className={`main-nav ${menuOpen ? "is-open" : ""}`} aria-label="Điều hướng chính">
-          {navItems.map((item) => (
-            <a key={item.label} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}</a>
-          ))}
-          <a className="nav-hotline" href="tel:19006789"><Phone size={16} /> 1900 6789</a>
-          <Button className="nav-cta" onClick={() => document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" })}>Đặt xe ngay <ArrowRight data-icon="inline-end" /></Button>
-        </nav>
-        <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "Đóng menu" : "Mở menu"}>{menuOpen ? <X /> : <Menu />}</button>
-      </header>
+      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <section className="hero" id="top">
         <div className="hero-copy">
           <div className="eyebrow"><span className="eyebrow-line" /> Đi đâu cũng có Xe Miền Nam</div>
           <h1>Đi xa hơn.<br /><em>Vui hơn.</em></h1>
           <p>Từ thành phố đến biển xanh, từ miền Tây đến cao nguyên. Những chuyến xe tử tế cho hành trình đáng nhớ.</p>
-          <div className="hero-actions"><Button size="lg" onClick={() => document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" })}>Nhận báo giá ngay <ArrowRight data-icon="inline-end" /></Button><a className="text-link" href="#routes">Xem các tuyến đường <ArrowRight size={17} /></a></div>
-          <div className="hero-trust"><div className="avatar-stack"><span>H</span><span>M</span><span>T</span></div><span><strong>4.9/5</strong> từ hơn 2.000 khách hàng</span></div>
+          <div className="hero-actions"><Button size="lg" onClick={() => document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" })}>Tìm chuyến xe <ArrowRight data-icon="inline-end" /></Button><a className="text-link" href="#routes">Xem các tuyến đường <ArrowRight size={17} /></a></div>
+          <div className="hero-trust"><div className="avatar-stack"><span>H</span><span>M</span><span>T</span></div><span><strong>4.9/5</strong> từ hơn 2.000 hành khách</span></div>
         </div>
         <div className="hero-visual" aria-label="Minh họa tuyến đường miền Nam">
           <div className="sun" /><div className="horizon" /><div className="hill hill-back" /><div className="hill hill-front" />
@@ -134,7 +141,7 @@ export default function Home() {
         <div className="booking-field"><MapPin size={18} /><div><span>Điểm đi</span><strong>TP. Hồ Chí Minh</strong></div><ChevronDown size={17} /></div>
         <div className="booking-field"><MapPin size={18} /><div><span>Điểm đến</span><strong>Chọn điểm đến</strong></div><ChevronDown size={17} /></div>
         <div className="booking-field"><CalendarDays size={18} /><div><span>Ngày đi</span><strong>Chọn ngày</strong></div><ChevronDown size={17} /></div>
-        <Button size="lg">Nhận báo giá <ArrowRight data-icon="inline-end" /></Button>
+        <Button size="lg">Tìm chuyến <ArrowRight data-icon="inline-end" /></Button>
       </section>
 
       <section className="routes-section section-wrap" id="routes"><div className="section-heading"><div><SectionLabel>CÁC TUYẾN PHỔ BIẾN</SectionLabel><h2>Đi đâu hôm nay?</h2></div><a className="text-link" href="#routes">Xem tất cả tuyến <ArrowRight size={17} /></a></div><div className="route-list">{routes.map((route) => <RouteCard key={route.to} route={route} />)}</div></section>
@@ -149,9 +156,16 @@ export default function Home() {
 
       <section className="blog-section section-wrap" id="blog"><div className="section-heading"><div><SectionLabel>BLOG</SectionLabel><h2>Cẩm nang trước khi lên xe.</h2></div><a className="text-link" href="#blog">Xem tất cả bài viết <ArrowRight size={17} /></a></div><div className="route-grid blog-grid">{blogPosts.map((post) => <article className="blog-card" key={post.title}><div className="blog-thumb"><post.icon size={26} /></div><div className="blog-body"><span className="blog-cat">{post.category}</span><h3>{post.title}</h3></div></article>)}</div></section>
 
-      <section className="final-cta"><div><SectionLabel>SẴN SÀNG LÊN ĐƯỜNG?</SectionLabel><h2>Hành trình của bạn,<br /><em>chúng tôi lo.</em></h2></div><div><p>Đặt xe nhanh chóng, rõ ràng<br />và không có phí ẩn.</p><Button size="lg">Bắt đầu đặt xe <ArrowRight data-icon="inline-end" /></Button></div></section>
+      <section className="final-cta"><div><SectionLabel>SẴN SÀNG LÊN ĐƯỜNG?</SectionLabel><h2>Hành trình của bạn,<br /><em>chúng tôi lo.</em></h2></div><div><p>Đặt chuyến nhanh chóng, rõ ràng<br />và không có phí ẩn.</p><Button size="lg">Bắt đầu đặt xe <ArrowRight data-icon="inline-end" /></Button></div></section>
 
-      <footer className="site-footer"><div className="footer-main"><a href="#top" className="brand"><span className="brand-mark">XM</span><span>XE MIỀN NAM</span></a><p>Đi đâu cũng có Xe Miền Nam.<br />Kết nối những hành trình tử tế.</p><a className="phone-link" href="tel:19006789"><Phone size={17} /> 1900 6789</a></div><div className="footer-links"><div><span>KHÁM PHÁ</span><a href="#routes">Tuyến đường</a><a href="#fleet">Đội xe</a><a href="#blog">Cẩm nang đi đường</a></div><div><span>HỖ TRỢ</span><a href="#booking">Tra cứu vé</a><a href="#booking">Chính sách hoàn vé</a><a href="#booking">Liên hệ</a></div><div><span>THEO DÕI CHÚNG TÔI</span><a href="#top">◎ Instagram</a><a href="#top">Facebook</a></div></div><div className="footer-bottom"><span>© 2024 Xe Miền Nam</span><span>Made for the road.</span></div></footer>
+      <SiteFooter
+        tagline={<>Đi đâu cũng có Xe Miền Nam.<br />Kết nối những hành trình tử tế.</>}
+        phone="1900 6789"
+        linkGroups={footerLinkGroups}
+        socialLinks={defaultSocialLinks}
+        copyright="© 2026 Xe Miền Nam"
+        madeFor="Made for the road."
+      />
     </main>
   );
 }

@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// Font cho tiêu đề & số liệu — đúng design system (mục 8, xemiennam-kien-truc-ky-thuat.md)
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin", "vietnamese"],
+  weight: ["700", "800", "900"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// Font cho phần chữ còn lại
+const beVietnamPro = Be_Vietnam_Pro({
+  variable: "--font-vietnam",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -21,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="vi"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${archivo.variable} ${beVietnamPro.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

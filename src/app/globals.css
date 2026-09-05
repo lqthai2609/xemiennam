@@ -41,6 +41,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outlin
 .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--foreground); color: var(--accent); font-size: 11px; letter-spacing: -.06em; }
 .main-nav { display: flex; align-items: center; gap: 22px; font-size: 13px; font-weight: 600; color: #4f5b5d; }
 .main-nav a:not(.nav-cta):hover, .footer-links a:hover { color: var(--primary); }
+.main-nav a.is-active { color: var(--primary); font-weight: 700; }
 .nav-hotline { display: flex; align-items: center; gap: 7px; color: var(--foreground); font-weight: 700; font-size: 13px; white-space: nowrap; }
 .nav-hotline svg { color: var(--primary); }
 .nav-cta { height: 40px; border-radius: 999px; padding-inline: 18px; }
