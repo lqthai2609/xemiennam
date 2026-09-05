@@ -3,29 +3,13 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { SiteHeader, type NavItem } from "@/components/site-header";
+import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { RouteFilter } from "@/components/route-filter";
 import { RouteResults } from "@/components/route-results";
-import { emptyFilters, FilterState, Route } from "@/types/route";
-
-const navItems: NavItem[] = [
-  { label: "Tuyến đường", href: "/tuyen-duong" },
-  { label: "Đội xe", href: "/#fleet" },
-  { label: "Loại xe", href: "/#fleet" },
-  { label: "Dịch vụ", href: "#" },
-  { label: "Khuyến mãi", href: "#" },
-  { label: "Blog", href: "/#blog" },
-  { label: "Đánh giá", href: "/#stories" },
-  { label: "Liên hệ", href: "#" },
-];
-
-const routes: Route[] = [
-  { id: "hcm-vung-tau", from: "TP. Hồ Chí Minh", to: "Vũng Tàu", region: "Vũng Tàu", time: "2h 15m", distance: "125 km", price: "140K", vehicleTypes: ["4–7 chỗ", "16–29 chỗ", "45 chỗ", "Limousine"], seatCount: ["4–7 chỗ", "16–29 chỗ", "45 chỗ"] },
-  { id: "hcm-can-tho", from: "TP. Hồ Chí Minh", to: "Cần Thơ", region: "Cần Thơ", time: "3h 30m", distance: "170 km", price: "180K", vehicleTypes: ["4–7 chỗ", "16–29 chỗ", "45 chỗ"], seatCount: ["4–7 chỗ", "16–29 chỗ", "45 chỗ"] },
-  { id: "hcm-da-lat", from: "TP. Hồ Chí Minh", to: "Đà Lạt", region: "Đà Lạt", time: "6h 30m", distance: "300 km", price: "290K", vehicleTypes: ["4–7 chỗ", "Limousine"], seatCount: ["4–7 chỗ"] },
-  { id: "hcm-phan-thiet", from: "TP. Hồ Chí Minh", to: "Phan Thiết", region: "Phan Thiết", time: "3h 45m", distance: "200 km", price: "220K", vehicleTypes: ["4–7 chỗ", "16–29 chỗ"], seatCount: ["4–7 chỗ", "16–29 chỗ"] },
-];
+import { emptyFilters, FilterState } from "@/types/route";
+import { routes } from "@/data/routes";
+import { navItems } from "@/data/nav";
 
 const footerLinkGroups = [{ title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Đội xe", href: "/#fleet" }, { label: "Cẩm nang đi đường", href: "/#blog" }] }, { title: "HỖ TRỢ", links: [{ label: "Tra cứu vé", href: "#" }, { label: "Chính sách hoàn vé", href: "#" }, { label: "Liên hệ", href: "/#booking" }] }];
 

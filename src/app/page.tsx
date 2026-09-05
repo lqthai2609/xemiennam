@@ -20,26 +20,12 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { SiteHeader, type NavItem } from "@/components/site-header";
+import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-
-const navItems: NavItem[] = [
-  { label: "Tuyến đường", href: "/#routes" },
-  { label: "Đội xe", href: "/#fleet" },
-  { label: "Loại xe", href: "/#fleet" },
-  { label: "Dịch vụ", href: "#" },
-  { label: "Khuyến mãi", href: "#" },
-  { label: "Blog", href: "/#blog" },
-  { label: "Đánh giá", href: "/#stories" },
-  { label: "Liên hệ", href: "#" },
-];
-
-const routes = [
-  { from: "TP. Hồ Chí Minh", to: "Vũng Tàu", time: "2h 15m", distance: "125 km", price: "Từ 140K", vehicleTypes: "4–7 chỗ · 16–29 chỗ · 45 chỗ · Limousine" },
-  { from: "TP. Hồ Chí Minh", to: "Cần Thơ", time: "3h 30m", distance: "170 km", price: "Từ 180K", vehicleTypes: "4–7 chỗ · 16–29 chỗ · 45 chỗ" },
-  { from: "TP. Hồ Chí Minh", to: "Đà Lạt", time: "6h 30m", distance: "300 km", price: "Từ 290K", vehicleTypes: "4–7 chỗ · Limousine" },
-];
+import { routes } from "@/data/routes";
+import { navItems } from "@/data/nav";
 
 const fleetTabs = ["Tất cả", "Đi một mình", "Đi cùng nhóm", "Thuê riêng"] as const;
 
@@ -96,10 +82,10 @@ function RouteCard({ route }: { route: (typeof routes)[number] }) {
         <div className="rt-meta">
           <span><Clock3 size={13} /> {route.time}</span>
           <span><Milestone size={13} /> {route.distance}</span>
-          <span className="rt-vehicles">{route.vehicleTypes}</span>
+          <span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span>
         </div>
       </div>
-      <div className="rt-cta"><a href="#booking">Xem chi tiết <ArrowRight size={14} /></a></div>
+      <div className="rt-cta"><Link href={`/tuyen-duong/${route.slug}`}>Xem chi tiết <ArrowRight size={14} /></Link></div>
     </article>
   );
 }
@@ -116,7 +102,7 @@ export default function Home() {
           <div className="eyebrow"><span className="eyebrow-line" /> Đi đâu cũng có Xe Miền Nam</div>
           <h1>Đi xa hơn.<br /><em>Vui hơn.</em></h1>
           <p>Từ thành phố đến biển xanh, từ miền Tây đến cao nguyên. Những chuyến xe tử tế cho hành trình đáng nhớ.</p>
-          <div className="hero-actions"><Button size="lg" onClick={() => document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" })}>Tìm chuyến xe <ArrowRight data-icon="inline-end" /></Button><a className="text-link" href="#routes">Xem các tuyến đường <ArrowRight size={17} /></a></div>
+          <div className="hero-actions"><Button size="lg" onClick={() => document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" })}>Tìm chuyến xe <ArrowRight data-icon="inline-end" /></Button><Link className="text-link" href="/tuyen-duong">Xem các tuyến đường <ArrowRight size={17} /></Link></div>
           <div className="hero-trust"><div className="avatar-stack"><span>H</span><span>M</span><span>T</span></div><span><strong>4.9/5</strong> từ hơn 2.000 hành khách</span></div>
         </div>
         <div className="hero-visual" aria-label="Minh họa tuyến đường miền Nam">
@@ -144,7 +130,7 @@ export default function Home() {
         <Button size="lg">Tìm chuyến <ArrowRight data-icon="inline-end" /></Button>
       </section>
 
-      <section className="routes-section section-wrap" id="routes"><div className="section-heading"><div><SectionLabel>CÁC TUYẾN PHỔ BIẾN</SectionLabel><h2>Đi đâu hôm nay?</h2></div><a className="text-link" href="#routes">Xem tất cả tuyến <ArrowRight size={17} /></a></div><div className="route-list">{routes.map((route) => <RouteCard key={route.to} route={route} />)}</div></section>
+      <section className="routes-section section-wrap" id="routes"><div className="section-heading"><div><SectionLabel>CÁC TUYẾN PHỔ BIẾN</SectionLabel><h2>Đi đâu hôm nay?</h2></div><Link className="text-link" href="/tuyen-duong">Xem tất cả tuyến <ArrowRight size={17} /></Link></div><div className="route-list">{routes.map((route) => <RouteCard key={route.slug} route={route} />)}</div></section>
 
       <section className="fleet-section section-wrap" id="fleet"><div className="section-heading"><div><SectionLabel>ĐỘI XE</SectionLabel><h2>Chọn xe theo số người, không theo số ghế trống.</h2></div><p className="heading-note">Từ xe con tự lái đến xe<br />giường nằm limousine.</p></div><div className="fleet-tabs">{fleetTabs.map((tab) => <button key={tab} className={activeTab === tab ? "active" : ""} onClick={() => setActiveTab(tab)}>{tab}</button>)}</div><div className="fleet-grid">{fleet.filter((item) => activeTab === "Tất cả" || item.tabs.includes(activeTab)).map((item) => <article className={`fleet-card ${item.accent}`} key={item.type}><div className="fleet-image"><item.icon size={56} strokeWidth={1.3} /><span className="fleet-sticker">{item.tag}</span></div><div className="fleet-info"><span className="fleet-kicker">XE MIỀN NAM</span><h3>{item.type}</h3><p>{item.detail}</p><a href="#booking">Xem chi tiết <ArrowRight size={15} /></a></div></article>)}</div></section>
 
