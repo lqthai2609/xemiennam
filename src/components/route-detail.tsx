@@ -8,7 +8,7 @@ import { navItems } from "@/data/nav";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Đội xe", href: "/#fleet" }, { label: "Cẩm nang đi đường", href: "/#blog" }] },
-  { title: "HỖ TRỢ", links: [{ label: "Tra cứu vé", href: "#" }, { label: "Chính sách hoàn vé", href: "#" }, { label: "Liên hệ", href: "/#booking" }] },
+  { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Chính sách huỷ chuyến", href: "#" }, { label: "Liên hệ", href: "/#booking" }] },
 ];
 
 function DetailCard({ route }: { route: Route }) {
@@ -38,7 +38,7 @@ export function RouteDetailPage({ route, relatedRoutes }: { route: Route; relate
 
       <section className="detail-content section-wrap">
         <div className="detail-main">
-          <div className="section-heading detail-heading"><div><p className="section-label">GIÁ VÉ THAM KHẢO</p><h2>Chọn cách bạn muốn đi.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
+          <div className="section-heading detail-heading"><div><p className="section-label">GIÁ THUÊ XE THAM KHẢO</p><h2>Chọn cách bạn muốn đi.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
           <div className="detail-price-grid">{route.pricingByVehicle.map((vp) => <article className="detail-price-card" key={vp.vehicleType}><span className="vehicle-chip">{vp.vehicleType}</span><strong>{vp.price}</strong><small>Một chiều</small><Link href="#booking">Đặt xe {vp.vehicleType} <ArrowRight size={14} /></Link></article>)}</div>
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">ĐIỂM ĐÓN & TRẢ</p><h2>Điểm nào cũng gần bạn.</h2></div></div><div className="stops-grid"><div><span className="stop-kicker"><MapPin size={15} /> Điểm đón tại {route.from}</span><ul>{route.pickupPoints.map((stop) => <li key={stop}><span className="stop-dot" />{stop}</li>)}</ul></div><div><span className="stop-kicker"><MapPin size={15} /> Điểm trả tại {route.to}</span><ul>{route.dropoffPoints.map((stop) => <li key={stop}><span className="stop-dot destination" />{stop}</li>)}</ul></div></div></div>
@@ -47,7 +47,7 @@ export function RouteDetailPage({ route, relatedRoutes }: { route: Route; relate
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">LOẠI XE PHÙ HỢP</p><h2>Đi tuyến này bằng xe gì?</h2></div></div><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={`/loai-xe/${vehicleTypeSlug(vehicle)}`} className="vehicle-chip">{vehicle}</Link>)}</div></div>
         </div>
-        <aside className="detail-aside" id="booking"><div className="booking-card"><p className="section-label">ĐẶT CHUYẾN</p><h2>Sẵn sàng lên đường?</h2><p>Để lại thông tin, đội ngũ Xe Miền Nam sẽ gọi lại xác nhận trong ít phút.</p><Button size="lg" asChild><a href="tel:19006789">Gọi 1900 6789 <Phone data-icon="inline-end" /></a></Button><span className="booking-note"><ShieldCheck size={16} /> Không cần thanh toán trước</span></div><div className="departures-card"><p className="section-label">GIỜ KHỞI HÀNH GỢI Ý</p><div className="departure-list">{route.departures.map((time) => <span key={time}>{time}</span>)}</div><ul className="detail-notes">{route.notes.map((note) => <li key={note}><Check size={15} />{note}</li>)}</ul></div></aside>
+        <aside className="detail-aside" id="booking"><div className="booking-card"><p className="section-label">ĐẶT CHUYẾN</p><h2>Sẵn sàng lên đường?</h2><p>Để lại thông tin, đội ngũ Xe Miền Nam sẽ gọi lại xác nhận trong ít phút.</p><Button size="lg" asChild><a href="tel:19006789">Gọi 1900 6789 <Phone data-icon="inline-end" /></a></Button><span className="booking-note"><ShieldCheck size={16} /> Không cần thanh toán trước</span></div><div className="departures-card"><p className="section-label">KHUNG GIỜ KHÁCH HAY CHỌN</p><div className="departure-list">{route.departures.map((time) => <span key={time}>{time}</span>)}</div><ul className="detail-notes">{route.notes.map((note) => <li key={note}><Check size={15} />{note}</li>)}</ul></div></aside>
       </section>
 
       <section className="related-section section-wrap"><div className="section-heading"><div><p className="section-label">CÓ THỂ BẠN QUAN TÂM</p><h2>Thêm một cung đường.</h2></div><Link className="text-link" href="/tuyen-duong">Xem tất cả tuyến <ArrowRight size={17} /></Link></div><div className="route-list related-list">{relatedRoutes.map((related) => <DetailCard route={related} key={related.id} />)}</div></section>

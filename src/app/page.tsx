@@ -62,8 +62,8 @@ const footerLinkGroups = [
   {
     title: "HỖ TRỢ",
     links: [
-      { label: "Tra cứu vé", href: "#" },
-      { label: "Chính sách hoàn vé", href: "#" },
+      { label: "Câu hỏi thường gặp", href: "#" },
+      { label: "Chính sách huỷ chuyến", href: "#" },
       { label: "Liên hệ", href: "/#booking" },
     ],
   },
@@ -136,7 +136,7 @@ export default function Home() {
 
       <section className="stats-section"><div className="stats-band">{stats.map((s) => <div className="stat" key={s.label}><b>{s.value}</b><span>{s.label}</span></div>)}</div></section>
 
-      <section className="promise-section" id="about"><div className="promise-art"><div className="ticket-big"><Ticket size={29} /><span>VÉ MỘT CHIỀU</span><strong>ĐI TỬ TẾ</strong><small>XE MIỀN NAM · 2012—2024</small></div></div><div className="promise-copy"><SectionLabel>ĐIỀU CHÚNG TÔI TIN</SectionLabel><h2>Không chỉ là một chuyến xe.</h2><p>Chúng tôi tin mỗi hành trình đều có thể bắt đầu bằng một nụ cười, một tài xế tử tế và chiếc xe luôn đúng giờ.</p><ul><li><ShieldCheck size={20} /><span><strong>An toàn là ưu tiên</strong><br />Bảo dưỡng định kỳ, tài xế tận tâm.</span></li><li><Users size={20} /><span><strong>Phục vụ như người nhà</strong><br />Luôn lắng nghe và hỗ trợ bạn.</span></li></ul><a className="text-link" href="#stories">Câu chuyện của chúng tôi <ArrowRight size={17} /></a></div></section>
+      <section className="promise-section" id="about"><div className="promise-art"><div className="ticket-big"><Ticket size={29} /><span>THUÊ TRỌN CHUYẾN</span><strong>ĐI TỬ TẾ</strong><small>XE MIỀN NAM · 2012—2024</small></div></div><div className="promise-copy"><SectionLabel>ĐIỀU CHÚNG TÔI TIN</SectionLabel><h2>Không chỉ là một chuyến xe.</h2><p>Chúng tôi tin mỗi hành trình đều có thể bắt đầu bằng một nụ cười, một tài xế tử tế và chiếc xe luôn đúng giờ.</p><ul><li><ShieldCheck size={20} /><span><strong>An toàn là ưu tiên</strong><br />Bảo dưỡng định kỳ, tài xế tận tâm.</span></li><li><Users size={20} /><span><strong>Phục vụ như người nhà</strong><br />Luôn lắng nghe và hỗ trợ bạn.</span></li></ul><a className="text-link" href="#stories">Câu chuyện của chúng tôi <ArrowRight size={17} /></a></div></section>
 
       <section className="stories-section section-wrap" id="stories"><div className="section-heading"><div><SectionLabel>HÀNH KHÁCH NÓI GÌ</SectionLabel><h2>Chuyện trên những cung đường.</h2></div><div className="rating"><Star size={18} fill="currentColor" /><strong>4.9</strong><span> / 5.0</span></div></div><div className="quote-grid"><blockquote>“Lần đầu đi Đà Lạt bằng xe giường nằm mà thoải mái hơn mình nghĩ rất nhiều. Tài xế vui tính, xe sạch sẽ, đến nơi đúng giờ.”<footer><span className="quote-avatar">L</span><strong>Lan Anh</strong><span>· TP. Hồ Chí Minh → Đà Lạt</span></footer></blockquote><blockquote>“Đặt xe riêng cho gia đình đi Vũng Tàu, được đón tận nhà nên người lớn tuổi rất thích. Sẽ quay lại!”<footer><span className="quote-avatar">Q</span><strong>Quang Minh</strong><span>· TP. Hồ Chí Minh → Vũng Tàu</span></footer></blockquote></div></section>
 

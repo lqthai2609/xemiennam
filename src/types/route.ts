@@ -11,7 +11,7 @@ export interface Route {
   to: string;
   time: string;
   distance: string;
-  /** Giá từ — luôn bằng mức thấp nhất trong pricingByVehicle, dùng cho thẻ vé/danh sách. */
+  /** Giá từ — luôn bằng mức thấp nhất trong pricingByVehicle, dùng cho thẻ giá/danh sách. */
   price: string;
   vehicleTypes: string[];
   region: string;
