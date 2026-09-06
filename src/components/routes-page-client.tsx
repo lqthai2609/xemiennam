@@ -24,7 +24,7 @@ const footerLinkGroups = [
     links: [
       { label: "Câu hỏi thường gặp", href: "#" },
       { label: "Chính sách huỷ chuyến", href: "#" },
-      { label: "Liên hệ", href: "/#booking" },
+      { label: "Liên hệ", href: "/lien-he" },
     ],
   },
 ];
@@ -38,6 +38,7 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
   // useSearchParams() để không bắt buộc bọc Suspense quanh trang này.
   useEffect(() => {
     const diemDen = new URLSearchParams(window.location.search).get("diem_den");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (diemDen) setFilters((current) => ({ ...current, region: diemDen }));
   }, []);
 

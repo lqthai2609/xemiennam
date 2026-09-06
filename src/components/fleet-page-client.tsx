@@ -19,7 +19,7 @@ const footerLinkGroups = [
       { label: "Cẩm nang đi đường", href: "/blog" },
     ],
   },
-  { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/#booking" }] },
+  { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/lien-he" }] },
 ];
 
 /** Nhận `vehicles` qua props — dữ liệu đã được fetchVehicles() lấy từ WP REST API (Ngày 12) ở Server Component cha. */

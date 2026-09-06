@@ -11,10 +11,10 @@ export function BlogCard({ post }: { post: BlogPost }) {
     >
       <div
         className="blog-thumb"
-        style={post.coverImage ? { backgroundImage: `url(${post.coverImage})` } : undefined}
+        style={post.featuredImageUrl ? { backgroundImage: `url(${post.featuredImageUrl})` } : undefined}
       >
         {/* Chưa có ảnh đại diện (mock hoặc bài WP chưa gắn ảnh) → giữ nền gradient + icon, giống bản demo tĩnh ban đầu. */}
-        {!post.coverImage && <BookOpen size={26} />}
+        {!post.featuredImageUrl && <BookOpen size={26} />}
       </div>
       <div className="blog-body">
         <span className="blog-cat">{post.category}</span>

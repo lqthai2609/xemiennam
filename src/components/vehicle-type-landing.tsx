@@ -9,7 +9,7 @@ import type { VehicleCategory } from "@/types/vehicle-category";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Đội xe", href: "/doi-xe" }, { label: "Loại xe", href: "/loai-xe" }] },
-  { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/#booking" }] },
+  { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/lien-he" }] },
 ];
 
 export function VehicleArt({ category }: { category: VehicleCategory }) {

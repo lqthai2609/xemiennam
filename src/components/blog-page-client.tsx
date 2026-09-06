@@ -23,7 +23,7 @@ const footerLinkGroups = [
     links: [
       { label: "Câu hỏi thường gặp", href: "#" },
       { label: "Chính sách huỷ chuyến", href: "#" },
-      { label: "Liên hệ", href: "/#booking" },
+      { label: "Liên hệ", href: "/lien-he" },
     ],
   },
 ];

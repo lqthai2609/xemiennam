@@ -17,7 +17,7 @@ const footerLinkGroups = [
       { label: "Cẩm nang đi đường", href: "/blog" },
     ],
   },
-  { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/#booking" }] },
+  { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/lien-he" }] },
 ];
 
 /** Chỉ giữ lại các loại xe thực sự xuất hiện ở ít nhất 1 tuyến, theo đúng thứ tự VEHICLE_TYPE_ORDER. */
