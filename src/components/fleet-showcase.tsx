@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Bus, BusFront, Car, Sparkles, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { vehicleTypeSlug } from "@/types/route";
 
 const fleetTabs = ["Tất cả", "Đi một mình", "Đi cùng nhóm", "Thuê riêng"] as const;
 
@@ -59,7 +60,9 @@ export function FleetShowcase() {
                 <span className="fleet-kicker">XE MIỀN NAM</span>
                 <h3>{item.type}</h3>
                 <p>{item.detail}</p>
-                <Link href="/doi-xe">
+                {/* Trỏ sang trang riêng của loại xe (Ngày 13), dùng đúng vehicleTypeSlug() —
+                    slug quy ước duy nhất, khớp với link đã có sẵn từ route-detail.tsx (Ngày 10). */}
+                <Link href={`/loai-xe/${vehicleTypeSlug(item.type)}`}>
                   Xem chi tiết <ArrowRight size={15} />
                 </Link>
               </div>

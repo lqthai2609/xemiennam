@@ -57,6 +57,38 @@ export function embeddedTermName(
   return embedded?.["wp:term"]?.flat().find((t) => t?.taxonomy === taxonomy)?.name;
 }
 
+/**
+ * Lấy TẤT CẢ term của 1 taxonomy cụ thể (khác embeddedTermName ở trên chỉ lấy 1).
+ * Cần cho `dich_vu` (Ngày 13): 1 dịch vụ có thể gắn nhiều hơn 1 term `vehicle_type`
+ * (vd "Xe cưới" áp dụng cả "4–7 chỗ" lẫn "Limousine").
+ */
+export function embeddedTerms(
+  embedded: { "wp:term"?: WPTerm[][] } | undefined,
+  taxonomy: string,
+): WPTerm[] {
+  return embedded?.["wp:term"]?.flat().filter((t) => t?.taxonomy === taxonomy) ?? [];
+}
+
+/**
+ * Kiểu dữ liệu THÔ cho CPT `dich_vu` (Ngày 13). Field meta khớp đúng snippet Ngày 4
+ * (ID 12): `mo_ta_nhu_cau` (textarea), `loai_xe_phu_hop` (select_multi_post → target
+ * `vehicle`, trả về mảng ID bài `vehicle` liên quan), `luu_y_dich_vu` (textarea).
+ * Taxonomy `vehicle_type` gắn trực tiếp vào `dich_vu` (đăng ký Ngày 3) — lấy qua
+ * `_embedded["wp:term"]` giống route/vehicle, dùng `embeddedTerms()` vì có thể nhiều term.
+ */
+export type WPService = {
+  id: number;
+  slug: string;
+  title: { rendered: string };
+  content?: { rendered: string };
+  meta: {
+    mo_ta_nhu_cau?: string;
+    loai_xe_phu_hop?: (number | string)[];
+    luu_y_dich_vu?: string;
+  };
+  _embedded?: { "wp:term"?: WPTerm[][] };
+};
+
 const LIST_QUERY = "per_page=100&_embed=1";
 
 export async function fetchRawRoutes(): Promise<WPRoute[]> {
@@ -74,5 +106,14 @@ export async function fetchRawVehicles(): Promise<WPVehicle[]> {
 
 export async function fetchRawVehicleBySlug(slug: string): Promise<WPVehicle | null> {
   const list = await wpFetch<WPVehicle[]>(`/vehicle?slug=${encodeURIComponent(slug)}&_embed=1`);
+  return list?.[0] ?? null;
+}
+
+export async function fetchRawServices(): Promise<WPService[]> {
+  return (await wpFetch<WPService[]>(`/dich_vu?${LIST_QUERY}`)) ?? [];
+}
+
+export async function fetchRawServiceBySlug(slug: string): Promise<WPService | null> {
+  const list = await wpFetch<WPService[]>(`/dich_vu?slug=${encodeURIComponent(slug)}&_embed=1`);
   return list?.[0] ?? null;
 }

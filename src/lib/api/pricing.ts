@@ -54,3 +54,8 @@ export function pricingForRoute(table: PricingRow[], routeId: string): PricingRo
 export function pricingForVehicle(table: PricingRow[], vehicleId: string): PricingRow[] {
   return table.filter((row) => row.vehicleId === vehicleId);
 }
+
+/** Tiện ích: lọc bảng giá theo 1 LOẠI xe (dùng cho trang /loai-xe/[slug], Ngày 13). */
+export function pricingForVehicleType(table: PricingRow[], vehicleType: string): PricingRow[] {
+  return table.filter((row) => row.vehicleType === vehicleType);
+}
