@@ -37,7 +37,7 @@ const footerLinkGroups = [
     title: "HỖ TRỢ",
     links: [
       { label: "Câu hỏi thường gặp", href: "#" },
-      { label: "Liên hệ", href: "/#booking" },
+      { label: "Liên hệ", href: "/lien-he" },
     ],
   },
 ];
@@ -79,7 +79,7 @@ export default async function BlogDetailPage({ params }: Props) {
 
       <section className="section-wrap blog-detail-content">
         {/* Nội dung do admin site tự nhập trong wp-admin (không phải do người dùng cuối gửi lên) nên render trực tiếp HTML — xem ghi chú trong lib/api/blog.ts. */}
-        <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: post.content }} />
+        <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
 
         {relatedRoutes.length > 0 && (
           <aside className="blog-detail-related">
