@@ -99,7 +99,7 @@ export function VehicleTypeLanding({
           </div>
           <div className="vehicle-price-table">
             {routePrices.map((item, index) => (
-              <div className="vehicle-price-row" key={`${item.route}-${index}`}>
+              <div className="vehicle-type-price-row" key={`${item.route}-${index}`}>
                 <span>{item.route}</span><strong>{item.price}</strong><small>{item.note}</small>
               </div>
             ))}
