@@ -14,7 +14,7 @@ const footerLinkGroups = [
     links: [
       { label: "Tuyến đường", href: "/tuyen-duong" },
       { label: "Đội xe", href: "/doi-xe" },
-      { label: "Cẩm nang đi đường", href: "/#blog" },
+      { label: "Cẩm nang đi đường", href: "/blog" },
     ],
   },
   { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/#booking" }] },

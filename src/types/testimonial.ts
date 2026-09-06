@@ -9,4 +9,6 @@ export type Testimonial = {
   routeSlug?: string;
   /** Khớp VehiclePrice.vehicleType / Vehicle.type. */
   vehicleType?: string;
+  /** ISO date — ngày đăng đánh giá (post_date thật của WP, hoặc ngày viết tay cho mock). Dùng ở /danh-gia (Ngày 18). */
+  date?: string;
 };

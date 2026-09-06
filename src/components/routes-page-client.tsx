@@ -16,7 +16,7 @@ const footerLinkGroups = [
     links: [
       { label: "Tuyến đường", href: "/tuyen-duong" },
       { label: "Đội xe", href: "/doi-xe" },
-      { label: "Cẩm nang đi đường", href: "/#blog" },
+      { label: "Cẩm nang đi đường", href: "/blog" },
     ],
   },
   {

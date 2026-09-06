@@ -1,10 +1,12 @@
-import { ArrowRight, BookOpen, Clock3, Compass, MapPin, Milestone, Star, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
+import { ArrowRight, Clock3, MapPin, Milestone, Star, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { FleetShowcase } from "@/components/fleet-showcase";
 import { fetchRoutes } from "@/lib/api/routes";
+import { fetchPosts } from "@/lib/api/blog";
+import { BlogCard } from "@/components/blog-card";
 import { BookingBar } from "@/components/booking-bar";
 import { navItems } from "@/data/nav";
 import type { Route } from "@/types/route";
@@ -25,19 +27,13 @@ const stats = [
   { value: "0đ", label: "phụ phí phát sinh" },
 ];
 
-const blogPosts = [
-  { category: "Kinh nghiệm", title: "Đi Vũng Tàu 2 ngày 1 đêm cho gia đình có trẻ nhỏ", icon: Compass },
-  { category: "Cẩm nang", title: "Thuê xe 16 chỗ đi Đà Lạt cần lưu ý gì trước khi đặt", icon: BookOpen },
-  { category: "Review", title: "Các trạm dừng chân trên cao tốc TP.HCM – Long Thành – Dầu Giây", icon: MapPin },
-];
-
 const footerLinkGroups = [
   {
     title: "KHÁM PHÁ",
     links: [
       { label: "Tuyến đường", href: "/tuyen-duong" },
       { label: "Đội xe", href: "/doi-xe" },
-      { label: "Cẩm nang đi đường", href: "/#blog" },
+      { label: "Cẩm nang đi đường", href: "/blog" },
     ],
   },
   {
@@ -87,8 +83,9 @@ function RouteCard({ route }: { route: Route }) {
 }
 
 export default async function Home() {
-  const routes = await fetchRoutes();
+  const [routes, posts] = await Promise.all([fetchRoutes(), fetchPosts()]);
   const destinations = [...new Set(routes.map((r) => r.to).filter(Boolean))];
+  const latestPosts = posts.slice(0, 3);
 
   return (
     <main className="site-shell">
@@ -273,30 +270,24 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="blog-section section-wrap" id="blog">
-        <div className="section-heading">
-          <div>
-            <SectionLabel>BLOG</SectionLabel>
-            <h2>Cẩm nang trước khi lên xe.</h2>
+      {latestPosts.length > 0 && (
+        <section className="blog-section section-wrap" id="blog">
+          <div className="section-heading">
+            <div>
+              <SectionLabel>BLOG</SectionLabel>
+              <h2>Cẩm nang trước khi lên xe.</h2>
+            </div>
+            <Link className="text-link" href="/blog">
+              Xem tất cả bài viết <ArrowRight size={17} />
+            </Link>
           </div>
-          <a className="text-link" href="#blog">
-            Xem tất cả bài viết <ArrowRight size={17} />
-          </a>
-        </div>
-        <div className="route-grid blog-grid">
-          {blogPosts.map((post) => (
-            <article className="blog-card" key={post.title}>
-              <div className="blog-thumb">
-                <post.icon size={26} />
-              </div>
-              <div className="blog-body">
-                <span className="blog-cat">{post.category}</span>
-                <h3>{post.title}</h3>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+          <div className="route-grid blog-grid">
+            {latestPosts.map((post) => (
+              <BlogCard key={post.slug} post={post} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="final-cta">
         <div>

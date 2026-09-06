@@ -65,3 +65,20 @@ export function splitCommaList(raw: string | undefined | null): string[] {
     .map((s) => s.trim())
     .filter(Boolean);
 }
+
+/** Format ngày ISO (yyyy-mm-dd hoặc datetime WP kiểu post_date) thành dd/mm/yyyy — dùng ở /khuyen-mai và /danh-gia (Ngày 18). */
+export function formatVNDate(dateStr: string | undefined | null): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+/** Format số tiền đầy đủ kiểu Việt Nam (vd 300000 → "300.000đ") — khác formatPriceShort (rút gọn "300K"), dùng khi cần nhãn rõ ràng, không viết tắt (vd nhãn giảm giá /khuyen-mai). */
+export function formatCurrencyVN(amount: number | string | undefined | null): string {
+  const n = typeof amount === "string" ? Number(amount) : amount;
+  if (!n || Number.isNaN(n)) return "";
+  return `${Math.round(n).toLocaleString("vi-VN")}đ`;
+}
