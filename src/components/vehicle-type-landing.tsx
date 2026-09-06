@@ -12,7 +12,7 @@ const footerLinkGroups = [
   { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/#booking" }] },
 ];
 
-function VehicleArt({ category }: { category: VehicleCategory }) {
+export function VehicleArt({ category }: { category: VehicleCategory }) {
   return (
     <div className={`vehicle-type-art vehicle-art ${category.color}`} role="img" aria-label={`${category.label} - ${category.title}`}>
       <BusFront />

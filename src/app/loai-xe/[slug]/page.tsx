@@ -47,9 +47,11 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
   }));
   // Gộp theo routeSlug để mỗi tuyến chỉ xuất hiện 1 lần trong danh sách "tuyến có thể đi"
   // (bảng giá pricingTable có 1 dòng/mỗi xe, nên 1 tuyến có thể lặp lại nếu có nhiều xe cùng loại).
+  // Ngày 14: trỏ thẳng sang trang kết hợp tuyến+loại xe (SEO hẹp hơn, đúng ngữ cảnh
+  // "đi tuyến này bằng loại xe này") thay vì trang tuyến đầy đủ chung chung.
   const relatedRoutes = Array.from(new Map(rows.map((row) => [row.routeSlug, row])).values()).map((row) => ({
     label: row.routeLabel,
-    href: `/tuyen-duong/${row.routeSlug}`,
+    href: `/tuyen-duong/${row.routeSlug}/${category.slug}`,
   }));
 
   const services = allServices

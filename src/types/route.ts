@@ -1,6 +1,21 @@
 export interface VehiclePrice {
   vehicleType: string;
   price: string;
+  /**
+   * Mô tả riêng cho đúng tổ hợp tuyến + loại xe này (Ngày 14) — dùng cho trang
+   * /tuyen-duong/[slug]/[loai-xe]. Bắt buộc viết tay riêng từng tổ hợp, không nội suy
+   * từ số liệu, để tránh nội dung mỏng/trùng lặp giữa các trang (mục 11, kiến trúc kỹ
+   * thuật — đúng lỗi nhieuxe.vn mắc phải). Chưa có field ACF tương ứng bên WordPress —
+   * dời nhập liệu thật tới Ngày 24 giống các field khác; nếu thiếu, xem fallback
+   * `comboDescriptionOrDefault()` trong lib/combo.ts.
+   */
+  comboDescription?: string;
+}
+
+/** Mô tả riêng cho 1 tổ hợp tuyến + loại xe (Ngày 14) — dùng ở trang /tuyen-duong/[slug]/[loai-xe]. */
+export interface ComboDescription {
+  vehicleType: string;
+  description: string;
 }
 
 export interface Route {
