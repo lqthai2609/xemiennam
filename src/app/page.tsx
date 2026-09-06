@@ -1,10 +1,11 @@
-import { ArrowRight, BookOpen, Clock3, Compass, MapPin, Milestone, Star, Ticket, ShieldCheck, Users, CalendarDays, ChevronDown, BusFront } from "lucide-react";
+import { ArrowRight, BookOpen, Clock3, Compass, MapPin, Milestone, Star, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { FleetShowcase } from "@/components/fleet-showcase";
 import { fetchRoutes } from "@/lib/api/routes";
+import { BookingBar } from "@/components/booking-bar";
 import { navItems } from "@/data/nav";
 import type { Route } from "@/types/route";
 
@@ -87,6 +88,7 @@ function RouteCard({ route }: { route: Route }) {
 
 export default async function Home() {
   const routes = await fetchRoutes();
+  const destinations = [...new Set(routes.map((r) => r.to).filter(Boolean))];
 
   return (
     <main className="site-shell">
@@ -168,34 +170,8 @@ export default async function Home() {
         </div>
       </div>
 
-      <section className="booking-bar" id="booking">
-        <div className="booking-field">
-          <MapPin size={18} />
-          <div>
-            <span>Điểm đi</span>
-            <strong>TP. Hồ Chí Minh</strong>
-          </div>
-          <ChevronDown size={17} />
-        </div>
-        <div className="booking-field">
-          <MapPin size={18} />
-          <div>
-            <span>Điểm đến</span>
-            <strong>Chọn điểm đến</strong>
-          </div>
-          <ChevronDown size={17} />
-        </div>
-        <div className="booking-field">
-          <CalendarDays size={18} />
-          <div>
-            <span>Ngày đi</span>
-            <strong>Chọn ngày</strong>
-          </div>
-          <ChevronDown size={17} />
-        </div>
-        <Button size="lg">
-          Tìm chuyến <ArrowRight data-icon="inline-end" />
-        </Button>
+      <section id="booking">
+        <BookingBar destinations={destinations} />
       </section>
 
       <section className="routes-section section-wrap" id="routes">

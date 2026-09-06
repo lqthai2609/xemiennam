@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -32,6 +32,14 @@ const footerLinkGroups = [
 /** Nhận `routes` qua props — dữ liệu đã được fetchRoutes() lấy từ WP REST API (Ngày 12) ở Server Component cha. */
 export function RoutesPageClient({ routes }: { routes: Route[] }) {
   const [filters, setFilters] = useState<FilterState>(emptyFilters);
+
+  // Đến từ ô "Tìm chuyến" ở trang chủ (booking-bar) với ?diem_den=<tên điểm đến> —
+  // tự chọn sẵn bộ lọc khu vực tương ứng. Đọc trực tiếp window.location thay vì
+  // useSearchParams() để không bắt buộc bọc Suspense quanh trang này.
+  useEffect(() => {
+    const diemDen = new URLSearchParams(window.location.search).get("diem_den");
+    if (diemDen) setFilters((current) => ({ ...current, region: diemDen }));
+  }, []);
 
   const filteredRoutes = useMemo(
     () =>

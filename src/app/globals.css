@@ -114,3 +114,15 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 @media (max-width:800px){.combo-testimonial-grid{grid-template-columns:1fr}.combo-price-grid{grid-template-columns:1fr}}
 
 @media (max-width:800px){.services-hero,.service-detail-hero{align-items:start;flex-direction:column;min-height:auto;padding:52px 20px}.services-hero-stamp,.service-detail-mark{align-self:flex-end}.service-card-grid{grid-template-columns:1fr}.section-heading{align-items:start;flex-direction:column}.service-detail-content{grid-template-columns:1fr;gap:44px}.service-cta{align-items:start;flex-direction:column;margin-inline:20px;padding:34px 24px}.service-cta-actions{flex-direction:column;align-items:stretch;width:100%}.button{width:100%}.vehicle-type-hero,.vehicle-type-intro,.vehicle-type-routes{grid-template-columns:1fr;gap:35px}.vehicle-type-hero{padding-top:55px}.vehicle-type-art{min-height:250px}.vehicle-type-amenity-grid,.vehicle-category-cards,.vehicle-category-cards-four,.vehicle-service-grid{grid-template-columns:1fr}.vehicle-category-card{grid-template-columns:125px 1fr}.vehicle-type-grid{grid-template-columns:1fr}.vehicle-price-row{grid-template-columns:1fr auto}.vehicle-price-row small{grid-column:1 / -1}.vehicle-type-cta{align-items:start;flex-direction:column;padding:60px 20px}.vehicle-type-index-hero{padding-top:60px}.vehicle-type-index-hero h1{font-size:clamp(42px,13vw,64px)}}
+
+/* Ngày 15+ — dropdown thật cho ô tìm kiếm nhanh trang chủ (trước đó booking-field
+   chỉ là markup tĩnh, không có state/click nào nên không xổ ra gì cả). */
+.booking-field { position: relative; cursor: pointer; user-select: none; }
+.booking-field.is-open > svg:last-child { transform: rotate(180deg); }
+.booking-dropdown { position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; display: flex; flex-direction: column; min-width: 220px; max-height: 260px; overflow-y: auto; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: #fffdf7; box-shadow: 0 16px 32px #102b3f1f; }
+.booking-dropdown button { padding: 10px 12px; border: 0; border-radius: 6px; background: none; color: var(--foreground); font: 500 13px var(--font-vietnam); text-align: left; cursor: pointer; }
+.booking-dropdown button:hover, .booking-dropdown button[aria-selected="true"] { background: var(--secondary); }
+.booking-dropdown-note { margin: 4px; max-width: 220px; color: var(--muted-foreground); font-size: 12px; line-height: 1.6; }
+.booking-dropdown-date { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; margin-top: 4px; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: 12px; cursor: default; }
+.booking-dropdown-date input { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font: 500 12px var(--font-vietnam); }
+@media (max-width: 800px) { .booking-dropdown { left: 0; right: 0; min-width: 0; } }
