@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 /**
  * Server Component — gọi fetchRoutes() (WP REST API thật + fallback mock, Ngày 12) để lấy
  * danh sách tuyến thật cho select "Tuyến quan tâm" trong ContactBookingForm (Ngày 19), thay
- * vì hardcode 3 tuyến cứng như bản v0 xuất ra. onSubmit thật (gọi Route Handler /api/booking)
- * là việc của Ngày 20 — hiện tại LienHePageClient chỉ mô phỏng gửi thành công.
+ * vì hardcode 3 tuyến cứng như bản v0 xuất ra. onSubmit thật đã nối Route Handler /api/booking
+ * (Ngày 20) trong LienHePageClient.
  */
 export default async function Page() {
   const routes = await fetchRoutes();
