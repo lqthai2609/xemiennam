@@ -18,7 +18,8 @@ import { splitCommaList } from "@/lib/wp";
 const useMockFallback = true;
 
 // Thứ tự cố định để bảng giá/loại xe hiển thị nhất quán, khớp taxonomy vehicle_type.
-const VEHICLE_TYPE_ORDER = ["4–7 chỗ", "16–29 chỗ", "45 chỗ", "Limousine"];
+// Export để /bang-gia (Ngày 15) dùng lại đúng thứ tự này, không định nghĩa trùng lần 2.
+export const VEHICLE_TYPE_ORDER = ["4–7 chỗ", "16–29 chỗ", "45 chỗ", "Limousine"];
 function byVehicleTypeOrder(a: string, b: string) {
   return VEHICLE_TYPE_ORDER.indexOf(a) - VEHICLE_TYPE_ORDER.indexOf(b);
 }
