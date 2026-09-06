@@ -59,7 +59,7 @@ export function FleetShowcase() {
                 <span className="fleet-kicker">XE MIỀN NAM</span>
                 <h3>{item.type}</h3>
                 <p>{item.detail}</p>
-                <Link href="/doi-xe">
+                <Link href={item.type === "4–7 chỗ" ? "/loai-xe/xe-gia-dinh" : item.type === "16–29 chỗ" ? "/loai-xe/xe-doan-nho" : item.type === "Limousine" ? "/loai-xe/xe-limousine" : "/loai-xe/xe-doan-lon"}>
                   Xem chi tiết <ArrowRight size={15} />
                 </Link>
               </div>
