@@ -236,6 +236,18 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
   .danh-gia-date { margin-left: 0; }
 }
 
+/* ===== Contact booking form & floating actions ===== */
+.form-control { width: 100%; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--foreground); padding: 11px 13px; font: inherit; font-size: 14px; outline: none; transition: border-color 160ms ease, box-shadow 160ms ease; }
+.form-control::placeholder { color: var(--muted-foreground); }
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent); }
+.form-control[aria-invalid="true"] { border-color: var(--destructive); }
+.floating-action { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; border-radius: 999px; padding: 0 17px; color: var(--primary-foreground); font-size: 13px; font-weight: 700; text-decoration: none; box-shadow: 0 10px 24px color-mix(in srgb, var(--foreground) 18%, transparent); transition: transform 160ms ease, box-shadow 160ms ease; }
+.floating-action:hover { transform: translateY(-2px); box-shadow: 0 14px 28px color-mix(in srgb, var(--foreground) 24%, transparent); }
+.floating-action svg { width: 18px; height: 18px; }
+.floating-action-call { background: var(--primary); }
+.floating-action-zalo { background: var(--foreground); color: var(--background); }
+@media (max-width: 640px) { .floating-action { flex: 1; } }
+
 /* ===== /blog (Ngày 17) ===== */
 .blog-thumb { background-size: cover; background-position: center; }
 .blog-date { display: block; margin-top: 10px; color: var(--muted-foreground); font-size: 11px; }
