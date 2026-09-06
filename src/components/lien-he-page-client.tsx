@@ -32,8 +32,9 @@ const footerLinkGroups = [
  * tiếp window.location trong useEffect, giống đúng cách routes-page-client.tsx đang làm, để
  * không phải bọc Suspense quanh trang.
  *
- * onSubmit hiện là placeholder — nối Route Handler /api/booking (gọi WP REST API tạo
- * booking_request qua JWT server-side) là việc của Ngày 20. Không tự viết logic gọi API ở đây.
+ * onSubmit gọi Route Handler /api/booking (Ngày 20) — Route Handler đó mới là nơi gọi WP REST
+ * API tạo booking_request qua JWT server-side; component này chỉ fetch() tới route nội bộ,
+ * không tự nói chuyện với WordPress.
  */
 export function LienHePageClient({
   routeOptions,
@@ -54,10 +55,15 @@ export function LienHePageClient({
   }, []);
 
   async function handleSubmit(data: BookingFormData) {
-    // TODO (Ngày 20): thay đoạn dưới bằng fetch("/api/booking", { method: "POST", body: JSON.stringify(data) })
-    // sau khi Route Handler /api/booking (JWT server-side → WP REST tạo booking_request) hoàn thành.
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    console.log("[lien-he] Yêu cầu đặt xe (chưa nối API thật):", data);
+    const res = await fetch("/api/booking", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.error ?? `Gửi yêu cầu đặt xe thất bại (HTTP ${res.status}).`);
+    }
   }
 
   return (
