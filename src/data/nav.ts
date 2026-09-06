@@ -9,14 +9,15 @@ import type { NavItem } from "@/components/site-header";
  * đầu tốt hơn cho SEO/internal-link, hơn là chờ đủ trang mới nối.
  *
  *   /doi-xe     → Ngày 11   /loai-xe    → Ngày 13   /dich-vu → Ngày 13
- *   /khuyen-mai → Ngày 18   /blog       → Ngày 17   /danh-gia → Ngày 18
- *   /lien-he    → chưa có ngày riêng, xem ghi chú dưới
+ *   /bang-gia   → Ngày 15   /khuyen-mai → Ngày 18   /blog    → Ngày 17
+ *   /danh-gia   → Ngày 18   /lien-he    → chưa có ngày riêng, xem ghi chú dưới
  */
 export const navItems: NavItem[] = [
   { label: "Tuyến đường", href: "/tuyen-duong" },
   { label: "Đội xe", href: "/doi-xe" },
   { label: "Loại xe", href: "/loai-xe" },
   { label: "Dịch vụ", href: "/dich-vu" },
+  { label: "Bảng giá", href: "/bang-gia" },
   { label: "Khuyến mãi", href: "/khuyen-mai" },
   { label: "Blog", href: "/blog" },
   { label: "Đánh giá", href: "/danh-gia" },

@@ -5,13 +5,14 @@
  * hợp (/tuyen-duong/[slug]/[loai-xe]) đều nên đọc giá từ cùng một chỗ để
  * không bao giờ lệch nhau — đây là hàm đó.
  *
- * Giả định (điều chỉnh nếu khác với hàm fetchRoutes()/fetchVehicles() đã
- * viết ở ngày 12):
+ * Xác nhận trực tiếp trên xemiennam.datxesaigon.com (REST API + snippet
+ * WPCode ID 12 "Ngày 4 - Field post meta"):
  * - REST base của CPT `route` là `/route`, của `vehicle` là `/vehicle`.
- * - Taxonomy `vehicle_type` có REST base mặc định trùng tên taxonomy.
- * - ACF field group của `route` đã bật "Show in REST API" (ngày 4) nên
- *   `pricing_by_vehicle` xuất hiện trong `acf.pricing_by_vehicle`, dạng
- *   mảng { vehicle_id, gia } (đã xác nhận ở các ngày trước).
+ * - Taxonomy `vehicle_type` có REST base = `vehicle_type`.
+ * - Dự án KHÔNG dùng ACF (bỏ từ ngày 3–4, thay bằng register_post_meta
+ *   thuần PHP) — `pricing_by_vehicle` nằm ở `meta.pricing_by_vehicle`
+ *   trên post `route`, KHÔNG phải `acf.pricing_by_vehicle`. Đây là lỗi
+ *   đã sửa so với bản đầu.
  * - Mỗi `vehicle` gắn đúng 1 term `vehicle_type` (lấy phần tử đầu tiên
  *   nếu có nhiều).
  */
@@ -52,7 +53,7 @@ interface WPRoute {
   slug: string;
   title: { rendered: string };
   modified: string;
-  acf?: { pricing_by_vehicle?: WPRoutePricingItem[] };
+  meta?: { pricing_by_vehicle?: WPRoutePricingItem[] };
 }
 
 interface WPVehicle {
@@ -103,7 +104,7 @@ function firstNumberOrInfinity(text: string): number {
 export async function getPricingTable(): Promise<PricingTableData> {
   const [routes, vehicles, vehicleTypes] = await Promise.all([
     fetchAllPages<WPRoute>(
-      "/route?per_page=100&_fields=id,slug,title,modified,acf"
+      "/route?per_page=100&_fields=id,slug,title,modified,meta"
     ),
     fetchAllPages<WPVehicle>("/vehicle?per_page=100&_fields=id,vehicle_type"),
     fetchAllPages<WPTerm>("/vehicle_type?per_page=100"),
@@ -125,7 +126,7 @@ export async function getPricingTable(): Promise<PricingTableData> {
       prices[col.id] = null;
     });
 
-    (route.acf?.pricing_by_vehicle ?? []).forEach((item) => {
+    (route.meta?.pricing_by_vehicle ?? []).forEach((item) => {
       const typeId = vehicleIdToTypeId.get(item.vehicle_id);
       if (typeId == null) return;
       const current = prices[typeId];
