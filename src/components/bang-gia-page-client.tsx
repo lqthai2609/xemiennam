@@ -84,6 +84,7 @@ export function BangGiaPageClient({ routes }: { routes: Route[] }) {
           </p>
         </div>
 
+        {/* Desktop/tablet: bảng ngang đầy đủ — ẩn trên mobile (xem .bang-gia-table-wrap trong globals.css). */}
         <div className="bang-gia-table-wrap">
           <table className="bang-gia-table">
             <thead>
@@ -118,16 +119,42 @@ export function BangGiaPageClient({ routes }: { routes: Route[] }) {
                   })}
                 </tr>
               ))}
-              {filteredRoutes.length === 0 && (
-                <tr>
-                  <td colSpan={columns.length + 1} className="bang-gia-empty">
-                    Không tìm thấy tuyến phù hợp.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
+
+        {/* Ngày 16 — mobile: danh sách thẻ xổ theo từng tuyến thay cho bảng cuộn ngang, đúng
+            mô tả gốc trong xemiennam-v0-prompts.md (mục 7). Dùng chung columns/filteredRoutes
+            với bảng ở trên, chỉ khác cách hiển thị — không tự fetch/lọc riêng nên không lệch dữ liệu. */}
+        <div className="bang-gia-mobile-list">
+          {filteredRoutes.map((route) => (
+            <article className="bang-gia-mobile-card" key={route.slug}>
+              <Link href={`/tuyen-duong/${route.slug}`} className="bang-gia-mobile-route">
+                {route.from} → {route.to}
+              </Link>
+              <div className="bang-gia-mobile-prices">
+                {columns.map((type) => {
+                  const price = priceFor(route, type);
+                  if (!price) return null;
+                  return (
+                    <Link
+                      key={type}
+                      href={`/tuyen-duong/${route.slug}/${vehicleTypeSlug(type)}`}
+                      className="bang-gia-mobile-price-row"
+                    >
+                      <span>{type}</span>
+                      <strong>{price}</strong>
+                    </Link>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {filteredRoutes.length === 0 && (
+          <p className="bang-gia-empty">Không tìm thấy tuyến phù hợp.</p>
+        )}
 
         <p className="bang-gia-note">
           Giá tham khảo, có thể thay đổi theo mùa hoặc dịp lễ. Liên hệ hotline hoặc Zalo để

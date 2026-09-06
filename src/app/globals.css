@@ -164,4 +164,15 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 .bang-gia-table td a:hover { color: var(--foreground); }
 .bang-gia-empty { padding: 40px 20px; text-align: center; color: var(--muted-foreground); white-space: normal; }
 .bang-gia-note { margin-top: 22px; color: var(--muted-foreground); font-size: 12px; line-height: 1.7; }
-@media (max-width: 800px) { .bang-gia-hero { align-items: start; flex-direction: column; min-height: auto; padding: 52px 20px; } .bang-gia-hero-note { align-self: flex-end; } .bang-gia-content { padding-top: 56px; } .bang-gia-table { font-size: 12px; } .bang-gia-table th, .bang-gia-table td { padding: 12px 14px; } }
+/* Ngày 16 — danh sách thẻ dùng riêng cho mobile (xem bang-gia-page-client.tsx); trên
+   desktop/tablet nó ẩn đi, chỉ hiện bảng .bang-gia-table-wrap ở trên. */
+.bang-gia-mobile-list { display: none; }
+.bang-gia-mobile-card { border: 1px solid var(--border); border-radius: 10px; background: #fffdf7; padding: 16px 18px; box-shadow: 0 10px 24px #102b3f0b; }
+.bang-gia-mobile-route { display: block; margin-bottom: 4px; color: var(--foreground); font-family: var(--font-archivo); font-weight: 800; font-size: 15px; }
+.bang-gia-mobile-route:hover { color: var(--primary); }
+.bang-gia-mobile-prices { display: flex; flex-direction: column; }
+.bang-gia-mobile-price-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 13px; }
+.bang-gia-mobile-price-row:first-child { border-top: 0; }
+.bang-gia-mobile-price-row span { color: var(--muted-foreground); }
+.bang-gia-mobile-price-row strong { color: var(--primary); font: 800 14px var(--font-archivo); }
+@media (max-width: 800px) { .bang-gia-hero { align-items: start; flex-direction: column; min-height: auto; padding: 52px 20px; } .bang-gia-hero-note { align-self: flex-end; } .bang-gia-content { padding-top: 56px; } .bang-gia-table-wrap { display: none; } .bang-gia-mobile-list { display: flex; flex-direction: column; gap: 12px; } }
