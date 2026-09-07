@@ -6,9 +6,10 @@ import type { Vehicle } from "@/types/vehicle";
  * thuộc loại này đều lấy từ dữ liệu thật (fetchVehicles()/getPricingTable()/fetchServices())
  * lọc theo `type` ngay tại trang — xem src/app/loai-xe/[slug]/page.tsx.
  *
- * Quyết định Ngày 13: 4 term taxonomy `vehicle_type` thật trong WordPress để dành tạo ở
- * Ngày 24 cùng lúc với dữ liệu route/vehicle khác — chưa tạo trước, nên trang này không
- * fetch taxonomy, chỉ dùng đúng 4 mục cố định bên dưới.
+ * Ngày 25: tách 4 loại cũ thành 6 loại thật khớp taxonomy vehicle_type trong WordPress
+ * (4/7/16/29/45 chỗ + Limousine, xem data/vehicle-categories.ts). Thêm 3 field
+ * shortDescription/driveOptions/startingPrice để khớp đúng thẻ danh sách loại xe
+ * (VehicleCategoryIndex trong components/vehicle-type-landing.tsx).
  */
 export type VehicleCategory = {
   /** Khớp đúng vehicleTypeSlug() trong types/route.ts — bắt buộc đồng bộ giữa 2 nơi. */
@@ -17,8 +18,14 @@ export type VehicleCategory = {
   type: Vehicle["type"];
   label: string;
   title: string;
+  /** Mô tả ngắn 1 dòng, hiển thị trên thẻ ở trang /loai-xe (danh sách). */
+  shortDescription: string;
   description: string;
   color: Vehicle["color"];
+  /** Hình thức thuê áp dụng cho loại xe này (vd ["Tự lái", "Có tài xế"]), hiển thị dạng badge trên thẻ. */
+  driveOptions: string[];
+  /** Giá khởi điểm hiển thị trên thẻ (vd "Từ 900.000đ/ngày") — chỉ mang tính tham khảo/marketing. */
+  startingPrice: string;
   /**
    * Ảnh minh hoạ đại diện cho CẢ NHÓM loại xe (Ngày 21b) — khác `images` của 1 chiếc xe cụ
    * thể trong Vehicle, vì đây là nội dung tĩnh không gắn với 1 xe/1 bài WordPress nào. Để

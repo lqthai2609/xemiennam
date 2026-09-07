@@ -14,7 +14,6 @@ import type { NavItem } from "@/components/site-header";
  */
 export const navItems: NavItem[] = [
   { label: "Tuyến đường", href: "/tuyen-duong" },
-  { label: "Đội xe", href: "/doi-xe" },
   { label: "Loại xe", href: "/loai-xe" },
   { label: "Dịch vụ", href: "/dich-vu" },
   { label: "Bảng giá", href: "/bang-gia" },

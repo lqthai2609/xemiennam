@@ -1,6 +1,9 @@
 export type Vehicle = {
   id: string; slug: string; name: string;
-  type: "4–7 chỗ" | "16–29 chỗ" | "45 chỗ" | "Limousine";
+  /** Trước Ngày 25 là union cứng 4 giá trị — nới thành string vì taxonomy vehicle_type
+   * thật trong WordPress đã tách thành 6 loại (4/7/16/29/45 chỗ + Limousine, xem
+   * data/vehicle-categories.ts) và có thể còn đổi tiếp, union cứng dễ lệch với dữ liệu thật. */
+  type: string;
   seats: string; capacity: string; description: string; badge?: string;
   color: "sand" | "gold" | "navy" | "orange"; imageLabel: string;
   /**
@@ -20,8 +23,8 @@ export type Vehicle = {
 };
 export type VehicleFilters = { type: string; seats: string; driver: string };
 export const emptyVehicleFilters: VehicleFilters = { type: "", seats: "", driver: "" };
-export const vehicleTypes = ["4–7 chỗ", "16–29 chỗ", "45 chỗ", "Limousine"];
-export const seatOptions = ["4 chỗ", "7 chỗ", "16 chỗ", "22 chỗ", "45 chỗ"];
+export const vehicleTypes = ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
+export const seatOptions = ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ"];
 export const driverOptions = ["Có tài xế", "Tự lái"];
 export const hasVehicleFilters = (filters: VehicleFilters) => Boolean(filters.type || filters.seats || filters.driver);
 export const matchesVehicleFilters = (vehicle: Vehicle, filters: VehicleFilters) => (!filters.type || vehicle.type === filters.type) && (!filters.seats || vehicle.seats === filters.seats) && (!filters.driver || (filters.driver === "Có tài xế" ? vehicle.driverIncluded : !vehicle.driverIncluded));

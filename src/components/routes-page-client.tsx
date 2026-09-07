@@ -15,7 +15,6 @@ const footerLinkGroups = [
     title: "KHÁM PHÁ",
     links: [
       { label: "Tuyến đường", href: "/tuyen-duong" },
-      { label: "Đội xe", href: "/doi-xe" },
       { label: "Cẩm nang đi đường", href: "/blog" },
     ],
   },
@@ -54,7 +53,10 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
   );
   const regions = [...new Set(routes.map((route) => route.region))];
   const vehicleTypes = [...new Set(routes.flatMap((route) => route.vehicleTypes))];
-  const seatOptions = ["4–7 chỗ", "16–29 chỗ", "45 chỗ"];
+  // Tính động từ route.seatCount thật (đã tự loại Limousine, xem lib/api/routes.ts) thay vì
+  // liệt kê cứng — Ngày 25: liệt kê cứng từng làm dropdown "Số chỗ" lệch khi taxonomy đổi
+  // từ 4 sang 6 loại, tính động thì luôn khớp bất kể sau này còn đổi tiếp.
+  const seatOptions = [...new Set(routes.flatMap((route) => route.seatCount))];
 
   return (
     <main className="site-shell">

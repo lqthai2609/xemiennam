@@ -9,7 +9,7 @@ import type { Vehicle } from "@/types/vehicle";
 import type { VehicleCategory } from "@/types/vehicle-category";
 
 const footerLinkGroups = [
-  { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Đội xe", href: "/doi-xe" }, { label: "Loại xe", href: "/loai-xe" }] },
+  { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Loại xe", href: "/loai-xe" }] },
   { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/lien-he" }] },
 ];
 
@@ -84,7 +84,7 @@ export function VehicleTypeLanding({
         <section className="section-wrap vehicle-type-vehicles">
           <div className="section-heading-row">
             <div><p className="section-label">XE ĐANG CÓ</p><h2>Chọn chiếc xe hợp với hành trình.</h2></div>
-            <Link href="/doi-xe" className="text-link">Xem toàn bộ đội xe <ArrowRight size={15} /></Link>
+            <Link href="/loai-xe" className="text-link">Xem tất cả loại xe <ArrowRight size={15} /></Link>
           </div>
           <div className="vehicle-grid vehicle-type-grid">
             {vehicles.map((vehicle) => <VehicleCard key={vehicle.id} vehicle={vehicle} />)}
@@ -159,14 +159,16 @@ export function VehicleCategoryIndex({ categories }: { categories: VehicleCatego
         <p>Khám phá các nhóm xe được thiết kế cho từng kiểu chuyến đi — từ gia đình nhỏ đến đoàn lớn.</p>
       </section>
       <section className="section-wrap vehicle-category-grid">
-        <div className="vehicle-category-cards vehicle-category-cards-four">
+        <div className="vehicle-category-cards">
           {categories.map((category) => (
             <Link href={`/loai-xe/${category.slug}`} className="vehicle-category-card" key={category.slug}>
               <VehicleArt category={category} />
-              <div>
-                <p>{category.label}</p>
+              <div className="vehicle-category-card-body">
+                <div className="vehicle-category-card-heading"><p>{category.label}</p><span>{category.type}</span></div>
                 <h3>{category.title}</h3>
-                <span>Xem loại xe <ArrowRight size={15} /></span>
+                <p className="vehicle-category-summary">{category.shortDescription}</p>
+                <div className="vehicle-category-card-meta"><span className="vehicle-category-badge">{category.driveOptions.join(" / ")}</span><strong>{category.startingPrice}</strong></div>
+                <span className="vehicle-category-link">Xem chi tiết <ArrowRight size={15} /></span>
               </div>
             </Link>
           ))}

@@ -9,7 +9,6 @@ const footerLinkGroups = [
     title: "KHÁM PHÁ",
     links: [
       { label: "Tuyến đường", href: "/tuyen-duong" },
-      { label: "Đội xe", href: "/doi-xe" },
       { label: "Bảng giá", href: "/bang-gia" },
     ],
   },

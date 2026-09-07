@@ -11,9 +11,13 @@ import { stripHtml, wpFetch } from "@/lib/wp";
  */
 const useMockFallback = true;
 
+// Khớp đúng màu đã định nghĩa cho từng loại trong data/vehicle-categories.ts —
+// 2 loại tách ra từ "16–29 chỗ" cũ (16 chỗ/29 chỗ) không dùng chung 1 màu như trước.
 const COLOR_BY_TYPE: Record<string, Vehicle["color"]> = {
-  "4–7 chỗ": "sand",
-  "16–29 chỗ": "gold",
+  "4 chỗ": "sand",
+  "7 chỗ": "gold",
+  "16 chỗ": "navy",
+  "29 chỗ": "orange",
   "45 chỗ": "navy",
   "Limousine": "orange",
 };
@@ -47,7 +51,7 @@ async function resolveGalleryImages(mediaIds: number[] | undefined): Promise<str
 
 async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
   const [pricingTable, images] = await Promise.all([getPricingTable(), resolveGalleryImages(wp.meta.gallery_anh)]);
-  const type = (embeddedTermName(wp._embedded, "vehicle_type") as Vehicle["type"]) ?? "4–7 chỗ";
+  const type = embeddedTermName(wp._embedded, "vehicle_type") ?? "4 chỗ";
   const routePrices = pricingForVehicle(pricingTable, String(wp.id)).map((row) => ({
     route: row.routeLabel,
     price: row.priceLabel,

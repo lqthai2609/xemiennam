@@ -9,9 +9,11 @@ import { buildPlaceholderImage } from "@/lib/placeholder-image";
 
 const fleetTabs = ["Tất cả", "Đi một mình", "Đi cùng nhóm", "Thuê riêng"] as const;
 
-// 4 nhóm khớp đúng taxonomy vehicle_type trong kiến trúc dữ liệu (mục 3, xemiennam-kien-truc-ky-thuat.md).
-// Đây là 4 THẺ LOẠI XE tĩnh (không phải danh sách xe cụ thể từ CPT vehicle) nên không cần fetch —
-// danh sách xe cụ thể theo từng loại nằm ở /doi-xe (đã nối fetchVehicles() thật).
+// 6 nhóm khớp đúng taxonomy vehicle_type trong kiến trúc dữ liệu (mục 3, xemiennam-kien-truc-ky-thuat.md) —
+// Ngày 25: tách "4–7 chỗ" và "16–29 chỗ" cũ thành 4 loại riêng (4/7/16/29 chỗ), khớp
+// data/vehicle-categories.ts (cùng slug, cùng màu accent).
+// Đây là 6 THẺ LOẠI XE tĩnh (không phải danh sách xe cụ thể từ CPT vehicle) nên không cần fetch —
+// danh sách xe cụ thể theo từng loại đã gộp vào /loai-xe/[slug] (đã nối fetchVehicles() thật).
 // imageUrl hiện là ẢNH PLACEHOLDER TẠM (xem lib/placeholder-image.ts), không phải ảnh xe
 // thật — bắt buộc thay bằng ảnh thật trước khi lên domain thật (Ngày 21b).
 const fleet: {
@@ -23,8 +25,10 @@ const fleet: {
   imageUrl: string;
   tabs: (typeof fleetTabs)[number][];
 }[] = [
-  { type: "4–7 chỗ", tag: "Tự lái / có tài xế", detail: "Gia đình, cặp đôi, công tác. Tự lái hoặc có tài xế.", accent: "sand", icon: Car, imageUrl: buildPlaceholderImage("sand", "Ảnh xe 4-7 chỗ", { width: 480, height: 300 }), tabs: ["Đi một mình"] },
-  { type: "16–29 chỗ", tag: "Đi theo lịch trình", detail: "Nhóm bạn, công ty, đoàn nhỏ đi theo lịch trình.", accent: "gold", icon: Bus, imageUrl: buildPlaceholderImage("gold", "Ảnh xe 16-29 chỗ", { width: 480, height: 300 }), tabs: ["Đi cùng nhóm"] },
+  { type: "4 chỗ", tag: "Tự lái / có tài xế", detail: "Gọn gàng, riêng tư cho cặp đôi, gia đình nhỏ hoặc khách công tác.", accent: "sand", icon: Car, imageUrl: buildPlaceholderImage("sand", "Ảnh xe 4 chỗ", { width: 480, height: 300 }), tabs: ["Đi một mình"] },
+  { type: "7 chỗ", tag: "Tự lái / có tài xế", detail: "Rộng rãi cho gia đình có trẻ nhỏ hoặc nhóm bạn nhiều hành lý.", accent: "gold", icon: Car, imageUrl: buildPlaceholderImage("gold", "Ảnh xe 7 chỗ", { width: 480, height: 300 }), tabs: ["Đi cùng nhóm"] },
+  { type: "16 chỗ", tag: "Đi theo lịch trình", detail: "Đoàn nhỏ, công ty, tour gia đình đi theo lịch trình.", accent: "navy", icon: Bus, imageUrl: buildPlaceholderImage("navy", "Ảnh xe 16 chỗ", { width: 480, height: 300 }), tabs: ["Đi cùng nhóm"] },
+  { type: "29 chỗ", tag: "Đoàn vừa", detail: "Cân bằng giữa rộng rãi và linh hoạt cho tour, sự kiện, trường học.", accent: "orange", icon: Bus, imageUrl: buildPlaceholderImage("orange", "Ảnh xe 29 chỗ", { width: 480, height: 300 }), tabs: ["Đi cùng nhóm"] },
   { type: "45 chỗ", tag: "Đoàn lớn", detail: "Đoàn lớn, công ty, trường học cho chuyến đi xa.", accent: "navy", icon: BusFront, imageUrl: buildPlaceholderImage("navy", "Ảnh xe 45 chỗ", { width: 480, height: 300 }), tabs: ["Đi cùng nhóm"] },
   { type: "Limousine", tag: "Ghế nằm massage", detail: "Cabin rộng, ghế nằm massage — phù hợp tuyến dài.", accent: "orange", icon: Sparkles, imageUrl: buildPlaceholderImage("orange", "Ảnh Limousine", { width: 480, height: 300 }), tabs: ["Thuê riêng"] },
 ];

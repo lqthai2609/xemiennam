@@ -17,7 +17,10 @@ import { NextResponse } from "next/server";
 
 const PATHS_BY_POST_TYPE: Record<string, (slug: string) => string[]> = {
   route: (slug) => ["/", "/tuyen-duong", `/tuyen-duong/${slug}`, "/bang-gia"],
-  vehicle: (slug) => ["/", "/doi-xe", `/doi-xe/${slug}`, "/loai-xe", "/bang-gia"],
+  // Ngày 25: /doi-xe đã gỡ (gộp vào /loai-xe) — 1 bài vehicle giờ chỉ ảnh hưởng trang chủ,
+  // trang danh sách/chi tiết loại xe và bảng giá. Không biết trước type slug nào bị ảnh
+  // hưởng từ payload này nên revalidate rộng "/loai-xe" (không phải "/loai-xe/[slug]" riêng).
+  vehicle: () => ["/", "/loai-xe", "/bang-gia"],
   dich_vu: (slug) => ["/dich-vu", `/dich-vu/${slug}`],
   promotion: () => ["/khuyen-mai"],
   testimonial: () => ["/danh-gia"],

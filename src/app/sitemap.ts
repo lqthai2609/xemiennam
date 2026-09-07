@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site-config";
 import { fetchRoutes } from "@/lib/api/routes";
-import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchServices } from "@/lib/api/services";
 import { fetchPosts } from "@/lib/api/blog";
 import { vehicleCategories } from "@/data/vehicle-categories";
@@ -18,9 +17,8 @@ import { vehicleTypeSlug } from "@/types/route";
  * "freshness giả" — đúng nguyên tắc mục 5, tránh lặp lỗi nhieuxe.vn ở mục 9.2).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [routes, vehicles, services, posts] = await Promise.all([
+  const [routes, services, posts] = await Promise.all([
     fetchRoutes(),
-    fetchVehicles(),
     fetchServices(),
     fetchPosts(),
   ]);
@@ -28,7 +26,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, changeFrequency: "daily", priority: 1 },
     { url: `${SITE_URL}/tuyen-duong`, changeFrequency: "daily", priority: 0.9 },
-    { url: `${SITE_URL}/doi-xe`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/loai-xe`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/dich-vu`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/bang-gia`, changeFrequency: "daily", priority: 0.8 },
@@ -56,13 +53,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   );
 
-  const vehicleEntries: MetadataRoute.Sitemap = vehicles.map((vehicle) => ({
-    url: `${SITE_URL}/doi-xe/${vehicle.slug}`,
-    lastModified: vehicle.modifiedDate,
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
-
   const vehicleCategoryEntries: MetadataRoute.Sitemap = vehicleCategories.map((category) => ({
     url: `${SITE_URL}/loai-xe/${category.slug}`,
     changeFrequency: "weekly",
@@ -87,7 +77,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticEntries,
     ...routeEntries,
     ...comboEntries,
-    ...vehicleEntries,
     ...vehicleCategoryEntries,
     ...serviceEntries,
     ...postEntries,

@@ -73,10 +73,15 @@ export function hasActiveFilters(filters: FilterState) {
 /** Slug quy ước cho loại xe, dùng để link sang /loai-xe/[slug] (trang này ra mắt ở Ngày 13). */
 export function vehicleTypeSlug(vehicleType: string): string {
   const map: Record<string, string> = {
-    "4–7 chỗ": "4-7-cho",
-    "16–29 chỗ": "16-29-cho",
+    "4 chỗ": "4-cho",
+    "7 chỗ": "7-cho",
+    "16 chỗ": "16-cho",
+    "29 chỗ": "29-cho",
     "45 chỗ": "45-cho",
     "Limousine": "limousine",
+    // 2 mapping cũ giữ lại cho dữ liệu mock dự phòng (data/routes.ts) vẫn còn dùng nhãn gộp cũ.
+    "4–7 chỗ": "4-7-cho",
+    "16–29 chỗ": "16-29-cho",
   };
   return map[vehicleType] ?? vehicleType.toLowerCase().replace(/\s+/g, "-");
 }
