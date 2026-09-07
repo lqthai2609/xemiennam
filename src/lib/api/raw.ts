@@ -149,7 +149,12 @@ export type WPService = {
     loai_xe_phu_hop?: (number | string)[];
     luu_y_dich_vu?: string;
   };
-  _embedded?: { "wp:term"?: WPTerm[][] };
+  /**
+   * `wp:featuredmedia` chỉ xuất hiện khi bài `dich_vu` có gắn ảnh đại diện (thumbnail) — dùng
+   * chung `embeddedFeaturedImage()` như blog. Nếu CPT chưa bật hỗ trợ thumbnail hoặc bài chưa
+   * gắn ảnh, key này vắng mặt và hàm helper tự trả về undefined, không lỗi.
+   */
+  _embedded?: { "wp:term"?: WPTerm[][]; "wp:featuredmedia"?: { source_url?: string; code?: string }[] };
 };
 
 /**

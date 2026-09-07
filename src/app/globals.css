@@ -317,6 +317,47 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 .service-detail-updated { display: flex; align-items: center; gap: 6px; margin: 14px 0 0; color: var(--accent); font-size: 12px; }
 .service-detail-updated svg { width: 14px; height: 14px; flex-shrink: 0; }
 
+/* ===== Ngày 25b — Ảnh thẻ dịch vụ + hero ảnh trang chi tiết dịch vụ (layout theo v0) ===== */
+.service-card { display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--border); border-radius:14px; background:#fffdf7; transition:transform .25s, box-shadow .25s; }
+.service-card:hover { transform:translateY(-5px); box-shadow:0 16px 35px #102b3f16; }
+.service-card-media { position:relative; min-height:235px; overflow:hidden; background:var(--secondary); }
+.service-card-media img { object-fit:cover; transition:transform .5s; }
+.service-card:hover .service-card-media img { transform:scale(1.05); }
+.service-card-media::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,#102b3f00 42%,#102b3f9c); }
+.service-card-icon,.service-card-number { position:absolute; z-index:1; }
+.service-card-icon { top:18px; left:18px; display:grid; place-items:center; size:42px; width:42px; height:42px; border-radius:50%; background:var(--accent); color:var(--foreground); }
+.service-card-number { right:18px; bottom:16px; color:#fff; font:800 12px var(--font-archivo); letter-spacing:.12em; }
+.service-card-copy { display:flex; flex-direction:column; gap:10px; padding:24px; }
+.service-card-copy h2 { margin:0; font-size:26px; }
+.service-card-copy > p:not(.section-label) { margin:0; color:var(--muted-foreground); font-size:13px; line-height:1.7; }
+.service-card-link { display:inline-flex; align-items:center; gap:7px; margin-top:6px; color:var(--primary); font-size:12px; font-weight:800; }
+.service-card-link svg { width:15px; }
+.service-detail-hero { position:relative; overflow:hidden; isolation:isolate; }
+.service-detail-hero-image,.service-detail-hero-overlay { position:absolute!important; inset:0; }
+.service-detail-hero-image { z-index:-2; object-fit:cover; }
+.service-detail-hero-overlay { z-index:-1; background:linear-gradient(90deg,#102b3fee 0%,#102b3fba 52%,#102b3f55 100%); }
+.service-detail-hero-copy { position:relative; }
+.service-detail-mark { position:relative; z-index:1; }
+.service-type-list,.suggested-vehicle-list { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+.service-type-card,.suggested-vehicle-card { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:17px 18px; border:1px solid var(--border); border-radius:8px; background:#fffdf7; transition:border-color .2s, transform .2s; }
+.service-type-card:hover,.suggested-vehicle-card:hover { border-color:var(--primary); transform:translateX(4px); }
+.service-type-card h3,.suggested-vehicle-card h3 { margin:0 0 4px; font-size:15px; }
+.service-type-card p,.suggested-vehicle-card p { margin:0; color:var(--muted-foreground); font-size:12px; line-height:1.5; }
+.service-type-card svg,.suggested-vehicle-card svg { color:var(--primary); flex-shrink:0; }
+.service-notes { display:flex; flex-direction:column; gap:13px; margin:16px 0 0; padding:0; list-style:none; }
+.service-notes li { display:flex; gap:10px; color:var(--muted-foreground); font-size:13px; line-height:1.6; }
+.service-notes svg { width:16px; flex-shrink:0; color:var(--primary); }
+.service-cta { display:flex; align-items:end; justify-content:space-between; gap:30px; padding:70px max(32px,calc((100% - 1120px)/2)); background:var(--primary); }
+.service-cta h2 { margin-top:10px; color:#fff; font-size:clamp(32px,4vw,52px); line-height:.98; }
+.service-cta h2 em { color:var(--foreground); font-style:normal; }
+.service-cta .section-label { color:#ffe1cc; }
+.service-cta-actions { display:flex; flex-wrap:wrap; align-items:center; gap:18px; max-width:410px; }
+.service-cta-actions p { width:100%; margin:0; color:#fff; font-size:13px; line-height:1.6; }
+.button-dark { background:var(--foreground); color:#fff9eb; }
+.service-phone { display:inline-flex; align-items:center; gap:7px; color:#fff; font:800 13px var(--font-archivo); }
+.service-phone svg { width:16px; }
+@media (max-width:800px) { .service-card-media { min-height:200px; } .service-detail-hero { min-height:560px; padding:40px 22px; align-items:end; } .service-detail-hero-overlay { background:linear-gradient(0deg,#102b3fee 0%,#102b3f88 70%,#102b3f44); } .service-detail-mark { display:none; } .service-cta { align-items:start; flex-direction:column; padding:60px 20px; } }
+
 /* ===== Ngày 23 — Khối FAQ hiển thị trên bài blog (khớp nội dung với JSON-LD FAQPage) ===== */
 .blog-detail-faq { margin-top: 48px; padding-top: 40px; border-top: 1px solid var(--border); }
 .blog-faq-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }

@@ -2,7 +2,7 @@ import type { Service, ServiceIcon, ServiceVehicle, ServiceVehicleType } from "@
 import type { Vehicle } from "@/types/vehicle";
 import { vehicleTypeSlug } from "@/types/route";
 import { services as mockServices } from "@/data/services";
-import { fetchRawServices, fetchRawServiceBySlug, embeddedTerms, type WPService } from "./raw";
+import { fetchRawServices, fetchRawServiceBySlug, embeddedTerms, embeddedFeaturedImage, type WPService } from "./raw";
 import { fetchVehicles } from "./vehicles";
 import { splitCommaList, stripHtml } from "@/lib/wp";
 
@@ -48,6 +48,7 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
     detailDescription: body,
     icon: ICON_BY_SLUG[wp.slug] ?? "city-tour",
     iconLabel: wp.title.rendered,
+    image: embeddedFeaturedImage(wp._embedded),
     vehicleTypes,
     suggestedVehicles,
     notes: splitCommaList(wp.meta.luu_y_dich_vu),

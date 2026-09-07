@@ -21,6 +21,8 @@ export type Service = {
   detailDescription: string;
   icon: ServiceIcon;
   iconLabel: string;
+  /** Ảnh đại diện/hero — lấy từ featured image thật của WordPress khi có; dùng ảnh demo theo icon khi chưa gắn ảnh. */
+  image?: string;
   vehicleTypes: ServiceVehicleType[];
   suggestedVehicles: ServiceVehicle[];
   notes: string[];
