@@ -24,7 +24,13 @@ const useMockFallback = true;
 
 // Thứ tự cố định để bảng giá/loại xe hiển thị nhất quán, khớp taxonomy vehicle_type.
 // Export để /bang-gia (Ngày 15) dùng lại đúng thứ tự này, không định nghĩa trùng lần 2.
-export const VEHICLE_TYPE_ORDER = ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
+// Ngày 25: thêm 2 nhãn cũ "4–7 chỗ"/"16–29 chỗ" làm lưới an toàn tạm thời — vehicle post
+// 37/38 trong WordPress chưa kịp retag sang taxonomy mới (bị chặn quota WPVibe giữa chừng),
+// nên route.vehicleTypes vẫn đang trả về 2 tên cũ này. Không thêm vào đây thì bảng giá MẤT
+// HẲN 2 cột đó thay vì chỉ hiển thị tạm theo tên cũ. Khi retag WP xong, 2 nhãn cũ tự động
+// không còn route nào khớp nữa (present.has() trả false) → tự rụng khỏi bảng, không cần sửa
+// lại dòng này lần 2.
+export const VEHICLE_TYPE_ORDER = ["4 chỗ", "4–7 chỗ", "7 chỗ", "16 chỗ", "16–29 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
 function byVehicleTypeOrder(a: string, b: string) {
   return VEHICLE_TYPE_ORDER.indexOf(a) - VEHICLE_TYPE_ORDER.indexOf(b);
 }
