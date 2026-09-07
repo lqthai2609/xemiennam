@@ -1,4 +1,5 @@
 import { Route } from "@/types/route";
+import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
 /**
  * Dữ liệu mock DUY NHẤT cho toàn bộ tuyến — dùng ở trang chủ, /tuyen-duong,
@@ -25,7 +26,7 @@ export const routes: Route[] = [
     ],
     pickupPoints: ["Quận 1", "Quận 3", "TP. Thủ Đức", "Sân bay Tân Sơn Nhất"],
     dropoffPoints: ["Bãi Sau", "Bãi Trước", "Trung tâm Vũng Tàu", "Long Hải"],
-    mapEmbedSrc: "https://maps.google.com/maps?q=V%C5%A9ng+T%C3%A0u%2C+Vi%E1%BB%87t+Nam&output=embed",
+    mapEmbedSrc: buildRouteMapEmbedSrc("TP. Hồ Chí Minh", "Vũng Tàu"),
     summary: "Từ nhịp sống thành phố đến biển xanh cuối tuần — đón tận nơi, trả đúng điểm.",
     heroNote: "Tuyến biển được yêu thích nhất miền Nam",
     departures: ["06:00", "08:00", "10:00", "13:30", "16:00"],
@@ -49,7 +50,7 @@ export const routes: Route[] = [
     ],
     pickupPoints: ["Quận 1", "Quận 5", "Bình Thạnh", "Sân bay Tân Sơn Nhất"],
     dropoffPoints: ["Ninh Kiều", "Cái Răng", "Ô Môn", "Bến xe Cần Thơ"],
-    mapEmbedSrc: "https://maps.google.com/maps?q=C%E1%BA%A7n+Th%C6%A1%2C+Vi%E1%BB%87t+Nam&output=embed",
+    mapEmbedSrc: buildRouteMapEmbedSrc("TP. Hồ Chí Minh", "Cần Thơ"),
     summary: "Về miền Tây nhẹ nhàng, đúng giờ với những chuyến xe thoải mái mỗi ngày.",
     heroNote: "Kết nối thành phố với miền sông nước",
     departures: ["05:30", "07:30", "09:30", "12:30", "15:30"],
@@ -72,7 +73,7 @@ export const routes: Route[] = [
     ],
     pickupPoints: ["Quận 1", "Quận 3", "Quận 10", "Sân bay Tân Sơn Nhất"],
     dropoffPoints: ["Trung tâm Đà Lạt", "Hồ Xuân Hương", "Bến xe liên tỉnh", "Đức Trọng"],
-    mapEmbedSrc: "https://maps.google.com/maps?q=%C4%90%C3%A0+L%E1%BA%A1t%2C+Vi%E1%BB%87t+Nam&output=embed",
+    mapEmbedSrc: buildRouteMapEmbedSrc("TP. Hồ Chí Minh", "Đà Lạt"),
     summary: "Lên cao nguyên trong khoang xe êm ái, để đoạn đường dài trở thành một phần của chuyến đi.",
     heroNote: "Hành trình cao nguyên cho những ngày cần nghỉ ngơi",
     departures: ["06:30", "08:30", "11:00", "20:30", "22:00"],
@@ -95,7 +96,7 @@ export const routes: Route[] = [
     ],
     pickupPoints: ["Quận 1", "Quận 7", "TP. Thủ Đức", "Sân bay Tân Sơn Nhất"],
     dropoffPoints: ["Trung tâm Phan Thiết", "Mũi Né", "Bàu Trắng", "Khu resort Hàm Tiến"],
-    mapEmbedSrc: "https://maps.google.com/maps?q=Phan+Thi%E1%BA%BFt%2C+Vi%E1%BB%87t+Nam&output=embed",
+    mapEmbedSrc: buildRouteMapEmbedSrc("TP. Hồ Chí Minh", "Phan Thiết"),
     summary: "Ra biển Mũi Né chỉ trong buổi sáng — xe đón đúng giờ, trả tận resort, không lo đổi lịch phút chót.",
     heroNote: "Tuyến biển cho những chuyến đi ngắn ngày",
     departures: ["05:30", "08:00", "11:00", "14:30", "18:00"],

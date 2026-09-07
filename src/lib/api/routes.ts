@@ -3,6 +3,7 @@ import { routes as mockRoutes } from "@/data/routes";
 import { fetchRawRoutes, fetchRawRouteBySlug, embeddedTermName, type WPRoute } from "./raw";
 import { getPricingTable, pricingForRoute, type PricingRow } from "./pricing";
 import { splitCommaList } from "@/lib/wp";
+import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
 /**
  * fetchRoutes()/fetchRouteBySlug() — Ngày 12.
@@ -54,10 +55,9 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
     pricingByVehicle,
     pickupPoints: splitCommaList(wp.meta.diem_don),
     dropoffPoints: splitCommaList(wp.meta.diem_tra),
-    // Chưa có google_maps_embed thật (chờ nhập ACF-tương-đương Ngày 24) → dựng embed tạm theo tên điểm đến.
-    mapEmbedSrc:
-      wp.meta.google_maps_embed ||
-      `https://maps.google.com/maps?q=${encodeURIComponent(to || "Việt Nam")}&output=embed`,
+    // Chưa có google_maps_embed thật (chờ nhập ACF-tương-đương Ngày 24) → dựng embed chỉ đường
+    // tạm theo điểm đi/đến (Ngày 21, xem lib/maps.ts để biết vì sao không chỉ ghim 1 điểm).
+    mapEmbedSrc: wp.meta.google_maps_embed || buildRouteMapEmbedSrc(from, to),
     // 4 field bổ sung snippet Ngày 12 (ID 20) — rỗng cho tới khi snippet được kích hoạt + nhập liệu Ngày 24.
     summary: wp.meta.tom_tat_ngan ?? "",
     heroNote: wp.meta.diem_nhan_hero ?? "",

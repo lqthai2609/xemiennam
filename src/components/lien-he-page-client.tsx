@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { ContactBookingForm, type BookingFormData } from "@/components/contact-booking-form";
 import { navItems } from "@/data/nav";
+import { getZaloChatLink } from "@/lib/zalo";
 
 const footerLinkGroups = [
   {
@@ -44,6 +45,9 @@ export function LienHePageClient({
   vehicleTypeOptions: string[];
 }) {
   const [defaultRoute, setDefaultRoute] = useState("");
+  // Ngày 21 — xem lib/zalo.ts. null khi chưa cấu hình NEXT_PUBLIC_ZALO_OA_ID → dòng dưới vẫn
+  // hiển thị dạng chữ tĩnh như trước, không đổi thành link chết.
+  const zaloLink = getZaloChatLink();
 
   // Đọc window.location (chỉ có ở client) để prefill sau mount; không dùng lazy initializer cho
   // useState vì sẽ lệch với HTML SSR ban đầu (hydration mismatch). Cùng pattern đã dùng ở
@@ -107,9 +111,15 @@ export function LienHePageClient({
           <span className="lien-he-info-row">
             <MapPin /> TP. Hồ Chí Minh
           </span>
-          <span className="lien-he-info-row">
-            <Clock /> Tổng đài & Zalo hỗ trợ 24/7
-          </span>
+          {zaloLink ? (
+            <a className="lien-he-info-row" href={zaloLink} target="_blank" rel="noopener noreferrer">
+              <Clock /> Tổng đài & Zalo hỗ trợ 24/7
+            </a>
+          ) : (
+            <span className="lien-he-info-row">
+              <Clock /> Tổng đài & Zalo hỗ trợ 24/7
+            </span>
+          )}
         </aside>
       </section>
 
