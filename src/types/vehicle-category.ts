@@ -19,6 +19,12 @@ export type VehicleCategory = {
   title: string;
   description: string;
   color: Vehicle["color"];
+  /**
+   * Ảnh minh hoạ đại diện cho CẢ NHÓM loại xe (Ngày 21b) — khác `images` của 1 chiếc xe cụ
+   * thể trong Vehicle, vì đây là nội dung tĩnh không gắn với 1 xe/1 bài WordPress nào. Để
+   * trống (undefined) → fallback icon đồ hoạ như trước Ngày 21b.
+   */
+  imageUrl?: string;
   audience: string[];
   amenities: string[];
 };

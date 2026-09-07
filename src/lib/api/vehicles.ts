@@ -2,7 +2,7 @@ import type { Vehicle } from "@/types/vehicle";
 import { vehicles as mockVehicles } from "@/data/vehicles";
 import { fetchRawVehicles, fetchRawVehicleBySlug, embeddedTermName, type WPVehicle } from "./raw";
 import { getPricingTable, pricingForVehicle } from "./pricing";
-import { stripHtml } from "@/lib/wp";
+import { stripHtml, splitCommaList } from "@/lib/wp";
 
 /**
  * fetchVehicles()/fetchVehicleBySlug() — Ngày 12.
@@ -45,6 +45,9 @@ async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
     description: stripHtml(wp.content.rendered),
     color: COLOR_BY_TYPE[type] ?? "sand",
     imageLabel: wp.title.rendered,
+    // gallery_anh: chuỗi URL cách nhau dấu phẩy (nhập tay trong wp-admin, giống quy ước
+    // diem_don/diem_tra của route) — Ngày 21b. Rỗng cho tới khi nhập ảnh thật ở Ngày 24.
+    images: splitCommaList(wp.meta.gallery_anh),
     features: wp.meta.tien_ich ? wp.meta.tien_ich.split(",").map((s) => s.trim()).filter(Boolean) : [],
     driverIncluded: mapDriverOption(wp.meta.hinh_thuc_lai),
     routePrices,

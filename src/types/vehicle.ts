@@ -3,6 +3,13 @@ export type Vehicle = {
   type: "4–7 chỗ" | "16–29 chỗ" | "45 chỗ" | "Limousine";
   seats: string; capacity: string; description: string; badge?: string;
   color: "sand" | "gold" | "navy" | "orange"; imageLabel: string;
+  /**
+   * Ảnh xe thật (Ngày 21b) — mảng URL, phần tử đầu dùng cho ảnh chính (thẻ danh sách + hero
+   * chi tiết xe), phần tử 2/3 dùng cho 2 ô phụ trong gallery chi tiết xe nếu có. Mảng rỗng =
+   * chưa có ảnh thật → các component tự fallback về icon đồ hoạ như trước Ngày 21b.
+   * Nối từ wp.meta.gallery_anh (chuỗi URL cách nhau dấu phẩy, xem lib/api/vehicles.ts).
+   */
+  images: string[];
   features: string[]; driverIncluded: boolean;
   routePrices: { route: string; price: string; note: string }[];
 };

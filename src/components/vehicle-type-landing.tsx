@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { VehicleCard } from "@/components/vehicle-results";
+import { MediaPhoto } from "@/components/media-photo";
 import type { Vehicle } from "@/types/vehicle";
 import type { VehicleCategory } from "@/types/vehicle-category";
 
@@ -15,7 +16,7 @@ const footerLinkGroups = [
 export function VehicleArt({ category }: { category: VehicleCategory }) {
   return (
     <div className={`vehicle-type-art vehicle-art ${category.color}`} role="img" aria-label={`${category.label} - ${category.title}`}>
-      <BusFront />
+      {category.imageUrl ? <MediaPhoto src={category.imageUrl} alt={`${category.label} - ${category.title}`} /> : <BusFront />}
       <span>{category.label}</span>
     </div>
   );
