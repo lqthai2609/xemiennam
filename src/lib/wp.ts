@@ -45,15 +45,21 @@ export function stripHtml(html: string | undefined | null): string {
     .trim();
 }
 
-/** Format số tiền thô (vd 140000) thành nhãn ngắn kiểu mock hiện có (vd "140K"). */
+/**
+ * Format số tiền thô (vd 140000) thành nhãn ngắn kiểu mock hiện có (vd "140K").
+ *
+ * Sửa lỗi (phát hiện Ngày 24 khi có dữ liệu thật từ 700K đến 7 triệu): nhánh cũ xử lý
+ * riêng số ≥ 1 triệu bằng cách chia 1_000_000 rồi GHÉP CỨNG chuỗi ".000K" vào sau, nên
+ * 2.500.000 → 2.5 → "2.5" + ".000K" = "2.5.000K" (2 dấu chấm chồng nhau, vô nghĩa).
+ * Fix: dùng chung 1 công thức /1000 cho mọi giá trị ≥ 1000 (khớp đúng style "900K" đã
+ * đúng từ trước), thêm dấu chấm ngăn cách hàng nghìn kiểu Việt Nam qua toLocaleString.
+ */
 export function formatPriceShort(amount: number | string | undefined | null): string {
   const n = typeof amount === "string" ? Number(amount) : amount;
   if (!n || Number.isNaN(n)) return "";
-  if (n >= 1_000_000) {
-    const millions = n / 1_000_000;
-    return `${millions % 1 === 0 ? millions : millions.toFixed(1)}.000K`;
+  if (n >= 1000) {
+    return `${Math.round(n / 1000).toLocaleString("vi-VN")}K`;
   }
-  if (n >= 1000) return `${Math.round(n / 1000)}K`;
   return String(n);
 }
 
