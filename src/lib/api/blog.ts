@@ -70,11 +70,17 @@ export async function fetchPosts(): Promise<BlogPost[]> {
 
 export async function fetchPostBySlug(slug: string): Promise<BlogPost | undefined> {
   const wp = await fetchRawPostBySlug(slug);
-  if (!wp || wp.slug === DEFAULT_WP_SLUG) {
-    if (useMockFallback) return mockPosts.find((post) => post.slug === slug);
-    return undefined;
+  if (wp && wp.slug !== DEFAULT_WP_SLUG) return mapWPPostToBlogPost(wp);
+  if (useMockFallback) {
+    // Bugfix: chỉ fallback về mock khi CẢ blog trên WP đang rỗng (chỉ có bài "Hello world!"
+    // mặc định, chưa có bài thật nào). Trước đây fallback theo từng slug riêng lẻ, nên xoá 1
+    // bài blog thật trùng slug mock sẽ khiến trang "hồi sinh" bằng nội dung mock thay vì báo 404.
+    const raw = (await fetchRawPosts()).filter((p) => p.slug !== DEFAULT_WP_SLUG);
+    if (raw.length === 0) {
+      return mockPosts.find((post) => post.slug === slug);
+    }
   }
-  return mapWPPostToBlogPost(wp);
+  return undefined;
 }
 
 export async function fetchRelatedPosts(currentSlug: string, count = 3): Promise<BlogPost[]> {

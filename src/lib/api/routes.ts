@@ -15,6 +15,10 @@ import { buildRouteMapEmbedSrc } from "@/lib/maps";
  * liệu thật xong, fallback này tự động không còn kích hoạt nữa (API không còn rỗng) — không
  * cần sửa code gì thêm. Nếu bạn muốn tắt fallback ngay bây giờ để thấy đúng trạng thái CMS
  * thật, đổi `useMockFallback` thành false.
+ *
+ * Bugfix (xem fetchRouteBySlug bên dưới): fallback theo slug riêng lẻ chỉ còn kích hoạt khi
+ * TOÀN BỘ danh mục route trên WP rỗng — không còn fallback khi 1 slug cụ thể không tìm thấy
+ * trong khi WP đã có route khác, để tránh bài đã bị xoá thật vẫn "hồi sinh" bằng mock trùng slug.
  */
 const useMockFallback = true;
 
@@ -83,12 +87,20 @@ export async function fetchRoutes(): Promise<Route[]> {
 
 export async function fetchRouteBySlug(slug: string): Promise<Route | undefined> {
   const wp = await fetchRawRouteBySlug(slug);
-  if (!wp) {
-    if (useMockFallback) return mockRoutes.find((route) => route.slug === slug);
-    return undefined;
+  if (wp) {
+    const pricingTable = await getPricingTable();
+    return mapWPRouteToRoute(wp, pricingForRoute(pricingTable, String(wp.id)));
   }
-  const pricingTable = await getPricingTable();
-  return mapWPRouteToRoute(wp, pricingForRoute(pricingTable, String(wp.id)));
+  if (useMockFallback) {
+    // Bugfix: chỉ fallback về mock khi CẢ danh mục route trên WP đang rỗng (CMS chưa nhập gì).
+    // Trước đây fallback theo từng slug riêng lẻ, nên xoá 1 route thật trùng slug mock (vd.
+    // vung-tau, can-tho, da-lat) sẽ khiến trang "hồi sinh" bằng nội dung mock thay vì báo 404.
+    const rawRoutes = await fetchRawRoutes();
+    if (rawRoutes.length === 0) {
+      return mockRoutes.find((route) => route.slug === slug);
+    }
+  }
+  return undefined;
 }
 
 export async function fetchRelatedRoutes(currentSlug: string, count = 3): Promise<Route[]> {

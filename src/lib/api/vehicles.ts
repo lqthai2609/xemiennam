@@ -92,11 +92,17 @@ export async function fetchVehicles(): Promise<Vehicle[]> {
 
 export async function fetchVehicleBySlug(slug: string): Promise<Vehicle | undefined> {
   const wp = await fetchRawVehicleBySlug(slug);
-  if (!wp) {
-    if (useMockFallback) return mockVehicles.find((vehicle) => vehicle.slug === slug);
-    return undefined;
+  if (wp) return mapWPVehicleToVehicle(wp);
+  if (useMockFallback) {
+    // Bugfix: chỉ fallback về mock khi CẢ danh mục vehicle trên WP đang rỗng (CMS chưa nhập
+    // gì). Trước đây fallback theo từng slug riêng lẻ, nên xoá 1 xe thật trùng slug mock sẽ
+    // khiến trang "hồi sinh" bằng nội dung mock thay vì báo 404.
+    const rawVehicles = await fetchRawVehicles();
+    if (rawVehicles.length === 0) {
+      return mockVehicles.find((vehicle) => vehicle.slug === slug);
+    }
   }
-  return mapWPVehicleToVehicle(wp);
+  return undefined;
 }
 
 export async function fetchSimilarVehicles(currentSlug: string, count = 3): Promise<Vehicle[]> {

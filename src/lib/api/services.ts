@@ -73,10 +73,18 @@ export async function fetchServices(): Promise<Service[]> {
 
 export async function fetchServiceBySlug(slug: string): Promise<Service | undefined> {
   const wp = await fetchRawServiceBySlug(slug);
-  if (!wp) {
-    if (useMockFallback) return mockServices.find((service) => service.slug === slug);
-    return undefined;
+  if (wp) {
+    const vehicles = await fetchVehicles();
+    return mapWPServiceToService(wp, vehicles);
   }
-  const vehicles = await fetchVehicles();
-  return mapWPServiceToService(wp, vehicles);
+  if (useMockFallback) {
+    // Bugfix: chỉ fallback về mock khi CẢ danh mục dịch vụ trên WP đang rỗng (CMS chưa nhập
+    // gì). Trước đây fallback theo từng slug riêng lẻ (vd. xe-cuoi, city-tour...), nên xoá 1
+    // dịch vụ thật trùng slug mock sẽ khiến trang "hồi sinh" bằng nội dung mock thay vì báo 404.
+    const raw = await fetchRawServices();
+    if (raw.length === 0) {
+      return mockServices.find((service) => service.slug === slug);
+    }
+  }
+  return undefined;
 }
