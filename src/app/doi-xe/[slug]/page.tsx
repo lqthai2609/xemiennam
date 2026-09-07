@@ -10,11 +10,15 @@ export async function generateStaticParams() {
   return vehicles.map(({ slug }) => ({ slug }));
 }
 
+/** Ngày 23 — ưu tiên rankMathTitle/rankMathDescription trước khi tự soạn (mục 5, kiến trúc kỹ thuật). */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const vehicle = await fetchVehicleBySlug(slug);
   return vehicle
-    ? { title: `${vehicle.name} — thuê xe nguyên chiếc | Xe Miền Nam`, description: vehicle.description }
+    ? {
+        title: vehicle.rankMathTitle || `${vehicle.name} — thuê xe nguyên chiếc | Xe Miền Nam`,
+        description: vehicle.rankMathDescription || vehicle.description,
+      }
     : { title: "Không tìm thấy xe | Xe Miền Nam" };
 }
 

@@ -72,6 +72,9 @@ async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
     features: wp.meta.tien_ich ?? [],
     driverIncluded: mapDriverOption(wp.meta.hinh_thuc_lai),
     routePrices,
+    modifiedDate: wp.modified,
+    rankMathTitle: wp.rank_math_title || undefined,
+    rankMathDescription: wp.rank_math_description || undefined,
   };
 }
 

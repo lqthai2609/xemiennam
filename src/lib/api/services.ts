@@ -52,6 +52,9 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
     suggestedVehicles,
     notes: splitCommaList(wp.meta.luu_y_dich_vu),
     hotline: "1900 6789",
+    modifiedDate: wp.modified,
+    rankMathTitle: wp.rank_math_title || undefined,
+    rankMathDescription: wp.rank_math_description || undefined,
   };
 }
 

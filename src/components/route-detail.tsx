@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { vehicleTypeSlug, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
+import { formatVNDate } from "@/lib/wp";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Đội xe", href: "/doi-xe" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
@@ -31,7 +32,7 @@ export function RouteDetailPage({ route, relatedRoutes }: { route: Route; relate
           <p className="eyebrow"><span className="eyebrow-line" /> {route.heroNote}</p>
           <h1>{route.from}<br /><em>→ {route.to}</em></h1>
           <p className="detail-summary">{route.summary}</p>
-          <div className="detail-meta"><span><Clock3 size={16} /> {route.time}</span><span><Milestone size={16} /> {route.distance}</span><span><ShieldCheck size={16} /> Đúng giờ, an tâm</span></div>
+          <div className="detail-meta"><span><Clock3 size={16} /> {route.time}</span><span><Milestone size={16} /> {route.distance}</span><span><ShieldCheck size={16} /> Đúng giờ, an tâm</span>{route.modifiedDate && <span><RefreshCw size={16} /> Cập nhật lần cuối {formatVNDate(route.modifiedDate)}</span>}</div>
         </div>
         <div className="route-detail-sign" aria-label={`Tuyến ${route.from} đến ${route.to}`}><span>XE MIỀN NAM</span><strong>{route.from}</strong><ArrowRight size={30} /><strong>{route.to}</strong><small>ĐI TỬ TẾ TRÊN MỌI CUNG ĐƯỜNG</small></div>
       </section>

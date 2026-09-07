@@ -16,6 +16,11 @@ export type WPRoute = {
   id: number;
   slug: string;
   title: { rendered: string };
+  /** Field mặc định của WP REST, luôn có sẵn — dùng cho "Cập nhật lần cuối" thật (Ngày 23, mục 5 kiến trúc kỹ thuật). */
+  modified?: string;
+  /** Expose qua snippet WPCode ID 15 (Ngày 23) — rỗng cho tới khi nhập Rank Math SEO cho từng bài (Ngày 24). */
+  rank_math_title?: string;
+  rank_math_description?: string;
   meta: {
     diem_di?: string;
     diem_den?: string;
@@ -39,6 +44,11 @@ export type WPVehicle = {
   slug: string;
   title: { rendered: string };
   content: { rendered: string };
+  /** Field mặc định của WP REST — "Cập nhật lần cuối" (Ngày 23). */
+  modified?: string;
+  /** Expose qua snippet WPCode ID 15 (Ngày 23). */
+  rank_math_title?: string;
+  rank_math_description?: string;
   meta: {
     so_cho?: number;
     hinh_thuc_lai?: "tu_lai" | "co_tai_xe" | "ca_hai";
@@ -102,6 +112,15 @@ export type WPPost = {
   title: { rendered: string };
   excerpt: { rendered: string };
   content: { rendered: string };
+  /** Expose qua snippet WPCode ID 15 (Ngày 23) — post_type 'post' cũng nằm trong danh sách được expose. */
+  rank_math_title?: string;
+  rank_math_description?: string;
+  /**
+   * Chuỗi JSON thô "[{\"cau_hoi\":...,\"tra_loi\":...}]" — field `faq_items` đăng ký qua
+   * snippet WPCode riêng (Ngày 23, xem lib/api/blog.ts để biết cách parse an toàn). Chỉ có
+   * ở bài dạng hỏi-đáp; đa số bài để trống.
+   */
+  faq_items?: string;
   _embedded?: {
     "wp:term"?: WPTerm[][];
     "wp:featuredmedia"?: { source_url?: string; code?: string }[];
@@ -120,6 +139,11 @@ export type WPService = {
   slug: string;
   title: { rendered: string };
   content?: { rendered: string };
+  /** Field mặc định của WP REST — "Cập nhật lần cuối" (Ngày 23). */
+  modified?: string;
+  /** Expose qua snippet WPCode ID 15 (Ngày 23). */
+  rank_math_title?: string;
+  rank_math_description?: string;
   meta: {
     mo_ta_nhu_cau?: string;
     loai_xe_phu_hop?: (number | string)[];

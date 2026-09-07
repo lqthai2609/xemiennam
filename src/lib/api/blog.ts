@@ -17,6 +17,28 @@ import { stripHtml } from "@/lib/wp";
 const useMockFallback = true;
 const DEFAULT_WP_SLUG = "hello-world";
 
+/**
+ * Parse field `faq_items` (chuỗi JSON thô "[{\"cau_hoi\":...,\"tra_loi\":...}]", đăng ký qua
+ * snippet WPCode riêng — Ngày 23) sang mảng {question, answer}. Trả về mảng rỗng thay vì
+ * throw nếu JSON hỏng hoặc field trống, để 1 bài nhập liệu sai không làm sập cả trang blog.
+ */
+function parseFaqItems(raw: string | undefined): { question: string; answer: string }[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => ({
+        question: typeof item?.cau_hoi === "string" ? item.cau_hoi.trim() : "",
+        answer: typeof item?.tra_loi === "string" ? item.tra_loi.trim() : "",
+      }))
+      .filter((item) => item.question && item.answer);
+  } catch {
+    console.warn("[parseFaqItems] faq_items không phải JSON hợp lệ — bỏ qua.");
+    return [];
+  }
+}
+
 function mapWPPostToBlogPost(wp: WPPost): BlogPost {
   return {
     id: String(wp.id),
@@ -28,6 +50,9 @@ function mapWPPostToBlogPost(wp: WPPost): BlogPost {
     publishedDate: wp.date,
     modifiedDate: wp.modified,
     featuredImageUrl: embeddedFeaturedImage(wp._embedded),
+    rankMathTitle: wp.rank_math_title || undefined,
+    rankMathDescription: wp.rank_math_description || undefined,
+    faqItems: parseFaqItems(wp.faq_items),
   };
 }
 

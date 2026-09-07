@@ -47,6 +47,11 @@ export interface Route {
   departures: string[];
   /** Vài lưu ý/cam kết riêng cho tuyến. */
   notes: string[];
+  /** `modified` thật từ WordPress (Ngày 23) — dùng cho nhãn "Cập nhật lần cuối" (mục 5, kiến trúc kỹ thuật). Rỗng ở dữ liệu mock. */
+  modifiedDate?: string;
+  /** Rank Math SEO title/description, expose qua snippet WPCode ID 15 (Ngày 23) — generateMetadata() ưu tiên 2 field này trước khi tự soạn. */
+  rankMathTitle?: string;
+  rankMathDescription?: string;
 }
 
 export interface FilterState {

@@ -5,6 +5,8 @@ import { getVehicleCategory, vehicleCategories } from "@/data/vehicle-categories
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { getPricingTable, pricingForVehicleType } from "@/lib/api/pricing";
 import { fetchServices } from "@/lib/api/services";
+import { JsonLd } from "@/components/json-ld";
+import { buildServiceSchema } from "@/lib/schema";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -58,13 +60,22 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
     .filter((service) => service.vehicleTypes.some((vt) => vt.slug === category.slug))
     .map((service) => ({ title: service.name, description: service.shortDescription, href: `/dich-vu/${service.slug}` }));
 
+  const serviceSchema = buildServiceSchema({
+    name: `Thuê xe ${category.label.toLowerCase()} nguyên chiếc`,
+    description: category.description,
+    url: `/loai-xe/${category.slug}`,
+  });
+
   return (
-    <VehicleTypeLanding
-      category={category}
-      vehicles={vehicles}
-      routePrices={routePrices}
-      relatedRoutes={relatedRoutes}
-      services={services}
-    />
+    <>
+      <JsonLd data={serviceSchema} />
+      <VehicleTypeLanding
+        category={category}
+        vehicles={vehicles}
+        routePrices={routePrices}
+        relatedRoutes={relatedRoutes}
+        services={services}
+      />
+    </>
   );
 }

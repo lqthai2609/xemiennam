@@ -292,3 +292,17 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
   .lien-he-content { grid-template-columns: 1fr; padding-top: 56px; }
   .lien-he-content > aside { order: -1; }
 }
+
+/* ===== Ngày 23 — "Cập nhật lần cuối" ở trang dịch vụ (không có hàng meta sẵn như route/vehicle) ===== */
+.service-detail-updated { display: flex; align-items: center; gap: 6px; margin: 14px 0 0; color: var(--accent); font-size: 12px; }
+.service-detail-updated svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ===== Ngày 23 — Khối FAQ hiển thị trên bài blog (khớp nội dung với JSON-LD FAQPage) ===== */
+.blog-detail-faq { margin-top: 48px; padding-top: 40px; border-top: 1px solid var(--border); }
+.blog-faq-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.blog-faq-item { padding: 16px 18px; border: 1px solid var(--border); border-radius: 10px; background: #fffdf7; }
+.blog-faq-item summary { cursor: pointer; font-weight: 700; font-size: 14.5px; color: var(--foreground); list-style: none; }
+.blog-faq-item summary::-webkit-details-marker { display: none; }
+.blog-faq-item summary::after { content: "+"; float: right; color: var(--primary); font-weight: 800; }
+.blog-faq-item[open] summary::after { content: "–"; }
+.blog-faq-item p { margin: 12px 0 0; color: var(--muted-foreground); font-size: 13.5px; line-height: 1.7; }

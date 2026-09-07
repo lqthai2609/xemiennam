@@ -8,6 +8,8 @@ import { navItems } from "@/data/nav";
 import { fetchPosts, fetchPostBySlug } from "@/lib/api/blog";
 import { fetchRoutes } from "@/lib/api/routes";
 import { formatVNDate } from "@/lib/wp";
+import { JsonLd } from "@/components/json-ld";
+import { buildFaqPageSchema } from "@/lib/schema";
 
 export type Props = { params: Promise<{ slug: string }> };
 
@@ -16,11 +18,15 @@ export async function generateStaticParams() {
   return posts.map(({ slug }) => ({ slug }));
 }
 
+/** Ngày 23 — ưu tiên rankMathTitle/rankMathDescription trước khi tự soạn (mục 5, kiến trúc kỹ thuật). */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await fetchPostBySlug(slug);
   return post
-    ? { title: `${post.title} | Blog Xe Miền Nam`, description: post.excerpt }
+    ? {
+        title: post.rankMathTitle || `${post.title} | Blog Xe Miền Nam`,
+        description: post.rankMathDescription || post.excerpt,
+      }
     : { title: "Không tìm thấy bài viết | Xe Miền Nam" };
 }
 
@@ -54,9 +60,14 @@ export default async function BlogDetailPage({ params }: Props) {
   if (!post) notFound();
 
   const relatedRoutes = routes.slice(0, 3);
+  const faqItems = post.faqItems ?? [];
 
   return (
     <main className="site-shell">
+      {/* Ngày 23 — chỉ dựng FAQPage khi bài có faq_items thật (đa số bài không phải dạng hỏi-đáp, xem mục 5 kiến trúc kỹ thuật). */}
+      {faqItems.length > 0 && (
+        <JsonLd data={buildFaqPageSchema(faqItems.map((f) => ({ question: f.question, answer: f.answer })))} />
+      )}
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <section className="blog-detail-hero">
@@ -80,6 +91,22 @@ export default async function BlogDetailPage({ params }: Props) {
       <section className="section-wrap blog-detail-content">
         {/* Nội dung do admin site tự nhập trong wp-admin (không phải do người dùng cuối gửi lên) nên render trực tiếp HTML — xem ghi chú trong lib/api/blog.ts. */}
         <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+
+        {/* Ngày 23 — hiển thị đúng nội dung FAQ đã đưa vào JSON-LD (Google khuyến nghị FAQPage
+            phải có nội dung hiển thị tương ứng, không chỉ nằm trong structured data). */}
+        {faqItems.length > 0 && (
+          <section className="blog-detail-faq">
+            <p className="section-label">CÂU HỎI THƯỜNG GẶP</p>
+            <div className="blog-faq-list">
+              {faqItems.map((item, index) => (
+                <details className="blog-faq-item" key={`${item.question}-${index}`}>
+                  <summary>{item.question}</summary>
+                  <p>{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
 
         {relatedRoutes.length > 0 && (
           <aside className="blog-detail-related">

@@ -25,6 +25,11 @@ export type Service = {
   suggestedVehicles: ServiceVehicle[];
   notes: string[];
   hotline: string;
+  /** `modified` thật từ WordPress (Ngày 23) — nhãn "Cập nhật lần cuối". Rỗng ở dữ liệu mock. */
+  modifiedDate?: string;
+  /** Rank Math SEO title/description, expose qua snippet WPCode ID 15 (Ngày 23). */
+  rankMathTitle?: string;
+  rankMathDescription?: string;
 };
 
 export type ServiceIconMap = Record<ServiceIcon, LucideIcon>;

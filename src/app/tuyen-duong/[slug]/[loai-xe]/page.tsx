@@ -6,6 +6,8 @@ import { getVehicleCategory } from "@/data/vehicle-categories";
 import { findComboVehiclePrice, comboDescriptionOrDefault } from "@/lib/combo";
 import { vehicleTypeSlug } from "@/types/route";
 import { getTestimonialsForCombo } from "@/data/testimonials";
+import { JsonLd } from "@/components/json-ld";
+import { buildServiceSchema } from "@/lib/schema";
 
 type Props = { params: Promise<{ slug: string; "loai-xe": string }> };
 
@@ -41,6 +43,18 @@ export default async function Page({ params }: Props) {
   if (!route || !vp || !category) notFound();
 
   const testimonials = getTestimonialsForCombo(route.slug, vp.vehicleType);
+  const description = comboDescriptionOrDefault(route, vp);
+  const serviceSchema = buildServiceSchema({
+    name: `Thuê xe ${vp.vehicleType.toLowerCase()} đi ${route.from} – ${route.to}`,
+    description,
+    url: `/tuyen-duong/${route.slug}/${loaiXe}`,
+    areaServed: [route.from, route.to],
+  });
 
-  return <ComboLandingPage route={route} vehiclePrice={vp} category={category} testimonials={testimonials} />;
+  return (
+    <>
+      <JsonLd data={serviceSchema} />
+      <ComboLandingPage route={route} vehiclePrice={vp} category={category} testimonials={testimonials} />
+    </>
+  );
 }

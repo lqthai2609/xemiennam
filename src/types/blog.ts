@@ -20,6 +20,15 @@ export interface BlogPost {
   modifiedDate: string;
   /** URL ảnh đại diện lấy qua `_embed` → `wp:featuredmedia` — chưa có ảnh thật cho tới khi nhập nội dung (Ngày 25–26). */
   featuredImageUrl?: string;
+  /** Rank Math SEO title/description, expose qua snippet WPCode ID 15 (Ngày 23) — generateMetadata() ưu tiên 2 field này. */
+  rankMathTitle?: string;
+  rankMathDescription?: string;
+  /**
+   * Câu hỏi-đáp cho bài blog dạng FAQ (Ngày 23) — dựng JSON-LD FAQPage khi mảng không rỗng
+   * (mục 5, kiến trúc kỹ thuật). Field `faq_items` (chuỗi JSON) đăng ký qua snippet WPCode
+   * riêng, parse an toàn trong lib/api/blog.ts — mảng rỗng ở đa số bài không phải dạng hỏi-đáp.
+   */
+  faqItems?: { question: string; answer: string }[];
 }
 
 export interface BlogFilterState {

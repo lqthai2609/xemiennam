@@ -7,6 +7,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
 import { vehicleTypeSlug, type Route } from "@/types/route";
+import { formatVNDate } from "@/lib/wp";
 
 const footerLinkGroups = [
   {
@@ -30,8 +31,12 @@ function priceFor(route: Route, vehicleType: string): string | null {
   return route.pricingByVehicle.find((p) => p.vehicleType === vehicleType)?.price ?? null;
 }
 
-/** Nhận `routes` qua props — dữ liệu đã được fetchRoutes() lấy từ WP REST API (Ngày 12) ở Server Component cha. */
-export function BangGiaPageClient({ routes }: { routes: Route[] }) {
+/**
+ * Nhận `routes` qua props — dữ liệu đã được fetchRoutes() lấy từ WP REST API (Ngày 12) ở
+ * Server Component cha. `lastModified` (Ngày 23) là mốc modified MỚI NHẤT trong toàn bộ
+ * routes, tính sẵn ở Server Component — undefined khi đang dùng dữ liệu mock (chưa có modified thật).
+ */
+export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; lastModified?: string }) {
   const [query, setQuery] = useState("");
   const columns = useMemo(() => buildColumns(routes), [routes]);
 
@@ -159,6 +164,7 @@ export function BangGiaPageClient({ routes }: { routes: Route[] }) {
         <p className="bang-gia-note">
           Giá tham khảo, có thể thay đổi theo mùa hoặc dịp lễ. Liên hệ hotline hoặc Zalo để
           được báo giá chính xác cho chuyến đi của bạn.
+          {lastModified && <> Cập nhật lần cuối {formatVNDate(lastModified)}.</>}
         </p>
       </section>
 

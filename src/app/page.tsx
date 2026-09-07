@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ArrowRight, Clock3, MapPin, Milestone, Star, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,15 @@ import { BlogCard } from "@/components/blog-card";
 import { BookingBar } from "@/components/booking-bar";
 import { navItems } from "@/data/nav";
 import type { Route } from "@/types/route";
+import { JsonLd } from "@/components/json-ld";
+import { buildLocalBusinessSchema } from "@/lib/schema";
+import { SITE_DESCRIPTION } from "@/lib/site-config";
+
+/** Ngày 23 — trang chủ trước đây không khai báo metadata riêng, chỉ ăn theo layout.tsx gốc. */
+export const metadata: Metadata = {
+  title: "Xe Miền Nam — Thuê xe nguyên chiếc 4–45 chỗ và Limousine",
+  description: SITE_DESCRIPTION,
+};
 
 /**
  * KHÔI PHỤC Ngày 12: commit "ngay 11" trên GitHub đã vô tình ghi đè toàn bộ trang chủ
@@ -89,6 +99,7 @@ export default async function Home() {
 
   return (
     <main className="site-shell">
+      <JsonLd data={buildLocalBusinessSchema()} />
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <section className="hero" id="top">

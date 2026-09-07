@@ -63,6 +63,9 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
     heroNote: wp.meta.diem_nhan_hero ?? "",
     departures: wp.meta.khung_gio_hay_chon ?? [],
     notes: wp.meta.luu_y_tuyen ?? [],
+    modifiedDate: wp.modified,
+    rankMathTitle: wp.rank_math_title || undefined,
+    rankMathDescription: wp.rank_math_description || undefined,
   };
 }
 

@@ -12,6 +12,11 @@ export type Vehicle = {
   images: string[];
   features: string[]; driverIncluded: boolean;
   routePrices: { route: string; price: string; note: string }[];
+  /** `modified` thật từ WordPress (Ngày 23) — nhãn "Cập nhật lần cuối". Rỗng ở dữ liệu mock. */
+  modifiedDate?: string;
+  /** Rank Math SEO title/description, expose qua snippet WPCode ID 15 (Ngày 23). */
+  rankMathTitle?: string;
+  rankMathDescription?: string;
 };
 export type VehicleFilters = { type: string; seats: string; driver: string };
 export const emptyVehicleFilters: VehicleFilters = { type: "", seats: "", driver: "" };
