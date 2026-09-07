@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { trackBookingLead } from "@/lib/analytics";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
@@ -66,6 +67,9 @@ export function ContactBookingForm({
   const submitForm = async (data: BookingFormData) => {
     try {
       await onSubmit(data);
+      // Ngày 22 — chỉ bắn sau khi onSubmit() (gọi /api/booking) đã thành công, tránh đếm lead
+      // ảo cho những lượt gửi lỗi. Tự tắt nếu chưa cấu hình GA4/FB Pixel, xem lib/analytics.ts.
+      trackBookingLead({ route: data.route, vehicleType: data.vehicleType });
       toast.success("Đã nhận thông tin đặt xe", {
         description: "Xe Miền Nam sẽ liên hệ với bạn trong thời gian sớm nhất.",
       });

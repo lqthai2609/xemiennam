@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Archivo, Be_Vietnam_Pro } from "next/font/google";
 import { Toaster } from "sonner";
 import { FloatingContactActions } from "@/components/floating-contact-actions";
+import { AnalyticsScripts } from "@/components/analytics-scripts";
+import { AnalyticsPageview } from "@/components/analytics-pageview";
 import "./globals.css";
 
 // Font cho tiêu đề & số liệu — đúng design system (mục 8, xemiennam-kien-truc-ky-thuat.md)
@@ -30,6 +32,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${archivo.variable} ${beVietnamPro.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* Ngày 22 — GA4 + Facebook Pixel. Tự tắt hoàn toàn nếu chưa cấu hình biến môi trường,
+            xem lib/analytics.ts. */}
+        <AnalyticsScripts />
+        <AnalyticsPageview />
         {children}
         <FloatingContactActions />
         <Toaster position="top-right" richColors closeButton />
