@@ -19,6 +19,7 @@ export const services: Service[] = [
       "Dịch vụ xe cưới được chuẩn bị cho những hành trình quan trọng nhất trong ngày thành hôn. Xe được vệ sinh kỹ, tài xế có kinh nghiệm phục vụ nghi lễ và lịch trình được thống nhất trước để gia đình chủ động từng điểm đón, điểm trả. Bạn có thể chọn xe theo phong cách lễ cưới, số lượng người đi cùng và quãng đường di chuyển.",
     icon: "wedding",
     iconLabel: "Xe cưới",
+    image: "/images/services/wedding.png",
     vehicleTypes: [
       { name: "4–7 chỗ", slug: "4-7-cho", description: "Thanh lịch cho cô dâu chú rể." },
       { name: "Limousine", slug: "limousine", description: "Sang trọng cho đoàn rước dâu." },
@@ -42,6 +43,7 @@ export const services: Service[] = [
       "Dịch vụ đưa đón sân bay giúp bạn loại bỏ những bất tiện của việc tự tìm xe trong khung giờ sớm hoặc khi vừa hạ cánh. Xe được điều phối theo giờ bay, tài xế theo dõi thay đổi lịch trình và đón tại điểm đã thống nhất. Hành trình phù hợp cho khách cá nhân, gia đình, nhóm công tác và khách có nhiều hành lý.",
     icon: "airport",
     iconLabel: "Đưa đón sân bay",
+    image: "/images/services/airport.png",
     vehicleTypes: [{ name: "4–7 chỗ", slug: "4-7-cho", description: "Gọn gàng cho 1–7 hành khách, đủ chỗ hành lý." }],
     suggestedVehicles: [
       { name: "Toyota Innova", slug: "family-mpv", detail: "Cốp rộng, phù hợp gia đình nhiều hành lý." },
@@ -62,6 +64,7 @@ export const services: Service[] = [
       "Thuê xe theo tháng là lựa chọn phù hợp khi bạn cần một phương tiện ổn định nhưng chưa muốn đầu tư mua xe. Gói dịch vụ có thể bao gồm xe kèm tài xế, lịch sử dụng cố định hoặc linh hoạt theo nhu cầu. Xe được bảo dưỡng định kỳ, thay thế khi cần và có đầu mối hỗ trợ xuyên suốt thời gian thuê.",
     icon: "monthly",
     iconLabel: "Thuê xe theo tháng",
+    image: "/images/services/monthly.png",
     vehicleTypes: [
       { name: "4–7 chỗ", slug: "4-7-cho", description: "Phù hợp lịch công tác hằng ngày." },
       { name: "16–29 chỗ", slug: "16-29-cho", description: "Linh hoạt cho đội nhóm và công ty." },
@@ -85,6 +88,7 @@ export const services: Service[] = [
       "City tour mang đến một cách khám phá thành phố thoải mái hơn: bạn tự chọn điểm đến, thời lượng và nhịp di chuyển, còn chúng tôi lo phần đường đi. Tài xế có thể gợi ý các điểm ăn uống, văn hóa và góc check-in phù hợp với nhóm của bạn. Dịch vụ phù hợp cho khách du lịch, gia đình có trẻ nhỏ và nhóm bạn muốn đi trong ngày.",
     icon: "city-tour",
     iconLabel: "City tour",
+    image: "/images/services/city-tour.png",
     vehicleTypes: [
       { name: "16–29 chỗ", slug: "16-29-cho", description: "Phù hợp đoàn đông và nhiều điểm đến." },
       { name: "45 chỗ", slug: "45-cho", description: "Cho đoàn tour lớn cả ngày." },

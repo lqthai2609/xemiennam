@@ -21,6 +21,8 @@ export type Service = {
   detailDescription: string;
   icon: ServiceIcon;
   iconLabel: string;
+  /** Ảnh đại diện/hero từ CMS; dùng ảnh demo theo icon khi chưa có. */
+  image?: string;
   vehicleTypes: ServiceVehicleType[];
   suggestedVehicles: ServiceVehicle[];
   notes: string[];

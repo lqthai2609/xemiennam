@@ -48,6 +48,7 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
     detailDescription: body,
     icon: ICON_BY_SLUG[wp.slug] ?? "city-tour",
     iconLabel: wp.title.rendered,
+    image: `/images/services/${ICON_BY_SLUG[wp.slug] ?? "city-tour"}.png`,
     vehicleTypes,
     suggestedVehicles,
     notes: splitCommaList(wp.meta.luu_y_dich_vu),
