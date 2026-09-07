@@ -159,14 +159,16 @@ export function VehicleCategoryIndex({ categories }: { categories: VehicleCatego
         <p>Khám phá các nhóm xe được thiết kế cho từng kiểu chuyến đi — từ gia đình nhỏ đến đoàn lớn.</p>
       </section>
       <section className="section-wrap vehicle-category-grid">
-        <div className="vehicle-category-cards vehicle-category-cards-four">
+        <div className="vehicle-category-cards">
           {categories.map((category) => (
             <Link href={`/loai-xe/${category.slug}`} className="vehicle-category-card" key={category.slug}>
               <VehicleArt category={category} />
-              <div>
-                <p>{category.label}</p>
+              <div className="vehicle-category-card-body">
+                <div className="vehicle-category-card-heading"><p>{category.label}</p><span>{category.type}</span></div>
                 <h3>{category.title}</h3>
-                <span>Xem loại xe <ArrowRight size={15} /></span>
+                <p className="vehicle-category-summary">{category.shortDescription}</p>
+                <div className="vehicle-category-card-meta"><span className="vehicle-category-badge">{category.driveOptions.join(" / ")}</span><strong>{category.startingPrice}</strong></div>
+                <span className="vehicle-category-link">Xem chi tiết <ArrowRight size={15} /></span>
               </div>
             </Link>
           ))}

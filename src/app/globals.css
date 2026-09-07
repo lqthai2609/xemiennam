@@ -135,6 +135,26 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 .booking-dropdown-note { margin: 4px; max-width: 220px; color: var(--muted-foreground); font-size: 12px; line-height: 1.6; }
 .booking-dropdown-date { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; margin-top: 4px; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: 12px; cursor: default; }
 .booking-dropdown-date input { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font: 500 12px var(--font-vietnam); }
+
+.vehicle-type-index-hero { max-width: 1120px; margin: auto; padding: 78px 32px 48px; }
+.vehicle-type-index-hero > p:last-child { max-width: 520px; margin: 24px 0 0; color: var(--muted-foreground); font-size: 14px; line-height: 1.7; }
+.vehicle-category-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.vehicle-category-card { overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--card); transition: transform .2s, box-shadow .2s; }
+.vehicle-category-card:hover { transform: translateY(-4px); box-shadow: 0 16px 30px #102b3f12; }
+.vehicle-category-card .vehicle-type-art { min-height: 170px; border-radius: 0; }
+.vehicle-category-card .vehicle-type-art svg { width: 66px; height: 66px; }
+.vehicle-category-card-body { display: flex; flex-direction: column; gap: 11px; padding: 20px; }
+.vehicle-category-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.vehicle-category-card-heading p { margin: 0; color: var(--primary); font: 800 10px var(--font-archivo); letter-spacing: .14em; }
+.vehicle-category-card-heading > span { color: var(--muted-foreground); font-size: 11px; }
+.vehicle-category-card h3 { font-size: 20px; line-height: 1.08; }
+.vehicle-category-summary { min-height: 18px; margin: 0; color: var(--muted-foreground); font-size: 12px; line-height: 1.5; }
+.vehicle-category-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 4px; }
+.vehicle-category-badge { width: fit-content; padding: 5px 8px; border-radius: 999px; background: var(--secondary); color: var(--foreground); font-size: 10px; font-weight: 700; }
+.vehicle-category-card-meta strong { color: var(--primary); font: 800 12px var(--font-archivo); white-space: nowrap; }
+.vehicle-category-link { display: inline-flex; align-items: center; gap: 7px; padding-top: 5px; border-top: 1px solid var(--border); color: var(--primary); font-size: 12px; font-weight: 800; }
+@media (max-width: 980px) { .vehicle-category-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .vehicle-type-index-hero { padding: 60px 20px 34px; } .vehicle-category-cards { grid-template-columns: 1fr; } .vehicle-category-card { display: block; } .vehicle-category-card .vehicle-type-art { min-height: 150px; } }
 @media (max-width: 800px) { .booking-dropdown { left: 0; right: 0; min-width: 0; } }
 
 /* Ngày 15 (bản đúng) — /bang-gia, đọc route.pricingByVehicle có sẵn, không tự fetch riêng */

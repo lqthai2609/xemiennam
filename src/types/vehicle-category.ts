@@ -14,11 +14,14 @@ export type VehicleCategory = {
   /** Khớp đúng vehicleTypeSlug() trong types/route.ts — bắt buộc đồng bộ giữa 2 nơi. */
   slug: string;
   /** Dùng để lọc Vehicle[]/PricingRow[] theo đúng loại (so khớp chuỗi chính xác). */
-  type: Vehicle["type"];
+  type: string;
   label: string;
   title: string;
+  shortDescription: string;
   description: string;
   color: Vehicle["color"];
+  driveOptions: string[];
+  startingPrice: string;
   /**
    * Ảnh minh hoạ đại diện cho CẢ NHÓM loại xe (Ngày 21b) — khác `images` của 1 chiếc xe cụ
    * thể trong Vehicle, vì đây là nội dung tĩnh không gắn với 1 xe/1 bài WordPress nào. Để
