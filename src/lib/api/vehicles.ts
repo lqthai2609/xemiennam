@@ -2,7 +2,7 @@ import type { Vehicle } from "@/types/vehicle";
 import { vehicles as mockVehicles } from "@/data/vehicles";
 import { fetchRawVehicles, fetchRawVehicleBySlug, embeddedTermName, type WPVehicle } from "./raw";
 import { getPricingTable, pricingForVehicle } from "./pricing";
-import { stripHtml, splitCommaList } from "@/lib/wp";
+import { stripHtml, wpFetch } from "@/lib/wp";
 
 /**
  * fetchVehicles()/fetchVehicleBySlug() — Ngày 12.
@@ -25,8 +25,28 @@ function mapDriverOption(hinh_thuc_lai: WPVehicle["meta"]["hinh_thuc_lai"]): boo
   return hinh_thuc_lai === "co_tai_xe" || hinh_thuc_lai === "ca_hai";
 }
 
+/**
+ * gallery_anh lưu MẢNG ID media (số) — quy ước từ meta box WPCode (snippet ID 12, Ngày 4),
+ * KHÔNG phải URL. Phải gọi thêm 1 request /media?include=... để đổi ID → source_url thật
+ * (Ngày 21c — sửa lại so với bản trước đó nhầm tưởng field này là chuỗi URL).
+ * Giữ đúng thứ tự ID đã nhập (ảnh đầu = ảnh chính) vì REST API không đảm bảo giữ thứ tự.
+ */
+async function resolveGalleryImages(mediaIds: number[] | undefined): Promise<string[]> {
+  if (!mediaIds || mediaIds.length === 0) return [];
+  const ids = mediaIds.filter((id) => Number.isFinite(id) && id > 0);
+  if (ids.length === 0) return [];
+
+  const media = await wpFetch<{ id: number; source_url: string }[]>(
+    `/media?include=${ids.join(",")}&_fields=id,source_url&per_page=${ids.length}`,
+  );
+  if (!media) return [];
+
+  const urlById = new Map(media.map((m) => [m.id, m.source_url]));
+  return ids.map((id) => urlById.get(id)).filter((url): url is string => Boolean(url));
+}
+
 async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
-  const pricingTable = await getPricingTable();
+  const [pricingTable, images] = await Promise.all([getPricingTable(), resolveGalleryImages(wp.meta.gallery_anh)]);
   const type = (embeddedTermName(wp._embedded, "vehicle_type") as Vehicle["type"]) ?? "4–7 chỗ";
   const routePrices = pricingForVehicle(pricingTable, String(wp.id)).map((row) => ({
     route: row.routeLabel,
@@ -45,10 +65,11 @@ async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
     description: stripHtml(wp.content.rendered),
     color: COLOR_BY_TYPE[type] ?? "sand",
     imageLabel: wp.title.rendered,
-    // gallery_anh: chuỗi URL cách nhau dấu phẩy (nhập tay trong wp-admin, giống quy ước
-    // diem_don/diem_tra của route) — Ngày 21b. Rỗng cho tới khi nhập ảnh thật ở Ngày 24.
-    images: splitCommaList(wp.meta.gallery_anh),
-    features: wp.meta.tien_ich ? wp.meta.tien_ich.split(",").map((s) => s.trim()).filter(Boolean) : [],
+    images,
+    // tien_ich đã là mảng sẵn (meta box lưu list_text → mảng) — KHÔNG .split(",") nữa
+    // (bản trước Ngày 21c gọi .split trên 1 mảng sẽ crash ngay khi có dữ liệu thật, vì
+    // .split là hàm của string, không phải của array).
+    features: wp.meta.tien_ich ?? [],
     driverIncluded: mapDriverOption(wp.meta.hinh_thuc_lai),
     routePrices,
   };

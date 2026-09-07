@@ -43,8 +43,12 @@ export type WPVehicle = {
     so_cho?: number;
     hinh_thuc_lai?: "tu_lai" | "co_tai_xe" | "ca_hai";
     gia_tham_khao?: number;
-    tien_ich?: string;
-    gallery_anh?: string;
+    // Đã đối chiếu trực tiếp với snippet WPCode ID 12 (Ngày 4) đang chạy thật trên site —
+    // cả 2 field này lưu dạng MẢNG (list_text/list_int), KHÔNG phải chuỗi cần tách dấu phẩy
+    // như bản trước Ngày 21c từng giả định (bug, chưa lộ ra vì WP chưa có dữ liệu thật).
+    tien_ich?: string[];
+    /** Mảng ID media (số), không phải URL — phải resolve qua /media?include=... để lấy source_url, xem lib/api/vehicles.ts. */
+    gallery_anh?: number[];
   };
   _embedded?: { "wp:term"?: WPTerm[][] };
 };
