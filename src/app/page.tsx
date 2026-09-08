@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { FleetShowcase } from "@/components/fleet-showcase";
+import { ServiceCard } from "@/components/service-card";
 import { fetchRoutes } from "@/lib/api/routes";
 import { fetchPosts } from "@/lib/api/blog";
+import { fetchServices } from "@/lib/api/services";
+import { fetchTestimonials } from "@/lib/api/testimonials";
 import { BlogCard } from "@/components/blog-card";
 import { BookingBar } from "@/components/booking-bar";
 import { navItems } from "@/data/nav";
@@ -92,9 +95,18 @@ function RouteCard({ route }: { route: Route }) {
 }
 
 export default async function Home() {
-  const [routes, posts] = await Promise.all([fetchRoutes(), fetchPosts()]);
+  const [routes, posts, services, testimonials] = await Promise.all([
+    fetchRoutes(),
+    fetchPosts(),
+    fetchServices(),
+    fetchTestimonials(),
+  ]);
   const destinations = [...new Set(routes.map((r) => r.to).filter(Boolean))];
   const latestPosts = posts.slice(0, 3);
+  const featuredTestimonials = testimonials.slice(0, 6);
+  const avgRating = testimonials.length
+    ? testimonials.reduce((sum, t) => sum + t.rating, 0) / testimonials.length
+    : 0;
 
   return (
     <main className="site-shell">
@@ -200,6 +212,23 @@ export default async function Home() {
 
       <FleetShowcase />
 
+      <section className="home-services-section section-wrap" id="services">
+        <div className="section-heading">
+          <div>
+            <SectionLabel>DỊCH VỤ</SectionLabel>
+            <h2>Dịch vụ theo nhu cầu của bạn.</h2>
+          </div>
+          <Link className="text-link" href="/dich-vu">
+            Xem tất cả dịch vụ <ArrowRight size={17} />
+          </Link>
+        </div>
+        <div className="service-card-grid">
+          {services.map((service) => (
+            <ServiceCard key={service.slug} service={service} />
+          ))}
+        </div>
+      </section>
+
       <section className="stats-section">
         <div className="stats-band">
           {stats.map((s) => (
@@ -256,27 +285,25 @@ export default async function Home() {
           </div>
           <div className="rating">
             <Star size={18} fill="currentColor" />
-            <strong>4.9</strong>
+            <strong>{avgRating.toFixed(1)}</strong>
             <span> / 5.0</span>
           </div>
         </div>
-        <div className="quote-grid">
-          <blockquote>
-            &ldquo;Lần đầu đi Đà Lạt bằng xe giường nằm mà thoải mái hơn mình nghĩ rất nhiều. Tài xế vui tính, xe sạch sẽ, đến nơi đúng giờ.&rdquo;
-            <footer>
-              <span className="quote-avatar">L</span>
-              <strong>Lan Anh</strong>
-              <span>· TP. Hồ Chí Minh → Đà Lạt</span>
-            </footer>
-          </blockquote>
-          <blockquote>
-            &ldquo;Đặt xe riêng cho gia đình đi Vũng Tàu, được đón tận nhà nên người lớn tuổi rất thích. Sẽ quay lại!&rdquo;
-            <footer>
-              <span className="quote-avatar">Q</span>
-              <strong>Quang Minh</strong>
-              <span>· TP. Hồ Chí Minh → Vũng Tàu</span>
-            </footer>
-          </blockquote>
+        <div className="home-testimonial-grid">
+          {featuredTestimonials.map((t) => (
+            <article className="combo-testimonial-card" key={t.id}>
+              <div className="combo-testimonial-stars">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} size={14} fill={i < t.rating ? "currentColor" : "none"} />
+                ))}
+              </div>
+              <p>&ldquo;{t.quote}&rdquo;</p>
+              <div className="combo-testimonial-who">
+                <span className="combo-testimonial-avatar">{t.initials}</span>
+                <b>{t.name}</b>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 
