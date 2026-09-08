@@ -16,6 +16,7 @@ const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 const quickBookingSchema = z.object({
   fullName: z.string().trim().min(1, "Vui lòng nhập họ tên."),
   phone: z.string().trim().regex(phoneRegex, "Số điện thoại chưa đúng định dạng Việt Nam."),
+  departureAt: z.string().optional(),
 });
 type QuickBookingData = z.infer<typeof quickBookingSchema>;
 
@@ -23,11 +24,23 @@ function FieldError({ message }: { message?: string }) {
   return message ? <p className="text-sm text-destructive">{message}</p> : null;
 }
 
+/** "2026-09-10T14:30" (giá trị thô input datetime-local) → "10/09/2026 14:30" cho dễ đọc trong ghi_chu. */
+function formatDepartureLabel(value: string): string {
+  const [datePart, timePart] = value.split("T");
+  const d = new Date(`${datePart}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return value;
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dateLabel = `${dd}/${mm}/${d.getFullYear()}`;
+  return timePart ? `${dateLabel} ${timePart}` : dateLabel;
+}
+
 /**
  * Modal "Đặt xe online" (mở từ mỗi card giá trong route-detail.tsx) — tuyến/loại xe/giá LUÔN
- * cố định theo card đã bấm (không cho sửa), khách chỉ cần điền họ tên + SĐT. Gửi tới cùng
- * /api/booking mà ContactBookingForm (trang /lien-he) đang dùng — ghép route/vehicleType đúng
- * định dạng "from – to" mà resolveRouteId() ở đó kỳ vọng để khớp được ID route thật bên WP.
+ * cố định theo card đã bấm (không cho sửa), khách chỉ cần điền họ tên + SĐT (+ ngày giờ đi,
+ * không bắt buộc). Gửi tới cùng /api/booking mà ContactBookingForm (trang /lien-he) đang dùng —
+ * ghép route/vehicleType đúng định dạng "from – to" mà resolveRouteId() ở đó kỳ vọng để khớp
+ * được ID route thật bên WP.
  */
 function QuickBookingDialog({
   route,
@@ -56,6 +69,12 @@ function QuickBookingDialog({
 
   async function submitForm(data: QuickBookingData) {
     try {
+      // Chỉ gửi phần NGÀY (yyyy-mm-dd) vào field có cấu trúc departureDate (khớp meta ngay_di
+      // bên WP — vốn là date picker, không có giờ) — phần GIỜ ghép riêng vào ghi_chu để không
+      // làm hỏng định dạng ngày khi lưu, nhưng vẫn giữ lại thông tin giờ khách chọn cho nhân
+      // viên gọi xác nhận.
+      const departureDate = data.departureAt ? data.departureAt.split("T")[0] : "";
+      const departureLabel = data.departureAt ? formatDepartureLabel(data.departureAt) : "";
       const res = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,8 +83,13 @@ function QuickBookingDialog({
           phone: data.phone,
           route,
           vehicleType,
-          departureDate: "",
-          note: `Đặt xe online từ trang chi tiết tuyến — giá tham khảo ${price}.`,
+          departureDate,
+          note: [
+            `Đặt xe online từ trang chi tiết tuyến — giá tham khảo ${price}.`,
+            departureLabel && `Ngày giờ đi mong muốn: ${departureLabel}.`,
+          ]
+            .filter(Boolean)
+            .join(" "),
         }),
       });
       if (!res.ok) {
@@ -131,6 +155,10 @@ function QuickBookingDialog({
               className="form-control"
             />
             <FieldError message={errors.phone?.message} />
+          </label>
+          <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
+            Ngày giờ đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+            <input {...register("departureAt")} type="datetime-local" className="form-control" />
           </label>
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
