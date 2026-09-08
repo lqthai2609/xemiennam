@@ -64,7 +64,9 @@ export function RouteDetailPage({
                     <BusFront size={32} strokeWidth={1.4} />
                   )}
                 </div>
-                <span className="vehicle-chip">{vp.vehicleType}</span>
+                <Link href={`/loai-xe/${vehicleTypeSlug(vp.vehicleType)}`} className="vehicle-chip">
+                  {vp.vehicleType}
+                </Link>
                 <strong>{vp.price}</strong>
                 <small>Một chiều</small>
                 <RouteBookingActions route={routeLabel} vehicleType={vp.vehicleType} price={vp.price} />
