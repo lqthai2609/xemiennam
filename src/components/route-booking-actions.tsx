@@ -134,8 +134,10 @@ function QuickBookingDialog({
           </div>
         </div>
         <form onSubmit={handleSubmit(submitForm)} className="quick-booking-form" noValidate>
-          <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-            Họ tên <span className="text-destructive">*</span>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+            <span>
+              Họ tên <span className="text-destructive">*</span>
+            </span>
             <input
               {...register("fullName")}
               aria-invalid={!!errors.fullName}
@@ -145,8 +147,10 @@ function QuickBookingDialog({
             />
             <FieldError message={errors.fullName?.message} />
           </label>
-          <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-            Số điện thoại <span className="text-destructive">*</span>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+            <span>
+              Số điện thoại <span className="text-destructive">*</span>
+            </span>
             <input
               {...register("phone")}
               aria-invalid={!!errors.phone}
@@ -156,8 +160,10 @@ function QuickBookingDialog({
             />
             <FieldError message={errors.phone?.message} />
           </label>
-          <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-            Ngày giờ đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+            <span>
+              Ngày giờ đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+            </span>
             <input {...register("departureAt")} type="datetime-local" className="form-control" />
           </label>
           <Button type="submit" disabled={isSubmitting} className="w-full">
