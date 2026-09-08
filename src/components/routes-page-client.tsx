@@ -29,11 +29,17 @@ const footerLinkGroups = [
   },
 ];
 
-/** Nhận `routes` qua props — dữ liệu đã được fetchRoutes() lấy từ WP REST API (Ngày 12) ở Server Component cha. */
+/**
+ * Nhận `routes` qua props — dữ liệu đã được fetchRoutes() lấy từ WP REST API (Ngày 12) ở Server
+ * Component cha. Bảng lọc thủ công (RouteFilter, có field "Số chỗ") đã bị bỏ khỏi trang này theo
+ * yêu cầu — chỉ còn form "Tìm tuyến phù hợp" (RouteFinderForm) dưới hero. Vẫn giữ lại state
+ * `filters`/`filteredRoutes` vì RouteFinderForm điều hướng tới đây kèm query param
+ * (diem_den/khu_vuc/loai_xe) để lọc sẵn danh sách hiển thị bên dưới.
+ */
 export function RoutesPageClient({ routes }: { routes: Route[] }) {
   const [filters, setFilters] = useState<FilterState>(emptyFilters);
 
-  // Đến từ ô "Tìm chuyến" ở trang chủ (booking-bar) hoặc form "Tìm tuyến phù hợp" (route-finder-form)
+  // Đến từ form "Tìm tuyến phù hợp" (route-finder-form) ở trang chủ, /tuyen-duong hoặc /diem-den
   // với ?diem_den=<tỉnh>&khu_vuc=<khu vực>&loai_xe=<loại xe> — tự chọn sẵn bộ lọc tương ứng. Đọc
   // trực tiếp window.location thay vì useSearchParams() để không bắt buộc bọc Suspense quanh trang này.
   useEffect(() => {
@@ -63,9 +69,6 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       ),
     [filters, routes],
   );
-  // Tính động từ route.seatCount thật (đã tự loại Limousine, xem lib/api/routes.ts) thay vì
-  // liệt kê cứng — Ngày 25: liệt kê cứng từng làm dropdown "Số chỗ" lệch khi taxonomy đổi
-  // từ 4 sang 6 loại, tính động thì luôn khớp bất kể sau này còn đổi tiếp.
   const finderProvinces = useMemo(() => buildRouteFinderProvinces(routes), [routes]);
   const [layout] = useState<"editorial" | "cards" | "compact">(() => {
     if (typeof window === "undefined") return "editorial";

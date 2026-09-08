@@ -12,7 +12,6 @@ import { fetchPosts } from "@/lib/api/blog";
 import { fetchServices } from "@/lib/api/services";
 import { fetchTestimonials } from "@/lib/api/testimonials";
 import { BlogCard } from "@/components/blog-card";
-import { BookingBar } from "@/components/booking-bar";
 import { RouteFinderForm } from "@/components/route-finder-form";
 import { navItems } from "@/data/nav";
 import { buildRouteFinderProvinces } from "@/lib/route-finder";
@@ -104,7 +103,6 @@ export default async function Home() {
     fetchServices(),
     fetchTestimonials(),
   ]);
-  const destinations = [...new Set(routes.map((r) => r.to).filter(Boolean))];
   const finderProvinces = buildRouteFinderProvinces(routes);
   const latestPosts = posts.slice(0, 3);
   const featuredTestimonials = testimonials.slice(0, 6);
@@ -182,7 +180,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <RouteFinderForm provinces={finderProvinces} />
+      <RouteFinderForm id="booking" provinces={finderProvinces} />
 
       <div className="ticker-section" aria-label="Các tuyến phổ biến">
         <div className="ticker-track">
@@ -194,10 +192,6 @@ export default async function Home() {
           ))}
         </div>
       </div>
-
-      <section id="booking">
-        <BookingBar destinations={destinations} />
-      </section>
 
       <section className="routes-section section-wrap" id="routes">
         <div className="section-heading">

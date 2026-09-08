@@ -7,11 +7,12 @@ import type { RouteFinderProvince } from "@/lib/route-finder";
 
 /**
  * Form "Tìm tuyến phù hợp" — 3 trường theo tầng: Điểm đến (tỉnh/thành) → Khu vực (bên trong
- * tỉnh đó) → Loại xe. Đặt ngay dưới hero ở trang chủ, /tuyen-duong và /diem-den (khác
- * <BookingBar/>, vốn chỉ có điểm đi/điểm đến/ngày đi, không phân theo khu vực trong tỉnh).
+ * tỉnh đó) → Loại xe. Đây là form duy nhất đặt ngay dưới hero ở trang chủ, /tuyen-duong và
+ * /diem-den (thay cho <BookingBar/> cũ — chỉ có điểm đi/điểm đến/ngày đi, không phân theo
+ * khu vực trong tỉnh — và bảng lọc thủ công RouteFilter trên /tuyen-duong, cả hai đã bị bỏ).
  * Submit điều hướng sang /tuyen-duong kèm query param — RoutesPageClient đọc và lọc sẵn.
  */
-export function RouteFinderForm({ provinces }: { provinces: RouteFinderProvince[] }) {
+export function RouteFinderForm({ provinces, id }: { provinces: RouteFinderProvince[]; id?: string }) {
   const [regionSlug, setRegionSlug] = useState("");
   const [area, setArea] = useState("");
   const [vehicleType, setVehicleType] = useState("");
@@ -53,7 +54,7 @@ export function RouteFinderForm({ provinces }: { provinces: RouteFinderProvince[
   const canSubmit = Boolean(selectedProvince && area && vehicleType);
 
   return (
-    <section className="route-finder" aria-labelledby="route-finder-title">
+    <section className="route-finder" id={id} aria-labelledby="route-finder-title">
       <form className="route-finder-form" onSubmit={handleSubmit}>
         <div className="route-finder-heading">
           <p className="section-label">TÌM TUYẾN PHÙ HỢP</p>
