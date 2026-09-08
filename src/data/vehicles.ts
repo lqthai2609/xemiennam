@@ -13,12 +13,12 @@ import { buildPlaceholderImage } from "@/lib/placeholder-image";
  */
 
 export const vehicles: Vehicle[] = [
-  { id: "sedan-4", slug: "sedan-4", name: "Toyota Camry", type: "4 chỗ", seats: "4 chỗ", capacity: "2 vali lớn", description: "Êm ái, riêng tư và lịch sự cho lịch [...]
-  { id: "family-mpv-7", slug: "family-mpv-7", name: "Toyota Innova", type: "7 chỗ", seats: "7 chỗ", capacity: "4 vali lớn", description: "Không gian rộng rãi cho gia đình, nhóm bạn [...]
-  { id: "sprinter-16", slug: "sprinter-16", name: "Mercedes Sprinter", type: "16 chỗ", seats: "16 chỗ", capacity: "16 vali lớn", description: "Lựa chọn gọn gàng cho nhóm công t[...]
-  { id: "coach-29", slug: "coach-29", name: "Thaco Transit", type: "29 chỗ", seats: "29 chỗ", capacity: "29 vali lớn", description: "Phù hợp đoàn vừa với nhu cầu di chuyển đồng b[...]
-  { id: "coach-45", slug: "coach-45", name: "Thaco Universe", type: "45 chỗ", seats: "45 chỗ", capacity: "45 vali lớn", description: "Đủ rộng cho hội nghị, trường học, tour đo[...]
-  { id: "limousine-22", slug: "limousine-22", name: "Dcar Limousine", type: "Limousine", seats: "22 chỗ", capacity: "22 vali lớn", description: "Khoang thương gia cho đoàn muốn đi xa th[...]
+  { id: "sedan-4", slug: "sedan-4", name: "Toyota Camry", type: "4 chỗ", seats: "4 chỗ", capacity: "2 vali lớn", description: "Êm ái, riêng tư và lịch sự cho lịch trình công tác hoặc đi chơi cặp đôi." },
+  { id: "family-mpv-7", slug: "family-mpv-7", name: "Toyota Innova", type: "7 chỗ", seats: "7 chỗ", capacity: "4 vali lớn", description: "Không gian rộng rãi cho gia đình, nhóm bạn muốn đi xa với sự thoải mái." },
+  { id: "sprinter-16", slug: "sprinter-16", name: "Mercedes Sprinter", type: "16 chỗ", seats: "16 chỗ", capacity: "16 vali lớn", description: "Lựa chọn gọn gàng cho nhóm công ty hoặc tour nhỏ, dễ di chuyển trong phố." },
+  { id: "coach-29", slug: "coach-29", name: "Thaco Transit", type: "29 chỗ", seats: "29 chỗ", capacity: "29 vali lớn", description: "Phù hợp đoàn vừa với nhu cầu di chuyển đồng bộ, cân bằng rộng rãi và linh hoạt." },
+  { id: "coach-45", slug: "coach-45", name: "Thaco Universe", type: "45 chỗ", seats: "45 chỗ", capacity: "45 vali lớn", description: "Đủ rộng cho hội nghị, trường học, tour đoàn lớn cần di chuyển chuyên nghiệp." },
+  { id: "limousine-22", slug: "limousine-22", name: "Dcar Limousine", type: "Limousine", seats: "22 chỗ", capacity: "22 vali lớn", description: "Khoang thương gia cho đoàn muốn đi xa thật thư thái, riêng tư và khác biệt." },
 ];
 
 export function getVehicleBySlug(slug: string) { return vehicles.find((vehicle) => vehicle.slug === slug); }
