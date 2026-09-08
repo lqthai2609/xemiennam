@@ -1,4 +1,5 @@
 import type { VehicleCategory } from "@/types/vehicle-category";
+import type { Vehicle } from "@/types/vehicle";
 import { buildPlaceholderImage } from "@/lib/placeholder-image";
 
 /**
@@ -105,4 +106,19 @@ export const vehicleCategories: VehicleCategory[] = [
 
 export function getVehicleCategory(slug: string) {
   return vehicleCategories.find((category) => category.slug === slug);
+}
+
+/**
+ * Ưu tiên ảnh xe THẬT (Vehicle.images[0] của chiếc xe đầu tiên cùng `type` có ảnh) thay cho
+ * ảnh placeholder tĩnh khai báo ở trên — một khi CMS đã có ảnh thật cho loại xe đó (upload
+ * gallery_anh cho ít nhất 1 xe cùng loại), trang /loai-xe tự động hiển thị ảnh thật mà không
+ * cần sửa file này. Chưa có xe/ảnh thật nào cùng loại → giữ nguyên placeholder.
+ */
+export function withRealCategoryImage(category: VehicleCategory, vehicles: Vehicle[]): VehicleCategory {
+  const realPhoto = vehicles.find((vehicle) => vehicle.type === category.type && vehicle.images.length > 0);
+  return realPhoto ? { ...category, imageUrl: realPhoto.images[0] } : category;
+}
+
+export function withRealCategoryImages(categories: VehicleCategory[], vehicles: Vehicle[]): VehicleCategory[] {
+  return categories.map((category) => withRealCategoryImage(category, vehicles));
 }

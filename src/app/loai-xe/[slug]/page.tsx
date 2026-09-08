@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { VehicleTypeLanding } from "@/components/vehicle-type-landing";
-import { getVehicleCategory, vehicleCategories } from "@/data/vehicle-categories";
+import { getVehicleCategory, vehicleCategories, withRealCategoryImage } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { getPricingTable, pricingForVehicleType } from "@/lib/api/pricing";
 import { fetchServices } from "@/lib/api/services";
@@ -40,6 +40,9 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
   ]);
 
   const vehicles = allVehicles.filter((v) => v.type === category.type);
+  // Ảnh hero dùng ảnh xe THẬT nếu có (cùng cơ chế với thẻ ở trang danh sách /loai-xe) —
+  // xem withRealCategoryImage() trong data/vehicle-categories.ts.
+  const displayCategory = withRealCategoryImage(category, vehicles);
 
   const rows = pricingForVehicleType(pricingTable, category.type);
   const routePrices = rows.map((row) => ({
@@ -70,7 +73,7 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
     <>
       <JsonLd data={serviceSchema} />
       <VehicleTypeLanding
-        category={category}
+        category={displayCategory}
         vehicles={vehicles}
         routePrices={routePrices}
         relatedRoutes={relatedRoutes}
