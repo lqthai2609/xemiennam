@@ -6,8 +6,7 @@ const nextConfig: NextConfig = {
     // Trang /dich-vu (Ngày 25b) dùng next/image cho ảnh dịch vụ — service.image có thể là
     // featured image thật từ WordPress (embeddedFeaturedImage(), xem lib/api/services.ts),
     // không chỉ ảnh demo tĩnh trong /public. Domain media đã ổn định từ Ngày 3-4 nên khai báo
-    // luôn ở đây, khác với MediaPhoto (src/components/media-photo.tsx) vẫn cố tình dùng <img>
-    // thường cho ảnh xe/tuyến vì lý do domain khi đó chưa chốt — xem ghi chú trong file đó.
+    // luôn ở đây — cũng là domain dùng cho MediaPhoto (src/components/media-photo.tsx).
     remotePatterns: [{ protocol: "https", hostname: "xemiennam.datxesaigon.com", pathname: "/wp-content/uploads/**" }],
   },
   async redirects() {
