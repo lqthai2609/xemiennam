@@ -5,6 +5,10 @@ import { buildRouteMapEmbedSrc } from "@/lib/maps";
  * Dữ liệu mock DUY NHẤT cho toàn bộ tuyến — dùng ở trang chủ, /tuyen-duong,
  * và /tuyen-duong/[slug]. Khi nối WP REST API thật (Ngày 12), thay import
  * này bằng fetchRoutes()/getPricingTable() nhưng giữ nguyên shape Route.
+ * 
+ * UPDATE Ngày 25: Đã cập nhật vehicleTypes và seatCount để khớp với 6 loại xe:
+ * thay "4–7 chỗ" → "4 chỗ", "7 chỗ"
+ * thay "16–29 chỗ" → "16 chỗ", "29 chỗ"
  */
 export const routes: Route[] = [
   {
@@ -17,13 +21,15 @@ export const routes: Route[] = [
     time: "2h 15m",
     distance: "125 km",
     price: "140K",
-    vehicleTypes: ["4–7 chỗ", "16–29 chỗ", "45 chỗ", "Limousine"],
-    seatCount: ["4–7 chỗ", "16–29 chỗ", "45 chỗ"],
+    vehicleTypes: ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ", "Limousine"],
+    seatCount: ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ"],
     pricingByVehicle: [
-      { vehicleType: "4–7 chỗ", price: "140K", comboDescription: "Xe 4-7 chỗ đi Vũng Tàu hợp cho gia đình hoặc nhóm bạn nhỏ muốn chủ động giờ giấc, ghé Bãi Sau buổi sáng và về trong ngày vẫn kịp." },
-      { vehicleType: "16–29 chỗ", price: "850K", comboDescription: "Xe 16-29 chỗ cho nhóm công ty hoặc lớp học đi Vũng Tàu cùng nhau, đủ chỗ để cả đoàn ngồi chung mà không cần chia 2 xe." },
-      { vehicleType: "45 chỗ", price: "1.450K", comboDescription: "Xe 45 chỗ phù hợp cho đoàn lớn, hội nhóm hoặc trường học tổ chức chuyến dã ngoại Vũng Tàu trong ngày." },
-      { vehicleType: "Limousine", price: "320K", comboDescription: "Limousine đi Vũng Tàu dành cho ai muốn khoang ghế êm hơn, phù hợp đón khách hoặc đi cùng gia đình có người lớn tuổi." },
+      { vehicleType: "4 chỗ", price: "140K", comboDescription: "Xe 4 chỗ đi Vũng Tàu hợp cho gia đình hoặc cặp đôi nhỏ muốn chủ động giờ giấc, ghé Bãi Sau bu..." },
+      { vehicleType: "7 chỗ", price: "180K", comboDescription: "Xe 7 chỗ đi Vũng Tàu phù hợp cho gia đình lớn hoặc nhóm bạn, có khoang hành lý rộng..." },
+      { vehicleType: "16 chỗ", price: "500K", comboDescription: "Xe 16 chỗ cho nhóm công ty hoặc đoàn nhỏ đi Vũng Tàu, gọn gàng và linh hoạt..." },
+      { vehicleType: "29 chỗ", price: "850K", comboDescription: "Xe 29 chỗ cho đoàn trung bình hoặc lớp học đi Vũng Tàu, đủ chỗ để cả đoàn ngồi chung..." },
+      { vehicleType: "45 chỗ", price: "1.450K", comboDescription: "Xe 45 chỗ phù hợp cho đoàn lớn, hội nhóm hoặc trường học tổ chức chuyến dã ngoại Vũng Tàu trong n..." },
+      { vehicleType: "Limousine", price: "320K", comboDescription: "Limousine đi Vũng Tàu dành cho ai muốn khoang ghế êm hơn, phù hợp đón khách hoặc đi cùng gia đình có ngư..." },
     ],
     pickupPoints: ["Quận 1", "Quận 3", "TP. Thủ Đức", "Sân bay Tân Sơn Nhất"],
     dropoffPoints: ["Bãi Sau", "Bãi Trước", "Trung tâm Vũng Tàu", "Long Hải"],
@@ -43,11 +49,13 @@ export const routes: Route[] = [
     time: "3h 30m",
     distance: "170 km",
     price: "180K",
-    vehicleTypes: ["4–7 chỗ", "16–29 chỗ", "45 chỗ"],
-    seatCount: ["4–7 chỗ", "16–29 chỗ", "45 chỗ"],
+    vehicleTypes: ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ"],
+    seatCount: ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ"],
     pricingByVehicle: [
-      { vehicleType: "4–7 chỗ", price: "180K", comboDescription: "Xe 4-7 chỗ về Cần Thơ tiện cho gia đình muốn ghé chợ nổi Cái Răng sớm mà không phụ thuộc giờ xe khách." },
-      { vehicleType: "16–29 chỗ", price: "1.100K", comboDescription: "Xe 16-29 chỗ về Cần Thơ phù hợp cho đoàn tham quan miền Tây, có khoang hành lý đủ rộng cho vài ngày ở lại." },
+      { vehicleType: "4 chỗ", price: "180K", comboDescription: "Xe 4 chỗ về Cần Thơ tiện cho cặp đôi hoặc gia đình nhỏ muốn ghé chợ nổi Cái Răng sớm..." },
+      { vehicleType: "7 chỗ", price: "220K", comboDescription: "Xe 7 chỗ về Cần Thơ phù hợp cho gia đình đi tham quan miền Tây, có khoang hành lý..." },
+      { vehicleType: "16 chỗ", price: "650K", comboDescription: "Xe 16 chỗ về Cần Thơ cho nhóm công ty hoặc tour nhỏ tham quan miền Tây..." },
+      { vehicleType: "29 chỗ", price: "1.100K", comboDescription: "Xe 29 chỗ về Cần Thơ phù hợp cho đoàn tham quan miền Tây, có khoang hành lý đủ rộng..." },
       { vehicleType: "45 chỗ", price: "1.900K", comboDescription: "Xe 45 chỗ về Cần Thơ dành cho đoàn công ty hoặc tour lớn cần một xe duy nhất cho cả nhóm." },
     ],
     pickupPoints: ["Quận 1", "Quận 5", "Bình Thạnh", "Sân bay Tân Sơn Nhất"],
@@ -68,11 +76,12 @@ export const routes: Route[] = [
     time: "6h 30m",
     distance: "300 km",
     price: "290K",
-    vehicleTypes: ["4–7 chỗ", "Limousine"],
-    seatCount: ["4–7 chỗ"],
+    vehicleTypes: ["4 chỗ", "7 chỗ", "Limousine"],
+    seatCount: ["4 chỗ", "7 chỗ"],
     pricingByVehicle: [
-      { vehicleType: "4–7 chỗ", price: "290K", comboDescription: "Xe 4-7 chỗ lên Đà Lạt hợp cho nhóm nhỏ muốn dừng chân dọc đường đèo, chủ động thời gian nghỉ ngơi." },
-      { vehicleType: "Limousine", price: "450K", comboDescription: "Limousine lên Đà Lạt có ghế nằm êm cho hành trình dài, phù hợp đi đêm để sáng hôm sau có trọn ngày ở phố núi." },
+      { vehicleType: "4 chỗ", price: "290K", comboDescription: "Xe 4 chỗ lên Đà Lạt hợp cho cặp đôi muốn dừng chân dọc đường đèo, chủ động thời gian nghỉ..." },
+      { vehicleType: "7 chỗ", price: "350K", comboDescription: "Xe 7 chỗ lên Đà Lạt phù hợp cho gia đình hoặc nhóm bạn nhỏ muốn ghé nhiều điểm dọc đường..." },
+      { vehicleType: "Limousine", price: "450K", comboDescription: "Limousine lên Đà Lạt có ghế nằm êm cho hành trình dài, phù hợp đi đêm để sáng hôm sau có trọn ngày..." },
     ],
     pickupPoints: ["Quận 1", "Quận 3", "Quận 10", "Sân bay Tân Sơn Nhất"],
     dropoffPoints: ["Trung tâm Đà Lạt", "Hồ Xuân Hương", "Bến xe liên tỉnh", "Đức Trọng"],
@@ -92,11 +101,13 @@ export const routes: Route[] = [
     time: "3h 45m",
     distance: "200 km",
     price: "220K",
-    vehicleTypes: ["4–7 chỗ", "16–29 chỗ"],
-    seatCount: ["4–7 chỗ", "16–29 chỗ"],
+    vehicleTypes: ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ"],
+    seatCount: ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ"],
     pricingByVehicle: [
-      { vehicleType: "4–7 chỗ", price: "220K", comboDescription: "Xe 4-7 chỗ ra Mũi Né hợp cho cặp đôi hoặc gia đình nhỏ muốn đi về trong ngày hoặc nghỉ dưỡng ngắn ngày." },
-      { vehicleType: "16–29 chỗ", price: "1.300K", comboDescription: "Xe 16-29 chỗ ra Phan Thiết phù hợp cho nhóm bạn hoặc đội nhóm đi golf, lướt ván diều cùng nhau." },
+      { vehicleType: "4 chỗ", price: "220K", comboDescription: "Xe 4 chỗ ra Mũi Né hợp cho cặp đôi hoặc gia đình nhỏ muốn đi về trong ngày..." },
+      { vehicleType: "7 chỗ", price: "270K", comboDescription: "Xe 7 chỗ ra Phan Thiết phù hợp cho gia đình lớn hoặc nhóm bạn muốn đi một ngày..." },
+      { vehicleType: "16 chỗ", price: "800K", comboDescription: "Xe 16 chỗ ra Phan Thiết hợp cho đoàn nhỏ hoặc nhóm bạn đi golf, lướt ván..." },
+      { vehicleType: "29 chỗ", price: "1.300K", comboDescription: "Xe 29 chỗ ra Phan Thiết phù hợp cho nhóm bạn hoặc đội nhóm đi golf, lướt ván diều cùng nhau." },
     ],
     pickupPoints: ["Quận 1", "Quận 7", "TP. Thủ Đức", "Sân bay Tân Sơn Nhất"],
     dropoffPoints: ["Trung tâm Phan Thiết", "Mũi Né", "Bàu Trắng", "Khu resort Hàm Tiến"],
