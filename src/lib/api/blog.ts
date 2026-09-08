@@ -1,6 +1,6 @@
 import type { BlogPost } from "@/types/blog";
 import { blogPosts as mockPosts } from "@/data/blog";
-import { fetchRawPosts, fetchRawPostBySlug, embeddedTermName, embeddedFeaturedImage, type WPPost } from "./raw";
+import { fetchRawPosts, fetchRawPostBySlug, embeddedTermName, embeddedTerms, embeddedFeaturedImage, type WPPost } from "./raw";
 import { stripHtml } from "@/lib/wp";
 
 /**
@@ -81,6 +81,15 @@ export async function fetchPostBySlug(slug: string): Promise<BlogPost | undefine
     }
   }
   return undefined;
+}
+
+export async function fetchPostsByVehicleType(vehicleTypeSlug: string, count = 3): Promise<BlogPost[]> {
+  const raw = (await fetchRawPosts()).filter((wp) => wp.slug !== DEFAULT_WP_SLUG);
+  const matched = raw.filter((wp) => embeddedTerms(wp._embedded, "vehicle_type").some((term) => term.slug === vehicleTypeSlug));
+  return matched
+    .map(mapWPPostToBlogPost)
+    .sort((a, b) => (a.publishedDate < b.publishedDate ? 1 : -1))
+    .slice(0, count);
 }
 
 export async function fetchRelatedPosts(currentSlug: string, count = 3): Promise<BlogPost[]> {

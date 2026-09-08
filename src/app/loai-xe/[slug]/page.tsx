@@ -5,6 +5,7 @@ import { getVehicleCategory, vehicleCategories, withRealCategoryImage } from "@/
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { getPricingTable, pricingForVehicleType } from "@/lib/api/pricing";
 import { fetchServices } from "@/lib/api/services";
+import { fetchPostsByVehicleType } from "@/lib/api/blog";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
 
@@ -33,16 +34,21 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
   const category = getVehicleCategory(slug);
   if (!category) notFound();
 
-  const [allVehicles, pricingTable, allServices] = await Promise.all([
+  const [allVehicles, pricingTable, allServices, relatedPosts] = await Promise.all([
     fetchVehicles(),
     getPricingTable(),
     fetchServices(),
+    fetchPostsByVehicleType(category.slug, 3),
   ]);
 
   const vehicles = allVehicles.filter((v) => v.type === category.type);
   // Ảnh hero dùng ảnh xe THẬT nếu có (cùng cơ chế với thẻ ở trang danh sách /loai-xe) —
   // xem withRealCategoryImage() trong data/vehicle-categories.ts.
   const displayCategory = withRealCategoryImage(category, vehicles);
+  // Gallery ảnh thật của loại xe (Ngày 25c) — gộp ảnh từ TẤT CẢ xe cùng loại (không chỉ ảnh
+  // đầu như hero), loại trùng bằng Set vì nhiều xe có thể dùng chung 1 ảnh, giới hạn 7 ảnh
+  // (khớp lưới bento 1 ảnh lớn + tối đa 6 ảnh nhỏ của VehicleRealGallery).
+  const galleryImages = Array.from(new Set(vehicles.flatMap((vehicle) => vehicle.images))).slice(0, 7);
 
   const rows = pricingForVehicleType(pricingTable, category.type);
   const routePrices = rows.map((row) => ({
@@ -78,6 +84,8 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
         routePrices={routePrices}
         relatedRoutes={relatedRoutes}
         services={services}
+        galleryImages={galleryImages}
+        relatedPosts={relatedPosts}
       />
     </>
   );
