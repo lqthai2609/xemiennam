@@ -5,6 +5,9 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { VehicleCard } from "@/components/vehicle-results";
 import { MediaPhoto } from "@/components/media-photo";
+import { BlogCard } from "@/components/blog-card";
+import { VehicleRealGallery } from "@/components/vehicle-real-gallery";
+import type { BlogPost } from "@/types/blog";
 import type { Vehicle } from "@/types/vehicle";
 import type { VehicleCategory } from "@/types/vehicle-category";
 
@@ -35,12 +38,16 @@ export function VehicleTypeLanding({
   routePrices,
   relatedRoutes,
   services,
+  galleryImages,
+  relatedPosts,
 }: {
   category: VehicleCategory;
   vehicles: Vehicle[];
   routePrices: PriceRow[];
   relatedRoutes: RouteLink[];
   services: ServiceLink[];
+  galleryImages: string[];
+  relatedPosts: BlogPost[];
 }) {
   return (
     <main className="site-shell vehicle-type-page">
@@ -92,6 +99,13 @@ export function VehicleTypeLanding({
         </section>
       )}
 
+      {galleryImages.length > 0 && (
+        <section className="section-wrap vehicle-type-gallery-section">
+          <div className="section-heading-row"><div><p className="section-label">HÌNH ẢNH THỰC TẾ</p><h2>Nhìn trước chuyến đi của bạn.</h2></div></div>
+          <VehicleRealGallery images={galleryImages} />
+        </section>
+      )}
+
       {routePrices.length > 0 && (
         <section className="section-wrap vehicle-type-routes">
           <div className="section-heading-row">
@@ -131,6 +145,15 @@ export function VehicleTypeLanding({
                 <ArrowRight size={16} />
               </Link>
             ))}
+          </div>
+        </section>
+      )}
+
+      {relatedPosts.length > 0 && (
+        <section className="section-wrap vehicle-type-related-posts">
+          <div className="section-heading-row"><div><p className="section-label">BÀI VIẾT LIÊN QUAN</p><h2>Thêm cảm hứng cho hành trình.</h2></div><Link href="/blog" className="text-link">Xem tất cả bài viết <ArrowRight size={15} /></Link></div>
+          <div className="blog-grid vehicle-type-related-post-grid">
+            {relatedPosts.slice(0, 3).map((post) => <BlogCard key={post.id} post={post} />)}
           </div>
         </section>
       )}
