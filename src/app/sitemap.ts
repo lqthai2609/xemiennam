@@ -28,6 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, changeFrequency: "daily", priority: 1 },
     { url: `${SITE_URL}/tuyen-duong`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${SITE_URL}/diem-den`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/loai-xe`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/dich-vu`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/bang-gia`, changeFrequency: "daily", priority: 0.8 },
