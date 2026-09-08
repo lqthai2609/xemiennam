@@ -1,0 +1,220 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoaderCircle, MessageCircle, Phone, X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import { getZaloChatLink } from "@/lib/zalo";
+import { trackBookingLead } from "@/lib/analytics";
+
+const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+
+const quickBookingSchema = z.object({
+  fullName: z.string().trim().min(1, "Vui lòng nhập họ tên."),
+  phone: z.string().trim().regex(phoneRegex, "Số điện thoại chưa đúng định dạng Việt Nam."),
+  departureAt: z.string().optional(),
+});
+type QuickBookingData = z.infer<typeof quickBookingSchema>;
+
+function FieldError({ message }: { message?: string }) {
+  return message ? <p className="text-sm text-destructive">{message}</p> : null;
+}
+
+/** "2026-09-10T14:30" (giá trị thô input datetime-local) → "10/09/2026 14:30" cho dễ đọc trong ghi_chu. */
+function formatDepartureLabel(value: string): string {
+  const [datePart, timePart] = value.split("T");
+  const d = new Date(`${datePart}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return value;
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dateLabel = `${dd}/${mm}/${d.getFullYear()}`;
+  return timePart ? `${dateLabel} ${timePart}` : dateLabel;
+}
+
+/**
+ * Modal "Đặt xe online" (mở từ mỗi card giá trong route-detail.tsx) — tuyến/loại xe/giá LUÔN
+ * cố định theo card đã bấm (không cho sửa), khách chỉ cần điền họ tên + SĐT (+ ngày giờ đi,
+ * không bắt buộc). Gửi tới cùng /api/booking mà ContactBookingForm (trang /lien-he) đang dùng —
+ * ghép route/vehicleType đúng định dạng "from – to" mà resolveRouteId() ở đó kỳ vọng để khớp
+ * được ID route thật bên WP.
+ */
+function QuickBookingDialog({
+  route,
+  vehicleType,
+  price,
+  onClose,
+}: {
+  route: string;
+  vehicleType: string;
+  price: string;
+  onClose: () => void;
+}) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<QuickBookingData>({ resolver: zodResolver(quickBookingSchema) });
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  async function submitForm(data: QuickBookingData) {
+    try {
+      // Chỉ gửi phần NGÀY (yyyy-mm-dd) vào field có cấu trúc departureDate (khớp meta ngay_di
+      // bên WP — vốn là date picker, không có giờ) — phần GIỜ ghép riêng vào ghi_chu để không
+      // làm hỏng định dạng ngày khi lưu, nhưng vẫn giữ lại thông tin giờ khách chọn cho nhân
+      // viên gọi xác nhận.
+      const departureDate = data.departureAt ? data.departureAt.split("T")[0] : "";
+      const departureLabel = data.departureAt ? formatDepartureLabel(data.departureAt) : "";
+      const res = await fetch("/api/booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: data.fullName,
+          phone: data.phone,
+          route,
+          vehicleType,
+          departureDate,
+          note: [
+            `Đặt xe online từ trang chi tiết tuyến — giá tham khảo ${price}.`,
+            departureLabel && `Ngày giờ đi mong muốn: ${departureLabel}.`,
+          ]
+            .filter(Boolean)
+            .join(" "),
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? `Gửi yêu cầu đặt xe thất bại (HTTP ${res.status}).`);
+      }
+      trackBookingLead({ route, vehicleType });
+      toast.success("Đã nhận thông tin đặt xe", {
+        description: "Xe Miền Nam sẽ liên hệ với bạn trong thời gian sớm nhất.",
+      });
+      onClose();
+    } catch {
+      toast.error("Gửi thông tin chưa thành công", {
+        description: "Vui lòng thử lại hoặc gọi trực tiếp cho Xe Miền Nam.",
+      });
+    }
+  }
+
+  return (
+    <div className="quick-booking-overlay" role="presentation" onClick={onClose}>
+      <div
+        className="quick-booking-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Đặt xe ${vehicleType}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button type="button" className="quick-booking-close" onClick={onClose} aria-label="Đóng">
+          <X size={18} />
+        </button>
+        <p className="section-label">ĐẶT XE ONLINE</p>
+        <h3>Xác nhận thông tin.</h3>
+        <div className="quick-booking-summary">
+          <div>
+            Tuyến: <strong>{route}</strong>
+          </div>
+          <div>
+            Loại xe: <strong>{vehicleType}</strong>
+          </div>
+          <div>
+            Giá: <strong>{price}</strong>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit(submitForm)} className="quick-booking-form" noValidate>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+            <span>
+              Họ tên <span className="text-destructive">*</span>
+            </span>
+            <input
+              {...register("fullName")}
+              aria-invalid={!!errors.fullName}
+              placeholder="Nguyễn Văn A"
+              className="form-control"
+              autoFocus
+            />
+            <FieldError message={errors.fullName?.message} />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+            <span>
+              Số điện thoại <span className="text-destructive">*</span>
+            </span>
+            <input
+              {...register("phone")}
+              aria-invalid={!!errors.phone}
+              inputMode="tel"
+              placeholder="0898 400 800"
+              className="form-control"
+            />
+            <FieldError message={errors.phone?.message} />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+            <span>
+              Ngày giờ đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+            </span>
+            <input {...register("departureAt")} type="datetime-local" className="form-control" />
+          </label>
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
+            {isSubmitting ? "Đang gửi..." : "Xác nhận đặt xe"}
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/** 3 CTA của mỗi card giá ở route-detail.tsx: đặt online (modal), Zalo, gọi điện trực tiếp. */
+export function RouteBookingActions({
+  route,
+  vehicleType,
+  price,
+}: {
+  route: string;
+  vehicleType: string;
+  price: string;
+}) {
+  const [open, setOpen] = useState(false);
+  // null khi chưa cấu hình NEXT_PUBLIC_ZALO_OA_ID (xem lib/zalo.ts) — ẩn hẳn nút Zalo thay vì
+  // hiển thị link chết.
+  const zaloLink = getZaloChatLink();
+
+  return (
+    <>
+      <div className="detail-price-actions">
+        <Button size="sm" className="detail-price-cta" onClick={() => setOpen(true)}>
+          Đặt xe online
+        </Button>
+        {zaloLink && (
+          <a
+            href={zaloLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="detail-price-icon-cta"
+            aria-label={`Đặt xe ${vehicleType} qua Zalo`}
+          >
+            <MessageCircle size={16} />
+          </a>
+        )}
+        <a href="tel:19006789" className="detail-price-icon-cta" aria-label={`Gọi điện đặt xe ${vehicleType}`}>
+          <Phone size={16} />
+        </a>
+      </div>
+      {open && <QuickBookingDialog route={route} vehicleType={vehicleType} price={price} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
+export default RouteBookingActions;
