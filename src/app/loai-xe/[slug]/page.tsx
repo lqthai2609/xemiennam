@@ -62,7 +62,9 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
   // "đi tuyến này bằng loại xe này") thay vì trang tuyến đầy đủ chung chung.
   const relatedRoutes = Array.from(new Map(rows.map((row) => [row.routeSlug, row])).values()).map((row) => ({
     label: row.routeLabel,
-    href: `/tuyen-duong/${row.routeSlug}/${category.slug}`,
+    // Ngày 25: dùng routeRegionSlug (PricingRow) — không có object Route đầy đủ ở đây nên
+    // không gọi được routeHref()/routeComboHref(), ráp tay theo đúng cùng cấu trúc URL.
+    href: `/tuyen-duong/${row.routeRegionSlug || "khac"}/${row.routeSlug}/${category.slug}`,
   }));
 
   const services = allServices

@@ -88,3 +88,30 @@ export function formatCurrencyVN(amount: number | string | undefined | null): st
   if (!n || Number.isNaN(n)) return "";
   return `${Math.round(n).toLocaleString("vi-VN")}đ`;
 }
+
+/**
+ * Parse field `faq_items` (chuỗi JSON thô "[{\"cau_hoi\":...,\"tra_loi\":...}]") sang mảng
+ * {question, answer}. Trả về mảng rỗng thay vì throw nếu JSON hỏng hoặc field trống, để 1 bài
+ * nhập liệu sai không làm sập cả trang.
+ *
+ * Ngày 25: tách ra từ lib/api/blog.ts (nơi field này ra đời — snippet WPCode ID 36, Ngày 23)
+ * để dùng chung được với CPT `diem_den` (hub tỉnh, snippet WPCode mới ID 9080) — cùng 1 schema
+ * JSON, không có lý do viết lại lần 2. `lib/api/blog.ts` giữ nguyên hành vi, chỉ đổi sang import
+ * hàm này thay vì định nghĩa nội bộ.
+ */
+export function parseFaqItems(raw: string | undefined): { question: string; answer: string }[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item) => ({
+        question: typeof item?.cau_hoi === "string" ? item.cau_hoi.trim() : "",
+        answer: typeof item?.tra_loi === "string" ? item.tra_loi.trim() : "",
+      }))
+      .filter((item) => item.question && item.answer);
+  } catch {
+    console.warn("[parseFaqItems] faq_items không phải JSON hợp lệ — bỏ qua.");
+    return [];
+  }
+}

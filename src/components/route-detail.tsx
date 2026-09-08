@@ -3,7 +3,7 @@ import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, RefreshCw, ShieldC
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-import { vehicleTypeSlug, type Route } from "@/types/route";
+import { routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
 import { formatVNDate } from "@/lib/wp";
 
@@ -14,7 +14,7 @@ const footerLinkGroups = [
 
 function DetailCard({ route }: { route: Route }) {
   return (
-    <Link className="route-ticket related-ticket" href={`/tuyen-duong/${route.slug}`}>
+    <Link className="route-ticket related-ticket" href={routeHref(route)}>
       <div className="rt-price"><span>Giá từ</span><b>{route.price}</b></div>
       <div className="rt-body"><div className="rt-route"><span>{route.from}</span><ArrowRight size={16} /><span>{route.to}</span></div><div className="rt-meta"><span><Clock3 size={13} /> {route.time}</span><span><Milestone size={13} /> {route.distance}</span></div></div>
       <div className="rt-cta">Xem tuyến <ArrowRight size={14} /></div>
@@ -28,7 +28,7 @@ export function RouteDetailPage({ route, relatedRoutes }: { route: Route; relate
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
       <section className="route-detail-hero">
         <div className="route-detail-hero-copy">
-          <Link className="back-link" href="/tuyen-duong"><ArrowRight size={15} className="back-arrow" /> Tất cả tuyến đường</Link>
+          <Link className="back-link" href={`/tuyen-duong/${route.regionSlug || "khac"}`}><ArrowRight size={15} className="back-arrow" /> Tất cả tuyến {route.region}</Link>
           <p className="eyebrow"><span className="eyebrow-line" /> {route.heroNote}</p>
           <h1>{route.from}<br /><em>→ {route.to}</em></h1>
           <p className="detail-summary">{route.summary}</p>
@@ -46,7 +46,7 @@ export function RouteDetailPage({ route, relatedRoutes }: { route: Route; relate
 
           <div className="detail-map-wrap"><div className="section-heading detail-heading"><div><p className="section-label">CUNG ĐƯỜNG</p><h2>Thấy trước hành trình.</h2></div></div><iframe className="detail-map" src={route.mapEmbedSrc} title={`Bản đồ tuyến ${route.from} đến ${route.to}`} loading="lazy" /></div>
 
-          <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">LOẠI XE PHÙ HỢP</p><h2>Đi tuyến này bằng xe gì?</h2></div></div><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={`/tuyen-duong/${route.slug}/${vehicleTypeSlug(vehicle)}`} className="vehicle-chip">{vehicle}</Link>)}</div></div>
+          <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">LOẠI XE PHÙ HỢP</p><h2>Đi tuyến này bằng xe gì?</h2></div></div><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeComboHref(route, vehicleTypeSlug(vehicle))} className="vehicle-chip">{vehicle}</Link>)}</div></div>
         </div>
         <aside className="detail-aside" id="booking"><div className="booking-card"><p className="section-label">ĐẶT CHUYẾN</p><h2>Sẵn sàng lên đường?</h2><p>Để lại thông tin, đội ngũ Xe Miền Nam sẽ gọi lại xác nhận trong ít phút.</p><Button size="lg" asChild><a href="tel:19006789">Gọi 1900 6789 <Phone data-icon="inline-end" /></a></Button><span className="booking-note"><ShieldCheck size={16} /> Không cần thanh toán trước</span></div><div className="departures-card"><p className="section-label">KHUNG GIỜ KHÁCH HAY CHỌN</p><div className="departure-list">{route.departures.map((time) => <span key={time}>{time}</span>)}</div><ul className="detail-notes">{route.notes.map((note) => <li key={note}><Check size={15} />{note}</li>)}</ul></div></aside>
       </section>

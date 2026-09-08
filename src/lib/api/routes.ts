@@ -1,6 +1,6 @@
 import type { Route, VehiclePrice } from "@/types/route";
 import { routes as mockRoutes } from "@/data/routes";
-import { fetchRawRoutes, fetchRawRouteBySlug, embeddedTermName, type WPRoute } from "./raw";
+import { fetchRawRoutes, fetchRawRouteBySlug, embeddedTermName, embeddedTerms, type WPRoute } from "./raw";
 import { getPricingTable, pricingForRoute, type PricingRow } from "./pricing";
 import { splitCommaList } from "@/lib/wp";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
@@ -50,6 +50,9 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
   const from = wp.meta.diem_di ?? "";
   const to = wp.meta.diem_den ?? "";
   const region = embeddedTermName(wp._embedded, "province") ?? to;
+  // Ngày 25: slug của term province đầu tiên — dùng dựng URL hub `/tuyen-duong/[regionSlug]/...`
+  // (xem routeHref() trong types/route.ts). Khác `region` (tên hiển thị) ở trên.
+  const regionSlug = embeddedTerms(wp._embedded, "province")[0]?.slug ?? "";
 
   return {
     id: String(wp.id),
@@ -61,6 +64,7 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
     price: cheapest?.priceLabel ?? "",
     vehicleTypes,
     region,
+    regionSlug,
     seatCount,
     pricingByVehicle,
     pickupPoints: splitCommaList(wp.meta.diem_don),
@@ -112,4 +116,21 @@ export async function fetchRouteBySlug(slug: string): Promise<Route | undefined>
 export async function fetchRelatedRoutes(currentSlug: string, count = 3): Promise<Route[]> {
   const all = await fetchRoutes();
   return all.filter((route) => route.slug !== currentSlug).slice(0, count);
+}
+
+/**
+ * Các tuyến thuộc đúng 1 hub tỉnh (Ngày 25) — dùng cho trang `/tuyen-duong/[tinh]`.
+ * Không gọi fetchRawRoutes() lọc riêng vì sẽ tính lại pricing 2 lần; lọc trên kết quả
+ * fetchRoutes() đã map sẵn (Next.js request memoization gộp các lần gọi fetch giống hệt
+ * nhau trong cùng 1 lượt render, nên gọi lại fetchRoutes() ở đây không tốn thêm request thật).
+ */
+export async function fetchRoutesByRegion(regionSlug: string): Promise<Route[]> {
+  const all = await fetchRoutes();
+  return all.filter((route) => route.regionSlug === regionSlug);
+}
+
+/** Danh sách slug tỉnh có ít nhất 1 tuyến — dùng cho generateStaticParams() của `/tuyen-duong/[tinh]`. */
+export async function fetchRegionSlugs(): Promise<string[]> {
+  const all = await fetchRoutes();
+  return Array.from(new Set(all.map((route) => route.regionSlug).filter(Boolean)));
 }

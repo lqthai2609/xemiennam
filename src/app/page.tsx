@@ -7,6 +7,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { FleetShowcase } from "@/components/fleet-showcase";
 import { ServiceCard } from "@/components/service-card";
 import { fetchRoutes } from "@/lib/api/routes";
+import { routeHref } from "@/types/route";
 import { fetchPosts } from "@/lib/api/blog";
 import { fetchServices } from "@/lib/api/services";
 import { fetchTestimonials } from "@/lib/api/testimonials";
@@ -86,7 +87,7 @@ function RouteCard({ route }: { route: Route }) {
         </div>
       </div>
       <div className="rt-cta">
-        <Link href={`/tuyen-duong/${route.slug}`}>
+        <Link href={routeHref(route)}>
           Xem chi tiết <ArrowRight size={14} />
         </Link>
       </div>

@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site-config";
-import { fetchRoutes } from "@/lib/api/routes";
+import { fetchRoutes, fetchRegionSlugs } from "@/lib/api/routes";
 import { fetchServices } from "@/lib/api/services";
 import { fetchPosts } from "@/lib/api/blog";
+import { fetchDiemDenBySlug } from "@/lib/api/diem-den";
 import { vehicleCategories } from "@/data/vehicle-categories";
-import { vehicleTypeSlug } from "@/types/route";
+import { routeHref, routeComboHref, vehicleTypeSlug } from "@/types/route";
 
 /**
  * Sitemap động (Ngày 23, mục 5 kiến trúc kỹ thuật) — tự sinh từ dữ liệu WP REST thật
@@ -17,10 +18,11 @@ import { vehicleTypeSlug } from "@/types/route";
  * "freshness giả" — đúng nguyên tắc mục 5, tránh lặp lỗi nhieuxe.vn ở mục 9.2).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [routes, services, posts] = await Promise.all([
+  const [routes, services, posts, regionSlugs] = await Promise.all([
     fetchRoutes(),
     fetchServices(),
     fetchPosts(),
+    fetchRegionSlugs(),
   ]);
 
   const staticEntries: MetadataRoute.Sitemap = [
@@ -35,18 +37,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/lien-he`, changeFrequency: "monthly", priority: 0.4 },
   ];
 
+  // Hub tỉnh /tuyen-duong/[tinh] (Ngày 25) — 1 entry/tỉnh có ít nhất 1 tuyến (fetchRegionSlugs()
+  // đã loại tỉnh rỗng, xem lib/api/routes.ts). lastModified lấy từ bài `diem_den` nếu tỉnh đó đã
+  // có nội dung biên tập; nhiều tỉnh sẽ chưa có (trang hub vẫn hợp lệ, chỉ thiếu mốc modified).
+  const hubEntries: MetadataRoute.Sitemap = await Promise.all(
+    regionSlugs.map(async (tinh) => {
+      const hub = await fetchDiemDenBySlug(tinh);
+      return {
+        url: `${SITE_URL}/tuyen-duong/${tinh}`,
+        lastModified: hub?.modifiedDate,
+        changeFrequency: "weekly" as const,
+        priority: 0.85,
+      };
+    }),
+  );
+
   const routeEntries: MetadataRoute.Sitemap = routes.map((route) => ({
-    url: `${SITE_URL}/tuyen-duong/${route.slug}`,
+    url: `${SITE_URL}${routeHref(route)}`,
     lastModified: route.modifiedDate,
     changeFrequency: "weekly",
     priority: 0.8,
   }));
 
   // Trang kết hợp tuyến × loại xe (Ngày 14) — sinh đúng những tổ hợp có thật trong pricingByVehicle,
-  // giống hệt logic generateStaticParams() ở app/tuyen-duong/[slug]/[loai-xe]/page.tsx.
+  // giống hệt logic generateStaticParams() ở app/tuyen-duong/[tinh]/[tuyen]/[loai-xe]/page.tsx.
   const comboEntries: MetadataRoute.Sitemap = routes.flatMap((route) =>
     route.pricingByVehicle.map((vp) => ({
-      url: `${SITE_URL}/tuyen-duong/${route.slug}/${vehicleTypeSlug(vp.vehicleType)}`,
+      url: `${SITE_URL}${routeComboHref(route, vehicleTypeSlug(vp.vehicleType))}`,
       lastModified: route.modifiedDate,
       changeFrequency: "weekly" as const,
       priority: 0.6,
@@ -75,6 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticEntries,
+    ...hubEntries,
     ...routeEntries,
     ...comboEntries,
     ...vehicleCategoryEntries,

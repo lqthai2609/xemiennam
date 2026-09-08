@@ -30,6 +30,15 @@ export interface Route {
   price: string;
   vehicleTypes: string[];
   region: string;
+  /**
+   * Slug của term `province` (Ngày 25 — hub tỉnh). Dùng để dựng URL lồng
+   * `/tuyen-duong/[regionSlug]/[slug]`, khớp slug của post `diem_den` tương ứng (xem
+   * routeHref()/routeComboHref() bên dưới — LUÔN dùng 2 hàm này thay vì tự ráp chuỗi
+   * `/tuyen-duong/${route.slug}` để không lệch nhau giữa các trang khi đổi cấu trúc URL).
+   * Rỗng nếu route chưa gắn taxonomy `province` (dữ liệu nhập thiếu) — routeHref() tự
+   * fallback về "khac" trong trường hợp đó, xem ghi chú tại hàm.
+   */
+  regionSlug: string;
   seatCount: string[];
   /** Giá riêng theo từng loại xe — khớp đúng repeater pricing_by_vehicle trong kiến trúc dữ liệu CPT route. */
   pricingByVehicle: VehiclePrice[];
@@ -68,6 +77,22 @@ export const emptyFilters: FilterState = {
 
 export function hasActiveFilters(filters: FilterState) {
   return Boolean(filters.region || filters.vehicleType || filters.seats);
+}
+
+/**
+ * Dựng URL trang chi tiết 1 tuyến — Ngày 25: cấu trúc đổi từ `/tuyen-duong/[slug]` phẳng sang
+ * `/tuyen-duong/[tinh]/[tuyen]` lồng theo hub tỉnh. TẤT CẢ nơi cần link tới trang tuyến phải
+ * gọi hàm này (không tự ráp chuỗi) để khi cấu trúc URL đổi lần nữa chỉ cần sửa 1 chỗ.
+ * Fallback "khac" chỉ xảy ra với dữ liệu lỗi (route chưa gắn `province`) — không nên gặp ở
+ * dữ liệu thật vì taxonomy `province` bắt buộc khi tạo route (xem snippet WPCode ID 11).
+ */
+export function routeHref(route: { regionSlug: string; slug: string }): string {
+  return `/tuyen-duong/${route.regionSlug || "khac"}/${route.slug}`;
+}
+
+/** Dựng URL trang kết hợp tuyến + loại xe (Ngày 14) — cùng nguyên tắc như routeHref() ở trên. */
+export function routeComboHref(route: { regionSlug: string; slug: string }, vehicleSlug: string): string {
+  return `${routeHref(route)}/${vehicleSlug}`;
 }
 
 /** Slug quy ước cho loại xe, dùng để link sang /loai-xe/[slug] (trang này ra mắt ở Ngày 13). */

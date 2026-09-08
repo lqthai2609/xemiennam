@@ -5,7 +5,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { VehicleArt } from "@/components/vehicle-type-landing";
 import { comboDescriptionOrDefault } from "@/lib/combo";
-import type { Route, VehiclePrice } from "@/types/route";
+import { routeHref, type Route, type VehiclePrice } from "@/types/route";
 import type { VehicleCategory } from "@/types/vehicle-category";
 import type { Testimonial } from "@/types/testimonial";
 
@@ -40,7 +40,7 @@ export function ComboLandingPage({
 
       <section className="vehicle-type-hero">
         <div className="vehicle-type-hero-copy">
-          <Link className="back-link" href={`/tuyen-duong/${route.slug}`}>← Tuyến {route.from} – {route.to}</Link>
+          <Link className="back-link" href={routeHref(route)}>← Tuyến {route.from} – {route.to}</Link>
           <p className="eyebrow"><span className="eyebrow-line" /> {category.label} · {route.from.toUpperCase()} → {route.to.toUpperCase()}</p>
           <h1>Thuê xe {category.label.toLowerCase()}<br /><em>đi {route.to}</em></h1>
           <p>{description}</p>
@@ -103,7 +103,7 @@ export function ComboLandingPage({
       )}
 
       <section className="section-wrap combo-back-links">
-        <Link className="text-link" href={`/tuyen-duong/${route.slug}`}>Xem đầy đủ tuyến {route.from} – {route.to} <ArrowRight size={15} /></Link>
+        <Link className="text-link" href={routeHref(route)}>Xem đầy đủ tuyến {route.from} – {route.to} <ArrowRight size={15} /></Link>
         <Link className="text-link" href={`/loai-xe/${category.slug}`}>Xem đầy đủ loại xe {category.label} <ArrowRight size={15} /></Link>
       </section>
 

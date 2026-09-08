@@ -1,4 +1,4 @@
-import { fetchRawRoutes, fetchRawVehicles, embeddedTermName, type WPVehicle } from "./raw";
+import { fetchRawRoutes, fetchRawVehicles, embeddedTermName, embeddedTerms, type WPVehicle } from "./raw";
 import { formatPriceShort } from "@/lib/wp";
 
 /**
@@ -11,6 +11,8 @@ import { formatPriceShort } from "@/lib/wp";
 export type PricingRow = {
   routeId: string;
   routeSlug: string;
+  /** Slug term province của route (Ngày 25) — cần để dựng URL hub `/tuyen-duong/[tinh]/[tuyen]` (xem routeHref() trong types/route.ts). */
+  routeRegionSlug: string;
   routeLabel: string;
   vehicleId: string;
   vehicleName: string;
@@ -33,6 +35,7 @@ export async function getPricingTable(): Promise<PricingRow[]> {
       rows.push({
         routeId: String(route.id),
         routeSlug: route.slug,
+        routeRegionSlug: embeddedTerms(route._embedded, "province")[0]?.slug ?? "",
         routeLabel: [route.meta?.diem_di, route.meta?.diem_den].filter(Boolean).join(" → "),
         vehicleId,
         vehicleName: vehicle?.title.rendered ?? "",

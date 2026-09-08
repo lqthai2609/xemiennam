@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
-import { vehicleTypeSlug, type Route } from "@/types/route";
+import { routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
 import { formatVNDate } from "@/lib/wp";
 
 const footerLinkGroups = [
@@ -105,7 +105,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
               {filteredRoutes.map((route) => (
                 <tr key={route.slug}>
                   <td>
-                    <Link href={`/tuyen-duong/${route.slug}`} className="bang-gia-route-link">
+                    <Link href={routeHref(route)} className="bang-gia-route-link">
                       {route.from} → {route.to}
                     </Link>
                   </td>
@@ -114,7 +114,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
                     return (
                       <td key={type}>
                         {price ? (
-                          <Link href={`/tuyen-duong/${route.slug}/${vehicleTypeSlug(type)}`}>{price}</Link>
+                          <Link href={routeComboHref(route, vehicleTypeSlug(type))}>{price}</Link>
                         ) : (
                           "—"
                         )}
@@ -133,7 +133,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
         <div className="bang-gia-mobile-list">
           {filteredRoutes.map((route) => (
             <article className="bang-gia-mobile-card" key={route.slug}>
-              <Link href={`/tuyen-duong/${route.slug}`} className="bang-gia-mobile-route">
+              <Link href={routeHref(route)} className="bang-gia-mobile-route">
                 {route.from} → {route.to}
               </Link>
               <div className="bang-gia-mobile-prices">
@@ -143,7 +143,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
                   return (
                     <Link
                       key={type}
-                      href={`/tuyen-duong/${route.slug}/${vehicleTypeSlug(type)}`}
+                      href={routeComboHref(route, vehicleTypeSlug(type))}
                       className="bang-gia-mobile-price-row"
                     >
                       <span>{type}</span>

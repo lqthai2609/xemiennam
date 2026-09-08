@@ -10,6 +10,7 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { formatVNDate } from "@/lib/wp";
 import { JsonLd } from "@/components/json-ld";
 import { buildFaqPageSchema } from "@/lib/schema";
+import { routeHref } from "@/types/route";
 
 export type Props = { params: Promise<{ slug: string }> };
 
@@ -112,7 +113,7 @@ export default async function BlogDetailPage({ params }: Props) {
             <p className="section-label">TUYẾN LIÊN QUAN</p>
             <div className="blog-related-links">
               {relatedRoutes.map((route) => (
-                <Link key={route.slug} href={`/tuyen-duong/${route.slug}`} className="text-link">
+                <Link key={route.slug} href={routeHref(route)} className="text-link">
                   {route.from} – {route.to} <ArrowRight size={15} />
                 </Link>
               ))}

@@ -16,7 +16,11 @@ import { NextResponse } from "next/server";
  */
 
 const PATHS_BY_POST_TYPE: Record<string, (slug: string) => string[]> = {
-  route: (slug) => ["/", "/tuyen-duong", `/tuyen-duong/${slug}`, "/bang-gia"],
+  // Ngày 25: bỏ `/tuyen-duong/${slug}` — URL tuyến giờ lồng theo tỉnh (`/tuyen-duong/[tinh]/[tuyen]`)
+  // và payload webhook (snippet ID 16) chỉ gửi slug của route, không có regionSlug, nên không dựng
+  // được path chính xác ở đây. Trang tuyến/combo vẫn tự làm mới theo REVALIDATE_SECONDS mặc định
+  // (1h, xem lib/wp.ts) — cùng giới hạn đã ghi nhận từ trước cho trang combo /tuyen-duong/[tinh]/[tuyen]/[loai-xe].
+  route: () => ["/", "/tuyen-duong", "/bang-gia"],
   // Ngày 25: /doi-xe đã gỡ (gộp vào /loai-xe) — 1 bài vehicle giờ chỉ ảnh hưởng trang chủ,
   // trang danh sách/chi tiết loại xe và bảng giá. Không biết trước type slug nào bị ảnh
   // hưởng từ payload này nên revalidate rộng "/loai-xe" (không phải "/loai-xe/[slug]" riêng).
@@ -25,6 +29,9 @@ const PATHS_BY_POST_TYPE: Record<string, (slug: string) => string[]> = {
   promotion: () => ["/khuyen-mai"],
   testimonial: () => ["/danh-gia"],
   post: (slug) => ["/", "/blog", `/blog/${slug}`],
+  // Ngày 25 — hub tỉnh: slug bài `diem_den` trùng slug term `province` (= "tinh" trên URL),
+  // nên revalidate được chính xác trang hub, không như `route` ở trên.
+  diem_den: (slug) => [`/tuyen-duong/${slug}`],
 };
 
 type RevalidatePayload = {

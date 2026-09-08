@@ -200,6 +200,26 @@ export type WPTestimonial = {
   };
 };
 
+/**
+ * Kiểu dữ liệu THÔ cho CPT `diem_den` (hub điểm đến/tỉnh — Ngày 25, snippet WPCode ID 9080).
+ * Cố ý KHÔNG gắn taxonomy `province` (xem ghi chú trong snippet) — khớp với route bằng SLUG:
+ * slug của post `diem_den` trùng slug term `province` tương ứng (vd "ba-ria-vung-tau"). Field
+ * `faq_items` cùng schema JSON với blog (snippet ID 36), đăng ký riêng cho post type này.
+ */
+export type WPDiemDen = {
+  id: number;
+  slug: string;
+  title: { rendered: string };
+  content: { rendered: string };
+  /** Field mặc định của WP REST — "Cập nhật lần cuối" (mục 5, kiến trúc kỹ thuật). */
+  modified?: string;
+  /** Expose qua snippet WPCode ID 15 — rỗng cho tới khi nhập Rank Math SEO riêng cho từng hub. */
+  rank_math_title?: string;
+  rank_math_description?: string;
+  faq_items?: string;
+  _embedded?: { "wp:featuredmedia"?: { source_url?: string; code?: string }[] };
+};
+
 const LIST_QUERY = "per_page=100&_embed=1";
 
 export async function fetchRawRoutes(): Promise<WPRoute[]> {
@@ -245,5 +265,15 @@ export async function fetchRawPosts(): Promise<WPPost[]> {
 
 export async function fetchRawPostBySlug(slug: string): Promise<WPPost | null> {
   const list = await wpFetch<WPPost[]>(`/posts?slug=${encodeURIComponent(slug)}&_embed=1`);
+  return list?.[0] ?? null;
+}
+
+// rest_base là "diem-den" (có gạch nối), khác post_type "diem_den" (gạch dưới) — xem snippet ID 9080.
+export async function fetchRawDiemDen(): Promise<WPDiemDen[]> {
+  return (await wpFetch<WPDiemDen[]>(`/diem-den?${LIST_QUERY}`)) ?? [];
+}
+
+export async function fetchRawDiemDenBySlug(slug: string): Promise<WPDiemDen | null> {
+  const list = await wpFetch<WPDiemDen[]>(`/diem-den?slug=${encodeURIComponent(slug)}&_embed=1`);
   return list?.[0] ?? null;
 }

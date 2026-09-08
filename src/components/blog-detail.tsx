@@ -5,7 +5,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { formatVNDate } from "@/lib/wp";
 import { navItems } from "@/data/nav";
 import type { BlogPost } from "@/types/blog";
-import type { Route } from "@/types/route";
+import { routeHref, type Route } from "@/types/route";
 
 const footerLinkGroups = [
   {
@@ -43,7 +43,7 @@ function CategoryIcon({ category, size = 26 }: { category: string; size?: number
 /** Thẻ tuyến rút gọn cho khối "Tuyến liên quan" — cùng markup .route-ticket đã dùng ở RouteDetailPage. */
 function RelatedRouteCard({ route }: { route: Route }) {
   return (
-    <Link className="route-ticket related-ticket" href={`/tuyen-duong/${route.slug}`}>
+    <Link className="route-ticket related-ticket" href={routeHref(route)}>
       <div className="rt-price">
         <span>Giá từ</span>
         <b>{route.price}</b>
