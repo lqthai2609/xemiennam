@@ -38,6 +38,7 @@ export function VehicleTypeLanding({
   services,
   galleryImages,
   relatedPosts,
+  otherCategories,
 }: {
   category: VehicleCategory;
   routePrices: PriceRow[];
@@ -45,6 +46,7 @@ export function VehicleTypeLanding({
   services: ServiceLink[];
   galleryImages: string[];
   relatedPosts: BlogPost[];
+  otherCategories: VehicleCategory[];
 }) {
   return (
     <main className="site-shell vehicle-type-page">
@@ -139,6 +141,29 @@ export function VehicleTypeLanding({
           <div className="section-heading-row"><div><p className="section-label">BÀI VIẾT LIÊN QUAN</p><h2>Thêm cảm hứng cho hành trình.</h2></div><Link href="/blog" className="text-link">Xem tất cả bài viết <ArrowRight size={15} /></Link></div>
           <div className="blog-grid vehicle-type-related-post-grid">
             {relatedPosts.slice(0, 3).map((post) => <BlogCard key={post.id} post={post} />)}
+          </div>
+        </section>
+      )}
+
+      {otherCategories.length > 0 && (
+        <section className="section-wrap vehicle-type-others">
+          <div className="section-heading-row">
+            <div><p className="section-label">LOẠI XE KHÁC</p><h2>Xem thêm các loại xe khác.</h2></div>
+            <Link href="/loai-xe" className="text-link">Xem tất cả loại xe <ArrowRight size={15} /></Link>
+          </div>
+          <div className="vehicle-category-cards">
+            {otherCategories.map((other) => (
+              <Link href={`/loai-xe/${other.slug}`} className="vehicle-category-card" key={other.slug}>
+                <VehicleArt category={other} />
+                <div className="vehicle-category-card-body">
+                  <div className="vehicle-category-card-heading"><p>{other.label}</p><span>{other.type}</span></div>
+                  <h3>{other.title}</h3>
+                  <p className="vehicle-category-summary">{other.shortDescription}</p>
+                  <div className="vehicle-category-card-meta"><span className="vehicle-category-badge">{other.driveOptions.join(" / ")}</span><strong>{other.startingPrice}</strong></div>
+                  <span className="vehicle-category-link">Xem chi tiết <ArrowRight size={15} /></span>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}

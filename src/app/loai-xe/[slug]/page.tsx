@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { VehicleTypeLanding } from "@/components/vehicle-type-landing";
-import { getVehicleCategory, vehicleCategories, withRealCategoryImage } from "@/data/vehicle-categories";
+import { getVehicleCategory, vehicleCategories, withRealCategoryImage, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { getPricingTable, pricingForVehicleType } from "@/lib/api/pricing";
 import { fetchServices } from "@/lib/api/services";
@@ -69,6 +69,14 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
     .filter((service) => service.vehicleTypes.some((vt) => vt.slug === category.slug))
     .map((service) => ({ title: service.name, description: service.shortDescription, href: `/dich-vu/${service.slug}` }));
 
+  // Section "Xem thêm các loại xe khác" ở cuối trang, trước CTA — gợi ý các loại xe còn lại
+  // (ảnh dùng ảnh xe thật nếu có, cùng cơ chế withRealCategoryImage() ở trên), giới hạn 3 thẻ
+  // để không lấn CTA, kèm link "Xem tất cả loại xe" sang /loai-xe cho các loại còn lại.
+  const otherCategories = withRealCategoryImages(
+    vehicleCategories.filter((c) => c.slug !== category.slug),
+    allVehicles,
+  ).slice(0, 3);
+
   const serviceSchema = buildServiceSchema({
     name: `Thuê xe ${category.label.toLowerCase()} nguyên chiếc`,
     description: category.description,
@@ -85,6 +93,7 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
         services={services}
         galleryImages={galleryImages}
         relatedPosts={relatedPosts}
+        otherCategories={otherCategories}
       />
     </>
   );
