@@ -7,8 +7,10 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { RouteFilter } from "@/components/route-filter";
 import { RouteResults } from "@/components/route-results";
+import { RouteFinderForm } from "@/components/route-finder-form";
 import { emptyFilters, type FilterState, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
+import { buildRouteFinderProvinces } from "@/lib/route-finder";
 
 const footerLinkGroups = [
   {
@@ -32,13 +34,23 @@ const footerLinkGroups = [
 export function RoutesPageClient({ routes }: { routes: Route[] }) {
   const [filters, setFilters] = useState<FilterState>(emptyFilters);
 
-  // Đến từ ô "Tìm chuyến" ở trang chủ (booking-bar) với ?diem_den=<tên điểm đến> —
-  // tự chọn sẵn bộ lọc khu vực tương ứng. Đọc trực tiếp window.location thay vì
-  // useSearchParams() để không bắt buộc bọc Suspense quanh trang này.
+  // Đến từ ô "Tìm chuyến" ở trang chủ (booking-bar) hoặc form "Tìm tuyến phù hợp" (route-finder-form)
+  // với ?diem_den=<tỉnh>&khu_vuc=<khu vực>&loai_xe=<loại xe> — tự chọn sẵn bộ lọc tương ứng. Đọc
+  // trực tiếp window.location thay vì useSearchParams() để không bắt buộc bọc Suspense quanh trang này.
   useEffect(() => {
-    const diemDen = new URLSearchParams(window.location.search).get("diem_den");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (diemDen) setFilters((current) => ({ ...current, region: diemDen }));
+    const params = new URLSearchParams(window.location.search);
+    const diemDen = params.get("diem_den");
+    const khuVuc = params.get("khu_vuc");
+    const loaiXe = params.get("loai_xe");
+    if (diemDen || khuVuc || loaiXe) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFilters((current) => ({
+        ...current,
+        region: diemDen ?? current.region,
+        area: khuVuc ?? current.area,
+        vehicleType: loaiXe ?? current.vehicleType,
+      }));
+    }
   }, []);
 
   const filteredRoutes = useMemo(
@@ -46,17 +58,24 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       routes.filter(
         (route) =>
           (!filters.region || route.region === filters.region) &&
+          (!filters.area || route.to === filters.area) &&
           (!filters.vehicleType || route.vehicleTypes.includes(filters.vehicleType)) &&
           (!filters.seats || route.seatCount.includes(filters.seats)),
       ),
     [filters, routes],
   );
   const regions = [...new Set(routes.map((route) => route.region))];
+  // Khu vực cụ thể trong tỉnh đang chọn (rỗng = mọi tỉnh) — cascading giống RouteFinderForm.
+  const areas = useMemo(
+    () => [...new Set(routes.filter((route) => !filters.region || route.region === filters.region).map((route) => route.to))],
+    [routes, filters.region],
+  );
   const vehicleTypes = [...new Set(routes.flatMap((route) => route.vehicleTypes))];
   // Tính động từ route.seatCount thật (đã tự loại Limousine, xem lib/api/routes.ts) thay vì
   // liệt kê cứng — Ngày 25: liệt kê cứng từng làm dropdown "Số chỗ" lệch khi taxonomy đổi
   // từ 4 sang 6 loại, tính động thì luôn khớp bất kể sau này còn đổi tiếp.
   const seatOptions = [...new Set(routes.flatMap((route) => route.seatCount))];
+  const finderProvinces = useMemo(() => buildRouteFinderProvinces(routes), [routes]);
 
   return (
     <main className="site-shell">
@@ -79,9 +98,11 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
           <small>HƠN 15 TUYẾN CỐ ĐỊNH</small>
         </div>
       </section>
+      <RouteFinderForm provinces={finderProvinces} />
       <section className="section-wrap routes-page-content">
         <RouteFilter
           regions={regions}
+          areas={areas}
           vehicleTypes={vehicleTypes}
           seatOptions={seatOptions}
           filters={filters}

@@ -2,15 +2,23 @@ import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
+import { RouteFinderForm } from "@/components/route-finder-form";
 import { navItems } from "@/data/nav";
 import type { DestinationCard } from "@/types/diem-den";
+import type { RouteFinderProvince } from "@/lib/route-finder";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
   { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Chính sách huỷ chuyến", href: "#" }, { label: "Liên hệ", href: "/lien-he" }] },
 ];
 
-export function DestinationsPage({ destinations }: { destinations: DestinationCard[] }) {
+export function DestinationsPage({
+  destinations,
+  finderProvinces,
+}: {
+  destinations: DestinationCard[];
+  finderProvinces: RouteFinderProvince[];
+}) {
   return (
     <main className="site-shell">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
@@ -19,6 +27,7 @@ export function DestinationsPage({ destinations }: { destinations: DestinationCa
         <h1>Đi đâu,<br /><em>Xe Miền Nam có tuyến.</em></h1>
         <p>Mỗi điểm đến là một cách đi khác nhau. Chọn khu vực bạn muốn đến để xem các tuyến xe đang chạy và bắt đầu lên lịch.</p>
       </section>
+      <RouteFinderForm provinces={finderProvinces} />
       <section className="section-wrap destination-index-content" aria-labelledby="destination-list-title">
         <div className="section-heading-row">
           <div><p className="section-label">ĐIỂM ĐẾN PHỔ BIẾN</p><h2 id="destination-list-title">Chọn nơi bạn muốn đến.</h2></div>
