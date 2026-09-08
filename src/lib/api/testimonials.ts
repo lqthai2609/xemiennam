@@ -5,7 +5,7 @@ import { testimonials as mockTestimonials } from "@/data/testimonials";
 import { fetchRawTestimonials, type WPTestimonial } from "./raw";
 import { fetchRoutes } from "./routes";
 import { fetchVehicles } from "./vehicles";
-import { stripHtml } from "@/lib/wp";
+import { stripHtml, decodeHtmlEntities } from "@/lib/wp";
 
 /**
  * fetchTestimonials() — Ngày 18.
@@ -26,7 +26,7 @@ function initialsFromName(name: string): string {
 }
 
 function mapWPTestimonialToTestimonial(wp: WPTestimonial, routes: Route[], vehicles: Vehicle[]): Testimonial {
-  const name = wp.title.rendered;
+  const name = decodeHtmlEntities(wp.title.rendered);
   // route_lien_quan/vehicle_lien_quan là quan hệ thật (select_single_post) — không phải text tự do,
   // đúng nguyên tắc mục 3 kiến trúc kỹ thuật. Join theo ID với route/vehicle đã fetch để ra đúng
   // slug/type hiển thị (routeSlug/vehicleType), giữ nguyên shape Testimonial hiện có.

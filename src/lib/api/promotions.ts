@@ -6,7 +6,7 @@ import { promotions as mockPromotions } from "@/data/promotions";
 import { fetchRawPromotions, type WPPromotion } from "./raw";
 import { fetchRoutes } from "./routes";
 import { fetchVehicles } from "./vehicles";
-import { stripHtml } from "@/lib/wp";
+import { stripHtml, decodeHtmlEntities } from "@/lib/wp";
 
 /**
  * fetchPromotions() — Ngày 18.
@@ -36,7 +36,7 @@ function mapWPPromotionToPromotion(wp: WPPromotion, routes: Route[], vehicles: V
   return {
     id: String(wp.id),
     slug: wp.slug,
-    name: wp.title.rendered,
+    name: decodeHtmlEntities(wp.title.rendered),
     description: stripHtml(wp.content?.rendered),
     discountType,
     discountValue,

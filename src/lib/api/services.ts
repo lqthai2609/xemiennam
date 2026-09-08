@@ -4,7 +4,7 @@ import { vehicleTypeSlug } from "@/types/route";
 import { services as mockServices } from "@/data/services";
 import { fetchRawServices, fetchRawServiceBySlug, embeddedTerms, embeddedFeaturedImage, type WPService } from "./raw";
 import { fetchVehicles } from "./vehicles";
-import { splitCommaList, stripHtml } from "@/lib/wp";
+import { splitCommaList, stripHtml, decodeHtmlEntities } from "@/lib/wp";
 
 /**
  * fetchServices()/fetchServiceBySlug() — Ngày 13.
@@ -43,11 +43,11 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
 
   return {
     slug: wp.slug,
-    name: wp.title.rendered,
+    name: decodeHtmlEntities(wp.title.rendered),
     shortDescription: (need || body).slice(0, 140),
     detailDescription: body,
     icon: ICON_BY_SLUG[wp.slug] ?? "city-tour",
-    iconLabel: wp.title.rendered,
+    iconLabel: decodeHtmlEntities(wp.title.rendered),
     image: embeddedFeaturedImage(wp._embedded),
     vehicleTypes,
     suggestedVehicles,

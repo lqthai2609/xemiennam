@@ -35,14 +35,50 @@ export async function wpFetch<T>(
   }
 }
 
+const NAMED_HTML_ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+  hellip: "…",
+  mdash: "—",
+  ndash: "–",
+  ldquo: "“",
+  rdquo: "”",
+  lsquo: "‘",
+  rsquo: "’",
+};
+
+/**
+ * Giải mã HTML entity trong text field trả về từ WP REST API (title.rendered, tên term
+ * nhúng qua _embedded...) — các field này luôn chạy qua wptexturize/esc_html của WordPress
+ * nên ký tự đặc biệt (–, &, dấu nháy...) bị mã hoá thành entity (vd "&#8211;", "&amp;")
+ * thay vì trả về ký tự gốc. Không có field "raw" nào thay thế được vì REST API chỉ public
+ * "rendered" cho khách không đăng nhập.
+ */
+export function decodeHtmlEntities(text: string | undefined | null): string {
+  if (!text) return "";
+  return text.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (match, entity: string) => {
+    if (entity[0] === "#") {
+      const code = entity[1] === "x" || entity[1] === "X" ? parseInt(entity.slice(2), 16) : parseInt(entity.slice(1), 10);
+      return Number.isNaN(code) ? match : String.fromCodePoint(code);
+    }
+    return NAMED_HTML_ENTITIES[entity] ?? match;
+  });
+}
+
 /** Bỏ thẻ HTML thô trong content.rendered (WordPress trả về HTML, ta cần plain text cho description/summary). */
 export function stripHtml(html: string | undefined | null): string {
   if (!html) return "";
-  return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return decodeHtmlEntities(
+    html
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
 }
 
 /**

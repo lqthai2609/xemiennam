@@ -2,7 +2,7 @@ import type { Vehicle } from "@/types/vehicle";
 import { vehicles as mockVehicles } from "@/data/vehicles";
 import { fetchRawVehicles, fetchRawVehicleBySlug, embeddedTermName, type WPVehicle } from "./raw";
 import { getPricingTable, pricingForVehicle } from "./pricing";
-import { stripHtml, wpFetch } from "@/lib/wp";
+import { stripHtml, wpFetch, decodeHtmlEntities } from "@/lib/wp";
 
 /**
  * fetchVehicles()/fetchVehicleBySlug() — Ngày 12.
@@ -61,14 +61,14 @@ async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
   return {
     id: String(wp.id),
     slug: wp.slug,
-    name: wp.title.rendered,
+    name: decodeHtmlEntities(wp.title.rendered),
     type,
     seats: wp.meta.so_cho ? `${wp.meta.so_cho} chỗ` : "",
     // Chưa có meta tương ứng bên WordPress — để rỗng tạm, bổ sung khi nhập liệu thật Ngày 24.
     capacity: "",
     description: stripHtml(wp.content.rendered),
     color: COLOR_BY_TYPE[type] ?? "sand",
-    imageLabel: wp.title.rendered,
+    imageLabel: decodeHtmlEntities(wp.title.rendered),
     images,
     // tien_ich đã là mảng sẵn (meta box lưu list_text → mảng) — KHÔNG .split(",") nữa
     // (bản trước Ngày 21c gọi .split trên 1 mảng sẽ crash ngay khi có dữ liệu thật, vì

@@ -1,4 +1,4 @@
-import { wpFetch } from "@/lib/wp";
+import { wpFetch, decodeHtmlEntities } from "@/lib/wp";
 
 /**
  * Kiểu dữ liệu THÔ đúng như WP REST API trả về cho CPT `route`/`vehicle`
@@ -68,7 +68,8 @@ export function embeddedTermName(
   embedded: { "wp:term"?: WPTerm[][] } | undefined,
   taxonomy: string,
 ): string | undefined {
-  return embedded?.["wp:term"]?.flat().find((t) => t?.taxonomy === taxonomy)?.name;
+  const name = embedded?.["wp:term"]?.flat().find((t) => t?.taxonomy === taxonomy)?.name;
+  return name ? decodeHtmlEntities(name) : undefined;
 }
 
 /**
@@ -80,7 +81,10 @@ export function embeddedTerms(
   embedded: { "wp:term"?: WPTerm[][] } | undefined,
   taxonomy: string,
 ): WPTerm[] {
-  return embedded?.["wp:term"]?.flat().filter((t) => t?.taxonomy === taxonomy) ?? [];
+  return (embedded?.["wp:term"]?.flat().filter((t) => t?.taxonomy === taxonomy) ?? []).map((t) => ({
+    ...t,
+    name: decodeHtmlEntities(t.name),
+  }));
 }
 
 /**

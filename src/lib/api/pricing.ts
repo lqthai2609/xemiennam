@@ -1,5 +1,5 @@
 import { fetchRawRoutes, fetchRawVehicles, embeddedTermName, embeddedTerms, type WPVehicle } from "./raw";
-import { formatPriceShort } from "@/lib/wp";
+import { formatPriceShort, decodeHtmlEntities } from "@/lib/wp";
 
 /**
  * Nguồn giá DUY NHẤT — đọc đúng 1 lần từ repeater `pricing_by_vehicle` trong CPT `route`
@@ -38,7 +38,7 @@ export async function getPricingTable(): Promise<PricingRow[]> {
         routeRegionSlug: embeddedTerms(route._embedded, "province")[0]?.slug ?? "",
         routeLabel: [route.meta?.diem_di, route.meta?.diem_den].filter(Boolean).join(" → "),
         vehicleId,
-        vehicleName: vehicle?.title.rendered ?? "",
+        vehicleName: decodeHtmlEntities(vehicle?.title.rendered),
         vehicleType: vehicle ? embeddedTermName(vehicle._embedded, "vehicle_type") ?? "" : "",
         price,
         priceLabel: formatPriceShort(price),
