@@ -3,12 +3,10 @@ import { ArrowRight, BusFront, Check, MapPin, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
-import { VehicleCard } from "@/components/vehicle-results";
 import { MediaPhoto } from "@/components/media-photo";
 import { BlogCard } from "@/components/blog-card";
 import { VehicleRealGallery } from "@/components/vehicle-real-gallery";
 import type { BlogPost } from "@/types/blog";
-import type { Vehicle } from "@/types/vehicle";
 import type { VehicleCategory } from "@/types/vehicle-category";
 
 const footerLinkGroups = [
@@ -29,12 +27,12 @@ type RouteLink = { label: string; href: string };
 type PriceRow = { route: string; price: string; note: string };
 type ServiceLink = { title: string; description: string; href: string };
 
-/** Trang chi tiết 1 loại xe (Ngày 13). `category` là nội dung tĩnh; vehicles/routePrices/
- * relatedRoutes/services đều tính từ dữ liệu thật (fetchVehicles/getPricingTable/fetchServices)
- * lọc theo `category.type` ngay ở Server Component cha — xem app/loai-xe/[slug]/page.tsx. */
+/** Trang chi tiết 1 loại xe (Ngày 13). `category` là nội dung tĩnh; routePrices/
+ * relatedRoutes/services/galleryImages/relatedPosts đều tính từ dữ liệu thật (fetchVehicles/
+ * getPricingTable/fetchServices/fetchPostsByVehicleType) ngay ở Server Component cha — xem
+ * app/loai-xe/[slug]/page.tsx. Ngày 25d: bỏ khối "XE ĐANG CÓ" (card xe cụ thể) theo yêu cầu. */
 export function VehicleTypeLanding({
   category,
-  vehicles,
   routePrices,
   relatedRoutes,
   services,
@@ -42,7 +40,6 @@ export function VehicleTypeLanding({
   relatedPosts,
 }: {
   category: VehicleCategory;
-  vehicles: Vehicle[];
   routePrices: PriceRow[];
   relatedRoutes: RouteLink[];
   services: ServiceLink[];
@@ -86,18 +83,6 @@ export function VehicleTypeLanding({
           ))}
         </div>
       </section>
-
-      {vehicles.length > 0 && (
-        <section className="section-wrap vehicle-type-vehicles">
-          <div className="section-heading-row">
-            <div><p className="section-label">XE ĐANG CÓ</p><h2>Chọn chiếc xe hợp với hành trình.</h2></div>
-            <Link href="/loai-xe" className="text-link">Xem tất cả loại xe <ArrowRight size={15} /></Link>
-          </div>
-          <div className="vehicle-grid vehicle-type-grid">
-            {vehicles.map((vehicle) => <VehicleCard key={vehicle.id} vehicle={vehicle} />)}
-          </div>
-        </section>
-      )}
 
       {galleryImages.length > 0 && (
         <section className="section-wrap vehicle-type-gallery-section">

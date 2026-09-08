@@ -80,7 +80,6 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
       <JsonLd data={serviceSchema} />
       <VehicleTypeLanding
         category={displayCategory}
-        vehicles={vehicles}
         routePrices={routePrices}
         relatedRoutes={relatedRoutes}
         services={services}
