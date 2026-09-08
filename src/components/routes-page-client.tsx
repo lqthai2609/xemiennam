@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-import { RouteFilter } from "@/components/route-filter";
 import { RouteResults } from "@/components/route-results";
 import { RouteFinderForm } from "@/components/route-finder-form";
 import { emptyFilters, type FilterState, type Route } from "@/types/route";
@@ -64,21 +63,23 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       ),
     [filters, routes],
   );
-  const regions = [...new Set(routes.map((route) => route.region))];
-  // Khu vực cụ thể trong tỉnh đang chọn (rỗng = mọi tỉnh) — cascading giống RouteFinderForm.
-  const areas = useMemo(
-    () => [...new Set(routes.filter((route) => !filters.region || route.region === filters.region).map((route) => route.to))],
-    [routes, filters.region],
-  );
-  const vehicleTypes = [...new Set(routes.flatMap((route) => route.vehicleTypes))];
   // Tính động từ route.seatCount thật (đã tự loại Limousine, xem lib/api/routes.ts) thay vì
   // liệt kê cứng — Ngày 25: liệt kê cứng từng làm dropdown "Số chỗ" lệch khi taxonomy đổi
   // từ 4 sang 6 loại, tính động thì luôn khớp bất kể sau này còn đổi tiếp.
-  const seatOptions = [...new Set(routes.flatMap((route) => route.seatCount))];
   const finderProvinces = useMemo(() => buildRouteFinderProvinces(routes), [routes]);
+  const [layout] = useState<"editorial" | "cards" | "compact">(() => {
+    if (typeof window === "undefined") return "editorial";
+    const variant = new URLSearchParams(window.location.search).get("variant");
+    return variant === "2" ? "cards" : variant === "3" ? "compact" : "editorial";
+  });
+  const groupedRoutes = useMemo(() => {
+    const groups = new Map<string, Route[]>();
+    filteredRoutes.forEach((route) => groups.set(route.region, [...(groups.get(route.region) ?? []), route]));
+    return [...groups.entries()];
+  }, [filteredRoutes]);
 
   return (
-    <main className="site-shell">
+    <main className={`site-shell routes-variant-${layout}`}>
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
       <section className="routes-hero">
         <div>
@@ -100,22 +101,29 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       </section>
       <RouteFinderForm provinces={finderProvinces} />
       <section className="section-wrap routes-page-content">
-        <RouteFilter
-          regions={regions}
-          areas={areas}
-          vehicleTypes={vehicleTypes}
-          seatOptions={seatOptions}
-          filters={filters}
-          resultCount={filteredRoutes.length}
-          onFilterChange={setFilters}
-        />
-        <div className="route-results-heading">
-          <p className="section-label">DANH SÁCH TUYẾN</p>
-          <Link className="text-link" href="/#booking">
-            Đặt chuyến ngay <ArrowRight size={17} />
-          </Link>
+        <div className="routes-catalog-heading">
+          <div>
+            <p className="section-label">DANH SÁCH TUYẾN</p>
+            <h2>Chọn điểm đến,<br /><em>chúng tôi lo đường đi.</em></h2>
+          </div>
+          <p className="routes-count"><strong>{filteredRoutes.length}</strong> tuyến đang phục vụ</p>
         </div>
-        <RouteResults routes={filteredRoutes} onClearFilters={() => setFilters(emptyFilters)} />
+        <div className="route-groups">
+          {groupedRoutes.map(([region, regionRoutes]) => (
+            <section className="route-region" key={region} aria-labelledby={`region-${region}`}>
+              <div className="route-region-heading">
+                <div><span className="route-region-dot" /><p className="section-label">ĐIỂM ĐẾN</p></div>
+                <h2 id={`region-${region}`}>{region}</h2>
+                <span>{regionRoutes.length} tuyến</span>
+              </div>
+              <RouteResults routes={regionRoutes} onClearFilters={() => setFilters(emptyFilters)} />
+            </section>
+          ))}
+        </div>
+        <section className="routes-cta" aria-labelledby="routes-cta-title">
+          <div><p className="section-label">CHƯA BIẾT CHỌN TUYẾN NÀO?</p><h2 id="routes-cta-title">Nói điểm đến,<br /><em>để chúng tôi lo phần còn lại.</em></h2></div>
+          <Link className="button button-primary" href="/#booking">Tìm chuyến phù hợp <ArrowRight size={16} /></Link>
+        </section>
       </section>
       <SiteFooter
         tagline={
