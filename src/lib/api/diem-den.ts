@@ -1,6 +1,7 @@
 import type { DiemDen } from "@/types/diem-den";
 import { fetchRawDiemDenBySlug, embeddedFeaturedImage, type WPDiemDen } from "./raw";
 import { parseFaqItems } from "@/lib/wp";
+import { fetchRawDiemDen } from "./raw";
 
 /**
  * fetchDiemDenBySlug() — Ngày 25.
@@ -23,6 +24,11 @@ function mapWPDiemDenToDiemDen(wp: WPDiemDen): DiemDen {
     rankMathTitle: wp.rank_math_title || undefined,
     rankMathDescription: wp.rank_math_description || undefined,
   };
+}
+
+export async function fetchDiemDen(): Promise<DiemDen[]> {
+  const items = await fetchRawDiemDen();
+  return items.map(mapWPDiemDenToDiemDen);
 }
 
 export async function fetchDiemDenBySlug(slug: string): Promise<DiemDen | undefined> {
