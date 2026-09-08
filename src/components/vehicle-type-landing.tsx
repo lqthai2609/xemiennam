@@ -6,6 +6,7 @@ import { navItems } from "@/data/nav";
 import { MediaPhoto } from "@/components/media-photo";
 import { BlogCard } from "@/components/blog-card";
 import { VehicleRealGallery } from "@/components/vehicle-real-gallery";
+import { VehicleTypeHero } from "@/components/vehicle-type-hero";
 import type { BlogPost } from "@/types/blog";
 import type { VehicleCategory } from "@/types/vehicle-category";
 
@@ -50,16 +51,7 @@ export function VehicleTypeLanding({
     <main className="site-shell vehicle-type-page">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Thuê xe ngay" ctaHref="/#booking" />
 
-      <section className="vehicle-type-hero">
-        <div className="vehicle-type-hero-copy">
-          <Link className="back-link" href="/loai-xe">← Tất cả loại xe</Link>
-          <p className="eyebrow"><span className="eyebrow-line" /> {category.label}</p>
-          <h1>{category.title}</h1>
-          <p>{category.description}</p>
-          <Link className="button button-primary" href="/#booking">Tư vấn lịch trình <ArrowRight size={16} /></Link>
-        </div>
-        <VehicleArt category={category} />
-      </section>
+      <VehicleTypeHero category={category} />
 
       <section className="section-wrap vehicle-type-intro">
         <div>
