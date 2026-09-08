@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Clock3, MapPin, Milestone, Star, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
+import { ArrowRight, Clock3, Milestone, Star, Ticket, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
@@ -9,6 +9,7 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { fetchPosts } from "@/lib/api/blog";
 import { BlogCard } from "@/components/blog-card";
 import { BookingBar } from "@/components/booking-bar";
+import { HomeHero } from "@/components/home-hero";
 import { navItems } from "@/data/nav";
 import type { Route } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
@@ -101,70 +102,7 @@ export default async function Home() {
       <JsonLd data={buildLocalBusinessSchema()} />
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <section className="hero" id="top">
-        <div className="hero-copy">
-          <div className="eyebrow">
-            <span className="eyebrow-line" /> Đi đâu cũng có Xe Miền Nam
-          </div>
-          <h1>
-            Đi xa hơn.
-            <br />
-            <em>Vui hơn.</em>
-          </h1>
-          <p>Từ thành phố đến biển xanh, từ miền Tây đến cao nguyên. Những chuyến xe tử tế cho hành trình đáng nhớ.</p>
-          <div className="hero-actions">
-            <Button size="lg" asChild>
-              <a href="#booking">
-                Tìm chuyến xe <ArrowRight data-icon="inline-end" />
-              </a>
-            </Button>
-            <Link className="text-link" href="/tuyen-duong">
-              Xem các tuyến đường <ArrowRight size={17} />
-            </Link>
-          </div>
-          <div className="hero-trust">
-            <div className="avatar-stack">
-              <span>H</span>
-              <span>M</span>
-              <span>T</span>
-            </div>
-            <span>
-              <strong>4.9/5</strong> từ hơn 2.000 hành khách
-            </span>
-          </div>
-        </div>
-        <div className="hero-visual" aria-label="Minh họa tuyến đường miền Nam">
-          <div className="sun" />
-          <div className="horizon" />
-          <div className="hill hill-back" />
-          <div className="hill hill-front" />
-          <div className="road">
-            <span className="road-mark mark-1" />
-            <span className="road-mark mark-2" />
-            <span className="road-mark mark-3" />
-          </div>
-          <div className="route-pin">
-            <MapPin size={17} fill="currentColor" /> <span>VŨNG TÀU</span>
-          </div>
-          <div className="signpost">
-            <div className="sign sign-top">
-              ĐÀ LẠT <ArrowRight size={16} />
-            </div>
-            <div className="sign sign-bottom">
-              CẦN THƠ <ArrowRight size={16} />
-            </div>
-            <span className="pole" />
-          </div>
-          <div className="bus-illustration">
-            <BusFront size={62} strokeWidth={1.4} />
-            <span className="bus-window" />
-            <span className="bus-wheel wheel-one" />
-            <span className="bus-wheel wheel-two" />
-          </div>
-          <span className="visual-note note-one">SINCE 2012</span>
-          <span className="visual-note note-two">TỬ TẾ TRÊN MỌI CUNG ĐƯỜNG</span>
-        </div>
-      </section>
+      <HomeHero />
 
       <div className="ticker-section" aria-label="Các tuyến phổ biến">
         <div className="ticker-track">
