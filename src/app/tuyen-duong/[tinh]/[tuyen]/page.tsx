@@ -2,9 +2,22 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RouteDetailPage } from "@/components/route-detail";
 import { fetchRoutes, fetchRouteBySlug, fetchRelatedRoutes } from "@/lib/api/routes";
+import { fetchVehicles } from "@/lib/api/vehicles";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
 import { routeHref } from "@/types/route";
+
+/** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó) — dùng
+ * cho mỗi card giá ở section "Giá thuê xe tham khảo". Rỗng nếu loại xe đó chưa có xe nào nhập
+ * ảnh thật, route-detail.tsx tự fallback về icon. */
+async function buildVehicleImageByType(): Promise<Record<string, string>> {
+  const vehicles = await fetchVehicles();
+  const byType: Record<string, string> = {};
+  for (const vehicle of vehicles) {
+    if (!byType[vehicle.type] && vehicle.images[0]) byType[vehicle.type] = vehicle.images[0];
+  }
+  return byType;
+}
 
 type Props = { params: Promise<{ tinh: string; tuyen: string }> };
 
@@ -39,7 +52,10 @@ export default async function Page({ params }: Props) {
   // (vd ai đó gõ tay /tuyen-duong/da-lat/tp-hcm-vung-tau) — tránh 2 URL cùng phục vụ 1 nội
   // dung (canonical theo đúng hub), giống nguyên tắc slug nhất quán mục 9.3 kiến trúc kỹ thuật.
   if (!route || route.regionSlug !== tinh) notFound();
-  const relatedRoutes = await fetchRelatedRoutes(route.slug, 3);
+  const [relatedRoutes, vehicleImageByType] = await Promise.all([
+    fetchRelatedRoutes(route.slug, 3),
+    buildVehicleImageByType(),
+  ]);
   const serviceSchema = buildServiceSchema({
     name: `Thuê xe nguyên chiếc ${route.from} đi ${route.to}`,
     description: route.summary || `Thuê xe nguyên chiếc tuyến ${route.from} – ${route.to}, giá từ ${route.price}.`,
@@ -49,7 +65,7 @@ export default async function Page({ params }: Props) {
   return (
     <>
       <JsonLd data={serviceSchema} />
-      <RouteDetailPage route={route} relatedRoutes={relatedRoutes} />
+      <RouteDetailPage route={route} relatedRoutes={relatedRoutes} vehicleImageByType={vehicleImageByType} />
     </>
   );
 }

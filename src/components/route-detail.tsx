@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowRight, BusFront, Check, Clock3, MapPin, Milestone, Phone, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
+import { MediaPhoto } from "@/components/media-photo";
+import { RouteBookingActions } from "@/components/route-booking-actions";
 import { routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
 import { formatVNDate } from "@/lib/wp";
@@ -22,7 +24,19 @@ function DetailCard({ route }: { route: Route }) {
   );
 }
 
-export function RouteDetailPage({ route, relatedRoutes }: { route: Route; relatedRoutes: Route[] }) {
+export function RouteDetailPage({
+  route,
+  relatedRoutes,
+  vehicleImageByType = {},
+}: {
+  route: Route;
+  relatedRoutes: Route[];
+  /** Ảnh đại diện theo loại xe (vehicle.images[0] của 1 xe thật thuộc đúng loại), để hiện lên
+   * mỗi card giá — xem app/tuyen-duong/[tinh]/[tuyen]/page.tsx (nối fetchVehicles() thật). Rỗng
+   * nếu loại xe đó chưa có xe nào nhập ảnh, card tự fallback về icon. */
+  vehicleImageByType?: Record<string, string>;
+}) {
+  const routeLabel = `${route.from} – ${route.to}`;
   return (
     <main className="site-shell route-detail-page">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
@@ -40,7 +54,23 @@ export function RouteDetailPage({ route, relatedRoutes }: { route: Route; relate
       <section className="detail-content section-wrap">
         <div className="detail-main">
           <div className="section-heading detail-heading"><div><p className="section-label">GIÁ THUÊ XE THAM KHẢO</p><h2>Chọn cách bạn muốn đi.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
-          <div className="detail-price-grid">{route.pricingByVehicle.map((vp) => <article className="detail-price-card" key={vp.vehicleType}><span className="vehicle-chip">{vp.vehicleType}</span><strong>{vp.price}</strong><small>Một chiều</small><Link href="#booking">Đặt xe {vp.vehicleType} <ArrowRight size={14} /></Link></article>)}</div>
+          <div className="detail-price-grid">
+            {route.pricingByVehicle.map((vp) => (
+              <article className="detail-price-card" key={vp.vehicleType}>
+                <div className="detail-price-media">
+                  {vehicleImageByType[vp.vehicleType] ? (
+                    <MediaPhoto src={vehicleImageByType[vp.vehicleType]} alt={vp.vehicleType} />
+                  ) : (
+                    <BusFront size={32} strokeWidth={1.4} />
+                  )}
+                </div>
+                <span className="vehicle-chip">{vp.vehicleType}</span>
+                <strong>{vp.price}</strong>
+                <small>Một chiều</small>
+                <RouteBookingActions route={routeLabel} vehicleType={vp.vehicleType} price={vp.price} />
+              </article>
+            ))}
+          </div>
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">ĐIỂM ĐÓN & TRẢ</p><h2>Điểm nào cũng gần bạn.</h2></div></div><div className="stops-grid"><div><span className="stop-kicker"><MapPin size={15} /> Điểm đón tại {route.from}</span><ul>{route.pickupPoints.map((stop) => <li key={stop}><span className="stop-dot" />{stop}</li>)}</ul></div><div><span className="stop-kicker"><MapPin size={15} /> Điểm trả tại {route.to}</span><ul>{route.dropoffPoints.map((stop) => <li key={stop}><span className="stop-dot destination" />{stop}</li>)}</ul></div></div></div>
 

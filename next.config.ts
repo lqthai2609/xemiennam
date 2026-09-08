@@ -7,7 +7,13 @@ const nextConfig: NextConfig = {
     // featured image thật từ WordPress (embeddedFeaturedImage(), xem lib/api/services.ts),
     // không chỉ ảnh demo tĩnh trong /public. Domain media đã ổn định từ Ngày 3-4 nên khai báo
     // luôn ở đây — cũng là domain dùng cho MediaPhoto (src/components/media-photo.tsx).
-    remotePatterns: [{ protocol: "https", hostname: "xemiennam.datxesaigon.com", pathname: "/wp-content/uploads/**" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "xemiennam.datxesaigon.com", pathname: "/wp-content/uploads/**" },
+      // data/vehicles.ts (fallback mock khi WP chưa có ảnh xe thật) dùng placehold.co qua
+      // lib/placeholder-image.ts — không khai báo domain này thì next/image crash 500 ngay khi
+      // rơi vào nhánh fallback (xem ghi chú useMockFallback trong lib/api/vehicles.ts).
+      { protocol: "https", hostname: "placehold.co" },
+    ],
   },
   async redirects() {
     // Ngày 25: gộp "Đội xe" vào "Loại xe" — /doi-xe không còn route riêng, giữ redirect
