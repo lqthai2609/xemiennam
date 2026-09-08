@@ -20,11 +20,17 @@ const PATHS_BY_POST_TYPE: Record<string, (slug: string) => string[]> = {
   // và payload webhook (snippet ID 16) chỉ gửi slug của route, không có regionSlug, nên không dựng
   // được path chính xác ở đây. Trang tuyến/combo vẫn tự làm mới theo REVALIDATE_SECONDS mặc định
   // (1h, xem lib/wp.ts) — cùng giới hạn đã ghi nhận từ trước cho trang combo /tuyen-duong/[tinh]/[tuyen]/[loai-xe].
-  route: () => ["/", "/tuyen-duong", "/bang-gia"],
+  // "/diem-den" cũng đọc fetchRoutes() để dựng cùng form "Tìm tuyến phù hợp" (xem ghi chú
+  // ở "vehicle" bên dưới) — route đổi (giá, loại xe theo tuyến...) cũng cần làm mới trang đó.
+  route: () => ["/", "/tuyen-duong", "/bang-gia", "/diem-den"],
   // Ngày 25: /doi-xe đã gỡ (gộp vào /loai-xe) — 1 bài vehicle giờ chỉ ảnh hưởng trang chủ,
   // trang danh sách/chi tiết loại xe và bảng giá. Không biết trước type slug nào bị ảnh
   // hưởng từ payload này nên revalidate rộng "/loai-xe" (không phải "/loai-xe/[slug]" riêng).
-  vehicle: () => ["/", "/loai-xe", "/bang-gia"],
+  // Thêm "/tuyen-duong" và "/diem-den" — form "Tìm tuyến phù hợp" (route-finder-form.tsx) ở
+  // 2 trang này dựng option "Loại xe" từ route.vehicleTypes, vốn phụ thuộc trực tiếp vào term
+  // vehicle_type của bài vehicle — đổi loại xe mà không revalidate 2 trang này thì form vẫn
+  // hiện nhãn cũ tới khi hết REVALIDATE_SECONDS mặc định (1h, xem lib/wp.ts).
+  vehicle: () => ["/", "/loai-xe", "/bang-gia", "/tuyen-duong", "/diem-den"],
   dich_vu: (slug) => ["/dich-vu", `/dich-vu/${slug}`],
   promotion: () => ["/khuyen-mai"],
   testimonial: () => ["/danh-gia"],
