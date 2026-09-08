@@ -11,7 +11,9 @@ import { routeHref } from "@/types/route";
 import { fetchPosts } from "@/lib/api/blog";
 import { fetchServices } from "@/lib/api/services";
 import { fetchTestimonials } from "@/lib/api/testimonials";
+import { fetchDestinationCards } from "@/lib/api/diem-den";
 import { BlogCard } from "@/components/blog-card";
+import { DestinationCardTile } from "@/components/destination-card-tile";
 import { RouteFinderForm } from "@/components/route-finder-form";
 import { navItems } from "@/data/nav";
 import { buildRouteFinderProvinces } from "@/lib/route-finder";
@@ -96,15 +98,39 @@ function RouteCard({ route }: { route: Route }) {
   );
 }
 
+/**
+ * Trang chủ trước đây liệt kê TOÀN BỘ routes (80+ tuyến thật từ WP) khiến trang dài ngoằn —
+ * giờ chỉ chọn 6 tuyến TP.HCM đi các điểm đến nổi bật nhất, xem đủ ở /tuyen-duong.
+ * Khớp theo điểm đến (route.to) CHỨA tên trong danh sách này thay vì so bằng đúng chuỗi, vì
+ * dữ liệu thật thường có thêm hậu tố (vd "Cần Thơ 2 ngày 1 đêm", "Đà Lạt (Lâm Đồng) 3N2Đ").
+ */
+const FEATURED_DESTINATIONS = ["Vũng Tàu", "Hồ Tràm", "Cần Thơ", "Mũi Né", "Phan Thiết", "Đà Lạt"];
+
+function pickFeaturedRoutes(routes: Route[]): Route[] {
+  const used = new Set<string>();
+  const featured: Route[] = [];
+  for (const destination of FEATURED_DESTINATIONS) {
+    const match = routes.find((r) => !used.has(r.slug) && r.to.toLowerCase().includes(destination.toLowerCase()));
+    if (match) {
+      used.add(match.slug);
+      featured.push(match);
+    }
+  }
+  return featured;
+}
+
 export default async function Home() {
-  const [routes, posts, services, testimonials] = await Promise.all([
+  const [routes, posts, services, testimonials, destinations] = await Promise.all([
     fetchRoutes(),
     fetchPosts(),
     fetchServices(),
     fetchTestimonials(),
+    fetchDestinationCards(),
   ]);
   const finderProvinces = buildRouteFinderProvinces(routes);
   const latestPosts = posts.slice(0, 3);
+  const featuredRoutes = pickFeaturedRoutes(routes);
+  const featuredDestinations = destinations.slice(0, 6);
   const featuredTestimonials = testimonials.slice(0, 6);
   const avgRating = testimonials.length
     ? testimonials.reduce((sum, t) => sum + t.rating, 0) / testimonials.length
@@ -195,18 +221,37 @@ export default async function Home() {
         </div>
       </div>
 
+      {featuredDestinations.length > 0 && (
+        <section className="destinations-section section-wrap" id="destinations">
+          <div className="section-heading">
+            <div>
+              <SectionLabel>ĐIỂM ĐẾN PHỔ BIẾN</SectionLabel>
+              <h2>Đi đâu hôm nay?</h2>
+            </div>
+            <Link className="text-link" href="/diem-den">
+              Xem tất cả điểm đến <ArrowRight size={17} />
+            </Link>
+          </div>
+          <div className="destination-grid">
+            {featuredDestinations.map((destination) => (
+              <DestinationCardTile destination={destination} key={destination.slug} />
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="routes-section section-wrap" id="routes">
         <div className="section-heading">
           <div>
-            <SectionLabel>CÁC TUYẾN PHỔ BIẾN</SectionLabel>
-            <h2>Đi đâu hôm nay?</h2>
+            <SectionLabel>TUYẾN NỔI BẬT</SectionLabel>
+            <h2>Được đặt nhiều nhất.</h2>
           </div>
           <Link className="text-link" href="/tuyen-duong">
             Xem tất cả tuyến <ArrowRight size={17} />
           </Link>
         </div>
         <div className="route-list">
-          {routes.map((route) => (
+          {featuredRoutes.map((route) => (
             <RouteCard key={route.slug} route={route} />
           ))}
         </div>
