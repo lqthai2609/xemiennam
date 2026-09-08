@@ -13,7 +13,9 @@ import { fetchServices } from "@/lib/api/services";
 import { fetchTestimonials } from "@/lib/api/testimonials";
 import { BlogCard } from "@/components/blog-card";
 import { BookingBar } from "@/components/booking-bar";
+import { RouteFinderForm } from "@/components/route-finder-form";
 import { navItems } from "@/data/nav";
+import { buildRouteFinderProvinces } from "@/lib/route-finder";
 import type { Route } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildLocalBusinessSchema } from "@/lib/schema";
@@ -103,6 +105,7 @@ export default async function Home() {
     fetchTestimonials(),
   ]);
   const destinations = [...new Set(routes.map((r) => r.to).filter(Boolean))];
+  const finderProvinces = buildRouteFinderProvinces(routes);
   const latestPosts = posts.slice(0, 3);
   const featuredTestimonials = testimonials.slice(0, 6);
   const avgRating = testimonials.length
@@ -178,6 +181,8 @@ export default async function Home() {
           <span className="visual-note note-two">TỬ TẾ TRÊN MỌI CUNG ĐƯỜNG</span>
         </div>
       </section>
+
+      <RouteFinderForm provinces={finderProvinces} />
 
       <div className="ticker-section" aria-label="Các tuyến phổ biến">
         <div className="ticker-track">

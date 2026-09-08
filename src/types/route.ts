@@ -65,18 +65,21 @@ export interface Route {
 
 export interface FilterState {
   region: string;
+  /** Khu vực cụ thể bên trong tỉnh đã chọn — khớp `route.to` (vd. "Vũng Tàu" trong tỉnh Bà Rịa - Vũng Tàu). */
+  area: string;
   vehicleType: string;
   seats: string;
 }
 
 export const emptyFilters: FilterState = {
   region: "",
+  area: "",
   vehicleType: "",
   seats: "",
 };
 
 export function hasActiveFilters(filters: FilterState) {
-  return Boolean(filters.region || filters.vehicleType || filters.seats);
+  return Boolean(filters.region || filters.area || filters.vehicleType || filters.seats);
 }
 
 /**
