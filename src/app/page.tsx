@@ -208,17 +208,6 @@ export default async function Home() {
 
       <RouteFinderForm id="booking" routes={routes} />
 
-      <div className="ticker-section" aria-label="Các tuyến phổ biến">
-        <div className="ticker-track" style={{ animationDuration: `${Math.max(routes.length, 1) * 6}s` }}>
-          {[...routes, ...routes].map((r, i) => (
-            <span className="ticker-sign" key={`${r.slug}-${i}`}>
-              {r.from} <ArrowRight size={13} /> {r.to}
-              <small>{r.distance}</small>
-            </span>
-          ))}
-        </div>
-      </div>
-
       {featuredDestinations.length > 0 && (
         <section className="destinations-section section-wrap" id="destinations">
           <div className="section-heading">
