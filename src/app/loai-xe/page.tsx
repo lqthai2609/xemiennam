@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { VehicleCategoryIndex } from "@/components/vehicle-type-landing";
 import { vehicleCategories, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
+import { fetchRoutes } from "@/lib/api/routes";
+import { buildRouteFinderProvinces } from "@/lib/route-finder";
 
 export const metadata: Metadata = {
   title: "Loại xe | Xe Miền Nam",
@@ -12,7 +14,7 @@ export const metadata: Metadata = {
 // Vẫn gọi fetchVehicles() ở đây để lấy ảnh xe THẬT (nếu CMS đã có) thay cho ảnh placeholder
 // của từng thẻ loại xe — xem withRealCategoryImages() trong data/vehicle-categories.ts.
 export default async function VehicleTypesPage() {
-  const vehicles = await fetchVehicles();
+  const [vehicles, routes] = await Promise.all([fetchVehicles(), fetchRoutes()]);
   const categories = withRealCategoryImages(vehicleCategories, vehicles);
-  return <VehicleCategoryIndex categories={categories} />;
+  return <VehicleCategoryIndex categories={categories} finderProvinces={buildRouteFinderProvinces(routes)} />;
 }

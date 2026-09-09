@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { RouteResults } from "@/components/route-results";
-import { RouteFinderForm } from "@/components/route-finder-form";
+import { SubpageHero, defaultSubpageHeroImage } from "@/components/subpage-hero";
 import { emptyFilters, type FilterState, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
 import { buildRouteFinderProvinces } from "@/lib/route-finder";
@@ -84,25 +84,12 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
   return (
     <main className={`site-shell routes-variant-${layout}`}>
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
-      <section className="routes-hero">
-        <div>
-          <p className="eyebrow">
-            <span className="eyebrow-line" /> MỞ RỘNG HÀNH TRÌNH
-          </p>
-          <h1>
-            Tuyến đường
-            <br />
-            <em>đáng để đi.</em>
-          </h1>
-          <p>Chọn điểm đến, loại xe và số chỗ phù hợp. Chúng tôi lo phần còn lại của hành trình.</p>
-        </div>
-        <div className="routes-hero-sign">
-          <span>XE MIỀN NAM</span>
-          <strong>ĐI TỬ TẾ</strong>
-          <small>HƠN 15 TUYẾN CỐ ĐỊNH</small>
-        </div>
-      </section>
-      <RouteFinderForm provinces={finderProvinces} />
+      <SubpageHero
+        title="Tuyến đường đáng để đi."
+        description="Chọn điểm đến, loại xe và số chỗ phù hợp. Chúng tôi lo phần còn lại của hành trình."
+        backgroundImage={defaultSubpageHeroImage}
+        provinces={finderProvinces}
+      />
       <section className="section-wrap routes-page-content">
         <div className="routes-catalog-heading">
           <div>

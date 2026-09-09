@@ -36,6 +36,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 
 .site-shell { overflow: hidden; }
+.subpage-hero-wrap { position: relative; padding-bottom: 1px; }
+.subpage-hero { position: relative; display: flex; align-items: end; min-height: 420px; max-width: 1240px; margin: auto; padding: 76px 64px 134px; background-position: center; background-size: cover; color: #fff; overflow: hidden; border-radius: 0 0 22px 22px; isolation: isolate; }
+.subpage-hero-overlay { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(15,22,38,.93), rgba(15,22,38,.58) 58%, rgba(15,22,38,.7)); }
+.subpage-hero-content { max-width: 650px; }
+.subpage-hero h1 { max-width: 680px; color: #fff; font-size: clamp(48px, 7vw, 86px); line-height: .92; text-wrap: balance; }
+.subpage-hero-content > p:last-child { max-width: 500px; margin: 24px 0 0; color: rgba(255,255,255,.78); font-size: 14px; line-height: 1.75; }
+.subpage-hero-wrap .route-finder { margin-top: -92px; }
+@media (max-width: 800px) { .subpage-hero { min-height: 390px; padding: 52px 20px 118px; border-radius: 0 0 16px 16px; }.subpage-hero h1 { font-size: clamp(44px, 14vw, 68px); }.subpage-hero-wrap .route-finder { margin-top: -76px; } }
 .routes-hero { display: flex; align-items: end; justify-content: space-between; gap: 32px; max-width: 1240px; min-height: 390px; margin: auto; padding: 72px 64px; background: var(--foreground); color: #fff; border-radius: 0 0 22px 22px; }
 .routes-hero h1 { color: #fff; font-size: clamp(54px, 7vw, 86px); line-height: .9; }
 .routes-hero > div:first-child > p:last-child { max-width: 420px; margin: 26px 0 0; color: #c2cbc0; font-size: 14px; line-height: 1.75; }
@@ -117,7 +125,7 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
    nên 2 rule (mobile + rồi trước đó là 1 rule không nằm trong media) đè lẫn nhau: bảng giá của
    /doi-xe/[slug] bị vỡ layout trên mobile (rơi vào grid-template-columns:1fr auto trong khi lẽ ra
    phải là 1fr;gap:6px), còn bảng giá của /loai-xe/[slug] thì tên tuyến/giá bị style sai (ăn nhầm
-   css của b/span vốn không tồn tại trong markup của nó). Tách hẳn 1 class riêng cho đúng markup này. */
+   css c���a b/span vốn không tồn tại trong markup của nó). Tách hẳn 1 class riêng cho đúng markup này. */
 .vehicle-type-price-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 15px; padding: 18px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
 .vehicle-type-price-row strong { color: var(--primary); font: 800 19px var(--font-archivo); }
 .vehicle-type-price-row small { grid-column: 1 / -1; color: var(--muted-foreground); font-size: 11px; }
