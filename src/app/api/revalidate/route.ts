@@ -15,7 +15,11 @@ import { NextResponse } from "next/server";
  * endpoint này production-ready, nếu không secret sẽ luôn khớp với giá trị mặc định công khai.
  */
 
-const PATHS_BY_POST_TYPE: Record<string, (slug: string) => string[]> = {
+type RevalidateTarget = string | { path: string; type: "page" };
+
+const dynamicPage = (path: string): RevalidateTarget => ({ path, type: "page" });
+
+const PATHS_BY_POST_TYPE: Record<string, (slug: string) => RevalidateTarget[]> = {
   // Ngày 25: bỏ `/tuyen-duong/${slug}` — URL tuyến giờ lồng theo tỉnh (`/tuyen-duong/[tinh]/[tuyen]`)
   // và payload webhook (snippet ID 16) chỉ gửi slug của route, không có regionSlug, nên không dựng
   // được path chính xác ở đây. Trang tuyến/combo vẫn tự làm mới theo REVALIDATE_SECONDS mặc định
@@ -26,8 +30,8 @@ const PATHS_BY_POST_TYPE: Record<string, (slug: string) => string[]> = {
     "/bang-gia",
     // Invalidate dynamic route pages too; otherwise their ISR cache can keep
     // the previous CMS price for up to REVALIDATE_SECONDS (normally one hour).
-    ["/tuyen-duong/[tinh]/[tuyen]", "page"],
-    ["/tuyen-duong/[tinh]/[tuyen]/[loai-xe]", "page"],
+    dynamicPage("/tuyen-duong/[tinh]/[tuyen]"),
+    dynamicPage("/tuyen-duong/[tinh]/[tuyen]/[loai-xe]"),
   ],
   // Ngày 25: /doi-xe đã gỡ (gộp vào /loai-xe) — 1 bài vehicle giờ chỉ ảnh hưởng trang chủ,
   // trang danh sách/chi tiết loại xe và bảng giá. Không biết trước type slug nào bị ảnh
@@ -36,8 +40,8 @@ const PATHS_BY_POST_TYPE: Record<string, (slug: string) => string[]> = {
     "/",
     "/loai-xe",
     "/bang-gia",
-    ["/tuyen-duong/[tinh]/[tuyen]", "page"],
-    ["/tuyen-duong/[tinh]/[tuyen]/[loai-xe]", "page"],
+    dynamicPage("/tuyen-duong/[tinh]/[tuyen]"),
+    dynamicPage("/tuyen-duong/[tinh]/[tuyen]/[loai-xe]"),
   ],
   dich_vu: (slug) => ["/dich-vu", `/dich-vu/${slug}`],
   promotion: () => ["/khuyen-mai"],
@@ -81,11 +85,11 @@ export async function POST(request: Request) {
   // post_type lạ (chưa liệt kê ở trên) — chỉ làm mới trang chủ, an toàn hơn là bỏ qua hẳn.
   const paths = pathsForType ? pathsForType(slug) : ["/"];
 
-  for (const path of paths) {
-    if (Array.isArray(path)) {
-      revalidatePath(path[0], path[1] as "page");
+  for (const target of paths) {
+    if (typeof target === "string") {
+      revalidatePath(target);
     } else {
-      revalidatePath(path);
+      revalidatePath(target.path, target.type);
     }
   }
 
