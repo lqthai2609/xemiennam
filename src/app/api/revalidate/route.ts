@@ -20,11 +20,25 @@ const PATHS_BY_POST_TYPE: Record<string, (slug: string) => string[]> = {
   // và payload webhook (snippet ID 16) chỉ gửi slug của route, không có regionSlug, nên không dựng
   // được path chính xác ở đây. Trang tuyến/combo vẫn tự làm mới theo REVALIDATE_SECONDS mặc định
   // (1h, xem lib/wp.ts) — cùng giới hạn đã ghi nhận từ trước cho trang combo /tuyen-duong/[tinh]/[tuyen]/[loai-xe].
-  route: () => ["/", "/tuyen-duong", "/bang-gia"],
+  route: () => [
+    "/",
+    "/tuyen-duong",
+    "/bang-gia",
+    // Invalidate dynamic route pages too; otherwise their ISR cache can keep
+    // the previous CMS price for up to REVALIDATE_SECONDS (normally one hour).
+    ["/tuyen-duong/[tinh]/[tuyen]", "page"],
+    ["/tuyen-duong/[tinh]/[tuyen]/[loai-xe]", "page"],
+  ],
   // Ngày 25: /doi-xe đã gỡ (gộp vào /loai-xe) — 1 bài vehicle giờ chỉ ảnh hưởng trang chủ,
   // trang danh sách/chi tiết loại xe và bảng giá. Không biết trước type slug nào bị ảnh
   // hưởng từ payload này nên revalidate rộng "/loai-xe" (không phải "/loai-xe/[slug]" riêng).
-  vehicle: () => ["/", "/loai-xe", "/bang-gia"],
+  vehicle: () => [
+    "/",
+    "/loai-xe",
+    "/bang-gia",
+    ["/tuyen-duong/[tinh]/[tuyen]", "page"],
+    ["/tuyen-duong/[tinh]/[tuyen]/[loai-xe]", "page"],
+  ],
   dich_vu: (slug) => ["/dich-vu", `/dich-vu/${slug}`],
   promotion: () => ["/khuyen-mai"],
   testimonial: () => ["/danh-gia"],
@@ -68,7 +82,11 @@ export async function POST(request: Request) {
   const paths = pathsForType ? pathsForType(slug) : ["/"];
 
   for (const path of paths) {
-    revalidatePath(path);
+    if (Array.isArray(path)) {
+      revalidatePath(path[0], path[1] as "page");
+    } else {
+      revalidatePath(path);
+    }
   }
 
   // Trang kết hợp /tuyen-duong/[slug]/[loai-xe] (Ngày 14) không revalidate riêng được ở đây
