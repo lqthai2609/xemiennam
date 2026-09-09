@@ -37,7 +37,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outlin
 
 .site-shell { overflow: hidden; }
 .subpage-hero-wrap { position: relative; padding-bottom: 1px; }
-.subpage-hero { position: relative; display: flex; align-items: end; min-height: 420px; max-width: 1240px; margin: auto; padding: 76px 64px 134px; background-position: center; background-size: cover; color: #fff; overflow: hidden; border-radius: 0 0 22px 22px; isolation: isolate; }
+.subpage-hero { position: relative; display: flex; align-items: end; width: 100%; min-height: 420px; margin: 0; padding: 76px 64px 134px; background-position: center; background-size: cover; color: #fff; overflow: hidden; border-radius: 0 0 22px 22px; isolation: isolate; }
 .subpage-hero-overlay { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(15,22,38,.93), rgba(15,22,38,.58) 58%, rgba(15,22,38,.7)); }
 .subpage-hero-content { max-width: 650px; }
 .subpage-hero h1 { max-width: 680px; color: #fff; font-size: clamp(48px, 7vw, 86px); line-height: .92; text-wrap: balance; }
