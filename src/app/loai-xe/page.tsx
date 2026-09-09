@@ -3,7 +3,6 @@ import { VehicleCategoryIndex } from "@/components/vehicle-type-landing";
 import { vehicleCategories, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchRoutes } from "@/lib/api/routes";
-import { buildRouteFinderProvinces } from "@/lib/route-finder";
 
 export const metadata: Metadata = {
   title: "Loại xe | Xe Miền Nam",
@@ -16,5 +15,5 @@ export const metadata: Metadata = {
 export default async function VehicleTypesPage() {
   const [vehicles, routes] = await Promise.all([fetchVehicles(), fetchRoutes()]);
   const categories = withRealCategoryImages(vehicleCategories, vehicles);
-  return <VehicleCategoryIndex categories={categories} finderProvinces={buildRouteFinderProvinces(routes)} />;
+  return <VehicleCategoryIndex categories={categories} routes={routes} />;
 }
