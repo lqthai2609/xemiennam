@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BusFront, Check, MapPin, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SubpageHero, defaultSubpageHeroImage } from "@/components/subpage-hero";
-import type { RouteFinderProvince } from "@/lib/route-finder";
+import type { Route } from "@/types/route";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { MediaPhoto } from "@/components/media-photo";
@@ -176,11 +176,11 @@ export function VehicleTypeLanding({
   );
 }
 
-export function VehicleCategoryIndex({ categories, finderProvinces }: { categories: VehicleCategory[]; finderProvinces: RouteFinderProvince[] }) {
+export function VehicleCategoryIndex({ categories, routes }: { categories: VehicleCategory[]; routes: Route[] }) {
   return (
     <main className="site-shell vehicle-type-page">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Thuê xe ngay" ctaHref="/#booking" />
-      <SubpageHero title="Mỗi hành trình, một lựa chọn vừa vặn." description="Khám phá các nhóm xe được thiết kế cho từng kiểu chuyến đi — từ gia đình nhỏ đến đoàn lớn." backgroundImage={defaultSubpageHeroImage} provinces={finderProvinces} />
+      <SubpageHero title="Mỗi hành trình, một lựa chọn vừa vặn." description="Khám phá các nhóm xe được thiết kế cho từng kiểu chuyến đi — từ gia đình nhỏ đến đoàn lớn." backgroundImage={defaultSubpageHeroImage} routes={routes} />
       <section className="section-wrap vehicle-category-grid">
         <div className="vehicle-category-cards">
           {categories.map((category) => (
