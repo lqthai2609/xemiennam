@@ -9,7 +9,6 @@ import { RouteResults } from "@/components/route-results";
 import { SubpageHero, defaultSubpageHeroImage } from "@/components/subpage-hero";
 import { emptyFilters, type FilterState, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
-import { buildRouteFinderProvinces } from "@/lib/route-finder";
 
 const footerLinkGroups = [
   {
@@ -69,7 +68,6 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       ),
     [filters, routes],
   );
-  const finderProvinces = useMemo(() => buildRouteFinderProvinces(routes), [routes]);
   const [layout] = useState<"editorial" | "cards" | "compact">(() => {
     if (typeof window === "undefined") return "editorial";
     const variant = new URLSearchParams(window.location.search).get("variant");
@@ -88,7 +86,7 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
         title="Tuyến đường đáng để đi."
         description="Chọn điểm đến, loại xe và số chỗ phù hợp. Chúng tôi lo phần còn lại của hành trình."
         backgroundImage={defaultSubpageHeroImage}
-        provinces={finderProvinces}
+        routes={routes}
       />
       <section className="section-wrap routes-page-content">
         <div className="routes-catalog-heading">
