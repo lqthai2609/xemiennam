@@ -39,7 +39,11 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
   const pricingByVehicle: VehiclePrice[] = pricingRows
     .filter((row) => row.vehicleType)
     .sort((a, b) => byVehicleTypeOrder(a.vehicleType, b.vehicleType))
-    .map((row) => ({ vehicleType: row.vehicleType, price: row.priceLabel }));
+    .map((row) => ({
+      vehicleType: row.vehicleType,
+      price: row.priceLabel,
+      priceType: row.priceType,
+    }));
 
   const vehicleTypes = pricingByVehicle.map((p) => p.vehicleType);
   const seatCount = vehicleTypes.filter((t) => t !== "Limousine");
