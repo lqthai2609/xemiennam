@@ -16,7 +16,6 @@ import { BlogCard } from "@/components/blog-card";
 import { DestinationCardTile } from "@/components/destination-card-tile";
 import { RouteFinderForm } from "@/components/route-finder-form";
 import { navItems } from "@/data/nav";
-import { buildRouteFinderProvinces } from "@/lib/route-finder";
 import type { Route } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildLocalBusinessSchema } from "@/lib/schema";
@@ -127,7 +126,6 @@ export default async function Home() {
     fetchTestimonials(),
     fetchDestinationCards(),
   ]);
-  const finderProvinces = buildRouteFinderProvinces(routes);
   const latestPosts = posts.slice(0, 3);
   const featuredRoutes = pickFeaturedRoutes(routes);
   const featuredDestinations = destinations.slice(0, 6);
@@ -208,7 +206,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <RouteFinderForm id="booking" provinces={finderProvinces} />
+      <RouteFinderForm id="booking" routes={routes} />
 
       <div className="ticker-section" aria-label="Các tuyến phổ biến">
         <div className="ticker-track" style={{ animationDuration: `${Math.max(routes.length, 1) * 6}s` }}>
