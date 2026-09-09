@@ -8,6 +8,7 @@ import { fetchServices } from "@/lib/api/services";
 import { fetchPostsByVehicleType } from "@/lib/api/blog";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
+import { priceTypeLabel } from "@/types/route";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -54,7 +55,7 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
   const routePrices = rows.map((row) => ({
     route: row.routeLabel,
     price: row.priceLabel,
-    note: "Giá tham khảo, thay đổi theo mùa/lễ",
+    note: `${priceTypeLabel(row.priceType)} · Giá tham khảo, thay đổi theo mùa/lễ`,
   }));
   // Gộp theo routeSlug để mỗi tuyến chỉ xuất hiện 1 lần trong danh sách "tuyến có thể đi"
   // (bảng giá pricingTable có 1 dòng/mỗi xe, nên 1 tuyến có thể lặp lại nếu có nhiều xe cùng loại).
