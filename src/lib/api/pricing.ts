@@ -1,5 +1,6 @@
 import { fetchRawRoutes, fetchRawVehicles, embeddedTermName, embeddedTerms, type WPVehicle } from "./raw";
 import { formatPriceShort, parsePriceAmount } from "@/lib/wp";
+import { normalizePriceType, priceTypeLabel, type PriceType } from "@/types/route";
 
 /**
  * Nguồn giá DUY NHẤT — đọc đúng 1 lần từ repeater `pricing_by_vehicle` trong CPT `route`
@@ -19,6 +20,8 @@ export type PricingRow = {
   vehicleType: string;
   price: number;
   priceLabel: string;
+  priceType: PriceType;
+  priceTypeLabel: string;
 };
 
 export async function getPricingTable(): Promise<PricingRow[]> {
@@ -32,6 +35,7 @@ export async function getPricingTable(): Promise<PricingRow[]> {
       const vehicleId = String(p.vehicle_id);
       const vehicle = vehicleById.get(vehicleId);
       const price = parsePriceAmount(p.gia);
+      const priceType = normalizePriceType(p.loai_gia);
       rows.push({
         routeId: String(route.id),
         routeSlug: route.slug,
@@ -42,6 +46,8 @@ export async function getPricingTable(): Promise<PricingRow[]> {
         vehicleType: vehicle ? embeddedTermName(vehicle._embedded, "vehicle_type") ?? "" : "",
         price,
         priceLabel: formatPriceShort(price),
+        priceType,
+        priceTypeLabel: priceTypeLabel(priceType),
       });
     }
   }
