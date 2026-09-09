@@ -5,7 +5,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { VehicleArt } from "@/components/vehicle-type-landing";
 import { comboDescriptionOrDefault } from "@/lib/combo";
-import { routeHref, type Route, type VehiclePrice } from "@/types/route";
+import { priceTypeLabel, routeHref, type Route, type VehiclePrice } from "@/types/route";
 import type { VehicleCategory } from "@/types/vehicle-category";
 import type { Testimonial } from "@/types/testimonial";
 
@@ -61,7 +61,7 @@ export function ComboLandingPage({
           <article className="detail-price-card">
             <span className="vehicle-chip">{vehiclePrice.vehicleType}</span>
             <strong>{vehiclePrice.price}</strong>
-            <small>Một chiều · Giá tham khảo, thay đổi theo mùa/lễ</small>
+            <small>{priceTypeLabel(vehiclePrice.priceType)} · Giá tham khảo, thay đổi theo mùa/lễ</small>
             <a href="#booking">Đặt xe ngay <ArrowRight size={14} /></a>
           </article>
         </div>
