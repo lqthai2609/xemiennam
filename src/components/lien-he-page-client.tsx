@@ -7,6 +7,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { ContactBookingForm, type BookingFormData } from "@/components/contact-booking-form";
 import { navItems } from "@/data/nav";
 import { getZaloChatLink } from "@/lib/zalo";
+import { UnifiedHero } from "@/components/unified-hero";
 
 const footerLinkGroups = [
   {
@@ -73,22 +74,7 @@ export function LienHePageClient({
     <main className="site-shell">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <section className="lien-he-hero">
-        <div>
-          <p className="eyebrow">
-            <span className="eyebrow-line" /> LIÊN HỆ
-          </p>
-          <h1>
-            Sẵn sàng
-            <br />
-            <em>lên đường?</em>
-          </h1>
-          <p>
-            Để lại thông tin, đội ngũ Xe Miền Nam sẽ gọi lại xác nhận trong ít phút. Cần gấp?
-            Gọi hotline hoặc nhắn Zalo, có người trực 24/7.
-          </p>
-        </div>
-      </section>
+      <UnifiedHero eyebrow="LIÊN HỆ" title={<>Cùng lên kế hoạch<br /><em>cho chuyến đi.</em></>} description="Để lại thông tin, Xe Miền Nam sẽ tư vấn lịch trình và loại xe phù hợp." showFinder={false} />
 
       <section className="section-wrap lien-he-content">
         <div className="lien-he-form-card">
