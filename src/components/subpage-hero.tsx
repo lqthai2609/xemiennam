@@ -22,7 +22,7 @@ export function SubpageHero({
     <div className="subpage-hero-wrap">
       <section
         className="subpage-hero"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
+        style={{ backgroundImage: `url(/images/hero-dat-xe-sai-gon.webp)` }}
         aria-labelledby="subpage-hero-title"
       >
         <div className="subpage-hero-overlay" aria-hidden="true" />
@@ -37,4 +37,4 @@ export function SubpageHero({
   );
 }
 
-export const defaultSubpageHeroImage = "/images/services/city-tour.png";
+export const defaultSubpageHeroImage = "/images/hero-dat-xe-sai-gon.webp";
