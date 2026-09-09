@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { MediaPhoto } from "@/components/media-photo";
 import { RouteBookingActions } from "@/components/route-booking-actions";
-import { routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
+import { priceTypeLabel, routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
 import { formatVNDate } from "@/lib/wp";
 
@@ -68,7 +68,7 @@ export function RouteDetailPage({
                   {vp.vehicleType}
                 </Link>
                 <strong>{vp.price}</strong>
-                <small>Một chiều</small>
+                <small>{priceTypeLabel(vp.priceType)} · Giá tham khảo</small>
                 <RouteBookingActions route={routeLabel} vehicleType={vp.vehicleType} price={vp.price} />
               </article>
             ))}
