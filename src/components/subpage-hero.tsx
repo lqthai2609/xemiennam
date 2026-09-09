@@ -6,7 +6,8 @@ type SubpageHeroProps = {
   eyebrow?: string;
   description?: string;
   backgroundImage: string;
-  routes: Route[];
+  routes?: Route[];
+  showFinder?: boolean;
 };
 
 export function SubpageHero({
@@ -14,7 +15,8 @@ export function SubpageHero({
   eyebrow = "MỞ RỘNG HÀNH TRÌNH",
   description,
   backgroundImage,
-  routes,
+  routes = [],
+  showFinder = true,
 }: SubpageHeroProps) {
   return (
     <div className="subpage-hero-wrap">
@@ -30,7 +32,7 @@ export function SubpageHero({
           {description ? <p>{description}</p> : null}
         </div>
       </section>
-      <RouteFinderForm routes={routes} />
+      {showFinder ? <RouteFinderForm routes={routes} /> : null}
     </div>
   );
 }
