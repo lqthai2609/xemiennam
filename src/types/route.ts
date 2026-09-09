@@ -1,6 +1,42 @@
+export type PriceType = "one_way" | "round_trip_same_day" | "two_days_one_night";
+
+export function normalizePriceType(value: string | undefined | null): PriceType {
+  const normalized = (value ?? "")
+    .trim()
+    .toLocaleLowerCase("vi")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/đ/g, "d")
+    .replace(/[._-]+/g, " ");
+
+  if (normalized.includes("2 ngay") || normalized.includes("hai ngay")) return "two_days_one_night";
+  if (
+    normalized.includes("2 chieu") ||
+    normalized.includes("hai chieu") ||
+    normalized.includes("khu hoi") ||
+    normalized.includes("trong ngay")
+  ) {
+    return "round_trip_same_day";
+  }
+  return "one_way";
+}
+
+export function priceTypeLabel(type: PriceType | undefined): string {
+  switch (type) {
+    case "round_trip_same_day":
+      return "Hai chiều trong ngày";
+    case "two_days_one_night":
+      return "2 ngày 1 đêm";
+    default:
+      return "Một chiều";
+  }
+}
+
 export interface VehiclePrice {
   vehicleType: string;
   price: string;
+  /** Cách tính giá do CMS đánh dấu cho từng dòng giá. Dữ liệu cũ mặc định là một chiều. */
+  priceType?: PriceType;
   /**
    * Mô tả riêng cho đúng tổ hợp tuyến + loại xe này (Ngày 14) — dùng cho trang
    * /tuyen-duong/[slug]/[loai-xe]. Bắt buộc viết tay riêng từng tổ hợp, không nội suy
