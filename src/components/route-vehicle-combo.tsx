@@ -1,122 +1,83 @@
 import Link from "next/link";
-import { ArrowRight, Check, Clock3, Milestone, Phone, Star } from "lucide-react";
+import { ArrowRight, CarFront, Check, Clock3, MessageCircle, Milestone, Phone, ShieldCheck, Star, Users, Luggage } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
-import { VehicleArt } from "@/components/vehicle-type-landing";
+import { BlogCard } from "@/components/blog-card";
+import { MediaPhoto } from "@/components/media-photo";
+import { RouteBookingActions } from "@/components/route-booking-actions";
 import { comboDescriptionOrDefault } from "@/lib/combo";
-import { routeHref, type Route, type VehiclePrice } from "@/types/route";
+import { routeHref, routeComboHref, type Route, type VehiclePrice } from "@/types/route";
 import type { VehicleCategory } from "@/types/vehicle-category";
-import type { Testimonial } from "@/types/testimonial";
+import type { Vehicle } from "@/types/vehicle";
+import type { BlogPost } from "@/types/blog";
 
 const footerLinkGroups = [
-  { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Loại xe", href: "/loai-xe" }] },
+  { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
   { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/lien-he" }] },
 ];
 
-/**
- * Trang kết hợp /tuyen-duong/[slug]/[loai-xe] (Ngày 14) — landing SEO hẹp cho đúng 1 tổ hợp
- * cụ thể (vd "thuê xe 16 chỗ đi Vũng Tàu"). Nguồn dữ liệu:
- * - route + vehiclePrice: từ pricingByVehicle, đúng nguồn duy nhất mục 3 kiến trúc kỹ thuật.
- * - category: nội dung tĩnh 4 loại xe (data/vehicle-categories.ts, giống Ngày 13).
- * - testimonials: mock tạm (data/testimonials.ts), thay bằng CPT testimonial thật Ngày 18.
- */
-export function ComboLandingPage({
-  route,
-  vehiclePrice,
-  category,
-  testimonials,
-}: {
+function discountedPrice(price: string) {
+  const amount = Number(price.replace(/[^0-9]/g, ""));
+  if (!amount) return "";
+  return `${Math.round((amount * 1.128) / 1000) * 1000}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " đ";
+}
+
+function SimilarRouteCard({ route, vehicleSlug }: { route: Route; vehicleSlug: string }) {
+  return <Link className="combo-similar-card" href={routeComboHref(route, vehicleSlug)}><span>{route.from} → {route.to}</span><strong>{route.price}</strong><small><Clock3 size={13} /> {route.time}</small><ArrowRight size={17} /></Link>;
+}
+
+export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes, relatedPosts, vehicle }: {
   route: Route;
   vehiclePrice: VehiclePrice;
   category: VehicleCategory;
-  testimonials: Testimonial[];
+  similarRoutes: Route[];
+  relatedPosts: BlogPost[];
+  vehicle?: Vehicle;
 }) {
   const description = comboDescriptionOrDefault(route, vehiclePrice);
+  const routeLabel = `${route.from} – ${route.to}`;
+  const oldPrice = discountedPrice(vehiclePrice.price);
+  const seats = vehicle?.seats || (category.type === "Limousine" ? "8 khách" : `${category.type.replace(" chỗ", "")} khách`);
+  const image = vehicle?.images[0];
 
   return (
-    <main className="site-shell vehicle-type-page combo-page">
+    <main className="site-shell combo-page">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
-
-      <section className="vehicle-type-hero">
-        <div className="vehicle-type-hero-copy">
-          <Link className="back-link" href={routeHref(route)}>← Tuyến {route.from} – {route.to}</Link>
-          <p className="eyebrow"><span className="eyebrow-line" /> {category.label} · {route.from.toUpperCase()} → {route.to.toUpperCase()}</p>
-          <h1>Thuê xe {category.label.toLowerCase()}<br /><em>đi {route.to}</em></h1>
+      <section className="combo-hero">
+        <div className="combo-hero-copy">
+          <Link className="back-link" href={routeHref(route)}>← Tuyến {routeLabel}</Link>
+          <p className="eyebrow"><span className="eyebrow-line" /> {route.region} · {category.label}</p>
+          <h1>Thuê xe {category.label.toLowerCase()}<br /><em>{route.from} → {route.to}</em></h1>
           <p>{description}</p>
-          <Link className="button button-primary" href="#booking">Đặt xe {category.label.toLowerCase()} <ArrowRight size={16} /></Link>
+          <div className="combo-hero-meta"><span><Clock3 size={16} /> {route.time}</span><span><Milestone size={16} /> {route.distance}</span><span><ShieldCheck size={16} /> Giá trọn gói</span></div>
         </div>
-        <VehicleArt category={category} />
+        <div className="combo-hero-card"><span>XE MIỀN NAM</span><strong>{category.label}</strong><small>ĐI TỬ TẾ TRÊN MỌI CUNG ĐƯỜNG</small></div>
       </section>
 
-      <section className="section-wrap combo-price-section">
-        <div className="section-heading-row">
-          <div><p className="section-label">GIÁ THAM KHẢO</p><h2>Giá thuê xe {category.label.toLowerCase()} tuyến này.</h2></div>
-          <div className="vehicle-type-bullets">
-            <span><Clock3 size={16} /> {route.time}</span>
-            <span><Milestone size={16} /> {route.distance}</span>
+      <section className="section-wrap combo-booking-section" id="booking">
+        <div className="section-heading"><div><p className="section-label">XE PHÙ HỢP CHO HÀNH TRÌNH</p><h2>Chọn xe, đặt chuyến ngay.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
+        <article className="combo-vehicle-card">
+          <div className="combo-vehicle-media">{image ? <MediaPhoto src={image} alt={vehicle?.name || vehiclePrice.vehicleType} /> : <CarFront size={76} strokeWidth={1.2} />}<strong>Xe {vehiclePrice.vehicleType} <span>(VIP)</span></strong></div>
+          <div className="combo-vehicle-info">
+            <div className="combo-vehicle-top"><div><h2>{vehicle?.name || `Xe ${vehiclePrice.vehicleType} TaxiGo`}</h2><div className="combo-rating"><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} /><span>4.9 · (1,250)</span></div></div><div className="combo-price"><del>{oldPrice}</del><strong>{vehiclePrice.price}</strong></div></div>
+            <div className="combo-vehicle-divider" />
+            <div className="combo-vehicle-details"><p><CarFront size={17} /> Xe sedan: Vios, Honda city, Elantra, Mazda...</p><p><Users size={17} /> {seats}</p><p><Luggage size={17} /> 2 vali</p></div>
+            <div className="combo-vehicle-actions"><div><p className="combo-alert">▲ Giá đang rất rẻ, đặt sớm để giữ xe</p><p className="combo-included"><Check size={14} /> Giá trên đã bao gồm phí cao tốc, phí ra vào SB</p></div><RouteBookingActions route={routeLabel} vehicleType={vehiclePrice.vehicleType} price={vehiclePrice.price} /></div>
           </div>
-        </div>
-        <div className="detail-price-grid combo-price-grid">
-          <article className="detail-price-card">
-            <span className="vehicle-chip">{vehiclePrice.vehicleType}</span>
-            <strong>{vehiclePrice.price}</strong>
-            <small>Một chiều · Giá tham khảo, thay đổi theo mùa/lễ</small>
-            <a href="#booking">Đặt xe ngay <ArrowRight size={14} /></a>
-          </article>
-        </div>
+        </article>
       </section>
 
-      <section className="section-wrap vehicle-type-amenities">
-        <p className="section-label">TIỆN ÍCH LOẠI XE NÀY</p>
-        <div className="vehicle-type-amenity-grid">
-          {category.amenities.map((item) => (
-            <div key={item}>
-              <Check size={20} />
-              <strong>{item}</strong>
-              <p>Được chuẩn bị sẵn cho hành trình {route.from} – {route.to}.</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <section className="section-wrap combo-benefits"><div className="section-heading"><div><p className="section-label">THÔNG TIN HÀNH TRÌNH</p><h2>Một chuyến đi nhẹ tênh.</h2></div></div><div className="combo-benefit-grid"><div><ShieldCheck size={22} /><strong>Giá minh bạch</strong><p>Không phát sinh phụ phí. Nhân viên xác nhận trước khi khởi hành.</p></div><div><Clock3 size={22} /><strong>Đón tận nơi</strong><p>Linh hoạt điểm đón tại {route.from} và trả khách tại {route.to}.</p></div><div><MessageCircle size={22} /><strong>Hỗ trợ nhanh</strong><p>Luôn có đội ngũ hỗ trợ qua điện thoại và Zalo.</p></div></div></section>
 
-      {testimonials.length > 0 && (
-        <section className="section-wrap combo-testimonials">
-          <p className="section-label">KHÁCH ĐÃ ĐI NÓI GÌ</p>
-          <div className="combo-testimonial-grid">
-            {testimonials.map((t) => (
-              <article className="combo-testimonial-card" key={t.id}>
-                <div className="combo-testimonial-stars">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={14} fill={i < t.rating ? "currentColor" : "none"} />
-                  ))}
-                </div>
-                <p>{t.quote}</p>
-                <div className="combo-testimonial-who">
-                  <span className="combo-testimonial-avatar">{t.initials}</span>
-                  <b>{t.name}</b>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
+      {similarRoutes.length > 0 && <section className="section-wrap combo-similar-section"><div className="section-heading"><div><p className="section-label">CÙNG TỈNH {route.region.toUpperCase()}</p><h2>Các tuyến tương tự.</h2></div><Link className="text-link" href={`/tuyen-duong/${route.regionSlug}`}>Xem tất cả tuyến <ArrowRight size={16} /></Link></div><div className="combo-similar-grid">{similarRoutes.map((item) => <SimilarRouteCard key={item.id} route={item} vehicleSlug={category.slug} />)}</div></section>}
 
-      <section className="section-wrap combo-back-links">
-        <Link className="text-link" href={routeHref(route)}>Xem đầy đủ tuyến {route.from} – {route.to} <ArrowRight size={15} /></Link>
-        <Link className="text-link" href={`/loai-xe/${category.slug}`}>Xem đầy đủ loại xe {category.label} <ArrowRight size={15} /></Link>
-      </section>
+      {relatedPosts.length > 0 && <section className="section-wrap combo-blog-section"><div className="section-heading"><div><p className="section-label">CẨM NANG HÀNH TRÌNH</p><h2>Bài viết liên quan.</h2></div><Link className="text-link" href="/blog">Xem tất cả bài viết <ArrowRight size={16} /></Link></div><div className="blog-grid">{relatedPosts.map((post) => <BlogCard key={post.id} post={post} />)}</div></section>}
 
-      <section className="vehicle-type-cta" id="booking">
-        <div>
-          <p className="section-label">SẴN SÀNG LÊN ĐƯỜNG?</p>
-          <h2>Đặt xe {category.label.toLowerCase()} đi {route.to} ngay hôm nay.</h2>
-          <p>Để lại thông tin hoặc gọi hotline, đội ngũ Xe Miền Nam xác nhận trong ít phút.</p>
-        </div>
-        <a className="button button-primary" href="tel:19006789">Gọi 1900 6789 <Phone size={16} /></a>
-      </section>
-
+      <section className="vehicle-type-cta combo-final-cta"><div><p className="section-label">SẴN SÀNG LÊN ĐƯỜNG?</p><h2>Đặt xe {category.label.toLowerCase()} đi {route.to}.</h2><p>Chỉ cần để lại họ tên và số điện thoại, Xe Miền Nam sẽ gọi xác nhận.</p></div><a className="button button-primary" href="tel:19006789">Gọi 1900 6789 <Phone size={16} /></a></section>
       <SiteFooter tagline={<>Đi đâu cũng có Xe Miền Nam.<br />Kết nối những hành trình tử tế.</>} phone="1900 6789" linkGroups={footerLinkGroups} socialLinks={defaultSocialLinks} copyright="© 2026 Xe Miền Nam" madeFor="Made for the road." />
     </main>
   );
 }
+
+export default ComboLandingPage;
