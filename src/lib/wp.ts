@@ -46,6 +46,33 @@ export function stripHtml(html: string | undefined | null): string {
 }
 
 /**
+ * Chuẩn hóa giá nhập từ WordPress về số nguyên VND.
+ * WordPress có thể trả number, chuỗi có dấu chấm/phẩy phân cách hàng nghìn,
+ * hoặc chuỗi có hậu tố tiền tệ; không được để Number() biến các giá trị đó thành NaN.
+ */
+export function parsePriceAmount(amount: number | string | undefined | null): number {
+  if (typeof amount === "number") return Number.isFinite(amount) ? Math.round(amount) : 0;
+  const raw = String(amount ?? "").trim();
+  if (!raw) return 0;
+  const cleaned = raw.replace(/[^\\d.,-]/g, "");
+  if (!cleaned) return 0;
+
+  const separatorCount = (cleaned.match(/[.,]/g) ?? []).length;
+  const hasBothSeparators = cleaned.includes(".") && cleaned.includes(",");
+  let normalized = cleaned;
+  if (hasBothSeparators || separatorCount > 1) {
+    normalized = cleaned.replace(/[.,]/g, "");
+  } else if (/^[+-]?\\d+[.,]\\d{1,2}$/.test(cleaned)) {
+    normalized = cleaned.replace(",", ".");
+  } else {
+    normalized = cleaned.replace(/[.,]/g, "");
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? Math.round(parsed) : 0;
+}
+
+/**
  * Format số tiền thô (vd 140000) thành nhãn ngắn kiểu mock hiện có (vd "140K").
  *
  * Sửa lỗi (phát hiện Ngày 24 khi có dữ liệu thật từ 700K đến 7 triệu): nhánh cũ xử lý
@@ -55,11 +82,12 @@ export function stripHtml(html: string | undefined | null): string {
  * đúng từ trước), thêm dấu chấm ngăn cách hàng nghìn kiểu Việt Nam qua toLocaleString.
  */
 export function formatPriceShort(amount: number | string | undefined | null): string {
-  const n = typeof amount === "string" ? Number(amount) : amount;
-  if (!n || Number.isNaN(n)) return "";
-  if (n >= 1000) {
-    return `${Math.round(n / 1000).toLocaleString("vi-VN")}K`;
+  const n = parsePriceAmount(amount);
+  if (!n) return "";
+  if (n >= 1000 && n % 1000 === 0) {
+    return `${(n / 1000).toLocaleString("vi-VN")}K`;
   }
+  if (n >= 1000) return `${n.toLocaleString("vi-VN")}đ`;
   return String(n);
 }
 

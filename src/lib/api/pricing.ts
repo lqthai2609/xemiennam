@@ -1,5 +1,5 @@
 import { fetchRawRoutes, fetchRawVehicles, embeddedTermName, embeddedTerms, type WPVehicle } from "./raw";
-import { formatPriceShort } from "@/lib/wp";
+import { formatPriceShort, parsePriceAmount } from "@/lib/wp";
 
 /**
  * Nguồn giá DUY NHẤT — đọc đúng 1 lần từ repeater `pricing_by_vehicle` trong CPT `route`
@@ -31,7 +31,7 @@ export async function getPricingTable(): Promise<PricingRow[]> {
     for (const p of pricing) {
       const vehicleId = String(p.vehicle_id);
       const vehicle = vehicleById.get(vehicleId);
-      const price = Number(p.gia) || 0;
+      const price = parsePriceAmount(p.gia);
       rows.push({
         routeId: String(route.id),
         routeSlug: route.slug,
