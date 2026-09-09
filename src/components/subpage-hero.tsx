@@ -1,12 +1,12 @@
 import { RouteFinderForm } from "@/components/route-finder-form";
-import type { RouteFinderProvince } from "@/lib/route-finder";
+import type { Route } from "@/types/route";
 
 type SubpageHeroProps = {
   title: string;
   eyebrow?: string;
   description?: string;
   backgroundImage: string;
-  provinces: RouteFinderProvince[];
+  routes: Route[];
 };
 
 export function SubpageHero({
@@ -14,7 +14,7 @@ export function SubpageHero({
   eyebrow = "MỞ RỘNG HÀNH TRÌNH",
   description,
   backgroundImage,
-  provinces,
+  routes,
 }: SubpageHeroProps) {
   return (
     <div className="subpage-hero-wrap">
@@ -30,7 +30,7 @@ export function SubpageHero({
           {description ? <p>{description}</p> : null}
         </div>
       </section>
-      <RouteFinderForm provinces={provinces} />
+      <RouteFinderForm routes={routes} />
     </div>
   );
 }

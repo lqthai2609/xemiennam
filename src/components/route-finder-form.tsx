@@ -3,55 +3,79 @@
 import { useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { RouteFinderProvince } from "@/lib/route-finder";
+import { routeComboHref, routeHref, vehicleTypeSlug, type Route } from "@/types/route";
+
+type RouteFinderFormProps = {
+  routes: Route[];
+  id?: string;
+};
+
+function normalizeSearch(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase("vi")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/đ/g, "d");
+}
 
 /**
- * Form "Tìm tuyến phù hợp" — 3 trường theo tầng: Điểm đến (tỉnh/thành) → Khu vực (bên trong
- * tỉnh đó) → Loại xe. Đây là form duy nhất đặt ngay dưới hero ở trang chủ, /tuyen-duong và
- * /diem-den (thay cho <BookingBar/> cũ — chỉ có điểm đi/điểm đến/ngày đi, không phân theo
- * khu vực trong tỉnh — và bảng lọc thủ công RouteFilter trên /tuyen-duong, cả hai đã bị bỏ).
- * Submit điều hướng sang /tuyen-duong kèm query param — RoutesPageClient đọc và lọc sẵn.
+ * Tìm đúng một route trước rồi mới cho chọn loại xe.
+ * Như vậy dropdown xe luôn lấy từ pricingByVehicle của route đã chọn,
+ * và submit có thể dựng URL canonical ngay tại đây.
  */
-export function RouteFinderForm({ provinces, id }: { provinces: RouteFinderProvince[]; id?: string }) {
-  const [regionSlug, setRegionSlug] = useState("");
-  const [area, setArea] = useState("");
+export function RouteFinderForm({ routes, id }: RouteFinderFormProps) {
+  const [destinationQuery, setDestinationQuery] = useState("");
+  const [selectedRouteSlug, setSelectedRouteSlug] = useState("");
   const [vehicleType, setVehicleType] = useState("");
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
 
-  const selectedProvince = useMemo(
-    () => provinces.find((p) => p.regionSlug === regionSlug),
-    [provinces, regionSlug],
-  );
-  const selectedArea = useMemo(
-    () => selectedProvince?.areas.find((a) => a.name === area),
-    [selectedProvince, area],
+  const selectedRoute = useMemo(
+    () => routes.find((route) => route.slug === selectedRouteSlug),
+    [routes, selectedRouteSlug],
   );
 
-  function handleProvinceChange(value: string) {
-    setRegionSlug(value);
-    setArea("");
+  const suggestions = useMemo(() => {
+    const query = normalizeSearch(destinationQuery);
+    if (!query || selectedRoute) return [];
+
+    return routes
+      .filter((route) => {
+        const destination = normalizeSearch(route.to);
+        const routeLabel = normalizeSearch(`${route.from} ${route.to}`);
+        return destination.includes(query) || routeLabel.includes(query);
+      })
+      .slice(0, 8);
+  }, [destinationQuery, routes, selectedRoute]);
+
+  function handleDestinationChange(value: string) {
+    setDestinationQuery(value);
+    setSelectedRouteSlug("");
     setVehicleType("");
+    setSuggestionsOpen(true);
   }
 
-  function handleAreaChange(value: string) {
-    setArea(value);
+  function selectRoute(route: Route) {
+    setDestinationQuery(route.to);
+    setSelectedRouteSlug(route.slug);
     setVehicleType("");
+    setSuggestionsOpen(false);
   }
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!selectedProvince || !area || !vehicleType) return;
-    const params = new URLSearchParams({
-      diem_den: selectedProvince.region,
-      khu_vuc: area,
-      loai_xe: vehicleType,
-    });
-    // Điều hướng cứng (thay vì router.push) — form này cũng được đặt ngay trên chính
-    // /tuyen-duong, nên điều hướng mềm cùng route sẽ không remount RoutesPageClient,
-    // khiến useEffect đọc query mới không chạy lại và bộ lọc không được áp dụng.
-    window.location.href = `/tuyen-duong?${params.toString()}`;
+    if (!selectedRoute) return;
+
+    const href = vehicleType
+      ? routeComboHref(selectedRoute, vehicleTypeSlug(vehicleType))
+      : routeHref(selectedRoute);
+
+    window.location.href = href;
   }
 
-  const canSubmit = Boolean(selectedProvince && area && vehicleType);
+  const availableVehicleTypes = selectedRoute
+    ? selectedRoute.pricingByVehicle.map((price) => price.vehicleType)
+    : [];
 
   return (
     <section className="route-finder" id={id} aria-labelledby="route-finder-title">
@@ -61,50 +85,58 @@ export function RouteFinderForm({ provinces, id }: { provinces: RouteFinderProvi
           <h2 id="route-finder-title">Bạn muốn đi đâu?</h2>
         </div>
         <div className="route-finder-fields">
-          <label className="route-select-field">
+          <label className="route-select-field route-combobox">
             <span>Điểm đến</span>
-            <select value={regionSlug} onChange={(event) => handleProvinceChange(event.target.value)} required>
-              <option value="">Chọn tỉnh/thành</option>
-              {provinces.map((province) => (
-                <option key={province.regionSlug} value={province.regionSlug}>
-                  {province.region}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="route-select-field">
-            <span>Khu vực</span>
-            <select
-              value={area}
-              onChange={(event) => handleAreaChange(event.target.value)}
-              disabled={!selectedProvince}
+            <input
+              value={destinationQuery}
+              onChange={(event) => handleDestinationChange(event.target.value)}
+              onFocus={() => setSuggestionsOpen(true)}
+              onBlur={() => window.setTimeout(() => setSuggestionsOpen(false), 150)}
+              placeholder="Ví dụ: Bến Cát"
+              autoComplete="off"
+              role="combobox"
+              aria-expanded={suggestionsOpen && suggestions.length > 0}
+              aria-controls="route-finder-suggestions"
               required
-            >
-              <option value="">{selectedProvince ? "Chọn khu vực" : "Chọn điểm đến trước"}</option>
-              {selectedProvince?.areas.map((a) => (
-                <option key={a.name} value={a.name}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+              className="route-input"
+            />
+            {suggestionsOpen && suggestions.length > 0 && (
+              <div className="route-suggestions" id="route-finder-suggestions" role="listbox">
+                {suggestions.map((route) => (
+                  <button
+                    type="button"
+                    role="option"
+                    className="route-suggestion"
+                    key={route.slug}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => selectRoute(route)}
+                  >
+                    <strong>{route.to}</strong>
+                    <span>{route.from} → {route.to}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </label>
+
           <label className="route-select-field">
             <span>Loại xe</span>
             <select
               value={vehicleType}
               onChange={(event) => setVehicleType(event.target.value)}
-              disabled={!selectedArea}
-              required
+              disabled={!selectedRoute}
+              className="route-input"
             >
-              <option value="">{selectedArea ? "Chọn loại xe" : "Chọn khu vực trước"}</option>
-              {selectedArea?.vehicleTypes.map((type) => (
+              <option value="">{selectedRoute ? "Tất cả loại xe" : "Chọn điểm đến trước"}</option>
+              {availableVehicleTypes.map((type) => (
                 <option key={type} value={type}>
                   {type}
                 </option>
               ))}
             </select>
           </label>
-          <Button size="lg" type="submit" disabled={!canSubmit}>
+
+          <Button size="lg" type="submit" disabled={!selectedRoute}>
             Tìm tuyến <ArrowRight data-icon="inline-end" />
           </Button>
         </div>
