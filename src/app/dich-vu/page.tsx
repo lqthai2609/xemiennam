@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { ServicesPage } from "@/components/services-page";
 import { fetchServices } from "@/lib/api/services";
 import { fetchRoutes } from "@/lib/api/routes";
-import { buildRouteFinderProvinces } from "@/lib/route-finder";
 
 export const metadata: Metadata = {
   title: "Dịch vụ theo nhu cầu | Xe Miền Nam",
@@ -12,5 +11,5 @@ export const metadata: Metadata = {
 /** Server Component — gọi fetchServices() (WP REST API thật + fallback mock, Ngày 13). */
 export default async function Page() {
   const [services, routes] = await Promise.all([fetchServices(), fetchRoutes()]);
-  return <ServicesPage services={services} finderProvinces={buildRouteFinderProvinces(routes)} />;
+  return <ServicesPage services={services} routes={routes} />;
 }
