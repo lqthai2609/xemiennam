@@ -75,7 +75,7 @@ export function DanhGiaPageClient({ testimonials, routes }: { testimonials: Test
     <main className="site-shell">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <UnifiedHero eyebrow="ĐÁNH GIÁ" title={<>Đi cùng nhau,<br /><em>yên tâm hơn.</em></>} description="Những chia sẻ thật từ khách hàng đã đồng hành cùng Xe Miền Nam." showFinder={false} />
+      <UnifiedHero eyebrow="ĐÁNH GIÁ" title={<>Đi cùng nhau,<br /><em>yên tâm hơn.</em></>} description="Những chia sẻ thật từ khách hàng đã đồng hành cùng Xe Miền Nam." />
 
       <section className="section-wrap danh-gia-content">
         <div className="danh-gia-toolbar">
