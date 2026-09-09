@@ -4,7 +4,7 @@ import { SubpageHero, defaultSubpageHeroImage } from "@/components/subpage-hero"
 import { DestinationCardTile } from "@/components/destination-card-tile";
 import { navItems } from "@/data/nav";
 import type { DestinationCard } from "@/types/diem-den";
-import type { RouteFinderProvince } from "@/lib/route-finder";
+import type { Route } from "@/types/route";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
@@ -13,10 +13,10 @@ const footerLinkGroups = [
 
 export function DestinationsPage({
   destinations,
-  finderProvinces,
+  routes,
 }: {
   destinations: DestinationCard[];
-  finderProvinces: RouteFinderProvince[];
+  routes: Route[];
 }) {
   return (
     <main className="site-shell">
@@ -25,7 +25,7 @@ export function DestinationsPage({
         title="Đi đâu, Xe Miền Nam có tuyến."
         description="Mỗi điểm đến là một cách đi khác nhau. Chọn khu vực bạn muốn đến để xem các tuyến xe đang chạy và bắt đầu lên lịch."
         backgroundImage={defaultSubpageHeroImage}
-        provinces={finderProvinces}
+        routes={routes}
       />
       <section className="section-wrap destination-index-content" aria-labelledby="destination-list-title">
         <div className="section-heading-row">
