@@ -411,3 +411,15 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
    này render lồng bên trong .detail-price-card trong cây DOM dù hiển thị dạng overlay cố định. */
 .quick-booking-summary strong { font: 700 13px var(--font-vietnam); color: var(--primary); }
 .quick-booking-form { display: flex; flex-direction: column; gap: 14px; }
+
+
+/* Route finder destination autocomplete */
+.route-combobox { position: relative; }
+.route-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 7px; background: var(--background); color: var(--foreground); font: 500 12px var(--font-vietnam); }
+.route-input::placeholder { color: var(--muted-foreground); opacity: .75; }
+.route-input:disabled { cursor: not-allowed; opacity: .55; }
+.route-suggestions { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 20; display: grid; gap: 2px; padding: 6px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); box-shadow: 0 12px 28px #102b3f1c; }
+.route-suggestion { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; padding: 10px; border: 0; border-radius: 5px; background: transparent; color: var(--foreground); text-align: left; cursor: pointer; }
+.route-suggestion:hover, .route-suggestion:focus-visible { background: var(--muted); outline: none; }
+.route-suggestion strong { font: 700 13px var(--font-vietnam); }
+.route-suggestion span { color: var(--muted-foreground); font: 500 11px var(--font-vietnam); }
