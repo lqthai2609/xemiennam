@@ -20,7 +20,7 @@ export function UnifiedHero({
   backLabel,
   meta,
 }: UnifiedHeroProps) {
-  const heroImage = "/images/hero-dat-xe-sai-gon.webp";
+  const heroImage = "/images/hero-dat-xe-sai-gon.webp?v=2";
 
   return (
     <section
