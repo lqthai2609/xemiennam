@@ -11,6 +11,7 @@ import { formatVNDate } from "@/lib/wp";
 import { JsonLd } from "@/components/json-ld";
 import { buildFaqPageSchema } from "@/lib/schema";
 import { routeHref } from "@/types/route";
+import { UnifiedHero } from "@/components/unified-hero";
 
 export type Props = { params: Promise<{ slug: string }> };
 
@@ -70,23 +71,7 @@ export default async function BlogDetailPage({ params }: Props) {
       )}
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <section className="blog-detail-hero">
-        <Link className="back-link" href="/blog">
-          <ArrowLeft size={15} /> Tất cả bài viết
-        </Link>
-        <span className="blog-cat">{post.category}</span>
-        <h1>{post.title}</h1>
-        <div className="blog-detail-meta">
-          <span>
-            <CalendarClock size={14} /> Đăng {formatVNDate(post.publishedDate)}
-          </span>
-          {post.modifiedDate !== post.publishedDate && (
-            <span>
-              <RefreshCw size={14} /> Cập nhật lần cuối {formatVNDate(post.modifiedDate)}
-            </span>
-          )}
-        </div>
-      </section>
+      <UnifiedHero eyebrow={post.category} title={post.title} description={post.excerpt} backgroundImage={post.featuredImageUrl || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
 
       <section className="section-wrap blog-detail-content">
         {/* Nội dung do admin site tự nhập trong wp-admin (không phải do người dùng cuối gửi lên) nên render trực tiếp HTML — xem ghi chú trong lib/api/blog.ts. */}

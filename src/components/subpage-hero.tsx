@@ -6,7 +6,8 @@ type SubpageHeroProps = {
   eyebrow?: string;
   description?: string;
   backgroundImage: string;
-  routes: Route[];
+  routes?: Route[];
+  showFinder?: boolean;
 };
 
 export function SubpageHero({
@@ -14,13 +15,14 @@ export function SubpageHero({
   eyebrow = "MỞ RỘNG HÀNH TRÌNH",
   description,
   backgroundImage,
-  routes,
+  routes = [],
+  showFinder = true,
 }: SubpageHeroProps) {
   return (
     <div className="subpage-hero-wrap">
       <section
         className="subpage-hero"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
+        style={{ backgroundImage: `url(/images/hero-dat-xe-sai-gon.webp)` }}
         aria-labelledby="subpage-hero-title"
       >
         <div className="subpage-hero-overlay" aria-hidden="true" />
@@ -30,9 +32,9 @@ export function SubpageHero({
           {description ? <p>{description}</p> : null}
         </div>
       </section>
-      <RouteFinderForm routes={routes} />
+      {showFinder ? <RouteFinderForm routes={routes} /> : null}
     </div>
   );
 }
 
-export const defaultSubpageHeroImage = "/images/services/city-tour.png";
+export const defaultSubpageHeroImage = "/images/hero-dat-xe-sai-gon.webp";

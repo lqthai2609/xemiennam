@@ -9,6 +9,7 @@ import { navItems } from "@/data/nav";
 import { formatVNDate } from "@/lib/wp";
 import type { Testimonial } from "@/types/testimonial";
 import type { Route } from "@/types/route";
+import { UnifiedHero } from "@/components/unified-hero";
 
 const footerLinkGroups = [
   {
@@ -74,31 +75,7 @@ export function DanhGiaPageClient({ testimonials, routes }: { testimonials: Test
     <main className="site-shell">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <section className="danh-gia-hero">
-        <div>
-          <p className="eyebrow">
-            <span className="eyebrow-line" /> ĐÁNH GIÁ KHÁCH HÀNG
-          </p>
-          <h1>
-            Khách đã đi
-            <br />
-            <em>nói gì.</em>
-          </h1>
-          <p>Trải nghiệm thật từ những hành khách đã thuê xe cùng Xe Miền Nam.</p>
-        </div>
-        <div className="danh-gia-rating-big">
-          <strong>
-            {avgRatingLabel}
-            <span>/5</span>
-          </strong>
-          <div className="danh-gia-rating-stars">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={16} fill={i < Math.round(avgRating) ? "currentColor" : "none"} />
-            ))}
-          </div>
-          <span>dựa trên {testimonials.length} đánh giá</span>
-        </div>
-      </section>
+      <UnifiedHero eyebrow="ĐÁNH GIÁ" title={<>Đi cùng nhau,<br /><em>yên tâm hơn.</em></>} description="Những chia sẻ thật từ khách hàng đã đồng hành cùng Xe Miền Nam." />
 
       <section className="section-wrap danh-gia-content">
         <div className="danh-gia-toolbar">

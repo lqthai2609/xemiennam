@@ -8,6 +8,7 @@ import { RouteBookingActions } from "@/components/route-booking-actions";
 import { priceTypeLabel, routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
 import { formatVNDate } from "@/lib/wp";
+import { UnifiedHero } from "@/components/unified-hero";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
@@ -40,18 +41,7 @@ export function RouteDetailPage({
   return (
     <main className="site-shell route-detail-page">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
-      <section className="route-detail-hero">
-        <div className="route-detail-hero-copy">
-          <Link className="back-link" href={`/tuyen-duong/${route.regionSlug || "khac"}`}><ArrowRight size={15} className="back-arrow" /> Tất cả tuyến {route.region}</Link>
-          <p className="eyebrow"><span className="eyebrow-line" /> {route.heroNote}</p>
-          <h1>{route.from}<br /><em>→ {route.to}</em></h1>
-          <p className="detail-summary">{route.summary}</p>
-          <div className="detail-meta"><span><Clock3 size={16} /> {route.time}</span><span><Milestone size={16} /> {route.distance}</span><span><ShieldCheck size={16} /> Đúng giờ, an tâm</span>{route.modifiedDate && <span><RefreshCw size={16} /> Cập nhật lần cuối {formatVNDate(route.modifiedDate)}</span>}</div>
-        </div>
-        <div className="route-detail-sign" aria-label={`Tuyến ${route.from} đến ${route.to}`}><span>XE MIỀN NAM</span><strong>{route.from}</strong><ArrowRight size={30} /><strong>{route.to}</strong><small>ĐI TỬ TẾ TRÊN MỌI CUNG ĐƯỜNG</small></div>
-      </section>
-
-      <section className="detail-content section-wrap">
+      <UnifiedHero eyebrow={route.heroNote} title={<> {route.from}<br /><em>→ {route.to}</em></>} description={route.summary} backgroundImage="/images/services/city-tour.png" backHref={`/tuyen-duong/${route.regionSlug || "khac"}`} backLabel={`Tất cả tuyến ${route.region}`} /><section className="detail-content section-wrap">
         <div className="detail-main">
           <div className="section-heading detail-heading"><div><p className="section-label">GIÁ THUÊ XE THAM KHẢO</p><h2>Chọn cách bạn muốn đi.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
           <div className="detail-price-grid">

@@ -8,6 +8,7 @@ import { navItems } from "@/data/nav";
 import { VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
 import { routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
 import { formatVNDate } from "@/lib/wp";
+import { UnifiedHero } from "@/components/unified-hero";
 
 const footerLinkGroups = [
   {
@@ -49,30 +50,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
     <main className="site-shell">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <section className="bang-gia-hero">
-        <div>
-          <p className="eyebrow">
-            <span className="eyebrow-line" /> BẢNG GIÁ
-          </p>
-          <h1>
-            Giá thuê xe
-            <br />
-            <em>theo từng tuyến.</em>
-          </h1>
-          <p>
-            Thuê nguyên chiếc, chủ động giờ giấc. Giá dưới đây là giá tham khảo — liên hệ để
-            được báo giá chính xác cho hành trình của bạn.
-          </p>
-        </div>
-        <div className="bang-gia-hero-note">
-          <strong>{String(routes.length).padStart(2, "0")}</strong>
-          <span>
-            TUYẾN
-            <br />
-            ĐANG CHẠY
-          </span>
-        </div>
-      </section>
+      <UnifiedHero eyebrow="BẢNG GIÁ" title={<>Giá rõ ràng.<br /><em>chuyến đi nhẹ tênh.</em></>} description="Tham khảo nhanh mức giá thuê xe nguyên chiếc theo tuyến và loại xe." />
 
       <section className="section-wrap bang-gia-content">
         <div className="bang-gia-toolbar">

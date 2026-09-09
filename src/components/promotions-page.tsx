@@ -3,6 +3,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { PromotionCard } from "@/components/promotion-card";
 import type { Promotion } from "@/types/promotion";
+import { UnifiedHero } from "@/components/unified-hero";
 
 const footerLinkGroups = [
   {
@@ -34,30 +35,7 @@ export function PromotionsPage({ promotions }: { promotions: Promotion[] }) {
     <main className="site-shell">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <section className="khuyen-mai-hero">
-        <div>
-          <p className="eyebrow">
-            <span className="eyebrow-line" /> KHUYẾN MÃI
-          </p>
-          <h1>
-            Ưu đãi
-            <br />
-            <em>đang chờ bạn.</em>
-          </h1>
-          <p>
-            Các chương trình giảm giá theo tuyến và loại xe, cập nhật thường xuyên. Liên hệ
-            hotline hoặc Zalo để được áp dụng đúng ưu đãi cho chuyến đi của bạn.
-          </p>
-        </div>
-        <div className="khuyen-mai-hero-note">
-          <strong>{String(activeCount).padStart(2, "0")}</strong>
-          <span>
-            ƯU ĐÃI
-            <br />
-            ĐANG ÁP DỤNG
-          </span>
-        </div>
-      </section>
+      <UnifiedHero eyebrow="KHUYẾN MÃI" title={<>Ưu đãi<br /><em>đang chờ bạn.</em></>} description="Các chương trình giảm giá theo tuyến và loại xe, cập nhật thường xuyên." />
 
       <section className="section-wrap khuyen-mai-content">
         {promotions.length === 0 ? (

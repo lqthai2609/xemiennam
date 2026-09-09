@@ -11,6 +11,7 @@ import { routeHref, routeComboHref, type Route, type VehiclePrice } from "@/type
 import type { VehicleCategory } from "@/types/vehicle-category";
 import type { Vehicle } from "@/types/vehicle";
 import type { BlogPost } from "@/types/blog";
+import { UnifiedHero } from "@/components/unified-hero";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
@@ -45,17 +46,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   return (
     <main className="site-shell combo-page">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
-      <section className="combo-hero">
-        <div className="combo-hero-copy">
-          <Link className="back-link" href={routeHref(route)}>← Tuyến {routeLabel}</Link>
-          <p className="eyebrow"><span className="eyebrow-line" /> {route.region} · {category.label}</p>
-          <h1>Thuê xe {category.label.toLowerCase()}<br /><em>{route.from} → {route.to}</em></h1>
-          <p>{description}</p>
-          <div className="combo-hero-meta"><span><Clock3 size={16} /> {route.time}</span><span><Milestone size={16} /> {route.distance}</span><span><ShieldCheck size={16} /> Giá trọn gói</span></div>
-        </div>
-        <div className="combo-hero-card"><span>XE MIỀN NAM</span><strong>{category.label}</strong><small>ĐI TỬ TẾ TRÊN MỌI CUNG ĐƯỜNG</small></div>
-      </section>
-
+      <UnifiedHero eyebrow={`${route.region} · ${category.label}`} title={<>Thuê xe {category.label.toLowerCase()}<br /><em>{route.from} → {route.to}</em></>} description={description} backgroundImage={image} backHref={routeHref(route)} backLabel={`Tuyến ${routeLabel}`} />
       <section className="section-wrap combo-booking-section" id="booking">
         <div className="section-heading"><div><p className="section-label">XE PHÙ HỢP CHO HÀNH TRÌNH</p><h2>Chọn xe, đặt chuyến ngay.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
         <article className="combo-vehicle-card">

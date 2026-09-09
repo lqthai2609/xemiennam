@@ -6,6 +6,7 @@ import { navItems } from "@/data/nav";
 import { formatVNDate } from "@/lib/wp";
 import { routeHref, type Route } from "@/types/route";
 import type { DiemDen } from "@/types/diem-den";
+import { UnifiedHero } from "@/components/unified-hero";
 
 const footerLinkGroups = [
   {
@@ -75,24 +76,7 @@ export function DiemDenDetailPage({
     <main className="site-shell">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <section className="blog-detail-hero">
-        <Link className="back-link" href="/tuyen-duong">
-          <ArrowLeft size={15} /> Tất cả tuyến đường
-        </Link>
-        <span className="blog-cat">ĐIỂM ĐẾN</span>
-        <h1>{hub?.title || regionName}</h1>
-        <div className="blog-detail-meta">
-          <span>
-            <MapPin size={14} /> {routes.length} tuyến đang chạy
-          </span>
-          {hub?.modifiedDate && (
-            <span>
-              <RefreshCw size={14} /> Cập nhật lần cuối {formatVNDate(hub.modifiedDate)}
-            </span>
-          )}
-        </div>
-      </section>
-
+      <UnifiedHero eyebrow="ĐIỂM ĐẾN" title={regionName} description={hub ? "Thông tin điểm đến và các tuyến xe nguyên chuyến phù hợp." : `Thuê xe nguyên chuyến đi khắp khu vực ${regionName}.`} backHref="/diem-den" backLabel="Tất cả điểm đến" />
       <section className="section-wrap blog-detail-content">
         {hub ? (
           <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: hub.contentHtml }} />
