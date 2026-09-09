@@ -71,7 +71,7 @@ export default async function BlogDetailPage({ params }: Props) {
       )}
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <UnifiedHero eyebrow={post.category} title={post.title} description={post.excerpt} backgroundImage={post.image || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
+      <UnifiedHero eyebrow={post.category} title={post.title} description={post.excerpt} backgroundImage={post.featuredImageUrl || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
 
       <section className="section-wrap blog-detail-content">
         {/* Nội dung do admin site tự nhập trong wp-admin (không phải do người dùng cuối gửi lên) nên render trực tiếp HTML — xem ghi chú trong lib/api/blog.ts. */}
