@@ -39,7 +39,8 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   const routeLabel = `${route.from} – ${route.to}`;
   const oldPrice = discountedPrice(vehiclePrice.price);
   const seats = vehicle?.seats || (category.type === "Limousine" ? "8 khách" : `${category.type.replace(" chỗ", "")} khách`);
-  const image = vehicle?.images[0];
+  // Ảnh loại xe chỉ được dùng trong card đặt xe, không gắn vào nền hero.
+  const image = vehicle?.images[0] || category.imageUrl;
 
   return (
     <main className="site-shell combo-page">
