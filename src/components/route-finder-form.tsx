@@ -11,7 +11,12 @@ type RouteFinderFormProps = {
 };
 
 function normalizeSearch(value: string) {
-  return value.trim().toLocaleLowerCase("vi");
+  return value
+    .trim()
+    .toLocaleLowerCase("vi")
+    .normalize("NFD")
+    .replace(/\\p{Diacritic}/gu, "")
+    .replace(/đ/g, "d");
 }
 
 /**
