@@ -29,7 +29,12 @@ export type WPRoute = {
     diem_don?: string;
     diem_tra?: string;
     google_maps_embed?: string;
-    pricing_by_vehicle?: { vehicle_id: number | string; gia: number | string }[];
+    pricing_by_vehicle?: {
+      vehicle_id: number | string;
+      gia: number | string;
+      /** Giá trị select CMS: mot_chieu, hai_chieu_trong_ngay hoặc 2_ngay_1_dem. */
+      loai_gia?: string;
+    }[];
     // Bổ sung Ngày 12 (snippet ID 20) — cần kích hoạt snippet trong wp-admin trước khi có dữ liệu thật.
     tom_tat_ngan?: string;
     diem_nhan_hero?: string;
