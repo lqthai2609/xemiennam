@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RouteDetailPage } from "@/components/route-detail";
-import { fetchRoutes, fetchRouteBySlug, fetchRelatedRoutes } from "@/lib/api/routes";
+import { fetchRoutes, fetchRouteBySlug, fetchRoutesByRegion } from "@/lib/api/routes";
 import { fetchVehicles } from "@/lib/api/vehicles";
+import { fetchTestimonials } from "@/lib/api/testimonials";
+import { fetchPostsByRegion } from "@/lib/api/blog";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
 import { routeHref } from "@/types/route";
@@ -52,10 +54,15 @@ export default async function Page({ params }: Props) {
   // (vd ai đó gõ tay /tuyen-duong/da-lat/tp-hcm-vung-tau) — tránh 2 URL cùng phục vụ 1 nội
   // dung (canonical theo đúng hub), giống nguyên tắc slug nhất quán mục 9.3 kiến trúc kỹ thuật.
   if (!route || route.regionSlug !== tinh) notFound();
-  const [relatedRoutes, vehicleImageByType] = await Promise.all([
-    fetchRelatedRoutes(route.slug, 3),
+  const [regionRoutes, vehicleImageByType, allTestimonials, relatedPosts] = await Promise.all([
+    fetchRoutesByRegion(route.regionSlug),
     buildVehicleImageByType(),
+    fetchTestimonials(),
+    fetchPostsByRegion(route.regionSlug, 3),
   ]);
+  const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug).slice(0, 6);
+  const matchingTestimonials = allTestimonials.filter((item) => item.routeSlug === route.slug);
+  const routeTestimonials = (matchingTestimonials.length > 0 ? matchingTestimonials : allTestimonials).slice(0, 6);
   const serviceSchema = buildServiceSchema({
     name: `Thuê xe nguyên chiếc ${route.from} đi ${route.to}`,
     description: route.summary || `Thuê xe nguyên chiếc tuyến ${route.from} – ${route.to}, giá từ ${route.price}.`,
@@ -65,7 +72,7 @@ export default async function Page({ params }: Props) {
   return (
     <>
       <JsonLd data={serviceSchema} />
-      <RouteDetailPage route={route} relatedRoutes={relatedRoutes} vehicleImageByType={vehicleImageByType} />
+      <RouteDetailPage route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
     </>
   );
 }
