@@ -35,12 +35,38 @@ export async function wpFetch<T>(
   }
 }
 
+/**
+ * Giải mã entity trong chuỗi `rendered` của WordPress mà không phụ thuộc DOM (các mapper
+ * đều chạy phía server). WordPress mã hóa dấu gạch ngang và ký tự đặc biệt trong tiêu đề,
+ * nên nếu đưa chuỗi trực tiếp vào JSX thì người dùng sẽ thấy nguyên văn `&#8211;`.
+ */
+export function decodeHtmlEntities(value: string): string {
+  const namedEntities: Record<string, string> = {
+    amp: "&",
+    apos: "'",
+    gt: ">",
+    lt: "<",
+    nbsp: " ",
+    quot: '"',
+  };
+
+  return value.replace(/&(#(?:x[\da-f]+|\d+)|[a-z]+);/gi, (entity, code: string) => {
+    if (!code.startsWith("#")) return namedEntities[code.toLowerCase()] ?? entity;
+
+    const isHex = code[1]?.toLowerCase() === "x";
+    const codePoint = Number.parseInt(code.slice(isHex ? 2 : 1), isHex ? 16 : 10);
+    if (!Number.isFinite(codePoint) || codePoint < 0 || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)) {
+      return entity;
+    }
+    return String.fromCodePoint(codePoint);
+  });
+}
+
 /** Bỏ thẻ HTML thô trong content.rendered (WordPress trả về HTML, ta cần plain text cho description/summary). */
 export function stripHtml(html: string | undefined | null): string {
   if (!html) return "";
-  return html
+  return decodeHtmlEntities(html)
     .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
