@@ -20,16 +20,14 @@ type RevalidateTarget = string | { path: string; type: "page" };
 const dynamicPage = (path: string): RevalidateTarget => ({ path, type: "page" });
 
 const PATHS_BY_POST_TYPE: Record<string, (slug: string) => RevalidateTarget[]> = {
-  // Ngày 25: bỏ `/tuyen-duong/${slug}` — URL tuyến giờ lồng theo tỉnh (`/tuyen-duong/[tinh]/[tuyen]`)
-  // và payload webhook (snippet ID 16) chỉ gửi slug của route, không có regionSlug, nên không dựng
-  // được path chính xác ở đây. Trang tuyến/combo vẫn tự làm mới theo REVALIDATE_SECONDS mặc định
-  // (1h, xem lib/wp.ts) — cùng giới hạn đã ghi nhận từ trước cho trang combo /tuyen-duong/[tinh]/[tuyen]/[loai-xe].
+  // Payload webhook (snippet ID 16) chỉ gửi slug của route, không có regionSlug, nên không thể
+  // dựng URL cụ thể. Invalidate các pattern động để cả hub tỉnh (nơi hiển thị card tuyến), trang
+  // chi tiết và trang combo đều đọc lại giá/thời gian mới nhất từ CMS ngay sau khi lưu route.
   route: () => [
     "/",
     "/tuyen-duong",
     "/bang-gia",
-    // Invalidate dynamic route pages too; otherwise their ISR cache can keep
-    // the previous CMS price for up to REVALIDATE_SECONDS (normally one hour).
+    dynamicPage("/tuyen-duong/[tinh]"),
     dynamicPage("/tuyen-duong/[tinh]/[tuyen]"),
     dynamicPage("/tuyen-duong/[tinh]/[tuyen]/[loai-xe]"),
   ],
@@ -40,6 +38,7 @@ const PATHS_BY_POST_TYPE: Record<string, (slug: string) => RevalidateTarget[]> =
     "/",
     "/loai-xe",
     "/bang-gia",
+    dynamicPage("/tuyen-duong/[tinh]"),
     dynamicPage("/tuyen-duong/[tinh]/[tuyen]"),
     dynamicPage("/tuyen-duong/[tinh]/[tuyen]/[loai-xe]"),
   ],
