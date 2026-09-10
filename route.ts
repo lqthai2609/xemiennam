@@ -151,27 +151,20 @@ export function vehicleTypeSlug(vehicleType: string): string {
 }
 
 /**
- * Mở rộng dữ liệu giá cũ đang gộp 4–7 và 16–29 chỗ,
- * để mỗi loại xe có URL chi tiết riêng.
+ * CMS cũ từng gộp giá 4–7 chỗ và 16–29 chỗ vào một dòng. Mở rộng các dòng đó ở lớp
+ * hiển thị giúp mỗi loại xe vẫn có URL riêng, nhưng không làm thay đổi dữ liệu gốc từ ACF.
+ * Khi CMS đã có giá tách riêng, giá tách riêng luôn được ưu tiên.
  */
 export function expandVehiclePrices(prices: VehiclePrice[]): VehiclePrice[] {
   const legacyGroups: Record<string, string[]> = {
     "4–7 chỗ": ["4 chỗ", "7 chỗ"],
     "16–29 chỗ": ["16 chỗ", "29 chỗ"],
   };
-
   const direct = prices.filter((price) => !legacyGroups[price.vehicleType]);
   const present = new Set(direct.map((price) => price.vehicleType));
-
   const expandedLegacy = prices.flatMap((price) =>
-    (legacyGroups[price.vehicleType] ?? [])
-      .filter((type) => !present.has(type))
-      .map((type) => ({ ...price, vehicleType: type })),
+    (legacyGroups[price.vehicleType] ?? []).filter((type) => !present.has(type)).map((type) => ({ ...price, vehicleType: type })),
   );
-
   const order = ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
-
-  return [...direct, ...expandedLegacy].sort(
-    (a, b) => order.indexOf(a.vehicleType) - order.indexOf(b.vehicleType),
-  );
+  return [...direct, ...expandedLegacy].sort((a, b) => order.indexOf(a.vehicleType) - order.indexOf(b.vehicleType));
 }
