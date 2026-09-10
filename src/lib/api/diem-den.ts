@@ -1,7 +1,7 @@
 import type { DiemDen, DestinationCard } from "@/types/diem-den";
 import { fetchRawDiemDenBySlug, embeddedFeaturedImage, type WPDiemDen } from "./raw";
 import { fetchRawDiemDen } from "./raw";
-import { parseFaqItems, stripHtml } from "@/lib/wp";
+import { decodeHtmlEntities, parseFaqItems, stripHtml } from "@/lib/wp";
 import { fetchRoutes } from "./routes";
 
 const destinationImageBySlug: Record<string, string> = {
@@ -33,7 +33,7 @@ function mapWPDiemDenToDiemDen(wp: WPDiemDen): DiemDen {
   return {
     id: String(wp.id),
     slug: wp.slug,
-    title: wp.title.rendered,
+    title: decodeHtmlEntities(wp.title.rendered),
     contentHtml: wp.content.rendered,
     featuredImageUrl: embeddedFeaturedImage(wp._embedded),
     faqItems: parseFaqItems(wp.faq_items),
@@ -80,7 +80,7 @@ export async function fetchDestinationCards(): Promise<DestinationCard[]> {
       const hub = hubBySlug.get(slug);
       return {
         slug,
-        name: hub?.title.rendered || info.name,
+        name: hub ? decodeHtmlEntities(hub.title.rendered) : info.name,
         routeCount: info.count,
         blurb: hub ? stripHtml(hub.content.rendered).slice(0, 110) : `${info.count} tuyến đang chạy trong khu vực này.`,
         imageUrl: embeddedFeaturedImage(hub?._embedded) || destinationImageBySlug[slug],
