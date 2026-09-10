@@ -66,7 +66,9 @@ export function RouteDetailPage({
                 <strong>{vp.price}</strong>
                 <small>{priceTypeLabel(vp.priceType)} · Giá tham khảo</small>
                 <Button size="sm" variant="outline" asChild>
-                  <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))}>Xem chi tiết xe <ArrowRight size={15} /></Link>
+                  <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))}>
+                    Thuê xe {vp.vehicleType} đi {route.to} <ArrowRight size={15} />
+                  </Link>
                 </Button>
                 <RouteBookingActions route={routeLabel} vehicleType={vp.vehicleType} price={vp.price} />
               </article>
