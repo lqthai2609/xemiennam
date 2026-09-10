@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Clock3, MapPin, Milestone, Star, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
+import { ArrowRight, Clock3, Headphones, Milestone, Star, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
@@ -41,6 +41,13 @@ const stats = [
   { value: "4–45", label: "chỗ, đủ loại xe" },
   { value: "24/7", label: "tổng đài & Zalo hỗ trợ" },
   { value: "0đ", label: "phụ phí phát sinh" },
+];
+
+const homeUsps = [
+  { icon: Clock3, title: "Đón đúng giờ", description: "Lịch trình rõ ràng, chủ động trong từng chuyến đi." },
+  { icon: ShieldCheck, title: "Giá luôn minh bạch", description: "Báo giá trọn gói, không thêm chi phí bất ngờ." },
+  { icon: BusFront, title: "Xe phù hợp mọi đoàn", description: "Đa dạng xe từ 4 đến 45 chỗ, sạch sẽ và tiện nghi." },
+  { icon: Headphones, title: "Hỗ trợ 24/7", description: "Luôn sẵn sàng đồng hành trước, trong và sau chuyến đi." },
 ];
 
 const footerLinkGroups = [
@@ -172,41 +179,25 @@ export default async function Home() {
               </span>
             </div>
           </div>
-          <div className="hero-visual" aria-label="Minh họa tuyến đường miền Nam">
-            <div className="sun" />
-            <div className="horizon" />
-            <div className="hill hill-back" />
-            <div className="hill hill-front" />
-            <div className="road">
-              <span className="road-mark mark-1" />
-              <span className="road-mark mark-2" />
-              <span className="road-mark mark-3" />
-            </div>
-            <div className="route-pin">
-              <MapPin size={17} fill="currentColor" /> <span>VŨNG TÀU</span>
-            </div>
-            <div className="signpost">
-              <div className="sign sign-top">
-                ĐÀ LẠT <ArrowRight size={16} />
-              </div>
-              <div className="sign sign-bottom">
-                CẦN THƠ <ArrowRight size={16} />
-              </div>
-              <span className="pole" />
-            </div>
-            <div className="bus-illustration">
-              <BusFront size={62} strokeWidth={1.4} />
-              <span className="bus-window" />
-              <span className="bus-wheel wheel-one" />
-              <span className="bus-wheel wheel-two" />
-            </div>
-            <span className="visual-note note-one">SINCE 2012</span>
-            <span className="visual-note note-two">TỬ TẾ TRÊN MỌI CUNG ĐƯỜNG</span>
+          <div className="hero-booking">
+            <RouteFinderForm id="booking" routes={routes} variant="hero" />
           </div>
         </div>
       </section>
 
-      <RouteFinderForm id="booking" routes={routes} />
+      <section className="home-usp-section" aria-label="Lợi ích khi chọn Xe Miền Nam">
+        <div className="home-usp-grid">
+          {homeUsps.map(({ icon: Icon, title, description }) => (
+            <article className="home-usp-card" key={title}>
+              <span className="home-usp-icon"><Icon size={22} /></span>
+              <div>
+                <h2>{title}</h2>
+                <p>{description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
       {featuredDestinations.length > 0 && (
         <section className="destinations-section section-wrap" id="destinations">
