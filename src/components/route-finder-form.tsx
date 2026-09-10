@@ -93,7 +93,7 @@ export function RouteFinderForm({ routes, id, variant = "default" }: RouteFinder
               onChange={(event) => handleDestinationChange(event.target.value)}
               onFocus={() => setSuggestionsOpen(true)}
               onBlur={() => window.setTimeout(() => setSuggestionsOpen(false), 150)}
-              placeholder="Ví dụ: Bến Cát"
+              placeholder="Ví dụ: Vũng Tàu"
               autoComplete="off"
               role="combobox"
               aria-expanded={suggestionsOpen && suggestions.length > 0}
