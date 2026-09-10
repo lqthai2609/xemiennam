@@ -149,3 +149,29 @@ export function vehicleTypeSlug(vehicleType: string): string {
   };
   return map[vehicleType] ?? vehicleType.toLowerCase().replace(/\s+/g, "-");
 }
+
+/**
+ * Mở rộng dữ liệu giá cũ đang gộp 4–7 và 16–29 chỗ,
+ * để mỗi loại xe có URL chi tiết riêng.
+ */
+export function expandVehiclePrices(prices: VehiclePrice[]): VehiclePrice[] {
+  const legacyGroups: Record<string, string[]> = {
+    "4–7 chỗ": ["4 chỗ", "7 chỗ"],
+    "16–29 chỗ": ["16 chỗ", "29 chỗ"],
+  };
+
+  const direct = prices.filter((price) => !legacyGroups[price.vehicleType]);
+  const present = new Set(direct.map((price) => price.vehicleType));
+
+  const expandedLegacy = prices.flatMap((price) =>
+    (legacyGroups[price.vehicleType] ?? [])
+      .filter((type) => !present.has(type))
+      .map((type) => ({ ...price, vehicleType: type })),
+  );
+
+  const order = ["4 chỗ", "7 chỗ", "16 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
+
+  return [...direct, ...expandedLegacy].sort(
+    (a, b) => order.indexOf(a.vehicleType) - order.indexOf(b.vehicleType),
+  );
+}
