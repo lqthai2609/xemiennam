@@ -425,3 +425,14 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 .route-suggestion:hover, .route-suggestion:focus-visible { background: var(--muted); outline: none; }
 .route-suggestion strong { font: 700 13px var(--font-vietnam); }
 .route-suggestion span { color: var(--muted-foreground); font: 500 11px var(--font-vietnam); }
+
+/* Nội dung mở rộng trang chi tiết tuyến: grid tuyến cùng tỉnh, đánh giá ACF và blog theo tỉnh. */
+.route-related-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.route-related-grid .route-ticket { grid-template-columns: 1fr; }
+.route-related-grid .rt-price { flex-direction: row; align-items: center; justify-content: space-between; }
+.route-related-grid .rt-price::after { display: none; }
+.route-related-grid .rt-cta { justify-content: flex-start; border-top: 1px dashed var(--border); border-left: 0; }
+.route-testimonials, .route-blog-section { padding-top: 1rem; padding-bottom: 5rem; }
+.route-testimonials .section-heading, .route-blog-section .section-heading, .related-section .section-heading { margin-bottom: 1.5rem; }
+.detail-price-card > .button { width: 100%; justify-content: center; margin-top: .15rem; }
+@media (max-width: 800px) { .route-related-grid { grid-template-columns: 1fr; } }

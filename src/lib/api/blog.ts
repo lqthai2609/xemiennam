@@ -74,3 +74,11 @@ export async function fetchRelatedPosts(currentSlug: string, count = 3): Promise
   const all = await fetchPosts();
   return all.filter((post) => post.slug !== currentSlug).slice(0, count);
 }
+
+/** Bài viết được biên tập cho các tuyến trong cùng tỉnh (taxonomy `province`). */
+export async function fetchPostsByRegion(regionSlug: string, count = 3): Promise<BlogPost[]> {
+  const raw = (await fetchRawPosts()).filter((wp) => wp.slug !== DEFAULT_WP_SLUG);
+  const matched = raw.filter((wp) => embeddedTerms(wp._embedded, "province").some((term) => term.slug === regionSlug));
+  if (raw.length === 0 && useMockFallback) return mockPosts.slice(0, count);
+  return matched.map(mapWPPostToBlogPost).sort((a, b) => (a.publishedDate < b.publishedDate ? 1 : -1)).slice(0, count);
+}
