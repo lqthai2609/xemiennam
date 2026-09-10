@@ -436,3 +436,29 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 .route-testimonials .section-heading, .route-blog-section .section-heading, .related-section .section-heading { margin-bottom: 1.5rem; }
 .detail-price-card > .button { width: 100%; justify-content: center; margin-top: .15rem; }
 @media (max-width: 800px) { .route-related-grid { grid-template-columns: 1fr; } }
+
+/* Trang chủ: form tìm tuyến thay phần minh họa hero, dải bên dưới dành cho 4 USP. */
+.hero-booking { display: flex; align-items: center; width: 100%; max-width: 480px; justify-self: end; }
+.route-finder.route-finder-hero { width: 100%; max-width: none; margin: 0; padding: 30px; border-color: rgba(255,255,255,.16); background: #fffdf7; box-shadow: 0 24px 60px #0509144d; }
+.route-finder-hero .route-finder-fields { align-items: stretch; flex-direction: column; }
+.route-finder-hero .button { width: 100%; margin-top: 4px; }
+.home-usp-section { padding: 40px 32px 0; }
+.home-usp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1120px; margin: auto; border: 1px solid var(--border); border-radius: 14px; background: var(--card); box-shadow: 0 14px 32px #102b3f0b; }
+.home-usp-card { display: flex; align-items: flex-start; gap: 14px; min-width: 0; padding: 24px 20px; border-right: 1px solid var(--border); }
+.home-usp-card:last-child { border-right: 0; }
+.home-usp-icon { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%; background: var(--secondary); color: var(--primary); }
+.home-usp-card h2 { margin: 2px 0 7px; font-size: 16px; line-height: 1.15; letter-spacing: -.035em; }
+.home-usp-card p { margin: 0; color: var(--muted-foreground); font-size: 11px; line-height: 1.55; }
+@media (max-width: 800px) {
+  .hero-booking { max-width: none; justify-self: stretch; }
+  .hero-booking .route-finder { margin: 0; }
+  .home-usp-section { padding: 24px 20px 0; }
+  .home-usp-grid { grid-template-columns: 1fr 1fr; }
+  .home-usp-card:nth-child(2) { border-right: 0; }
+  .home-usp-card:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+}
+@media (max-width: 520px) {
+  .home-usp-grid { grid-template-columns: 1fr; }
+  .home-usp-card, .home-usp-card:nth-child(2) { border-right: 0; border-bottom: 1px solid var(--border); }
+  .home-usp-card:last-child { border-bottom: 0; }
+}

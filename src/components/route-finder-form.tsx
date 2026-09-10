@@ -8,6 +8,7 @@ import { routeComboHref, routeHref, vehicleTypeSlug, type Route } from "@/types/
 type RouteFinderFormProps = {
   routes: Route[];
   id?: string;
+  variant?: "default" | "hero";
 };
 
 function normalizeSearch(value: string) {
@@ -24,7 +25,7 @@ function normalizeSearch(value: string) {
  * Như vậy dropdown xe luôn lấy từ pricingByVehicle của route đã chọn,
  * và submit có thể dựng URL canonical ngay tại đây.
  */
-export function RouteFinderForm({ routes, id }: RouteFinderFormProps) {
+export function RouteFinderForm({ routes, id, variant = "default" }: RouteFinderFormProps) {
   const [destinationQuery, setDestinationQuery] = useState("");
   const [selectedRouteSlug, setSelectedRouteSlug] = useState("");
   const [vehicleType, setVehicleType] = useState("");
@@ -78,7 +79,7 @@ export function RouteFinderForm({ routes, id }: RouteFinderFormProps) {
     : [];
 
   return (
-    <section className="route-finder" id={id} aria-labelledby="route-finder-title">
+    <section className={`route-finder${variant === "hero" ? " route-finder-hero" : ""}`} id={id} aria-labelledby="route-finder-title">
       <form className="route-finder-form" onSubmit={handleSubmit}>
         <div className="route-finder-heading">
           <p className="section-label">TÌM TUYẾN PHÙ HỢP</p>
