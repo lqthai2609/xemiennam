@@ -310,11 +310,11 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 .destination-card { display: flex; flex-direction: column; min-height: 100%; overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: #fffdf7; color: var(--foreground); text-decoration: none; transition: transform .25s, box-shadow .25s, border-color .25s; }
 .destination-card:hover, .destination-card:focus-visible { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 16px 35px #102b3f16; }
 .destination-card:focus-visible { outline: 3px solid color-mix(in srgb, var(--primary) 35%, transparent); outline-offset: 3px; }
-.destination-card-media { position: relative; min-height: 190px; overflow: hidden; background: var(--secondary); }
-.destination-card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
+.destination-card-media { position: relative; height: 220px; overflow: hidden; background: var(--secondary); }
+.destination-card-media img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
 .destination-card:hover .destination-card-media img { transform: scale(1.05); }
 .destination-card-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #102b3f00 45%, #102b3f9c); pointer-events: none; }
-.destination-card-fallback { display: grid; place-items: center; min-height: 190px; color: var(--primary); background: var(--secondary); }
+.destination-card-fallback { display: grid; place-items: center; height: 220px; color: var(--primary); background: var(--secondary); }
 .destination-card-fallback svg { width: 42px; height: 42px; }
 .destination-card-count { position: absolute; right: 18px; bottom: 16px; z-index: 1; color: #fff; font: 800 12px var(--font-archivo); letter-spacing: .04em; }
 .destination-card-copy { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 22px 24px 24px; }
@@ -323,7 +323,7 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 .destination-card-link { display: inline-flex; align-items: center; gap: 7px; margin-top: auto; padding-top: 10px; color: var(--primary); font-size: 12px; font-weight: 800; }
 .destination-card-link svg { width: 15px; }
 @media (max-width: 900px) { .destination-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .destination-index-hero { padding: 56px 20px 20px; } .destination-grid { grid-template-columns: 1fr; } .destination-card-media, .destination-card-fallback { min-height: 210px; } }
+@media (max-width: 640px) { .destination-index-hero { padding: 56px 20px 20px; } .destination-grid { grid-template-columns: 1fr; } .destination-card-media, .destination-card-fallback { height: 210px; } }
 
 /* ===== /lien-he (Ngày 19) ===== */
 .lien-he-content { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 48px; padding-top: 76px; padding-bottom: 110px; }

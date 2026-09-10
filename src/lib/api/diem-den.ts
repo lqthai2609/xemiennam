@@ -7,17 +7,17 @@ import { fetchRoutes } from "./routes";
 const destinationImageBySlug: Record<string, string> = {
   "ba-ria-vung-tau": "/images/destinations/ba-ria-vung-tau.webp",
   "ben-tre": "/images/destinations/ben-tre.webp",
-  "binh-duong": "/images/destinations/binh-duong.jpg",
-  "binh-phuoc": "/images/destinations/binh-phuoc.jpg",
+  "binh-duong": "/images/destinations/binh-duong.webp",
+  "binh-phuoc": "/images/destinations/binh-phuoc.webp",
   "can-tho": "/images/destinations/can-tho.webp",
-  "chau-doc": "/images/destinations/chau-doc.jpg",
-  "da-lat": "/images/destinations/da-lat.jpg",
+  "chau-doc": "/images/destinations/chau-doc.webp",
+  "da-lat": "/images/destinations/da-lat.webp",
   "dong-nai": "/images/destinations/dong-nai.webp",
   "tphcm-noi-thanh": "/images/destinations/ho-chi-minh.webp",
-  "long-an": "/images/destinations/long-an.jpg",
+  "long-an": "/images/destinations/long-an.webp",
   "my-tho": "/images/destinations/my-tho.webp",
-  "phan-thiet": "/images/destinations/phan-thiet.jpg",
-  "tay-ninh": "/images/destinations/tay-ninh.jpg",
+  "phan-thiet": "/images/destinations/phan-thiet.webp",
+  "tay-ninh": "/images/destinations/tay-ninh.webp",
 };
 
 /**
