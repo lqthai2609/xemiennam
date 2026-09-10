@@ -462,3 +462,12 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
   .home-usp-card, .home-usp-card:nth-child(2) { border-right: 0; border-bottom: 1px solid var(--border); }
   .home-usp-card:last-child { border-bottom: 0; }
 }
+
+/* Core Web Vitals: giữ kích thước hero ổn định trong lúc dữ liệu CMS được stream. */
+.hero-booking-skeleton { width: 100%; min-height: 354px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; background: linear-gradient(110deg, #fffdf7 30%, #f5e9d6 45%, #fffdf7 60%); background-size: 220% 100%; box-shadow: 0 24px 60px #0509144d; animation: booking-skeleton 1.4s ease-in-out infinite; }
+.home-sections-skeleton { min-height: 380px; content-visibility: auto; contain-intrinsic-size: auto 380px; }
+@keyframes booking-skeleton { to { background-position-x: -220%; } }
+@media (prefers-reduced-motion: reduce) { .hero-booking-skeleton { animation: none; } }
+
+/* Bỏ qua layout/paint các section ngoài viewport đầu; kích thước nội tại tránh CLS. */
+.home-usp-section ~ section { content-visibility: auto; contain-intrinsic-size: auto 700px; }

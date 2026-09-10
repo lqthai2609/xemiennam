@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
-import { ArrowRight, Clock3, Headphones, Milestone, Star, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
+import { Suspense } from "react";
+import { ArrowRight, Clock3, Headphones, Ticket, ShieldCheck, Users, BusFront } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { FleetShowcase } from "@/components/fleet-showcase";
-import { ServiceCard } from "@/components/service-card";
 import { fetchRoutes } from "@/lib/api/routes";
-import { routeHref } from "@/types/route";
-import { fetchPosts } from "@/lib/api/blog";
-import { fetchServices } from "@/lib/api/services";
-import { fetchTestimonials } from "@/lib/api/testimonials";
-import { fetchDestinationCards } from "@/lib/api/diem-den";
-import { BlogCard } from "@/components/blog-card";
-import { DestinationCardTile } from "@/components/destination-card-tile";
 import { RouteFinderForm } from "@/components/route-finder-form";
+import { HomeDynamicSections } from "@/components/home-dynamic-sections";
 import { navItems } from "@/data/nav";
-import type { Route } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildLocalBusinessSchema } from "@/lib/schema";
 import { SITE_DESCRIPTION } from "@/lib/site-config";
@@ -72,75 +65,13 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="section-label">{children}</p>;
 }
 
-function RouteCard({ route }: { route: Route }) {
-  return (
-    <article className="route-ticket">
-      <div className="rt-price">
-        <span>Giá từ</span>
-        <b>{route.price}</b>
-      </div>
-      <div className="rt-body">
-        <div className="rt-route">
-          <span>{route.from}</span>
-          <ArrowRight size={16} />
-          <span>{route.to}</span>
-        </div>
-        <div className="rt-meta">
-          <span>
-            <Clock3 size={13} /> {route.time}
-          </span>
-          <span>
-            <Milestone size={13} /> {route.distance}
-          </span>
-          <span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span>
-        </div>
-      </div>
-      <div className="rt-cta">
-        <Link href={routeHref(route)}>
-          Xem chi tiết <ArrowRight size={14} />
-        </Link>
-      </div>
-    </article>
-  );
+/** Tách dữ liệu tuyến khỏi shell để HTML hero được stream ngay, không chờ WordPress. */
+async function HeroBooking() {
+  const routes = await fetchRoutes();
+  return <RouteFinderForm id="booking" routes={routes} variant="hero" />;
 }
 
-/**
- * Trang chủ trước đây liệt kê TOÀN BỘ routes (80+ tuyến thật từ WP) khiến trang dài ngoằn —
- * giờ chỉ chọn 6 tuyến TP.HCM đi các điểm đến nổi bật nhất, xem đủ ở /tuyen-duong.
- * Khớp theo điểm đến (route.to) CHỨA tên trong danh sách này thay vì so bằng đúng chuỗi, vì
- * dữ liệu thật thường có thêm hậu tố (vd "Cần Thơ 2 ngày 1 đêm", "Đà Lạt (Lâm Đồng) 3N2Đ").
- */
-const FEATURED_DESTINATIONS = ["Vũng Tàu", "Hồ Tràm", "Cần Thơ", "Mũi Né", "Phan Thiết", "Đà Lạt"];
-
-function pickFeaturedRoutes(routes: Route[]): Route[] {
-  const used = new Set<string>();
-  const featured: Route[] = [];
-  for (const destination of FEATURED_DESTINATIONS) {
-    const match = routes.find((r) => !used.has(r.slug) && r.to.toLowerCase().includes(destination.toLowerCase()));
-    if (match) {
-      used.add(match.slug);
-      featured.push(match);
-    }
-  }
-  return featured;
-}
-
-export default async function Home() {
-  const [routes, posts, services, testimonials, destinations] = await Promise.all([
-    fetchRoutes(),
-    fetchPosts(),
-    fetchServices(),
-    fetchTestimonials(),
-    fetchDestinationCards(),
-  ]);
-  const latestPosts = posts.slice(0, 3);
-  const featuredRoutes = pickFeaturedRoutes(routes);
-  const featuredDestinations = destinations.slice(0, 6);
-  const featuredTestimonials = testimonials.slice(0, 6);
-  const avgRating = testimonials.length
-    ? testimonials.reduce((sum, t) => sum + t.rating, 0) / testimonials.length
-    : 0;
-
+export default function Home() {
   return (
     <main className="site-shell">
       <JsonLd data={buildLocalBusinessSchema()} />
@@ -180,7 +111,9 @@ export default async function Home() {
             </div>
           </div>
           <div className="hero-booking">
-            <RouteFinderForm id="booking" routes={routes} variant="hero" />
+            <Suspense fallback={<div className="hero-booking-skeleton" aria-label="Đang tải công cụ tìm tuyến" />}>
+              <HeroBooking />
+            </Suspense>
           </div>
         </div>
       </section>
@@ -199,60 +132,12 @@ export default async function Home() {
         </div>
       </section>
 
-      {featuredDestinations.length > 0 && (
-        <section className="destinations-section section-wrap" id="destinations">
-          <div className="section-heading">
-            <div>
-              <SectionLabel>ĐIỂM ĐẾN PHỔ BIẾN</SectionLabel>
-              <h2>Đi đâu hôm nay?</h2>
-            </div>
-            <Link className="text-link" href="/diem-den">
-              Xem tất cả điểm đến <ArrowRight size={17} />
-            </Link>
-          </div>
-          <div className="destination-grid">
-            {featuredDestinations.map((destination) => (
-              <DestinationCardTile destination={destination} key={destination.slug} />
-            ))}
-          </div>
-        </section>
-      )}
+      <Suspense fallback={<div className="home-sections-skeleton" aria-hidden="true" />}>
+        <HomeDynamicSections />
+      </Suspense>
 
-      <section className="routes-section section-wrap" id="routes">
-        <div className="section-heading">
-          <div>
-            <SectionLabel>TUYẾN NỔI BẬT</SectionLabel>
-            <h2>Được đặt nhiều nhất.</h2>
-          </div>
-          <Link className="text-link" href="/tuyen-duong">
-            Xem tất cả tuyến <ArrowRight size={17} />
-          </Link>
-        </div>
-        <div className="route-list">
-          {featuredRoutes.map((route) => (
-            <RouteCard key={route.slug} route={route} />
-          ))}
-        </div>
-      </section>
-
+      {/* Nội dung tĩnh phía dưới không phụ thuộc CMS nên vẫn được stream ngay lập tức. */}
       <FleetShowcase />
-
-      <section className="home-services-section section-wrap" id="services">
-        <div className="section-heading">
-          <div>
-            <SectionLabel>DỊCH VỤ</SectionLabel>
-            <h2>Dịch vụ theo nhu cầu của bạn.</h2>
-          </div>
-          <Link className="text-link" href="/dich-vu">
-            Xem tất cả dịch vụ <ArrowRight size={17} />
-          </Link>
-        </div>
-        <div className="service-card-grid">
-          {services.map((service) => (
-            <ServiceCard key={service.slug} service={service} />
-          ))}
-        </div>
-      </section>
 
       <section className="stats-section">
         <div className="stats-band">
@@ -302,54 +187,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="stories-section section-wrap" id="stories">
-        <div className="section-heading">
-          <div>
-            <SectionLabel>HÀNH KHÁCH NÓI GÌ</SectionLabel>
-            <h2>Chuyện trên những cung đường.</h2>
-          </div>
-          <div className="rating">
-            <Star size={18} fill="currentColor" />
-            <strong>{avgRating.toFixed(1)}</strong>
-            <span> / 5.0</span>
-          </div>
-        </div>
-        <div className="home-testimonial-grid">
-          {featuredTestimonials.map((t) => (
-            <article className="combo-testimonial-card" key={t.id}>
-              <div className="combo-testimonial-stars">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={14} fill={i < t.rating ? "currentColor" : "none"} />
-                ))}
-              </div>
-              <p>&ldquo;{t.quote}&rdquo;</p>
-              <div className="combo-testimonial-who">
-                <span className="combo-testimonial-avatar">{t.initials}</span>
-                <b>{t.name}</b>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
 
-      {latestPosts.length > 0 && (
-        <section className="blog-section section-wrap" id="blog">
-          <div className="section-heading">
-            <div>
-              <SectionLabel>BLOG</SectionLabel>
-              <h2>Cẩm nang trước khi lên xe.</h2>
-            </div>
-            <Link className="text-link" href="/blog">
-              Xem tất cả bài viết <ArrowRight size={17} />
-            </Link>
-          </div>
-          <div className="route-grid blog-grid">
-            {latestPosts.map((post) => (
-              <BlogCard key={post.slug} post={post} />
-            ))}
-          </div>
-        </section>
-      )}
 
       <section className="final-cta">
         <div>
