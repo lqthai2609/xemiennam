@@ -4,6 +4,22 @@ import { fetchRawDiemDen } from "./raw";
 import { parseFaqItems, stripHtml } from "@/lib/wp";
 import { fetchRoutes } from "./routes";
 
+const destinationImageBySlug: Record<string, string> = {
+  "ba-ria-vung-tau": "/images/destinations/ba-ria-vung-tau.webp",
+  "ben-tre": "/images/destinations/ben-tre.webp",
+  "binh-duong": "/images/destinations/binh-duong.jpg",
+  "binh-phuoc": "/images/destinations/binh-phuoc.jpg",
+  "can-tho": "/images/destinations/can-tho.webp",
+  "chau-doc": "/images/destinations/chau-doc.jpg",
+  "da-lat": "/images/destinations/da-lat.jpg",
+  "dong-nai": "/images/destinations/dong-nai.webp",
+  "tphcm-noi-thanh": "/images/destinations/ho-chi-minh.webp",
+  "long-an": "/images/destinations/long-an.jpg",
+  "my-tho": "/images/destinations/my-tho.webp",
+  "phan-thiet": "/images/destinations/phan-thiet.jpg",
+  "tay-ninh": "/images/destinations/tay-ninh.jpg",
+};
+
 /**
  * fetchDiemDenBySlug() — Ngày 25.
  *
@@ -67,7 +83,7 @@ export async function fetchDestinationCards(): Promise<DestinationCard[]> {
         name: hub?.title.rendered || info.name,
         routeCount: info.count,
         blurb: hub ? stripHtml(hub.content.rendered).slice(0, 110) : `${info.count} tuyến đang chạy trong khu vực này.`,
-        imageUrl: embeddedFeaturedImage(hub?._embedded),
+        imageUrl: embeddedFeaturedImage(hub?._embedded) || destinationImageBySlug[slug],
       };
     })
     .sort((a, b) => b.routeCount - a.routeCount);
