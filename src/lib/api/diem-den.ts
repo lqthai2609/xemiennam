@@ -20,6 +20,11 @@ const destinationImageBySlug: Record<string, string> = {
   "tay-ninh": "/images/destinations/tay-ninh.webp",
 };
 
+/** Trả về đúng ảnh fallback mà card điểm đến đang dùng khi WordPress không có ảnh đại diện. */
+export function getDestinationImageUrl(slug: string, featuredImageUrl?: string): string | undefined {
+  return featuredImageUrl || destinationImageBySlug[slug];
+}
+
 /**
  * fetchDiemDenBySlug() — Ngày 25.
  *
@@ -33,7 +38,7 @@ function mapWPDiemDenToDiemDen(wp: WPDiemDen): DiemDen {
   return {
     id: String(wp.id),
     slug: wp.slug,
-    title: wp.title.rendered,
+    title: stripHtml(wp.title.rendered),
     contentHtml: wp.content.rendered,
     featuredImageUrl: embeddedFeaturedImage(wp._embedded),
     faqItems: parseFaqItems(wp.faq_items),
@@ -80,10 +85,10 @@ export async function fetchDestinationCards(): Promise<DestinationCard[]> {
       const hub = hubBySlug.get(slug);
       return {
         slug,
-        name: hub?.title.rendered || info.name,
+        name: hub ? stripHtml(hub.title.rendered) : info.name,
         routeCount: info.count,
         blurb: hub ? stripHtml(hub.content.rendered).slice(0, 110) : `${info.count} tuyến đang chạy trong khu vực này.`,
-        imageUrl: embeddedFeaturedImage(hub?._embedded) || destinationImageBySlug[slug],
+        imageUrl: getDestinationImageUrl(slug, embeddedFeaturedImage(hub?._embedded)),
       };
     })
     .sort((a, b) => b.routeCount - a.routeCount);
