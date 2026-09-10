@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchRegionSlugs, fetchRoutesByRegion } from "@/lib/api/routes";
-import { fetchDiemDenBySlug } from "@/lib/api/diem-den";
+import { fetchDiemDenBySlug, getDestinationImageUrl } from "@/lib/api/diem-den";
 import { DiemDenDetailPage } from "@/components/diem-den-detail";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
@@ -57,7 +57,12 @@ export default async function Page({ params }: Props) {
     <>
       <JsonLd data={serviceSchema} />
       {hub && hub.faqItems.length > 0 && <JsonLd data={buildFaqPageSchema(hub.faqItems)} />}
-      <DiemDenDetailPage regionName={regionName} hub={hub} routes={routes} />
+      <DiemDenDetailPage
+        regionName={regionName}
+        hub={hub}
+        routes={routes}
+        heroImageUrl={getDestinationImageUrl(tinh, hub?.featuredImageUrl)}
+      />
     </>
   );
 }

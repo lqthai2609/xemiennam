@@ -67,16 +67,18 @@ export function DiemDenDetailPage({
   regionName,
   hub,
   routes,
+  heroImageUrl,
 }: {
   regionName: string;
   hub?: DiemDen;
   routes: Route[];
+  heroImageUrl?: string;
 }) {
   return (
     <main className="site-shell">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
-      <UnifiedHero eyebrow="ĐIỂM ĐẾN" title={regionName} description={hub ? "Thông tin điểm đến và các tuyến xe nguyên chuyến phù hợp." : `Thuê xe nguyên chuyến đi khắp khu vực ${regionName}.`} backHref="/diem-den" backLabel="Tất cả điểm đến" />
+      <UnifiedHero eyebrow="ĐIỂM ĐẾN" title={regionName} description={hub ? "Thông tin điểm đến và các tuyến xe nguyên chuyến phù hợp." : `Thuê xe nguyên chuyến đi khắp khu vực ${regionName}.`} backgroundImage={heroImageUrl} backHref="/diem-den" backLabel="Tất cả điểm đến" />
       <section className="section-wrap blog-detail-content">
         {hub ? (
           <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: hub.contentHtml }} />

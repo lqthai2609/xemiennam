@@ -20,12 +20,10 @@ export function UnifiedHero({
   backLabel,
   meta,
 }: UnifiedHeroProps) {
-  const heroImage = "/images/hero-dat-xe-sai-gon.webp?v=2";
-
   return (
     <section
       className="subpage-hero unified-hero"
-      style={{ backgroundImage: `url(${heroImage})` }}
+      style={{ backgroundImage: `url(${backgroundImage})` }}
       aria-labelledby="unified-hero-title"
     >
       <div className="subpage-hero-overlay" aria-hidden="true" />
