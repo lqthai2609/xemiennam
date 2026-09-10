@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
+import { sendBookingNotification } from "@/lib/booking-notification";
 
 /**
  * POST /api/booking (Ngày 20) — nhận dữ liệu từ ContactBookingForm (Ngày 19, hiện dùng ở
@@ -101,5 +102,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: result.message }, { status: result.status || 502 });
   }
 
-  return NextResponse.json({ ok: true, id: result.data.id });
+  // Chỉ gửi thông báo sau khi WordPress xác nhận đã lưu lead. Web3Forms lỗi/timeout không
+  // làm request thất bại và không ảnh hưởng lead đã có trong CMS.
+  const notification = await sendBookingNotification({
+    bookingId: result.data.id,
+    fullName: data.fullName,
+    phone: data.phone,
+    route: data.route,
+    vehicleType: data.vehicleType,
+    departureDate: data.departureDate,
+    note: data.note,
+  });
+
+  if (!notification.sent) {
+    console.error("Booking notification was not sent", {
+      bookingId: result.data.id,
+      reason: notification.reason,
+    });
+  }
+
+  return NextResponse.json({ ok: true, id: result.data.id, notificationSent: notification.sent });
 }
