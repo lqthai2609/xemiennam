@@ -35,12 +35,39 @@ export async function wpFetch<T>(
   }
 }
 
-/** Bỏ thẻ HTML thô trong content.rendered (WordPress trả về HTML, ta cần plain text cho description/summary). */
+const namedHtmlEntities: Record<string, string> = {
+  amp: "&",
+  apos: "'",
+  gt: ">",
+  hellip: "…",
+  lt: "<",
+  mdash: "—",
+  nbsp: " ",
+  ndash: "–",
+  quot: '"',
+  rsquo: "’",
+};
+
+/** Giải mã entity thường gặp và entity số do WordPress trả về trong các trường `rendered`. */
+export function decodeHtmlEntities(value: string): string {
+  return value.replace(/&(#(?:x[\da-f]+|\d+)|[a-z]+);/gi, (entity, code: string) => {
+    if (!code.startsWith("#")) return namedHtmlEntities[code.toLowerCase()] ?? entity;
+
+    const isHex = code[1]?.toLowerCase() === "x";
+    const codePoint = Number.parseInt(code.slice(isHex ? 2 : 1), isHex ? 16 : 10);
+    try {
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : entity;
+    } catch {
+      return entity;
+    }
+  });
+}
+
+/** Bỏ thẻ HTML và giải mã entity trong nội dung WordPress để lấy plain text. */
 export function stripHtml(html: string | undefined | null): string {
   if (!html) return "";
-  return html
+  return decodeHtmlEntities(html)
     .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
