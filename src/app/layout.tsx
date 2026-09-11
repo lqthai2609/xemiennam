@@ -6,16 +6,17 @@ import { AnalyticsScripts } from "@/components/analytics-scripts";
 import { AnalyticsPageview } from "@/components/analytics-pageview";
 import "./globals.css";
 
-// Dùng variable font để giảm số file font phải preload/tải ở lần render đầu.
 const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin", "vietnamese"],
+  weight: ["700", "800", "900"],
   display: "swap",
 });
 
 const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-vietnam",
   subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
