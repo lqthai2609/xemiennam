@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 type UnifiedHeroProps = {
@@ -23,9 +24,19 @@ export function UnifiedHero({
   return (
     <section
       className="subpage-hero unified-hero"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
       aria-labelledby="unified-hero-title"
     >
+      <Image
+        src={backgroundImage}
+        alt=""
+        fill
+        loading="eager"
+        fetchPriority="high"
+        sizes="100vw"
+        quality={75}
+        style={{ objectFit: "cover", objectPosition: "center", zIndex: -2 }}
+        aria-hidden="true"
+      />
       <div className="subpage-hero-overlay" aria-hidden="true" />
       <div className="subpage-hero-content">
         {backHref && backLabel ? <Link className="back-link unified-hero-back" href={backHref}>← {backLabel}</Link> : null}
