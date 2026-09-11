@@ -1,6 +1,6 @@
 import type { Route, VehiclePrice } from "@/types/route";
 import { routes as mockRoutes } from "@/data/routes";
-import { fetchRawRoutes, fetchRawRouteBySlug, embeddedTermName, embeddedTerms, type WPRoute } from "./raw";
+import { fetchRawRoutes, fetchRawRouteBySlug, embeddedFeaturedImage, embeddedTermName, embeddedTerms, type WPRoute } from "./raw";
 import { getPricingTable, pricingForRoute, type PricingRow } from "./pricing";
 import { splitCommaList } from "@/lib/wp";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
@@ -57,6 +57,9 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
   // Ngày 25: slug của term province đầu tiên — dùng dựng URL hub `/tuyen-duong/[regionSlug]/...`
   // (xem routeHref() trong types/route.ts). Khác `region` (tên hiển thị) ở trên.
   const regionSlug = embeddedTerms(wp._embedded, "province")[0]?.slug ?? "";
+  const featuredImage = embeddedFeaturedImage(
+    wp._embedded as { "wp:featuredmedia"?: { source_url?: string; code?: string }[] } | undefined,
+  );
 
   return {
     id: String(wp.id),
@@ -79,6 +82,7 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
     // 4 field bổ sung snippet Ngày 12 (ID 20) — rỗng cho tới khi snippet được kích hoạt + nhập liệu Ngày 24.
     summary: wp.meta.tom_tat_ngan ?? "",
     heroNote: wp.meta.diem_nhan_hero ?? "",
+    featuredImage,
     departures: wp.meta.khung_gio_hay_chon ?? [],
     notes: wp.meta.luu_y_tuyen ?? [],
     modifiedDate: wp.modified,
