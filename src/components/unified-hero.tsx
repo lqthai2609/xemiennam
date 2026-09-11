@@ -30,10 +30,10 @@ export function UnifiedHero({
         src={backgroundImage}
         alt=""
         fill
-        preload
+        loading="eager"
         fetchPriority="high"
         sizes="100vw"
-        quality={72}
+        quality={75}
         style={{ objectFit: "cover", objectPosition: "center", zIndex: -2 }}
         aria-hidden="true"
       />
