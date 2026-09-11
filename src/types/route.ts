@@ -88,6 +88,8 @@ export interface Route {
   summary: string;
   /** Dòng nhấn ngắn trên hero, ví dụ "Tuyến biển được yêu thích nhất miền Nam". */
   heroNote: string;
+  /** Ảnh đại diện của bài route trong WordPress — dùng làm nền hero cho trang tuyến và mọi trang tuyến + loại xe. */
+  featuredImage?: string;
   /** Khung giờ khởi hành gợi ý. */
   departures: string[];
   /** Vài lưu ý/cam kết riêng cho tuyến. */
