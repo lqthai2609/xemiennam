@@ -40,13 +40,14 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   const routeLabel = `${route.from} – ${route.to}`;
   const oldPrice = discountedPrice(vehiclePrice.price);
   const seats = vehicle?.seats || (category.type === "Limousine" ? "8 khách" : `${category.type.replace(" chỗ", "")} khách`);
-  // Ảnh loại xe chỉ được dùng trong card đặt xe, không gắn vào nền hero.
+  // Ảnh xe vẫn dùng riêng trong card đặt xe; hero dùng ảnh đại diện của tuyến để nhất quán mọi biến thể xe.
   const image = vehicle?.images[0] || category.imageUrl;
+  const heroImage = route.featuredImage || "/images/services/city-tour.png";
 
   return (
     <main className="site-shell combo-page">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
-      <UnifiedHero eyebrow={`${route.region} · ${category.label}`} title={<>Thuê xe {category.label.toLowerCase()}<br /><em>{route.from} → {route.to}</em></>} description={description} backgroundImage={image} backHref={routeHref(route)} backLabel={`Tuyến ${routeLabel}`} />
+      <UnifiedHero eyebrow={`${route.region} · ${category.label}`} title={<>Thuê xe {category.label.toLowerCase()}<br /><em>{route.from} → {route.to}</em></>} description={description} backgroundImage={heroImage} backHref={routeHref(route)} backLabel={`Tuyến ${routeLabel}`} />
       <section className="section-wrap combo-booking-section" id="booking">
         <div className="section-heading"><div><p className="section-label">XE PHÙ HỢP CHO HÀNH TRÌNH</p><h2>Chọn xe, đặt chuyến ngay.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
         <article className="combo-vehicle-card">
