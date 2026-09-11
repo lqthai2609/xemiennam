@@ -1,23 +1,22 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FB_PIXEL_ID, GA_MEASUREMENT_ID } from "@/lib/analytics";
 
-/**
- * Bắn page_view (GA4) + PageView (Facebook Pixel) mỗi khi đổi route bằng client-side
- * navigation — xem ghi chú send_page_view:false ở analytics-scripts.tsx để hiểu vì sao cần
- * component riêng này thay vì để gtag.js/fbevents.js tự lo hết.
- *
- * Bọc trong <Suspense>: useSearchParams() bắt buộc phải có Suspense boundary bao quanh trong
- * App Router (Next.js báo lỗi build nếu thiếu) — fallback để null vì component không render UI
- * gì cả, chỉ side-effect.
- */
+/** Track client-side navigations only. The initial page view is emitted by the lazy-loaded
+ * analytics bootstrap, which keeps third-party JS away from the critical rendering path. */
 function PageviewTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isFirstEffect = useRef(true);
 
   useEffect(() => {
+    if (isFirstEffect.current) {
+      isFirstEffect.current = false;
+      return;
+    }
+
     const query = searchParams.toString();
     const url = query ? `${pathname}?${query}` : pathname;
 
