@@ -62,7 +62,13 @@ export function FleetShowcase() {
           .map((item) => (
             <article className={`fleet-card ${item.accent}`} key={item.type}>
               <div className="fleet-image">
-                {item.imageUrl ? <MediaPhoto src={item.imageUrl} alt={item.type} /> : <item.icon size={56} strokeWidth={1.3} />}
+                {item.imageUrl ? (
+                  <MediaPhoto
+                    src={item.imageUrl}
+                    alt={item.type}
+                    sizes="(max-width: 700px) 100vw, (max-width: 1050px) 50vw, 33vw"
+                  />
+                ) : <item.icon size={56} strokeWidth={1.3} />}
                 <span className="fleet-sticker">{item.tag}</span>
               </div>
               <div className="fleet-info">
