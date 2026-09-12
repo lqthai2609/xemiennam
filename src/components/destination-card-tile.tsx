@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import type { DestinationCard } from "@/types/diem-den";
@@ -13,7 +14,12 @@ export function DestinationCardTile({ destination }: { destination: DestinationC
     >
       <div className="destination-card-media">
         {destination.imageUrl ? (
-          <img src={destination.imageUrl} alt={`Phong cảnh ${destination.name}`} />
+          <Image
+            src={destination.imageUrl}
+            alt={`Phong cảnh ${destination.name}`}
+            fill
+            sizes="(max-width: 800px) 100vw, 33vw"
+          />
         ) : (
           <div className="destination-card-fallback" aria-hidden="true">
             <MapPin />
