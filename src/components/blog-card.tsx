@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import type { BlogPost } from "@/types/blog";
@@ -9,10 +10,15 @@ export function BlogCard({ post }: { post: BlogPost }) {
       href={`/blog/${post.slug}`}
       className="blog-card"
     >
-      <div
-        className="blog-thumb"
-        style={post.featuredImageUrl ? { backgroundImage: `url(${post.featuredImageUrl})` } : undefined}
-      >
+      <div className="blog-thumb">
+        {post.featuredImageUrl && (
+          <Image
+            src={post.featuredImageUrl}
+            alt=""
+            fill
+            sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
+          />
+        )}
         {/* Chưa có ảnh đại diện (mock hoặc bài WP chưa gắn ảnh) → giữ nền gradient + icon, giống bản demo tĩnh ban đầu. */}
         {!post.featuredImageUrl && <BookOpen size={26} />}
       </div>
