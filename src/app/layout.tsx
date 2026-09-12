@@ -18,6 +18,9 @@ const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  // Archivo renders the LCP heading and remains preloaded. Let body copy load Be Vietnam
+  // Pro from the generated CSS instead of forcing every weight into the critical head.
+  preload: false,
 });
 
 export const metadata: Metadata = {
