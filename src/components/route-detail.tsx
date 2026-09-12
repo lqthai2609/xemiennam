@@ -44,7 +44,9 @@ export function RouteDetailPage({
   vehicleImageByType?: Record<string, string>;
 }) {
   const routeLabel = `${route.from} – ${route.to}`;
-  const heroImage = route.featuredImage || "/images/services/city-tour.png";
+  // Một số tuyến chưa có featured image trong CMS. Dùng ảnh WebP nhẹ làm fallback
+  // thay cho city-tour.png (2.3 MB), vì hero luôn là ảnh LCP được tải ưu tiên.
+  const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
   return (
     <main className="site-shell route-detail-page">
       <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
@@ -56,7 +58,11 @@ export function RouteDetailPage({
               <article className="detail-price-card" key={vp.vehicleType}>
                 <div className="detail-price-media">
                   {vehicleImageByType[vp.vehicleType] ? (
-                    <MediaPhoto src={vehicleImageByType[vp.vehicleType]} alt={vp.vehicleType} />
+                    <MediaPhoto
+                      src={vehicleImageByType[vp.vehicleType]}
+                      alt={vp.vehicleType}
+                      sizes="(max-width: 540px) 100vw, (max-width: 800px) 50vw, (max-width: 1180px) 35vw, 320px"
+                    />
                   ) : (
                     <BusFront size={32} strokeWidth={1.4} />
                   )}
