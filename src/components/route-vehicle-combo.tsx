@@ -42,7 +42,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   const seats = vehicle?.seats || (category.type === "Limousine" ? "8 khách" : `${category.type.replace(" chỗ", "")} khách`);
   // Ảnh xe vẫn dùng riêng trong card đặt xe; hero dùng ảnh đại diện của tuyến để nhất quán mọi biến thể xe.
   const image = vehicle?.images[0] || category.imageUrl;
-  const heroImage = route.featuredImage || "/images/services/city-tour.png";
+  const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
 
   return (
     <main className="site-shell combo-page">
