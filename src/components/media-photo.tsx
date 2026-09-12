@@ -10,10 +10,10 @@ import Image from "next/image";
  * Dùng next/image với `fill`: domain ảnh CMS (xemiennam.datxesaigon.com) đã khai báo trong
  * next.config.ts (images.remotePatterns) nên không cần thẻ <img> thường nữa.
  */
-export function MediaPhoto({ src, alt }: { src: string; alt: string }) {
+export function MediaPhoto({ src, alt, sizes = "(max-width: 700px) 100vw, 50vw" }: { src: string; alt: string; sizes?: string }) {
   return (
     <>
-      <Image src={src} alt={alt} fill className="media-photo-fill" />
+      <Image src={src} alt={alt} fill sizes={sizes} className="media-photo-fill" />
       <span className="media-photo-scrim" aria-hidden="true" />
     </>
   );
