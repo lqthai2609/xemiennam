@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Home, Menu, Phone, Search, X } from "lucide-react";
+import { ArrowRight, Home, Phone, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import "./site-header.css";
 
@@ -16,17 +16,13 @@ interface SiteHeaderProps {
   ctaHref: string;
 }
 
-// So khớp active bỏ qua phần hash (#routes, #fleet...) — chỉ so path thật,
-// để không tô sáng nhầm khi menu trỏ vào section trong cùng 1 trang.
 function isActive(pathname: string, href: string) {
   const [base] = href.split("#");
-  // href kiểu "#routes" (anchor thuần trong cùng trang) không phải 1 route riêng — bỏ qua.
   if (!base) return false;
   return base === pathname;
 }
 
 export function SiteHeader({ menuItems, hotline, ctaLabel, ctaHref }: SiteHeaderProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname();
 
@@ -50,14 +46,13 @@ export function SiteHeader({ menuItems, hotline, ctaLabel, ctaHref }: SiteHeader
           alt="GoCarVN - Đồng hành mọi hành trình"
         />
       </Link>
-      <nav className={`main-nav ${menuOpen ? "is-open" : ""}`} aria-label="Điều hướng chính">
+      <nav className="main-nav" aria-label="Điều hướng chính">
         {menuItems.map((item) => (
           <Link
             key={item.label}
             href={item.href}
             aria-current={isActive(pathname, item.href) ? "page" : undefined}
             className={isActive(pathname, item.href) ? "is-active" : undefined}
-            onClick={() => setMenuOpen(false)}
           >
             {item.label}
           </Link>
@@ -77,14 +72,6 @@ export function SiteHeader({ menuItems, hotline, ctaLabel, ctaHref }: SiteHeader
         aria-label="Tìm tuyến đường"
       >
         <Search />
-      </button>
-      <button
-        className="menu-toggle"
-        onClick={() => setMenuOpen((open) => !open)}
-        aria-label={menuOpen ? "Đóng menu" : "Mở menu"}
-        aria-expanded={menuOpen}
-      >
-        {menuOpen ? <X /> : <Menu />}
       </button>
 
       <nav className="mobile-nav-strip" aria-label="Điều hướng nhanh">
