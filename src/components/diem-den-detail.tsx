@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { formatVNDate } from "@/lib/wp";
-import { routeHref, type Route } from "@/types/route";
+import { routeHref, routePriceKicker, type Route } from "@/types/route";
 import type { DiemDen } from "@/types/diem-den";
 import { UnifiedHero } from "@/components/unified-hero";
 
@@ -31,7 +31,7 @@ function RegionRouteCard({ route }: { route: Route }) {
   return (
     <Link className="route-ticket related-ticket" href={routeHref(route)}>
       <div className="rt-price">
-        <span>Giá từ</span>
+        <span>{routePriceKicker(route)}</span>
         <b>{route.price}</b>
       </div>
       <div className="rt-body">
