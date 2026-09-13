@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
-import { routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
+import { routeHref, routeComboHref, vehicleTypeSlug, type Route, type VehiclePrice } from "@/types/route";
 import { formatVNDate } from "@/lib/wp";
 import { UnifiedHero } from "@/components/unified-hero";
 
@@ -21,21 +21,23 @@ const footerLinkGroups = [
   { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Liên hệ", href: "/lien-he" }] },
 ];
 
-/** Chỉ giữ lại các loại xe thực sự xuất hiện ở ít nhất 1 tuyến, theo đúng thứ tự VEHICLE_TYPE_ORDER. */
 function buildColumns(routes: Route[]): string[] {
   const present = new Set(routes.flatMap((route) => route.vehicleTypes));
   return VEHICLE_TYPE_ORDER.filter((type) => present.has(type));
 }
 
-function priceFor(route: Route, vehicleType: string): string | null {
-  return route.pricingByVehicle.find((p) => p.vehicleType === vehicleType)?.price ?? null;
+/**
+ * Ngày 7: pricingByVehicle là compatibility adapter đã derive từ outbound Pricing V2.
+ * Giữ nguyên layout bảng, nhưng đọc mode/package tường minh để contact không bị hiểu là giá số.
+ */
+function pricingFor(route: Route, vehicleType: string): VehiclePrice | null {
+  return route.pricingByVehicle.find((p) => p.vehicleType === vehicleType) ?? null;
 }
 
-/**
- * Nhận `routes` qua props — dữ liệu đã được fetchRoutes() lấy từ WP REST API (Ngày 12) ở
- * Server Component cha. `lastModified` (Ngày 23) là mốc modified MỚI NHẤT trong toàn bộ
- * routes, tính sẵn ở Server Component — undefined khi đang dùng dữ liệu mock (chưa có modified thật).
- */
+function pricingLabel(pricing: VehiclePrice): string {
+  return pricing.pricingMode === "contact" ? "Liên hệ" : pricing.price;
+}
+
 export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; lastModified?: string }) {
   const [query, setQuery] = useState("");
   const columns = useMemo(() => buildColumns(routes), [routes]);
@@ -66,7 +68,6 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
           </p>
         </div>
 
-        {/* Desktop/tablet: bảng ngang đầy đủ — ẩn trên mobile (xem .bang-gia-table-wrap trong globals.css). */}
         <div className="bang-gia-table-wrap">
           <table className="bang-gia-table">
             <thead>
@@ -88,11 +89,16 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
                     </Link>
                   </td>
                   {columns.map((type) => {
-                    const price = priceFor(route, type);
+                    const pricing = pricingFor(route, type);
                     return (
                       <td key={type}>
-                        {price ? (
-                          <Link href={routeComboHref(route, vehicleTypeSlug(type))}>{price}</Link>
+                        {pricing ? (
+                          <Link
+                            href={routeComboHref(route, vehicleTypeSlug(type))}
+                            title={pricing.packageLabel ? `Gói đại diện: ${pricing.packageLabel}` : undefined}
+                          >
+                            {pricingLabel(pricing)}
+                          </Link>
                         ) : (
                           "—"
                         )}
@@ -105,9 +111,6 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
           </table>
         </div>
 
-        {/* Ngày 16 — mobile: danh sách thẻ xổ theo từng tuyến thay cho bảng cuộn ngang, đúng
-            mô tả gốc trong xemiennam-v0-prompts.md (mục 7). Dùng chung columns/filteredRoutes
-            với bảng ở trên, chỉ khác cách hiển thị — không tự fetch/lọc riêng nên không lệch dữ liệu. */}
         <div className="bang-gia-mobile-list">
           {filteredRoutes.map((route) => (
             <article className="bang-gia-mobile-card" key={route.slug}>
@@ -116,16 +119,17 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
               </Link>
               <div className="bang-gia-mobile-prices">
                 {columns.map((type) => {
-                  const price = priceFor(route, type);
-                  if (!price) return null;
+                  const pricing = pricingFor(route, type);
+                  if (!pricing) return null;
                   return (
                     <Link
                       key={type}
                       href={routeComboHref(route, vehicleTypeSlug(type))}
                       className="bang-gia-mobile-price-row"
+                      title={pricing.packageLabel ? `Gói đại diện: ${pricing.packageLabel}` : undefined}
                     >
                       <span>{type}</span>
-                      <strong>{price}</strong>
+                      <strong>{pricingLabel(pricing)}</strong>
                     </Link>
                   );
                 })}
