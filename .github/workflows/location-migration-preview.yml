@@ -1,0 +1,65 @@
+name: Location Migration Preview
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/gocar-location-migration.mjs"
+      - "scripts/lib/gocar-location-normalizer.mjs"
+      - "scripts/gocar-location-normalizer.test.mjs"
+      - "wordpress/gocar-core/**"
+      - "package.json"
+      - ".github/workflows/location-migration-preview.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: Build location migration manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Test location normalizer
+        run: npm run test:location-migration
+
+      - name: Generate read-only migration preview
+        env:
+          WP_API_BASE_URL: https://xemiennam.datxesaigon.com/wp-json/wp/v2
+        run: npm run locations:preview -- --out location-manifest.json
+
+      - name: Add preview summary
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('location-manifest.json', 'utf8'));
+          const lines = [
+            '# Gocar VN Location Migration Preview',
+            '',
+            `- Routes scanned: ${manifest.route_count}`,
+            `- Existing locations: ${manifest.existing_location_count}`,
+            `- Candidate locations: ${manifest.candidate_count}`,
+            `- Safe candidates: ${manifest.safe_candidate_count}`,
+            `- Needs review: ${manifest.review_candidate_count}`,
+            '',
+            'This workflow is read-only and does not modify WordPress.',
+          ];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload location manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: gocar-location-migration-preview
+          path: location-manifest.json
+          if-no-files-found: error
+          retention-days: 7
