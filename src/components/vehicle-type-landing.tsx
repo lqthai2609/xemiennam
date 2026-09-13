@@ -53,7 +53,7 @@ export function VehicleTypeLanding({
 }) {
   return (
     <main className="site-shell vehicle-type-page">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Thuê xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Thuê xe ngay" ctaHref="/#booking" />
 
       <VehicleTypeHero category={category} />
 
@@ -179,7 +179,7 @@ export function VehicleTypeLanding({
 export function VehicleCategoryIndex({ categories, routes }: { categories: VehicleCategory[]; routes: Route[] }) {
   return (
     <main className="site-shell vehicle-type-page">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Thuê xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Thuê xe ngay" ctaHref="/#booking" />
       <SubpageHero title="Mỗi hành trình, một lựa chọn vừa vặn." description="Khám phá các nhóm xe được thiết kế cho từng kiểu chuyến đi — từ gia đình nhỏ đến đoàn lớn." backgroundImage={defaultSubpageHeroImage} routes={routes} />
       <section className="section-wrap vehicle-category-grid">
         <div className="vehicle-category-cards">

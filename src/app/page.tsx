@@ -75,7 +75,7 @@ export default function Home() {
   return (
     <main className="site-shell">
       <JsonLd data={buildLocalBusinessSchema()} />
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <section className="hero" id="top">
         <div className="hero-inner">

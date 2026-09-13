@@ -20,7 +20,7 @@ export function DestinationsPage({
 }) {
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
       <SubpageHero
         title="Đi đâu, Xe Miền Nam có tuyến."
         description="Mỗi điểm đến là một cách đi khác nhau. Chọn khu vực bạn muốn đến để xem các tuyến xe đang chạy và bắt đầu lên lịch."

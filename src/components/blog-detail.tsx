@@ -75,7 +75,7 @@ export function BlogDetailPage({ post, relatedPosts, relatedRoutes }: { post: Bl
 
   return (
     <main className="site-shell post-detail-page">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <section className="post-hero">
         <Link className="back-link" href="/blog">
