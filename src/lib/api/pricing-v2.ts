@@ -15,7 +15,8 @@ import type { RouteDirectionKey } from "./route-directions";
 export const STANDARD_PRICING_PACKAGE_KEYS = ["one_way", "round_trip_day", "2d1n", "3d2n"] as const;
 
 export type StandardPricingPackageKey = (typeof STANDARD_PRICING_PACKAGE_KEYS)[number];
-export type PricingPackageKey = StandardPricingPackageKey | (string & {});
+/** String mở để sau này thêm 4d3n/5d4n hoặc package thương mại mà không phải đổi schema. */
+export type PricingPackageKey = string;
 export type PricingMode = "fixed" | "contact" | "disabled";
 export type PricingSource = "v2" | "legacy";
 
