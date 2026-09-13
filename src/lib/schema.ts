@@ -3,12 +3,23 @@ import { SITE_AREA_SERVED, SITE_DESCRIPTION, SITE_HOTLINE_TEL, SITE_NAME, SITE_U
 /**
  * Dựng object JSON-LD (mục 5, kiến trúc kỹ thuật) — component <JsonLd /> (json-ld.tsx)
  * chỉ lo phần render <script>, còn shape dữ liệu từng loại schema nằm hết ở đây để tái
- * dùng được giữa nhiều trang mà không lặp code (vd Service schema dùng chung cho cả
- * /tuyen-duong/[slug], /loai-xe/[slug], /dich-vu/[slug], trang kết hợp).
+ * dùng được giữa nhiều trang mà không lặp code.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type JsonLdObject = Record<string, any>;
+
+export type ServiceOfferInput = {
+  name: string;
+  price: number;
+};
+
+export type ServiceAggregateOfferInput = {
+  lowPrice: number;
+  highPrice: number;
+  priceCurrency: "VND";
+  offers: ServiceOfferInput[];
+};
 
 /** LocalBusiness — trang chủ (mục 5). */
 export function buildLocalBusinessSchema(): JsonLdObject {
@@ -30,22 +41,44 @@ export function buildLocalBusinessSchema(): JsonLdObject {
 }
 
 /**
- * Service — dùng chung cho /tuyen-duong/[slug], /loai-xe/[slug], /dich-vu/[slug] và trang
- * kết hợp /tuyen-duong/[slug]/[loai-xe] (mục 5 + mục 9.3, kiến trúc kỹ thuật). `areaServed`
- * nhận qua tham số vì mỗi trang tuyến chỉ phục vụ đúng điểm đến của tuyến đó, không phải
- * toàn bộ khu vực như LocalBusiness ở trang chủ.
+ * Service — dùng chung cho route/vehicle/service/combo pages. Ngày 7 bổ sung `offers` tùy
+ * chọn để route Pricing V2 có thể xuất AggregateOffer mà không ép các Service khác phải có giá.
+ * Caller chỉ truyền fixed price > 0; contact/disabled không được biến thành Offer giá 0.
  */
 export function buildServiceSchema({
   name,
   description,
   url,
   areaServed,
+  offers,
 }: {
   name: string;
   description: string;
   url: string;
   areaServed?: string | string[];
+  offers?: ServiceAggregateOfferInput;
 }): JsonLdObject {
+  const validOffers = offers?.offers.filter((offer) => Number.isFinite(offer.price) && offer.price > 0) ?? [];
+  const aggregateOffer =
+    offers &&
+    validOffers.length > 0 &&
+    offers.lowPrice > 0 &&
+    offers.highPrice > 0
+      ? {
+          "@type": "AggregateOffer",
+          priceCurrency: offers.priceCurrency,
+          lowPrice: offers.lowPrice,
+          highPrice: offers.highPrice,
+          offerCount: validOffers.length,
+          offers: validOffers.map((offer) => ({
+            "@type": "Offer",
+            name: offer.name,
+            price: offer.price,
+            priceCurrency: offers.priceCurrency,
+          })),
+        }
+      : undefined;
+
   return {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -60,12 +93,12 @@ export function buildServiceSchema({
       url: SITE_URL,
     },
     areaServed: areaServed ?? SITE_AREA_SERVED,
+    ...(aggregateOffer ? { offers: aggregateOffer } : {}),
   };
 }
 
 /**
- * FAQPage — bài blog dạng hỏi-đáp (mục 5). `items` rỗng thì KHÔNG gọi hàm này ở nơi gọi
- * (kiểm tra `post.faqItems.length > 0` trước) — schema.org không cho FAQPage có mainEntity rỗng.
+ * FAQPage — bài blog dạng hỏi-đáp (mục 5). `items` rỗng thì KHÔNG gọi hàm này ở nơi gọi.
  */
 export function buildFaqPageSchema(items: { question: string; answer: string }[]): JsonLdObject {
   return {
@@ -82,11 +115,7 @@ export function buildFaqPageSchema(items: { question: string; answer: string }[]
   };
 }
 
-/**
- * Review/AggregateRating — trang /danh-gia (mục 5). `reviews` giới hạn số lượng đưa vào
- * JSON-LD (khuyến nghị chung của Google: không cần nhồi hết hàng trăm review vào 1 script,
- * chỉ cần đại diện) — trang vẫn hiển thị đầy đủ review ở UI, JSON-LD chỉ là dữ liệu có cấu trúc.
- */
+/** Review/AggregateRating — trang /danh-gia (mục 5). */
 export function buildAggregateRatingSchema({
   ratingValue,
   reviewCount,
