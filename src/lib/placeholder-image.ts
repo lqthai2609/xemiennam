@@ -12,10 +12,10 @@
  * khi đưa site lên domain thật — xem ghi chú trong data/vehicles.ts và data/vehicle-categories.ts.
  */
 const PLACEHOLDER_COLORS: Record<string, { bg: string; fg: string }> = {
-  sand: { bg: "FBF5EC", fg: "1B1F27" },
-  gold: { bg: "F5A623", fg: "1B1F27" },
-  navy: { bg: "0F1626", fg: "F5A623" },
-  orange: { bg: "E8560C", fg: "FFFFFF" },
+  sand: { bg: "F6F0E6", fg: "173F46" },
+  gold: { bg: "D99A2B", fg: "173F46" },
+  navy: { bg: "205C62", fg: "D99A2B" },
+  orange: { bg: "24777A", fg: "FFFAF2" },
 };
 
 export function buildPlaceholderImage(
