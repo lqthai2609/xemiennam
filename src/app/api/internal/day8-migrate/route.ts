@@ -261,8 +261,8 @@ export async function GET(request: NextRequest) {
       const packages = rows.flatMap((row) => {
         const outbound = row.price > 0
           ? { direction: "outbound", vehicle_id: Number(row.vehicleId), package_key: "one_way", pricing_mode: "fixed", price: row.price, contact_text: "" }
-          : { direction: "outbound", vehicle_id: Number(row.vehicleId), package_key: "one_way", pricing_mode: "contact", price: "", contact_text: CONTACT_TEXT };
-        const inbound = { direction: "inbound", vehicle_id: Number(row.vehicleId), package_key: "one_way", pricing_mode: "contact", price: "", contact_text: CONTACT_TEXT };
+          : { direction: "outbound", vehicle_id: Number(row.vehicleId), package_key: "one_way", pricing_mode: "contact", contact_text: CONTACT_TEXT };
+        const inbound = { direction: "inbound", vehicle_id: Number(row.vehicleId), package_key: "one_way", pricing_mode: "contact", contact_text: CONTACT_TEXT };
         return [outbound, inbound];
       });
       Object.assign(routePatch, { pricing_model_version: 2, pricing_packages_v2: packages });
@@ -286,8 +286,8 @@ export async function GET(request: NextRequest) {
 
     if (longThanhId > 0 && vungTauId > 0 && vehicleIds.length > 0) {
       const packages = vehicleIds.flatMap((vehicleId) => [
-        { direction: "outbound", vehicle_id: vehicleId, package_key: "one_way", pricing_mode: "contact", price: "", contact_text: CONTACT_TEXT },
-        { direction: "inbound", vehicle_id: vehicleId, package_key: "one_way", pricing_mode: "contact", price: "", contact_text: CONTACT_TEXT },
+        { direction: "outbound", vehicle_id: vehicleId, package_key: "one_way", pricing_mode: "contact", contact_text: CONTACT_TEXT },
+        { direction: "inbound", vehicle_id: vehicleId, package_key: "one_way", pricing_mode: "contact", contact_text: CONTACT_TEXT },
       ]);
       const result = await wpAuthedFetch<{ id: number }>("/route", {
         method: "POST",
