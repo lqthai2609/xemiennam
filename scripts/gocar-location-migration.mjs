@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
 import { writeFile } from "node:fs/promises";
+import {
+  locationNeedsReview,
+  normalizeLegacyLocation,
+  slugifyLocation,
+} from "./lib/gocar-location-normalizer.mjs";
 
 const DEFAULT_API_BASE = "https://xemiennam.datxesaigon.com/wp-json/wp/v2";
 const apiBase = process.env.WP_API_BASE_URL ?? DEFAULT_API_BASE;
@@ -11,63 +16,6 @@ function argValue(name) {
 }
 
 const outputPath = argValue("--out");
-
-function decodeHtml(value) {
-  return String(value ?? "")
-    .replace(/&#8211;|&ndash;/g, "–")
-    .replace(/&#8212;|&mdash;/g, "—")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;|&apos;/g, "'")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function stripVietnamese(value) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/gi, "d");
-}
-
-function comparisonKey(value) {
-  return stripVietnamese(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function slugify(value) {
-  return stripVietnamese(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function normalizeLocation(raw) {
-  let label = decodeHtml(raw);
-
-  // Duration/package belongs to Pricing, not Location.
-  label = label.replace(/\s+\d+\s*(?:ngày|ngay)(?:\s+\d+\s*(?:đêm|dem))?\s*$/iu, "");
-  label = label.replace(/\s+\d+\s*n\s*\d+\s*[đd]\s*$/iu, "");
-  label = label.replace(/\s+/g, " ").trim();
-
-  const key = comparisonKey(label);
-  if (["tphcm", "tp hcm", "tp ho chi minh", "thanh pho ho chi minh", "ho chi minh", "sai gon"].includes(key)) {
-    return "TP. Hồ Chí Minh";
-  }
-
-  const cityMatch = label.match(/^TP\s+(.+)$/iu);
-  if (cityMatch) label = `TP. ${cityMatch[1].trim()}`;
-
-  return label;
-}
-
-function needsReview(label) {
-  return /[\/()]/u.test(label);
-}
 
 async function fetchAll(restBase) {
   const items = [];
@@ -106,8 +54,8 @@ async function main() {
       const raw = route?.meta?.[metaKey];
       if (typeof raw !== "string" || !raw.trim()) continue;
 
-      const title = normalizeLocation(raw);
-      const slug = slugify(title);
+      const title = normalizeLegacyLocation(raw);
+      const slug = slugifyLocation(title);
       if (!title || !slug || existingSlugs.has(slug)) continue;
 
       if (!candidates.has(slug)) {
@@ -115,7 +63,7 @@ async function main() {
           title,
           slug,
           location_type: "locality",
-          review_required: needsReview(title),
+          review_required: locationNeedsReview(title),
           route_refs: [],
           raw_values: [],
         });
