@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Menu, Phone, Search, X } from "lucide-react";
+import { ArrowRight, Home, Menu, Phone, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import "./site-header.css";
 
 export type NavItem = { label: string; href: string };
 
@@ -85,6 +86,28 @@ export function SiteHeader({ menuItems, hotline, ctaLabel, ctaHref }: SiteHeader
       >
         {menuOpen ? <X /> : <Menu />}
       </button>
+
+      <nav className="mobile-nav-strip" aria-label="Điều hướng nhanh">
+        <Link
+          href="/"
+          className={`mobile-nav-home ${pathname === "/" ? "is-active" : ""}`}
+          aria-current={pathname === "/" ? "page" : undefined}
+          aria-label="Trang chủ"
+        >
+          <Home />
+        </Link>
+        {menuItems.map((item) => (
+          <Link
+            key={`mobile-${item.label}`}
+            href={item.href}
+            aria-current={isActive(pathname, item.href) ? "page" : undefined}
+            className={isActive(pathname, item.href) ? "is-active" : undefined}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+
       {searchOpen && (
         <div className="header-search-overlay" role="presentation" onMouseDown={() => setSearchOpen(false)}>
           <section className="header-search-dialog" role="dialog" aria-modal="true" aria-labelledby="header-search-title" onMouseDown={(event) => event.stopPropagation()}>
