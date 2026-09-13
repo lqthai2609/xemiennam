@@ -24,15 +24,15 @@ import {
   type PricingPackageV2,
 } from "./pricing-v2";
 import { mapWPRouteToRoutePairV2, type RouteDirectionKey } from "./route-directions";
+import { fetchLocationsV2, locationById, type LocationV2 } from "./locations";
 import { formatPriceShort, splitCommaList } from "@/lib/wp";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
 /**
- * fetchRoutes()/fetchRouteBySlug() — Ngày 12, chuyển consumer pricing sang V2 ở Ngày 7.
+ * fetchRoutes()/fetchRouteBySlug() — Ngày 12, chuyển Route/Location/Pricing consumer sang V2 ở Ngày 7.
  *
- * FALLBACK MOCK: WordPress hiện chưa có bài `route` nào được nhập thật (nhập liệu dời tới
- * Ngày 24), nên trong giai đoạn này API sẽ trả về mảng rỗng — đó là kỳ vọng, không phải lỗi.
- * Để các trang không hiển thị trống, khi API trả về rỗng các hàm dưới đây dùng dữ liệu mock.
+ * Route V2 resolve origin/destination từ Location ID. Route legacy tiếp tục dùng diem_di/diem_den.
+ * Airport không có nhánh riêng: location_type=airport đi qua cùng resolver như mọi Location khác.
  */
 const useMockFallback = true;
 
@@ -177,16 +177,33 @@ function routeFeaturedPriceLabel(pricingV2: RoutePricingV2): string {
   return "—";
 }
 
-function mapWPRouteToRoute(wp: WPRoute, rawVehicles: WPVehicle[]): Route {
+function resolveRouteEndpoints(wp: WPRoute, locations: Map<number, LocationV2>) {
+  const pair = mapWPRouteToRoutePairV2(wp);
+  const origin = pair.originLocationId > 0 ? locations.get(pair.originLocationId) : undefined;
+  const destination = pair.destinationLocationId > 0 ? locations.get(pair.destinationLocationId) : undefined;
+
+  // Không suy đoán Location khi ID không resolve được. Legacy label chỉ là backward compatibility
+  // cho route chưa migrate; route V2 có Location thật sẽ ưu tiên title của Location entity.
+  const from = origin?.name || wp.meta.diem_di || "";
+  const to = destination?.name || wp.meta.diem_den || "";
+
+  return { pair, origin, destination, from, to };
+}
+
+function mapWPRouteToRoute(
+  wp: WPRoute,
+  rawVehicles: WPVehicle[],
+  locations: Map<number, LocationV2>,
+): Route {
   const pricingV2 = buildRoutePricingV2(wp, rawVehicles);
   const pricingByVehicle = buildLegacyPricingByVehicle(pricingV2);
   const vehicleTypes = pricingByVehicle.map((p) => p.vehicleType);
   const seatCount = vehicleTypes.filter((t) => t !== "Limousine");
 
-  const from = wp.meta.diem_di ?? "";
-  const to = wp.meta.diem_den ?? "";
-  const region = embeddedTermName(wp._embedded, "province") ?? to;
-  const regionSlug = embeddedTerms(wp._embedded, "province")[0]?.slug ?? "";
+  const { destination, from, to } = resolveRouteEndpoints(wp, locations);
+  const provinceTerm = embeddedTerms(wp._embedded, "province")[0];
+  const region = provinceTerm?.name ?? to;
+  const regionSlug = provinceTerm?.slug ?? destination?.provinceSlug ?? "";
   const featuredImage = embeddedFeaturedImage(
     wp._embedded as { "wp:featuredmedia"?: { source_url?: string; code?: string }[] } | undefined,
   );
@@ -220,7 +237,11 @@ function mapWPRouteToRoute(wp: WPRoute, rawVehicles: WPVehicle[]): Route {
 }
 
 export async function fetchRoutes(): Promise<Route[]> {
-  const [rawRoutes, rawVehicles] = await Promise.all([fetchRawRoutes(), fetchRawVehicles()]);
+  const [rawRoutes, rawVehicles, locations] = await Promise.all([
+    fetchRawRoutes(),
+    fetchRawVehicles(),
+    fetchLocationsV2(),
+  ]);
   if (rawRoutes.length === 0) {
     if (useMockFallback) {
       console.warn("[fetchRoutes] WP chưa có route nào — dùng dữ liệu mock tạm (xem ghi chú trong routes.ts).");
@@ -228,14 +249,15 @@ export async function fetchRoutes(): Promise<Route[]> {
     }
     return [];
   }
-  return rawRoutes.map((wp) => mapWPRouteToRoute(wp, rawVehicles));
+  const locationsById = locationById(locations);
+  return rawRoutes.map((wp) => mapWPRouteToRoute(wp, rawVehicles, locationsById));
 }
 
 export async function fetchRouteBySlug(slug: string): Promise<Route | undefined> {
   const wp = await fetchRawRouteBySlug(slug);
   if (wp) {
-    const rawVehicles = await fetchRawVehicles();
-    return mapWPRouteToRoute(wp, rawVehicles);
+    const [rawVehicles, locations] = await Promise.all([fetchRawVehicles(), fetchLocationsV2()]);
+    return mapWPRouteToRoute(wp, rawVehicles, locationById(locations));
   }
   if (useMockFallback) {
     const rawRoutes = await fetchRawRoutes();
