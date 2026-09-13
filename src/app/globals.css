@@ -10,8 +10,8 @@
   --card-foreground: #173f46;
   --popover: #fffaf2;
   --popover-foreground: #173f46;
-  --primary: #24777a;
-  --primary-foreground: #fffaf2;
+  --primary: #E9A23B;
+  --primary-foreground: #ffffff;
   --secondary: #e8dfd0;
   --secondary-foreground: #173f46;
   --muted: #ebe4d8;
@@ -74,7 +74,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outlin
 .main-nav a.is-active { color: var(--primary); font-weight: 700; }
 .nav-hotline { display: flex; align-items: center; gap: 7px; color: var(--foreground); font-weight: 700; font-size: 13px; white-space: nowrap; }
 .nav-hotline svg { color: var(--primary); }
-.nav-cta { height: 40px; border-radius: 999px; padding-inline: 18px; color: #fffaf2; }
+.nav-cta { height: 40px; border-radius: 999px; padding-inline: 18px; background: #E9A23B; color: #ffffff; }
 .menu-toggle { display: none; background: none; border: 0; color: var(--foreground); }
 .header-search-toggle { display: none; background: none; border: 0; color: var(--foreground); }
 .header-search-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: start center; padding: 78px 20px 20px; background: #173f4670; }
