@@ -37,6 +37,7 @@ function formatDepartureLabel(value: string): string {
 }
 
 type BookingPricingContext = {
+  routeId?: string;
   displayRoute?: string;
   direction?: RoutePricingDirectionKey;
   packageKey?: string;
@@ -46,6 +47,7 @@ type BookingPricingContext = {
 
 function QuickBookingDialog({
   route,
+  routeId,
   displayRoute,
   vehicleType,
   price,
@@ -56,6 +58,7 @@ function QuickBookingDialog({
   onClose,
 }: {
   route: string;
+  routeId?: string;
   displayRoute?: string;
   vehicleType: string;
   price?: string;
@@ -99,8 +102,12 @@ function QuickBookingDialog({
           fullName: data.fullName,
           phone: data.phone,
           route,
+          routeId,
           vehicleType,
           departureDate,
+          direction,
+          packageKey,
+          pricingMode,
           note: [
             `Đặt xe online từ trang chi tiết tuyến.`,
             `Chiều: ${visibleRoute} (${direction}).`,
@@ -203,6 +210,7 @@ function QuickBookingDialog({
 
 export function RouteBookingActions({
   route,
+  routeId,
   displayRoute,
   vehicleType,
   price,
@@ -248,6 +256,7 @@ export function RouteBookingActions({
       {open && (
         <QuickBookingDialog
           route={route}
+          routeId={routeId}
           displayRoute={displayRoute}
           vehicleType={vehicleType}
           price={price}
