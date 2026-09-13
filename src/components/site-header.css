@@ -23,13 +23,20 @@
     grid-row: 1;
     justify-self: center;
     align-self: center;
-    max-width: calc(100vw - 128px);
+    width: calc(100vw - 128px);
+    max-width: none;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
   }
 
   .site-header .brand-logo {
-    width: min(45vw, 190px);
-    max-width: 100%;
-    max-height: 56px;
+    width: min(58vw, 240px);
+    max-width: none;
+    height: 60px;
+    max-height: 60px;
     object-fit: contain;
   }
 
@@ -76,9 +83,9 @@
     padding: 0 16px;
     overflow-x: auto;
     overflow-y: hidden;
-    background: #fffcf7;
-    border-top: 1px solid #edf2ef;
-    border-bottom: 1px solid #d5e0dc;
+    background: #e1efeb;
+    border-top: 1px solid #d5e0dc;
+    border-bottom: 1px solid #c7d9d4;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
@@ -114,11 +121,11 @@
   }
 
   .site-header .mobile-nav-strip a.is-active {
-    color: #126e68;
+    color: #0b4f4b;
   }
 
   .site-header .mobile-nav-strip a.is-active::after {
-    background: #126e68;
+    background: #e9a23b;
   }
 
   .site-header .mobile-nav-home {
@@ -161,12 +168,13 @@
   }
 
   .site-header .brand {
-    max-width: calc(100vw - 116px);
+    width: calc(100vw - 116px);
   }
 
   .site-header .brand-logo {
-    width: min(45vw, 170px);
-    max-height: 54px;
+    width: min(60vw, 220px);
+    height: 58px;
+    max-height: 58px;
   }
 
   .site-header .mobile-nav-strip {
