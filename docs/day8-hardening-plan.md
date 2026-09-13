@@ -34,3 +34,5 @@
 ## Exit gate
 
 Day 8 is complete only after migration apply succeeds, post-migration audit is clean for the intended scope, Airport seed is present, preview smoke QA passes, temporary migration endpoints are deleted, CI is green, and the final change is deployed.
+
+This document follows the project rule that Pricing V2 is canonical, Airport uses the shared Location/Route/Pricing engine, production cannot silently use mock data, and system quality gates belong in CI.
