@@ -20,3 +20,13 @@
 - `shouldUseMockFallback()` is the shared policy for route, vehicle, blog, service, promotion and testimonial consumers.
 - Vercel production always disables mock fallback.
 - Development/preview may use fixtures, with explicit environment override for controlled testing.
+
+## Migration execution
+
+- The read-only audit found 87 routes, 3 existing Locations and 86 legacy Route Pairs before migration.
+- The controlled dry-run plans 71 new Locations, one Vũng Tàu metadata correction, no pricing collisions, and treats seven ambiguous compound labels as `custom` instead of splitting them.
+- Two City Tour route destinations are intentionally excluded from Location creation because they describe service packages, not geographic entities; their pricing can still move to Pricing V2.
+- Legacy pricing is copied to outbound `one_way`; missing/non-positive legacy prices become `contact`, never numeric zero.
+- Inbound starts as `contact` for the same vehicle combinations when no inbound price exists.
+- Legacy `pricing_by_vehicle` is preserved as compatibility data during the migration.
+- The one-time migration runner probes authenticated WordPress access before any write and is removed after execution.
