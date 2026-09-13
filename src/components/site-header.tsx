@@ -30,9 +30,12 @@ export function SiteHeader({ menuItems, hotline, ctaLabel, ctaHref }: SiteHeader
 
   return (
     <header className="site-header">
-      <Link href="/" className="brand" aria-label="Xe Miền Nam trang chủ">
-        <span className="brand-mark">XM</span>
-        <span>XE MIỀN NAM</span>
+      <Link href="/" className="brand" aria-label="GoCarVN trang chủ">
+        <img
+          className="brand-logo"
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-gocarvn-cNmS8uO5sRp2ZzMP73kde8SXuUE6Wo.png"
+          alt="GoCarVN - Đồng hành mọi hành trình"
+        />
       </Link>
       <nav className={`main-nav ${menuOpen ? "is-open" : ""}`} aria-label="Điều hướng chính">
         {menuItems.map((item) => (
