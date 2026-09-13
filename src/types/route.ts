@@ -37,13 +37,15 @@ export interface VehiclePrice {
   price: string;
   /** Cách tính giá do CMS đánh dấu cho từng dòng giá. Dữ liệu cũ mặc định là một chiều. */
   priceType?: PriceType;
+  /** Ngày 7: context Pricing V2 cho combo/bảng giá; route mock cũ có thể không có. */
+  pricingMode?: "fixed" | "contact";
+  packageKey?: string;
+  packageLabel?: string;
+  numericPrice?: number;
   /**
    * Mô tả riêng cho đúng tổ hợp tuyến + loại xe này (Ngày 14) — dùng cho trang
    * /tuyen-duong/[slug]/[loai-xe]. Bắt buộc viết tay riêng từng tổ hợp, không nội suy
-   * từ số liệu, để tránh nội dung mỏng/trùng lặp giữa các trang (mục 11, kiến trúc kỹ
-   * thuật — đúng lỗi nhieuxe.vn mắc phải). Chưa có field ACF tương ứng bên WordPress —
-   * dời nhập liệu thật tới Ngày 24 giống các field khác; nếu thiếu, xem fallback
-   * `comboDescriptionOrDefault()` trong lib/combo.ts.
+   * từ số liệu, để tránh nội dung mỏng/trùng lặp giữa các trang.
    */
   comboDescription?: string;
 }
@@ -94,29 +96,16 @@ export interface Route {
   to: string;
   time: string;
   distance: string;
-  /**
-   * Giá đại diện outbound dùng cho card/list legacy. Ngày 7: giá này được derive từ Pricing V2;
-   * route mock cũ vẫn giữ nguyên chuỗi đã có.
-   */
+  /** Giá đại diện outbound dùng cho card/list legacy. Ngày 7 derive từ Pricing V2. */
   price: string;
   vehicleTypes: string[];
   region: string;
-  /**
-   * Slug của term `province` (Ngày 25 — hub tỉnh). Dùng để dựng URL lồng
-   * `/tuyen-duong/[regionSlug]/[slug]`, khớp slug của post `diem_den` tương ứng (xem
-   * routeHref()/routeComboHref() bên dưới — LUÔN dùng 2 hàm này thay vì tự ráp chuỗi
-   * `/tuyen-duong/${route.slug}` để không lệch nhau giữa các trang khi đổi cấu trúc URL).
-   * Rỗng nếu route chưa gắn taxonomy `province` (dữ liệu nhập thiếu) — routeHref() tự
-   * fallback về "khac" trong trường hợp đó, xem ghi chú tại hàm.
-   */
+  /** Slug của term `province` dùng dựng URL hub tỉnh. */
   regionSlug: string;
   seatCount: string[];
-  /**
-   * Adapter compatibility cho các consumer cũ. Ngày 7 field này được derive từ outbound
-   * Pricing V2, không còn là nơi component tự parse pricing_by_vehicle.
-   */
+  /** Adapter compatibility cho consumer cũ, derive từ outbound Pricing V2. */
   pricingByVehicle: VehiclePrice[];
-  /** Pricing V2 đầy đủ theo direction × vehicle × package. Mock route cũ có thể chưa có field này. */
+  /** Pricing V2 đầy đủ theo direction × vehicle × package. Mock route cũ có thể chưa có. */
   pricingV2?: RoutePricingV2;
   /** Điểm đón — mô tả ngắn, có thể nhiều điểm. */
   pickupPoints: string[];
@@ -124,31 +113,32 @@ export interface Route {
   dropoffPoints: string[];
   /** URL nhúng Google Maps (placeholder cho tới khi có toạ độ thật từ ACF). */
   mapEmbedSrc: string;
-  /** Mô tả ngắn riêng cho tuyến — bắt buộc viết tay, không nội suy từ số liệu, tránh nội dung mỏng/trùng lặp giữa các trang (mục 11, kiến trúc kỹ thuật). */
+  /** Mô tả ngắn riêng cho tuyến. */
   summary: string;
-  /** Dòng nhấn ngắn trên hero, ví dụ "Tuyến biển được yêu thích nhất miền Nam". */
+  /** Dòng nhấn ngắn trên hero. */
   heroNote: string;
-  /** Ảnh đại diện của bài route trong WordPress — dùng làm nền hero cho trang tuyến và mọi trang tuyến + loại xe. */
+  /** Ảnh đại diện của bài route trong WordPress. */
   featuredImage?: string;
   /** Khung giờ khởi hành gợi ý. */
   departures: string[];
   /** Vài lưu ý/cam kết riêng cho tuyến. */
   notes: string[];
-  /** `modified` thật từ WordPress (Ngày 23) — dùng cho nhãn "Cập nhật lần cuối" (mục 5, kiến trúc kỹ thuật). Rỗng ở dữ liệu mock. */
+  /** `modified` thật từ WordPress. */
   modifiedDate?: string;
-  /** Rank Math SEO title/description, expose qua snippet WPCode ID 15 (Ngày 23) — generateMetadata() ưu tiên 2 field này trước khi tự soạn. */
+  /** Rank Math SEO title/description. */
   rankMathTitle?: string;
   rankMathDescription?: string;
 }
 
 /** Nhãn phía trên giá card/list: contact không được hiện thành "Giá từ Liên hệ". */
 export function routePriceKicker(route: Pick<Route, "pricingV2">): string {
-  return route.pricingV2?.outbound.featured?.mode === "contact" ? "Báo giá" : "Giá từ";
+  if (!route.pricingV2) return "Giá từ";
+  return route.pricingV2.outbound.featured?.mode === "fixed" ? "Giá từ" : "Báo giá";
 }
 
 export interface FilterState {
   region: string;
-  /** Khu vực cụ thể bên trong tỉnh đã chọn — khớp `route.to` (vd. "Vũng Tàu" trong tỉnh Bà Rịa - Vũng Tàu). */
+  /** Khu vực cụ thể bên trong tỉnh đã chọn — khớp `route.to`. */
   area: string;
   vehicleType: string;
   seats: string;
@@ -165,23 +155,17 @@ export function hasActiveFilters(filters: FilterState) {
   return Boolean(filters.region || filters.area || filters.vehicleType || filters.seats);
 }
 
-/**
- * Dựng URL trang chi tiết 1 tuyến — Ngày 25: cấu trúc đổi từ `/tuyen-duong/[slug]` phẳng sang
- * `/tuyen-duong/[tinh]/[tuyen]` lồng theo hub tỉnh. TẤT CẢ nơi cần link tới trang tuyến phải
- * gọi hàm này (không tự ráp chuỗi) để khi cấu trúc URL đổi lần nữa chỉ cần sửa 1 chỗ.
- * Fallback "khac" chỉ xảy ra với dữ liệu lỗi (route chưa gắn `province`) — không nên gặp ở
- * dữ liệu thật vì taxonomy `province` bắt buộc khi tạo route (xem snippet WPCode ID 11).
- */
+/** Dựng URL trang chi tiết 1 tuyến. */
 export function routeHref(route: { regionSlug: string; slug: string }): string {
   return `/tuyen-duong/${route.regionSlug || "khac"}/${route.slug}`;
 }
 
-/** Dựng URL trang kết hợp tuyến + loại xe (Ngày 14) — cùng nguyên tắc như routeHref() ở trên. */
+/** Dựng URL trang kết hợp tuyến + loại xe. */
 export function routeComboHref(route: { regionSlug: string; slug: string }, vehicleSlug: string): string {
   return `${routeHref(route)}/${vehicleSlug}`;
 }
 
-/** Slug quy ước cho loại xe, dùng để link sang /loai-xe/[slug] (trang này ra mắt ở Ngày 13). */
+/** Slug quy ước cho loại xe, dùng để link sang /loai-xe/[slug]. */
 export function vehicleTypeSlug(vehicleType: string): string {
   const map: Record<string, string> = {
     "4 chỗ": "4-cho",
@@ -190,7 +174,6 @@ export function vehicleTypeSlug(vehicleType: string): string {
     "29 chỗ": "29-cho",
     "45 chỗ": "45-cho",
     "Limousine": "limousine",
-    // 2 mapping cũ giữ lại cho dữ liệu mock dự phòng (data/routes.ts) vẫn còn dùng nhãn gộp cũ.
     "4–7 chỗ": "4-7-cho",
     "16–29 chỗ": "16-29-cho",
   };
