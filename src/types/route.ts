@@ -48,6 +48,38 @@ export interface VehiclePrice {
   comboDescription?: string;
 }
 
+/**
+ * Ngày 7 — presentation contract cho consumer Pricing V2.
+ * Giữ riêng khỏi kiểu dữ liệu REST/raw để component không phải hiểu schema WordPress.
+ */
+export type RoutePricingDirectionKey = "outbound" | "inbound";
+export type RoutePricingMode = "fixed" | "contact" | "disabled";
+
+export interface RoutePricingPackage {
+  direction: RoutePricingDirectionKey;
+  vehicleId: string;
+  vehicleType: string;
+  packageKey: string;
+  packageLabel: string;
+  mode: RoutePricingMode;
+  price?: number;
+  priceLabel?: string;
+  contactText?: string;
+}
+
+export interface RouteDirectionPricing {
+  key: RoutePricingDirectionKey;
+  enabled: boolean;
+  featuredPackage: string;
+  packages: RoutePricingPackage[];
+  featured?: RoutePricingPackage;
+}
+
+export interface RoutePricingV2 {
+  outbound: RouteDirectionPricing;
+  inbound: RouteDirectionPricing;
+}
+
 /** Mô tả riêng cho 1 tổ hợp tuyến + loại xe (Ngày 14) — dùng ở trang /tuyen-duong/[slug]/[loai-xe]. */
 export interface ComboDescription {
   vehicleType: string;
@@ -62,7 +94,10 @@ export interface Route {
   to: string;
   time: string;
   distance: string;
-  /** Giá từ — luôn bằng mức thấp nhất trong pricingByVehicle, dùng cho thẻ giá/danh sách. */
+  /**
+   * Giá đại diện outbound dùng cho card/list legacy. Ngày 7: giá này được derive từ Pricing V2;
+   * route mock cũ vẫn giữ nguyên chuỗi đã có.
+   */
   price: string;
   vehicleTypes: string[];
   region: string;
@@ -76,8 +111,13 @@ export interface Route {
    */
   regionSlug: string;
   seatCount: string[];
-  /** Giá riêng theo từng loại xe — khớp đúng repeater pricing_by_vehicle trong kiến trúc dữ liệu CPT route. */
+  /**
+   * Adapter compatibility cho các consumer cũ. Ngày 7 field này được derive từ outbound
+   * Pricing V2, không còn là nơi component tự parse pricing_by_vehicle.
+   */
   pricingByVehicle: VehiclePrice[];
+  /** Pricing V2 đầy đủ theo direction × vehicle × package. Mock route cũ có thể chưa có field này. */
+  pricingV2?: RoutePricingV2;
   /** Điểm đón — mô tả ngắn, có thể nhiều điểm. */
   pickupPoints: string[];
   /** Điểm trả — mô tả ngắn, có thể nhiều điểm. */
@@ -99,6 +139,11 @@ export interface Route {
   /** Rank Math SEO title/description, expose qua snippet WPCode ID 15 (Ngày 23) — generateMetadata() ưu tiên 2 field này trước khi tự soạn. */
   rankMathTitle?: string;
   rankMathDescription?: string;
+}
+
+/** Nhãn phía trên giá card/list: contact không được hiện thành "Giá từ Liên hệ". */
+export function routePriceKicker(route: Pick<Route, "pricingV2">): string {
+  return route.pricingV2?.outbound.featured?.mode === "contact" ? "Báo giá" : "Giá từ";
 }
 
 export interface FilterState {
