@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Clock3, Milestone, Route as RouteIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Route, routeHref } from "@/types/route";
+import { routeHref, routePriceKicker, type Route } from "@/types/route";
 
 interface RouteResultsProps {
   routes: Route[];
@@ -14,7 +14,7 @@ export function RouteResults({ routes, onClearFilters }: RouteResultsProps) {
   }
 
   return <div className="route-results" aria-live="polite">{routes.map((route) => <article className="route-ticket" key={route.id}>
-    <div className="rt-price"><span>Giá từ</span><b>{route.price}</b></div>
+    <div className="rt-price"><span>{routePriceKicker(route)}</span><b>{route.price}</b></div>
     <div className="rt-body"><div className="rt-route"><span>{route.from}</span><ArrowRight size={16} /><span>{route.to}</span></div><div className="rt-meta"><span><Clock3 size={13} /> {route.time}</span><span><Milestone size={13} /> {route.distance}</span><span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span></div></div>
     <div className="rt-cta"><Link href={routeHref(route)}>Xem chi tiết <ArrowRight size={14} /></Link></div>
   </article>)}</div>;

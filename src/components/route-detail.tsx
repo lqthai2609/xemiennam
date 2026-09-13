@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, BusFront, Check, Clock3, MapPin, Milestone, Phone, ShieldCheck, Star } from "lucide-react";
+import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-import { MediaPhoto } from "@/components/media-photo";
-import { RouteBookingActions } from "@/components/route-booking-actions";
-import { priceTypeLabel, routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
+import { RoutePricingSection } from "@/components/route-pricing-section";
+import { routeHref, routeComboHref, routePriceKicker, vehicleTypeSlug, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
 import { UnifiedHero } from "@/components/unified-hero";
 import { BlogCard } from "@/components/blog-card";
@@ -20,7 +19,7 @@ const footerLinkGroups = [
 function DetailCard({ route }: { route: Route }) {
   return (
     <Link className="route-ticket related-ticket" href={routeHref(route)}>
-      <div className="rt-price"><span>Giá từ</span><b>{route.price}</b></div>
+      <div className="rt-price"><span>{routePriceKicker(route)}</span><b>{route.price}</b></div>
       <div className="rt-body"><div className="rt-route"><span>{route.from}</span><ArrowRight size={16} /><span>{route.to}</span></div><div className="rt-meta"><span><Clock3 size={13} /> {route.time}</span><span><Milestone size={13} /> {route.distance}</span></div></div>
       <div className="rt-cta">Xem tuyến <ArrowRight size={14} /></div>
     </Link>
@@ -43,7 +42,6 @@ export function RouteDetailPage({
    * nếu loại xe đó chưa có xe nào nhập ảnh, card tự fallback về icon. */
   vehicleImageByType?: Record<string, string>;
 }) {
-  const routeLabel = `${route.from} – ${route.to}`;
   // Một số tuyến chưa có featured image trong CMS. Dùng ảnh WebP nhẹ làm fallback
   // thay cho city-tour.png (2.3 MB), vì hero luôn là ảnh LCP được tải ưu tiên.
   const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
@@ -53,34 +51,7 @@ export function RouteDetailPage({
       <UnifiedHero eyebrow={route.heroNote} title={<> {route.from}<br /><em>→ {route.to}</em></>} description={route.summary} backgroundImage={heroImage} backHref={`/tuyen-duong/${route.regionSlug || "khac"}`} backLabel={`Tất cả tuyến ${route.region}`} /><section className="detail-content section-wrap">
         <div className="detail-main">
           <div className="section-heading detail-heading"><div><p className="section-label">GIÁ THUÊ XE THAM KHẢO</p><h2>Chọn cách bạn muốn đi.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
-          <div className="detail-price-grid">
-            {route.pricingByVehicle.map((vp) => (
-              <article className="detail-price-card" key={vp.vehicleType}>
-                <div className="detail-price-media">
-                  {vehicleImageByType[vp.vehicleType] ? (
-                    <MediaPhoto
-                      src={vehicleImageByType[vp.vehicleType]}
-                      alt={vp.vehicleType}
-                      sizes="(max-width: 540px) 100vw, (max-width: 800px) 50vw, (max-width: 1180px) 35vw, 320px"
-                    />
-                  ) : (
-                    <BusFront size={32} strokeWidth={1.4} />
-                  )}
-                </div>
-                <Link href={`/loai-xe/${vehicleTypeSlug(vp.vehicleType)}`} className="vehicle-chip">
-                  {vp.vehicleType}
-                </Link>
-                <strong>{vp.price}</strong>
-                <small>{priceTypeLabel(vp.priceType)} · Giá tham khảo</small>
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))}>
-                    Thuê xe {vp.vehicleType} đi {route.to} <ArrowRight size={15} />
-                  </Link>
-                </Button>
-                <RouteBookingActions route={routeLabel} vehicleType={vp.vehicleType} price={vp.price} />
-              </article>
-            ))}
-          </div>
+          <RoutePricingSection route={route} vehicleImageByType={vehicleImageByType} />
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">ĐIỂM ĐÓN & TRẢ</p><h2>Điểm nào cũng gần bạn.</h2></div></div><div className="stops-grid"><div><span className="stop-kicker"><MapPin size={15} /> Điểm đón tại {route.from}</span><ul>{route.pickupPoints.map((stop) => <li key={stop}><span className="stop-dot" />{stop}</li>)}</ul></div><div><span className="stop-kicker"><MapPin size={15} /> Điểm trả tại {route.to}</span><ul>{route.dropoffPoints.map((stop) => <li key={stop}><span className="stop-dot destination" />{stop}</li>)}</ul></div></div></div>
 

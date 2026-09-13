@@ -2,9 +2,9 @@ import { vehicleTypeSlug, type Route, type VehiclePrice } from "@/types/route";
 
 /**
  * Trang kết hợp /tuyen-duong/[slug]/[loai-xe] — Ngày 14.
- * Nguồn dữ liệu DUY NHẤT vẫn là `route.pricingByVehicle` (đúng repeater pricing_by_vehicle
- * trong kiến trúc dữ liệu CPT route, mục 3 kiến trúc kỹ thuật) — trang này không thêm nguồn
- * dữ liệu mới, chỉ tìm đúng 1 dòng khớp slug loại xe trên URL.
+ * Ngày 7: `route.pricingByVehicle` vẫn là compatibility surface cho trang combo, nhưng dữ liệu
+ * route thật đã được derive từ Pricing V2 ở `lib/api/routes.ts`; component không parse pricing
+ * meta riêng lần nữa.
  */
 
 /** Tìm đúng dòng giá (VehiclePrice) trong 1 route khớp với slug loại xe trên URL. */
@@ -13,13 +13,16 @@ export function findComboVehiclePrice(route: Route, vehicleSlug: string): Vehicl
 }
 
 /**
- * Mô tả riêng cho tổ hợp tuyến + loại xe — ưu tiên nội dung biên tập tay
- * (vp.comboDescription, xem data/routes.ts). Chỉ sinh tạm khi thiếu (vd dữ liệu WP thật
- * chưa có field tương ứng — dời bổ sung ACF cho field này tới Ngày 24 giống các field khác).
+ * Mô tả riêng cho tổ hợp tuyến + loại xe — ưu tiên nội dung biên tập tay.
+ * Contact pricing dùng wording báo giá tự nhiên, không ghép chuỗi kiểu "giá tham khảo Liên hệ".
  */
 export function comboDescriptionOrDefault(route: Route, vp: VehiclePrice): string {
-  return (
-    vp.comboDescription ??
-    `${route.summary} Giá thuê xe ${vp.vehicleType} tham khảo ${vp.price} cho tuyến ${route.from} – ${route.to}.`
-  );
+  if (vp.comboDescription) return vp.comboDescription;
+
+  const prefix = route.summary ? `${route.summary} ` : "";
+  if (vp.pricingMode === "contact") {
+    return `${prefix}Thuê xe ${vp.vehicleType} tuyến ${route.from} – ${route.to}; liên hệ để nhận báo giá theo lịch thực tế.`;
+  }
+
+  return `${prefix}Giá thuê xe ${vp.vehicleType} tham khảo ${vp.price} cho tuyến ${route.from} – ${route.to}.`;
 }
