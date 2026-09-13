@@ -38,9 +38,9 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
 }) {
   const description = comboDescriptionOrDefault(route, vehiclePrice);
   const routeLabel = `${route.from} – ${route.to}`;
-  const oldPrice = discountedPrice(vehiclePrice.price);
+  const isContact = vehiclePrice.pricingMode === "contact" || vehiclePrice.price === "Liên hệ";
+  const oldPrice = isContact ? "" : discountedPrice(vehiclePrice.price);
   const seats = vehicle?.seats || (category.type === "Limousine" ? "8 khách" : `${category.type.replace(" chỗ", "")} khách`);
-  // Ảnh xe vẫn dùng riêng trong card đặt xe; hero dùng ảnh đại diện của tuyến để nhất quán mọi biến thể xe.
   const image = vehicle?.images[0] || category.imageUrl;
   const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
 
@@ -53,10 +53,10 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
         <article className="combo-vehicle-card">
           <div className="combo-vehicle-media">{image ? <MediaPhoto src={image} alt={vehicle?.name || vehiclePrice.vehicleType} /> : <CarFront size={76} strokeWidth={1.2} />}<strong>Xe {vehiclePrice.vehicleType} <span>(VIP)</span></strong></div>
           <div className="combo-vehicle-info">
-            <div className="combo-vehicle-top"><div><h2>{vehicle?.name || `Xe ${vehiclePrice.vehicleType} TaxiGo`}</h2><div className="combo-rating"><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} /><span>4.9 · (1,250)</span></div></div><div className="combo-price"><del>{oldPrice}</del><strong>{vehiclePrice.price}</strong></div></div>
+            <div className="combo-vehicle-top"><div><h2>{vehicle?.name || `Xe ${vehiclePrice.vehicleType} TaxiGo`}</h2><div className="combo-rating"><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} fill="currentColor" /><Star size={15} /><span>4.9 · (1,250)</span></div></div><div className="combo-price">{oldPrice && <del>{oldPrice}</del>}<strong>{isContact ? "Liên hệ để nhận báo giá" : vehiclePrice.price}</strong>{vehiclePrice.packageLabel && <small>{vehiclePrice.packageLabel}</small>}</div></div>
             <div className="combo-vehicle-divider" />
             <div className="combo-vehicle-details"><p><CarFront size={17} /> Xe sedan: Vios, Honda city, Elantra, Mazda...</p><p><Users size={17} /> {seats}</p><p><Luggage size={17} /> 2 vali</p></div>
-            <div className="combo-vehicle-actions"><div><p className="combo-alert">▲ Giá đang rất rẻ, đặt sớm để giữ xe</p><p className="combo-included"><Check size={14} /> Giá trên đã bao gồm phí cao tốc, phí ra vào SB</p></div><RouteBookingActions route={routeLabel} vehicleType={vehiclePrice.vehicleType} price={vehiclePrice.price} /></div>
+            <div className="combo-vehicle-actions"><div><p className="combo-alert">{isContact ? "Liên hệ để xác nhận giá theo lịch thực tế" : "▲ Giá đang rất tốt, đặt sớm để giữ xe"}</p><p className="combo-included"><Check size={14} /> Giá xác nhận đã bao gồm phí cao tốc, phí ra vào SB</p></div><RouteBookingActions route={routeLabel} vehicleType={vehiclePrice.vehicleType} price={isContact ? undefined : vehiclePrice.price} direction="outbound" packageKey={vehiclePrice.packageKey} packageLabel={vehiclePrice.packageLabel} pricingMode={isContact ? "contact" : "fixed"} /></div>
           </div>
         </article>
       </section>
