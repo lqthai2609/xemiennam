@@ -69,7 +69,7 @@ export default async function BlogDetailPage({ params }: Props) {
       {faqItems.length > 0 && (
         <JsonLd data={buildFaqPageSchema(faqItems.map((f) => ({ question: f.question, answer: f.answer })))} />
       )}
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <UnifiedHero eyebrow={post.category} title={post.title} description={post.excerpt} backgroundImage={post.featuredImageUrl || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
 

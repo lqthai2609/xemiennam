@@ -72,7 +72,7 @@ export function LienHePageClient({
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <UnifiedHero eyebrow="LIÊN HỆ" title={<>Cùng lên kế hoạch<br /><em>cho chuyến đi.</em></>} description="Để lại thông tin, Xe Miền Nam sẽ tư vấn lịch trình và loại xe phù hợp." />
 

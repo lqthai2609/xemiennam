@@ -33,7 +33,7 @@ export function PromotionsPage({ promotions }: { promotions: Promotion[] }) {
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <UnifiedHero eyebrow="KHUYẾN MÃI" title={<>Ưu đãi<br /><em>đang chờ bạn.</em></>} description="Các chương trình giảm giá theo tuyến và loại xe, cập nhật thường xuyên." />
 

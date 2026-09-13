@@ -48,7 +48,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <UnifiedHero eyebrow="BẢNG GIÁ" title={<>Giá rõ ràng.<br /><em>chuyến đi nhẹ tênh.</em></>} description="Tham khảo nhanh mức giá thuê xe nguyên chiếc theo tuyến và loại xe." />
 

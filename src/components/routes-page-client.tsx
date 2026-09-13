@@ -81,7 +81,7 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
 
   return (
     <main className={`site-shell routes-variant-${layout}`}>
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
       <SubpageHero
         title="Tuyến đường đáng để đi."
         description="Chọn điểm đến, loại xe và số chỗ phù hợp. Chúng tôi lo phần còn lại của hành trình."

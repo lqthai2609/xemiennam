@@ -46,7 +46,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
 
   return (
     <main className="site-shell combo-page">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
       <UnifiedHero eyebrow={`${route.region} · ${category.label}`} title={<>Thuê xe {category.label.toLowerCase()}<br /><em>{route.from} → {route.to}</em></>} description={description} backgroundImage={heroImage} backHref={routeHref(route)} backLabel={`Tuyến ${routeLabel}`} />
       <section className="section-wrap combo-booking-section" id="booking">
         <div className="section-heading"><div><p className="section-label">XE PHÙ HỢP CHO HÀNH TRÌNH</p><h2>Chọn xe, đặt chuyến ngay.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>

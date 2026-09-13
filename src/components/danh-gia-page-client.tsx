@@ -73,7 +73,7 @@ export function DanhGiaPageClient({ testimonials, routes }: { testimonials: Test
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="1900 6789" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
 
       <UnifiedHero eyebrow="ĐÁNH GIÁ" title={<>Đi cùng nhau,<br /><em>yên tâm hơn.</em></>} description="Những chia sẻ thật từ khách hàng đã đồng hành cùng Xe Miền Nam." />
 
