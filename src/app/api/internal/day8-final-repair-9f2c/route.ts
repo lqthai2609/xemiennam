@@ -35,7 +35,7 @@ function positive(value: unknown): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
-function canonicalIsHealthy(route: WPRoute | undefined): boolean {
+function isHealthy(route: WPRoute | undefined): boolean {
   if (!route) return false;
   const meta = route.meta ?? {};
   const rows = Array.isArray(meta.pricing_packages_v2) ? meta.pricing_packages_v2 : [];
@@ -59,13 +59,20 @@ export async function GET(request: NextRequest) {
   try {
     const routes = await fetchRoutesNoStore();
     const canonical = routes.find((route) => route.slug === CANONICAL_SLUG);
-    const duplicates = routes.filter(
+    const suffixDuplicates = routes.filter(
       (route) => route.slug !== CANONICAL_SLUG && route.slug.startsWith(`${CANONICAL_SLUG}-`),
     );
+    const healthyDuplicates = suffixDuplicates.filter(isHealthy);
 
-    if (!canonicalIsHealthy(canonical)) {
+    if (!isHealthy(canonical) && healthyDuplicates.length !== 1) {
       return NextResponse.json(
-        { ok: false, error: "canonical_not_healthy", canonical: canonical ?? null, duplicates },
+        {
+          ok: false,
+          error: "no_single_healthy_route_to_preserve",
+          canonical: canonical ?? null,
+          suffixDuplicates,
+          healthyDuplicateIds: healthyDuplicates.map((route) => route.id),
+        },
         { status: 409 },
       );
     }
@@ -76,23 +83,59 @@ export async function GET(request: NextRequest) {
     }
 
     const deleted: number[] = [];
+    const renamed: number[] = [];
     const errors: Array<{ id: number; slug: string; message: string }> = [];
-    for (const duplicate of duplicates) {
-      const result = await wpAuthedFetch(`/route/${duplicate.id}?force=true`, { method: "DELETE" });
-      if (result.ok) deleted.push(duplicate.id);
-      else errors.push({ id: duplicate.id, slug: duplicate.slug, message: result.message });
+
+    if (isHealthy(canonical) && canonical) {
+      for (const duplicate of suffixDuplicates) {
+        const result = await wpAuthedFetch(`/route/${duplicate.id}?force=true`, { method: "DELETE" });
+        if (result.ok) deleted.push(duplicate.id);
+        else errors.push({ id: duplicate.id, slug: duplicate.slug, message: result.message });
+      }
+    } else {
+      const healthy = healthyDuplicates[0];
+      if (canonical) {
+        const deleteCanonical = await wpAuthedFetch(`/route/${canonical.id}?force=true`, { method: "DELETE" });
+        if (deleteCanonical.ok) deleted.push(canonical.id);
+        else errors.push({ id: canonical.id, slug: canonical.slug, message: deleteCanonical.message });
+      }
+
+      if (errors.length === 0 && healthy) {
+        const renameHealthy = await wpAuthedFetch(`/route/${healthy.id}`, {
+          method: "PUT",
+          body: { slug: CANONICAL_SLUG },
+        });
+        if (renameHealthy.ok) renamed.push(healthy.id);
+        else errors.push({ id: healthy.id, slug: healthy.slug, message: renameHealthy.message });
+      }
+
+      if (errors.length === 0 && healthy) {
+        for (const duplicate of suffixDuplicates) {
+          if (duplicate.id === healthy.id) continue;
+          const result = await wpAuthedFetch(`/route/${duplicate.id}?force=true`, { method: "DELETE" });
+          if (result.ok) deleted.push(duplicate.id);
+          else errors.push({ id: duplicate.id, slug: duplicate.slug, message: result.message });
+        }
+      }
     }
 
     const after = await fetchRoutesNoStore();
     const remaining = after
       .filter((route) => route.slug === CANONICAL_SLUG || route.slug.startsWith(`${CANONICAL_SLUG}-`))
-      .map((route) => ({ id: route.id, slug: route.slug }));
+      .map((route) => ({ id: route.id, slug: route.slug, healthy: isHealthy(route) }));
 
     return NextResponse.json({
-      ok: errors.length === 0 && remaining.length === 1 && remaining[0]?.slug === CANONICAL_SLUG,
-      canonical: canonical ? { id: canonical.id, slug: canonical.slug } : null,
-      duplicateCountBefore: duplicates.length,
+      ok:
+        errors.length === 0 &&
+        remaining.length === 1 &&
+        remaining[0]?.slug === CANONICAL_SLUG &&
+        remaining[0]?.healthy === true,
+      before: {
+        canonical: canonical ? { id: canonical.id, slug: canonical.slug, healthy: isHealthy(canonical) } : null,
+        suffixDuplicates: suffixDuplicates.map((route) => ({ id: route.id, slug: route.slug, healthy: isHealthy(route) })),
+      },
       deleted,
+      renamed,
       errors,
       remaining,
     }, { status: errors.length ? 500 : 200 });
