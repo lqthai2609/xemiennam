@@ -36,8 +36,6 @@ import { buildRouteMapEmbedSrc } from "@/lib/maps";
  */
 const useMockFallback = true;
 
-// Thứ tự cố định để bảng giá/loại xe hiển thị nhất quán, khớp taxonomy vehicle_type.
-// Hai nhãn gộp cũ giữ làm lưới an toàn cho dữ liệu chưa retag hoàn tất.
 export const VEHICLE_TYPE_ORDER = ["4 chỗ", "4–7 chỗ", "7 chỗ", "16 chỗ", "16–29 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
 function byVehicleTypeOrder(a: string, b: string) {
   const ai = VEHICLE_TYPE_ORDER.indexOf(a);
@@ -104,10 +102,6 @@ function buildDirectionPricing(
   };
 }
 
-/**
- * Adapter duy nhất từ Pricing Package V2 sang shape presentation của Route.
- * Component không đọc raw meta và không parse `pricing_by_vehicle` lần nữa.
- */
 function buildRoutePricingV2(wp: WPRoute, rawVehicles: WPVehicle[]): RoutePricingV2 {
   const pair = mapWPRouteToRoutePairV2(wp);
   const pricingRows = mapWPRouteToPricingPackagesV2(wp);
@@ -132,8 +126,8 @@ function buildRoutePricingV2(wp: WPRoute, rawVehicles: WPVehicle[]): RoutePricin
 }
 
 /**
- * Compatibility adapter cho các consumer cũ (`route.pricingByVehicle`).
- * Chỉ derive từ outbound Pricing V2; contact vẫn là một combination hợp lệ, disabled bị loại.
+ * Compatibility adapter cho consumer cũ (`route.pricingByVehicle`).
+ * Chỉ derive từ outbound Pricing V2; contact là combination hợp lệ, disabled bị loại.
  */
 function buildLegacyPricingByVehicle(pricingV2: RoutePricingV2): VehiclePrice[] {
   if (!pricingV2.outbound.enabled) return [];
@@ -166,6 +160,10 @@ function buildLegacyPricingByVehicle(pricingV2: RoutePricingV2): VehiclePrice[] 
           vehicleType,
           price: featured.mode === "fixed" && featured.price ? formatPriceShort(featured.price) : "Liên hệ",
           priceType: legacyPriceTypeForPackage(featured.packageKey),
+          pricingMode: featured.mode === "contact" ? "contact" : "fixed",
+          packageKey: featured.packageKey,
+          packageLabel: pricingPackageLabel(featured.packageKey),
+          numericPrice: featured.mode === "fixed" ? featured.price : undefined,
         },
       ];
     });
@@ -240,7 +238,6 @@ export async function fetchRouteBySlug(slug: string): Promise<Route | undefined>
     return mapWPRouteToRoute(wp, rawVehicles);
   }
   if (useMockFallback) {
-    // Chỉ fallback về mock khi CẢ danh mục route trên WP đang rỗng.
     const rawRoutes = await fetchRawRoutes();
     if (rawRoutes.length === 0) {
       return mockRoutes.find((route) => route.slug === slug);
@@ -254,13 +251,11 @@ export async function fetchRelatedRoutes(currentSlug: string, count = 3): Promis
   return all.filter((route) => route.slug !== currentSlug).slice(0, count);
 }
 
-/** Các tuyến thuộc đúng 1 hub tỉnh (Ngày 25). */
 export async function fetchRoutesByRegion(regionSlug: string): Promise<Route[]> {
   const all = await fetchRoutes();
   return all.filter((route) => route.regionSlug === regionSlug);
 }
 
-/** Danh sách slug tỉnh có ít nhất 1 tuyến — dùng cho generateStaticParams() của `/tuyen-duong/[tinh]`. */
 export async function fetchRegionSlugs(): Promise<string[]> {
   const all = await fetchRoutes();
   return Array.from(new Set(all.map((route) => route.regionSlug).filter(Boolean)));
