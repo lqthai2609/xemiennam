@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, BusFront, Check, Clock3, MapPin, Milestone, Phone, ShieldCheck, Star } from "lucide-react";
+import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-import { MediaPhoto } from "@/components/media-photo";
-import { RouteBookingActions } from "@/components/route-booking-actions";
-import { priceTypeLabel, routeHref, routeComboHref, vehicleTypeSlug, type Route } from "@/types/route";
+import { RoutePricingSection } from "@/components/route-pricing-section";
+import { routeHref, routeComboHref, routePriceKicker, vehicleTypeSlug, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
 import { UnifiedHero } from "@/components/unified-hero";
 import { BlogCard } from "@/components/blog-card";
@@ -20,7 +19,7 @@ const footerLinkGroups = [
 function DetailCard({ route }: { route: Route }) {
   return (
     <Link className="route-ticket related-ticket" href={routeHref(route)}>
-      <div className="rt-price"><span>Giá từ</span><b>{route.price}</b></div>
+      <div className="rt-price"><span>{routePriceKicker(route)}</span><b>{route.price}</b></div>
       <div className="rt-body"><div className="rt-route"><span>{route.from}</span><ArrowRight size={16} /><span>{route.to}</span></div><div className="rt-meta"><span><Clock3 size={13} /> {route.time}</span><span><Milestone size={13} /> {route.distance}</span></div></div>
       <div className="rt-cta">Xem tuyến <ArrowRight size={14} /></div>
     </Link>
@@ -43,7 +42,6 @@ export function RouteDetailPage({
    * nếu loại xe đó chưa có xe nào nhập ảnh, card tự fallback về icon. */
   vehicleImageByType?: Record<string, string>;
 }) {
-  const routeLabel = `${route.from} – ${route.to}`;
   // Một số tuyến chưa có featured image trong CMS. Dùng ảnh WebP nhẹ làm fallback
   // thay cho city-tour.png (2.3 MB), vì hero luôn là ảnh LCP được tải ưu tiên.
   const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
@@ -53,34 +51,7 @@ export function RouteDetailPage({
       <UnifiedHero eyebrow={route.heroNote} title={<> {route.from}<br /><em>→ {route.to}</em></>} description={route.summary} backgroundImage={heroImage} backHref={`/tuyen-duong/${route.regionSlug || "khac"}`} backLabel={`Tất cả tuyến ${route.region}`} /><section className="detail-content section-wrap">
         <div className="detail-main">
           <div className="section-heading detail-heading"><div><p className="section-label">GIÁ THUÊ XE THAM KHẢO</p><h2>Chọn cách bạn muốn đi.</h2></div><p className="heading-note">Giá đã gồm phí cầu đường.<br />Không có phụ phí ẩn.</p></div>
-          <div className="detail-price-grid">
-            {route.pricingByVehicle.map((vp) => (
-              <article className="detail-price-card" key={vp.vehicleType}>
-                <div className="detail-price-media">
-                  {vehicleImageByType[vp.vehicleType] ? (
-                    <MediaPhoto
-                      src={vehicleImageByType[vp.vehicleType]}
-                      alt={vp.vehicleType}
-                      sizes="(max-width: 540px) 100vw, (max-width: 800px) 50vw, (max-width: 1180px) 35vw, 320px"
-                    />
-                  ) : (
-                    <BusFront size={32} strokeWidth={1.4} />
-                  )}
-                </div>
-                <Link href={`/loai-xe/${vehicleTypeSlug(vp.vehicleType)}`} className="vehicle-chip">
-                  {vp.vehicleType}
-                </Link>
-                <strong>{vp.price}</strong>
-                <small>{priceTypeLabel(vp.priceType)} · Giá tham khảo</small>
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))}>
-                    Thuê xe {vp.vehicleType} đi {route.to} <ArrowRight size={15} />
-                  </Link>
-                </Button>
-                <RouteBookingActions route={routeLabel} vehicleType={vp.vehicleType} price={vp.price} />
-              </article>
-            ))}
-          </div>
+          <RoutePricingSection route={route} vehicleImageByType={vehicleImageByType} />
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">ĐIỂM ĐÓN & TRẢ</p><h2>Điểm nào cũng gần bạn.</h2></div></div><div className="stops-grid"><div><span className="stop-kicker"><MapPin size={15} /> Điểm đón tại {route.from}</span><ul>{route.pickupPoints.map((stop) => <li key={stop}><span className="stop-dot" />{stop}</li>)}</ul></div><div><span className="stop-kicker"><MapPin size={15} /> Điểm trả tại {route.to}</span><ul>{route.dropoffPoints.map((stop) => <li key={stop}><span className="stop-dot destination" />{stop}</li>)}</ul></div></div></div>
 
@@ -95,7 +66,7 @@ export function RouteDetailPage({
 
       {testimonials.length > 0 && <section className="section-wrap route-testimonials"><div className="section-heading"><div><p className="section-label">KHÁCH HÀNG NÓI GÌ</p><h2>Trải nghiệm trên tuyến này.</h2></div><Link className="text-link" href="/danh-gia">Xem tất cả đánh giá <ArrowRight size={17} /></Link></div><div className="combo-testimonial-grid">{testimonials.map((item) => <article className="combo-testimonial-card" key={item.id}><div className="combo-testimonial-stars" aria-label={`${item.rating} trên 5 sao`}>{Array.from({ length: 5 }, (_, index) => <Star key={index} size={16} fill={index < item.rating ? "currentColor" : "none"} />)}</div><p>“{item.quote}”</p><div className="combo-testimonial-who"><span className="combo-testimonial-avatar">{item.initials}</span><b>{item.name}</b></div></article>)}</div></section>}
 
-      {relatedPosts.length > 0 && <section className="section-wrap route-blog-section"><div className="section-heading"><div><p className="section-label">CẨM NANG {route.region.toUpperCase()}</p><h2>Bài viết liên quan.</h2></div><Link className="text-link" href="/blog">Xem tất cả bài viết <ArrowRight size={17} /></Link></div><div className="blog-grid">{relatedPosts.map((post) => <BlogCard post={post} key={post.id} />)}</div></section>}
+      {relatedPosts.length > 0 && <section className="section-wrap route-blog-section"><div className="section-heading"><div><p className="section-label">CẨM NANG {route.region.toUpperCase()}</p><h2>Bài viết liên quan.</h2></div><Link className="text-link" href="/blog">Xem tất cả bài viết <ArrowRight size={17} /></Link></div><div className="blog-grid">{relatedPosts.map((post) => <BlogCard post={post} key={post.id} />}</div></section>}
       <SiteFooter tagline={<>Đi đâu cũng có Xe Miền Nam.<br />Kết nối những hành trình tử tế.</>} phone="1900 6789" linkGroups={footerLinkGroups} socialLinks={defaultSocialLinks} copyright="© 2026 Xe Miền Nam" madeFor="Made for the road." />
     </main>
   );
