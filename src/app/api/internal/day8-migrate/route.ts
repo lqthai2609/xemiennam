@@ -7,6 +7,7 @@ import { wpAuthedFetch } from "@/lib/api/wp-auth";
 export const dynamic = "force-dynamic";
 
 const APPLY_TOKEN = "day8-location-pricing-v2";
+const PRODUCTION_TOKEN = "day8-prod-20260913-7b9a4e61";
 const CONTACT_TEXT = "Liên hệ để nhận báo giá";
 
 type RouteMetaV2 = WPRoute["meta"] & {
@@ -147,17 +148,16 @@ async function createLocation(plan: LocationPlan) {
       title: plan.title,
       slug: plan.slug,
       status: "publish",
-      meta: {
-        location_type: plan.locationType,
-        province_slug: plan.provinceSlug,
-        parent_location_id: 0,
-      },
+      meta: { location_type: plan.locationType, province_slug: plan.provinceSlug, parent_location_id: 0 },
     },
   });
 }
 
 export async function GET(request: NextRequest) {
-  if (process.env.VERCEL_ENV !== "preview") return NextResponse.json({ ok: false }, { status: 404 });
+  const environment = process.env.VERCEL_ENV;
+  const productionAuthorized =
+    environment === "production" && request.nextUrl.searchParams.get("production") === PRODUCTION_TOKEN;
+  if (environment !== "preview" && !productionAuthorized) return NextResponse.json({ ok: false }, { status: 404 });
 
   const apply = request.nextUrl.searchParams.get("apply") === APPLY_TOKEN;
   const [routes, locations, vehicles] = await Promise.all([fetchRawRoutes(), fetchLocationsV2(), fetchRawVehicles()]);
@@ -210,8 +210,11 @@ export async function GET(request: NextRequest) {
   };
 
   if (!apply) return NextResponse.json({ ok: true, mode: "preview", preview });
-  if (pricingCollisions.length > 0) {
-    return NextResponse.json({ ok: false, error: "pricing_collisions", preview }, { status: 409 });
+  if (pricingCollisions.length > 0) return NextResponse.json({ ok: false, error: "pricing_collisions", preview }, { status: 409 });
+
+  const authProbe = await wpAuthedFetch<{ id: number }>("/users/me?context=edit");
+  if (!authProbe.ok) {
+    return NextResponse.json({ ok: false, error: "wordpress_auth_unavailable", message: authProbe.message, preview }, { status: 503 });
   }
 
   const locationIds = new Map(locations.map((item) => [item.slug, item.id]));
