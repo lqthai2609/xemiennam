@@ -212,7 +212,7 @@ export async function GET(request: NextRequest) {
   if (!apply) return NextResponse.json({ ok: true, mode: "preview", preview });
   if (pricingCollisions.length > 0) return NextResponse.json({ ok: false, error: "pricing_collisions", preview }, { status: 409 });
 
-  const authProbe = await wpAuthedFetch<{ id: number }>("/users/me?context=edit");
+  const authProbe = await wpAuthedFetch<{ id: number }>("/users/me?context=edit", { method: "GET" });
   if (!authProbe.ok) {
     return NextResponse.json({ ok: false, error: "wordpress_auth_unavailable", message: authProbe.message, preview }, { status: 503 });
   }
