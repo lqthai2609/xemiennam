@@ -23,10 +23,14 @@
 
 ## Migration execution
 
-- The read-only audit found 87 routes, 3 existing Locations and 86 legacy Route Pairs before migration.
-- The controlled dry-run plans 71 new Locations, one Vũng Tàu metadata correction, no pricing collisions, and treats seven ambiguous compound labels as `custom` instead of splitting them.
-- Two City Tour destination labels are intentionally excluded from Location creation because they describe service packages rather than geographic entities. Those two routes remain on the legacy Location fallback until the City Tour model is separated from intercity Route data; their Pricing V2 rows are still migrated.
-- Legacy pricing is copied to outbound `one_way`; missing/non-positive legacy prices become `contact`, never numeric zero.
+- Read-only audit before migration: 87 routes, 3 existing Locations, 86 legacy Route Pairs.
+- Controlled dry-run: 71 new Locations, one Vũng Tàu metadata correction, zero pricing collisions, seven ambiguous compound labels kept as `custom`.
+- Two City Tour destination labels are excluded from Location creation because they describe service packages rather than geographic entities. Those two routes keep legacy Location fallback until City Tour is separated from intercity Route data; their Pricing V2 rows still migrate.
+- Legacy prices copy to outbound `one_way`. Missing or non-positive legacy prices become `contact`, never numeric zero.
 - Inbound starts as `contact` for the same vehicle combinations when no inbound price exists.
-- Legacy `pricing_by_vehicle` is preserved as compatibility data during the migration.
+- Legacy `pricing_by_vehicle` is preserved as compatibility data.
 - The one-time migration runner probes authenticated WordPress access before any write and is removed after execution.
+
+## Exit gate
+
+Day 8 is complete only after migration apply succeeds, post-migration audit is clean for the intended scope, Airport seed is present, preview smoke QA passes, temporary migration endpoints are deleted, CI is green, and the final change is deployed.
