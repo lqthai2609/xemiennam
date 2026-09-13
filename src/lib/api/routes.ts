@@ -1,61 +1,193 @@
-import type { Route, VehiclePrice } from "@/types/route";
+import type {
+  PriceType,
+  Route,
+  RouteDirectionPricing,
+  RoutePricingPackage,
+  RoutePricingV2,
+  VehiclePrice,
+} from "@/types/route";
 import { routes as mockRoutes } from "@/data/routes";
-import { fetchRawRoutes, fetchRawRouteBySlug, embeddedFeaturedImage, embeddedTermName, embeddedTerms, type WPRoute } from "./raw";
-import { getPricingTable, pricingForRoute, type PricingRow } from "./pricing";
-import { splitCommaList } from "@/lib/wp";
+import {
+  fetchRawRoutes,
+  fetchRawRouteBySlug,
+  fetchRawVehicles,
+  embeddedFeaturedImage,
+  embeddedTermName,
+  embeddedTerms,
+  type WPRoute,
+  type WPVehicle,
+} from "./raw";
+import {
+  getFeaturedPriceV2,
+  mapWPRouteToPricingPackagesV2,
+  pricingPackageLabel,
+  type PricingPackageV2,
+} from "./pricing-v2";
+import { mapWPRouteToRoutePairV2, type RouteDirectionKey } from "./route-directions";
+import { formatPriceShort, splitCommaList } from "@/lib/wp";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
 /**
- * fetchRoutes()/fetchRouteBySlug() — Ngày 12.
+ * fetchRoutes()/fetchRouteBySlug() — Ngày 12, chuyển consumer pricing sang V2 ở Ngày 7.
  *
  * FALLBACK MOCK: WordPress hiện chưa có bài `route` nào được nhập thật (nhập liệu dời tới
  * Ngày 24), nên trong giai đoạn này API sẽ trả về mảng rỗng — đó là kỳ vọng, không phải lỗi.
- * Để các trang không hiển thị trống suốt 12 ngày còn lại, khi API trả về rỗng hoặc lỗi mạng,
- * các hàm dưới đây tự động dùng lại dữ liệu mock ở src/data/routes.ts. Khi Ngày 24 nhập dữ
- * liệu thật xong, fallback này tự động không còn kích hoạt nữa (API không còn rỗng) — không
- * cần sửa code gì thêm. Nếu bạn muốn tắt fallback ngay bây giờ để thấy đúng trạng thái CMS
- * thật, đổi `useMockFallback` thành false.
- *
- * Bugfix (xem fetchRouteBySlug bên dưới): fallback theo slug riêng lẻ chỉ còn kích hoạt khi
- * TOÀN BỘ danh mục route trên WP rỗng — không còn fallback khi 1 slug cụ thể không tìm thấy
- * trong khi WP đã có route khác, để tránh bài đã bị xoá thật vẫn "hồi sinh" bằng mock trùng slug.
+ * Để các trang không hiển thị trống, khi API trả về rỗng các hàm dưới đây dùng dữ liệu mock.
  */
 const useMockFallback = true;
 
 // Thứ tự cố định để bảng giá/loại xe hiển thị nhất quán, khớp taxonomy vehicle_type.
-// Export để /bang-gia (Ngày 15) dùng lại đúng thứ tự này, không định nghĩa trùng lần 2.
-// Ngày 25: thêm 2 nhãn cũ "4–7 chỗ"/"16–29 chỗ" làm lưới an toàn tạm thời — vehicle post
-// 37/38 trong WordPress chưa kịp retag sang taxonomy mới (bị chặn quota WPVibe giữa chừng),
-// nên route.vehicleTypes vẫn đang trả về 2 tên cũ này. Không thêm vào đây thì bảng giá MẤT
-// HẲN 2 cột đó thay vì chỉ hiển thị tạm theo tên cũ. Khi retag WP xong, 2 nhãn cũ tự động
-// không còn route nào khớp nữa (present.has() trả false) → tự rụng khỏi bảng, không cần sửa
-// lại dòng này lần 2.
+// Hai nhãn gộp cũ giữ làm lưới an toàn cho dữ liệu chưa retag hoàn tất.
 export const VEHICLE_TYPE_ORDER = ["4 chỗ", "4–7 chỗ", "7 chỗ", "16 chỗ", "16–29 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
 function byVehicleTypeOrder(a: string, b: string) {
-  return VEHICLE_TYPE_ORDER.indexOf(a) - VEHICLE_TYPE_ORDER.indexOf(b);
+  const ai = VEHICLE_TYPE_ORDER.indexOf(a);
+  const bi = VEHICLE_TYPE_ORDER.indexOf(b);
+  return (ai === -1 ? Number.MAX_SAFE_INTEGER : ai) - (bi === -1 ? Number.MAX_SAFE_INTEGER : bi);
 }
 
-function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
-  const pricingByVehicle: VehiclePrice[] = pricingRows
-    .filter((row) => row.vehicleType)
-    .sort((a, b) => byVehicleTypeOrder(a.vehicleType, b.vehicleType))
-    .map((row) => ({
-      vehicleType: row.vehicleType,
-      price: row.priceLabel,
-      priceType: row.priceType,
-    }));
+function legacyPriceTypeForPackage(packageKey: string): PriceType | undefined {
+  if (packageKey === "one_way") return "one_way";
+  if (packageKey === "round_trip_day") return "round_trip_same_day";
+  if (packageKey === "2d1n") return "two_days_one_night";
+  return undefined;
+}
 
+function buildVehicleTypeById(rawVehicles: WPVehicle[]): Map<string, string> {
+  return new Map(
+    rawVehicles.map((vehicle) => [
+      String(vehicle.id),
+      embeddedTermName(vehicle._embedded, "vehicle_type") ?? "",
+    ]),
+  );
+}
+
+function toPresentationPackage(
+  row: PricingPackageV2,
+  vehicleTypeById: Map<string, string>,
+): RoutePricingPackage | undefined {
+  const vehicleType = vehicleTypeById.get(row.vehicleId) ?? "";
+  if (!vehicleType) return undefined;
+
+  return {
+    direction: row.direction,
+    vehicleId: row.vehicleId,
+    vehicleType,
+    packageKey: row.packageKey,
+    packageLabel: pricingPackageLabel(row.packageKey),
+    mode: row.mode,
+    price: row.mode === "fixed" ? row.price : undefined,
+    priceLabel: row.mode === "fixed" && row.price ? formatPriceShort(row.price) : undefined,
+    contactText: row.mode === "contact" ? row.contactText : undefined,
+  };
+}
+
+function buildDirectionPricing(
+  direction: RouteDirectionKey,
+  enabled: boolean,
+  featuredPackage: string,
+  pricingRows: PricingPackageV2[],
+  vehicleTypeById: Map<string, string>,
+): RouteDirectionPricing {
+  const rows = pricingRows.filter((row) => row.direction === direction && row.mode !== "disabled");
+  const packages = rows
+    .map((row) => toPresentationPackage(row, vehicleTypeById))
+    .filter((row): row is RoutePricingPackage => Boolean(row));
+  const featuredRow = enabled ? getFeaturedPriceV2(rows, featuredPackage) : undefined;
+  const featured = featuredRow ? toPresentationPackage(featuredRow, vehicleTypeById) : undefined;
+
+  return {
+    key: direction,
+    enabled,
+    featuredPackage,
+    packages,
+    featured,
+  };
+}
+
+/**
+ * Adapter duy nhất từ Pricing Package V2 sang shape presentation của Route.
+ * Component không đọc raw meta và không parse `pricing_by_vehicle` lần nữa.
+ */
+function buildRoutePricingV2(wp: WPRoute, rawVehicles: WPVehicle[]): RoutePricingV2 {
+  const pair = mapWPRouteToRoutePairV2(wp);
+  const pricingRows = mapWPRouteToPricingPackagesV2(wp);
+  const vehicleTypeById = buildVehicleTypeById(rawVehicles);
+
+  return {
+    outbound: buildDirectionPricing(
+      "outbound",
+      pair.outbound.enabled,
+      pair.outbound.featuredPackage,
+      pricingRows,
+      vehicleTypeById,
+    ),
+    inbound: buildDirectionPricing(
+      "inbound",
+      pair.inbound.enabled,
+      pair.inbound.featuredPackage,
+      pricingRows,
+      vehicleTypeById,
+    ),
+  };
+}
+
+/**
+ * Compatibility adapter cho các consumer cũ (`route.pricingByVehicle`).
+ * Chỉ derive từ outbound Pricing V2; contact vẫn là một combination hợp lệ, disabled bị loại.
+ */
+function buildLegacyPricingByVehicle(pricingV2: RoutePricingV2): VehiclePrice[] {
+  if (!pricingV2.outbound.enabled) return [];
+
+  const byVehicle = new Map<string, RoutePricingPackage[]>();
+  for (const row of pricingV2.outbound.packages) {
+    const current = byVehicle.get(row.vehicleType) ?? [];
+    current.push(row);
+    byVehicle.set(row.vehicleType, current);
+  }
+
+  return Array.from(byVehicle.entries())
+    .sort(([a], [b]) => byVehicleTypeOrder(a, b))
+    .flatMap(([vehicleType, packages]) => {
+      const rawRows: PricingPackageV2[] = packages.map((row) => ({
+        routeId: "",
+        routeSlug: "",
+        direction: row.direction,
+        vehicleId: row.vehicleId,
+        packageKey: row.packageKey,
+        mode: row.mode,
+        price: row.price,
+        contactText: row.contactText,
+        source: "v2",
+      }));
+      const featured = getFeaturedPriceV2(rawRows, pricingV2.outbound.featuredPackage);
+      if (!featured) return [];
+      return [
+        {
+          vehicleType,
+          price: featured.mode === "fixed" && featured.price ? formatPriceShort(featured.price) : "Liên hệ",
+          priceType: legacyPriceTypeForPackage(featured.packageKey),
+        },
+      ];
+    });
+}
+
+function routeFeaturedPriceLabel(pricingV2: RoutePricingV2): string {
+  const featured = pricingV2.outbound.featured;
+  if (!pricingV2.outbound.enabled || !featured) return "—";
+  if (featured.mode === "fixed" && featured.price) return formatPriceShort(featured.price);
+  if (featured.mode === "contact") return featured.contactText || "Liên hệ báo giá";
+  return "—";
+}
+
+function mapWPRouteToRoute(wp: WPRoute, rawVehicles: WPVehicle[]): Route {
+  const pricingV2 = buildRoutePricingV2(wp, rawVehicles);
+  const pricingByVehicle = buildLegacyPricingByVehicle(pricingV2);
   const vehicleTypes = pricingByVehicle.map((p) => p.vehicleType);
   const seatCount = vehicleTypes.filter((t) => t !== "Limousine");
-  const cheapest = pricingRows.length
-    ? pricingRows.reduce((min, row) => (row.price < min.price ? row : min))
-    : null;
 
   const from = wp.meta.diem_di ?? "";
   const to = wp.meta.diem_den ?? "";
   const region = embeddedTermName(wp._embedded, "province") ?? to;
-  // Ngày 25: slug của term province đầu tiên — dùng dựng URL hub `/tuyen-duong/[regionSlug]/...`
-  // (xem routeHref() trong types/route.ts). Khác `region` (tên hiển thị) ở trên.
   const regionSlug = embeddedTerms(wp._embedded, "province")[0]?.slug ?? "";
   const featuredImage = embeddedFeaturedImage(
     wp._embedded as { "wp:featuredmedia"?: { source_url?: string; code?: string }[] } | undefined,
@@ -68,18 +200,16 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
     to,
     time: wp.meta.thoi_gian_di_chuyen ?? "",
     distance: wp.meta.khoang_cach_km ? `${wp.meta.khoang_cach_km} km` : "",
-    price: cheapest?.priceLabel ?? "",
+    price: routeFeaturedPriceLabel(pricingV2),
     vehicleTypes,
     region,
     regionSlug,
     seatCount,
     pricingByVehicle,
+    pricingV2,
     pickupPoints: splitCommaList(wp.meta.diem_don),
     dropoffPoints: splitCommaList(wp.meta.diem_tra),
-    // Chưa có google_maps_embed thật (chờ nhập ACF-tương-đương Ngày 24) → dựng embed chỉ đường
-    // tạm theo điểm đi/đến (Ngày 21, xem lib/maps.ts để biết vì sao không chỉ ghim 1 điểm).
     mapEmbedSrc: wp.meta.google_maps_embed || buildRouteMapEmbedSrc(from, to),
-    // 4 field bổ sung snippet Ngày 12 (ID 20) — rỗng cho tới khi snippet được kích hoạt + nhập liệu Ngày 24.
     summary: wp.meta.tom_tat_ngan ?? "",
     heroNote: wp.meta.diem_nhan_hero ?? "",
     featuredImage,
@@ -92,7 +222,7 @@ function mapWPRouteToRoute(wp: WPRoute, pricingRows: PricingRow[]): Route {
 }
 
 export async function fetchRoutes(): Promise<Route[]> {
-  const [rawRoutes, pricingTable] = await Promise.all([fetchRawRoutes(), getPricingTable()]);
+  const [rawRoutes, rawVehicles] = await Promise.all([fetchRawRoutes(), fetchRawVehicles()]);
   if (rawRoutes.length === 0) {
     if (useMockFallback) {
       console.warn("[fetchRoutes] WP chưa có route nào — dùng dữ liệu mock tạm (xem ghi chú trong routes.ts).");
@@ -100,19 +230,17 @@ export async function fetchRoutes(): Promise<Route[]> {
     }
     return [];
   }
-  return rawRoutes.map((wp) => mapWPRouteToRoute(wp, pricingForRoute(pricingTable, String(wp.id))));
+  return rawRoutes.map((wp) => mapWPRouteToRoute(wp, rawVehicles));
 }
 
 export async function fetchRouteBySlug(slug: string): Promise<Route | undefined> {
   const wp = await fetchRawRouteBySlug(slug);
   if (wp) {
-    const pricingTable = await getPricingTable();
-    return mapWPRouteToRoute(wp, pricingForRoute(pricingTable, String(wp.id)));
+    const rawVehicles = await fetchRawVehicles();
+    return mapWPRouteToRoute(wp, rawVehicles);
   }
   if (useMockFallback) {
-    // Bugfix: chỉ fallback về mock khi CẢ danh mục route trên WP đang rỗng (CMS chưa nhập gì).
-    // Trước đây fallback theo từng slug riêng lẻ, nên xoá 1 route thật trùng slug mock (vd.
-    // vung-tau, can-tho, da-lat) sẽ khiến trang "hồi sinh" bằng nội dung mock thay vì báo 404.
+    // Chỉ fallback về mock khi CẢ danh mục route trên WP đang rỗng.
     const rawRoutes = await fetchRawRoutes();
     if (rawRoutes.length === 0) {
       return mockRoutes.find((route) => route.slug === slug);
@@ -126,12 +254,7 @@ export async function fetchRelatedRoutes(currentSlug: string, count = 3): Promis
   return all.filter((route) => route.slug !== currentSlug).slice(0, count);
 }
 
-/**
- * Các tuyến thuộc đúng 1 hub tỉnh (Ngày 25) — dùng cho trang `/tuyen-duong/[tinh]`.
- * Không gọi fetchRawRoutes() lọc riêng vì sẽ tính lại pricing 2 lần; lọc trên kết quả
- * fetchRoutes() đã map sẵn (Next.js request memoization gộp các lần gọi fetch giống hệt
- * nhau trong cùng 1 lượt render, nên gọi lại fetchRoutes() ở đây không tốn thêm request thật).
- */
+/** Các tuyến thuộc đúng 1 hub tỉnh (Ngày 25). */
 export async function fetchRoutesByRegion(regionSlug: string): Promise<Route[]> {
   const all = await fetchRoutes();
   return all.filter((route) => route.regionSlug === regionSlug);
