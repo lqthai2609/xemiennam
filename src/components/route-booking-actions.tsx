@@ -41,7 +41,7 @@ type BookingPricingContext = {
   direction?: RoutePricingDirectionKey;
   packageKey?: string;
   packageLabel?: string;
-  pricingMode?: Exclude<RoutePricingMode, "disabled">;
+  pricingMode?: RoutePricingMode;
 };
 
 function QuickBookingDialog({
@@ -98,8 +98,6 @@ function QuickBookingDialog({
         body: JSON.stringify({
           fullName: data.fullName,
           phone: data.phone,
-          // Giữ route canonical outbound để resolveRouteId() hiện tại vẫn khớp ID route thật.
-          // Chiều thực tế của khách được lưu đầy đủ ở note bên dưới.
           route,
           vehicleType,
           departureDate,
@@ -203,11 +201,6 @@ function QuickBookingDialog({
   );
 }
 
-/**
- * CTA đặt xe dùng chung cho card giá legacy và Pricing V2.
- * `route` luôn là canonical outbound label để backend hiện tại resolve được route ID;
- * `displayRoute` là chiều thực tế khách đang xem (có thể inbound).
- */
 export function RouteBookingActions({
   route,
   displayRoute,
