@@ -2,33 +2,23 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
+import { fetchLocationsV2, locationById } from "@/lib/api/locations";
+import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
 
 /**
- * POST /api/booking (Ngày 20) — nhận dữ liệu từ ContactBookingForm (Ngày 19, hiện dùng ở
- * /lien-he), tạo 1 bài `booking_request` bên WordPress qua REST API có JWT
- * (wpAuthedFetch, lib/api/wp-auth.ts).
+ * POST /api/booking (Ngày 20, Route V2 compatibility Ngày 7).
  *
- * Field CPT `booking_request` khớp đúng snippet WPCode "Ngày 4 - Field cho 6 CPT" (ID 12):
- * post_title = họ tên khách; meta.so_dien_thoai/ngay_di/ghi_chu/trang_thai_booking là
- * text/date/textarea/select — ghi thẳng giá trị người dùng nhập. Riêng meta.tuyen_quan_tam
- * và meta.loai_xe_dat là QUAN HỆ THẬT (integer, ID bài `route`/`vehicle`) — nhưng form chỉ
- * có nhãn dạng chữ ("TP.HCM – Vũng Tàu", "16–29 chỗ"), nên phải dò khớp sang ID thật bằng
- * fetchRawRoutes()/fetchRawVehicles() (raw.ts). Cố tình KHÔNG dùng fetchRoutes()/fetchVehicles()
- * (lib/api/routes.ts, vehicles.ts) vì 2 hàm đó có fallback mock khi CMS chưa có dữ liệu thật
- * (useMockFallback) — id mock không phải ID bài thật bên WordPress, gán nhầm sẽ liên kết lead
- * vào sai bài khi Ngày 24 nhập liệu thật xong.
+ * Route relation phải luôn lưu ID bài `route` thật. Route legacy resolve bằng diem_di/diem_den;
+ * Route Pair V2 resolve tên điểm đi/đến qua origin_location_id/destination_location_id. Airport
+ * không có nhánh riêng — location_type=airport dùng cùng Location resolver như locality/city.
  *
- * Nếu chưa dò được ID thật (trước Ngày 24 CMS còn trống, hoặc khách chọn "Tuyến khác"),
- * KHÔNG bỏ lead — vẫn tạo bài với quan hệ để trống (0), và gộp tên tuyến/loại xe dạng chữ
- * khách đã chọn vào đầu ghi_chu, để không mất thông tin khi nhân viên gọi lại xác nhận.
+ * Nếu chưa dò được ID thật, không bỏ lead: quan hệ để 0 và giữ nhãn tuyến/xe trong ghi_chu.
  */
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
-// Mirror đúng bookingSchema ở contact-booking-form.tsx — validate lại phía server, không
-// tin tưởng dữ liệu client gửi lên dù đã qua Zod ở form.
 const bookingRequestSchema = z.object({
   fullName: z.string().trim().min(1, "Thiếu họ tên."),
   phone: z.string().trim().regex(phoneRegex, "Số điện thoại không đúng định dạng Việt Nam."),
@@ -42,8 +32,18 @@ const OTHER_ROUTE_LABEL = "Tuyến khác";
 
 async function resolveRouteId(routeLabel: string): Promise<number | null> {
   if (routeLabel === OTHER_ROUTE_LABEL) return null;
-  const routes = await fetchRawRoutes();
-  const match = routes.find((r) => `${r.meta.diem_di ?? ""} – ${r.meta.diem_den ?? ""}` === routeLabel);
+
+  const [routes, locations] = await Promise.all([fetchRawRoutes(), fetchLocationsV2()]);
+  const locationsById = locationById(locations);
+  const match = routes.find((route) => {
+    const pair = mapWPRouteToRoutePairV2(route);
+    const origin = pair.originLocationId > 0 ? locationsById.get(pair.originLocationId) : undefined;
+    const destination = pair.destinationLocationId > 0 ? locationsById.get(pair.destinationLocationId) : undefined;
+    const from = origin?.name || route.meta.diem_di || "";
+    const to = destination?.name || route.meta.diem_den || "";
+    return `${from} – ${to}` === routeLabel;
+  });
+
   return match?.id ?? null;
 }
 
@@ -75,8 +75,6 @@ export async function POST(request: Request) {
     resolveVehicleId(data.vehicleType),
   ]);
 
-  // Chưa dò được ID thật (CMS chưa có dữ liệu, hoặc khách chọn "Tuyến khác") — giữ lại
-  // thông tin dạng chữ trong ghi_chu thay vì làm mất, xem ghi chú đầu file.
   const noteParts: string[] = [];
   if (routeId === null) noteParts.push(`Tuyến quan tâm (chưa khớp CMS): ${data.route}`);
   if (vehicleId === null) noteParts.push(`Loại xe (chưa khớp CMS): ${data.vehicleType}`);
@@ -102,8 +100,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: result.message }, { status: result.status || 502 });
   }
 
-  // Chỉ gửi thông báo sau khi WordPress xác nhận đã lưu lead. Web3Forms lỗi/timeout không
-  // làm request thất bại và không ảnh hưởng lead đã có trong CMS.
   const notification = await sendBookingNotification({
     bookingId: result.data.id,
     fullName: data.fullName,
