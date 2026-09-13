@@ -14,7 +14,13 @@ type Props = { params: Promise<{ tinh: string; tuyen: string; "loai-xe": string 
 
 export async function generateStaticParams() {
   const routes = await fetchRoutes();
-  return routes.flatMap((route) => route.pricingByVehicle.map((vp) => ({ tinh: route.regionSlug || "khac", tuyen: route.slug, "loai-xe": vehicleTypeSlug(vp.vehicleType) })));
+  return routes.flatMap((route) =>
+    route.pricingByVehicle.map((vp) => ({
+      tinh: route.regionSlug || "khac",
+      tuyen: route.slug,
+      "loai-xe": vehicleTypeSlug(vp.vehicleType),
+    })),
+  );
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -22,7 +28,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const route = await fetchRouteBySlug(tuyen);
   const vp = route ? findComboVehiclePrice(route, loaiXe) : undefined;
   if (!route || !vp) return { title: "Không tìm thấy | Xe Miền Nam" };
-  return { title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, giá từ ${vp.price} | Xe Miền Nam`, description: comboDescriptionOrDefault(route, vp) };
+  const priceText = vp.pricingMode === "contact" ? "liên hệ báo giá" : `giá từ ${vp.price}`;
+  return {
+    title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, ${priceText} | Xe Miền Nam`,
+    description: comboDescriptionOrDefault(route, vp),
+  };
 }
 
 export default async function Page({ params }: Props) {
@@ -34,14 +44,61 @@ export default async function Page({ params }: Props) {
   if (!vp || !category) notFound();
 
   const [allRoutes, vehicles, posts] = await Promise.all([fetchRoutes(), fetchVehicles(), fetchPosts()]);
-  const similarRoutes = allRoutes.filter((item) => item.regionSlug === route.regionSlug && item.slug !== route.slug && item.pricingByVehicle.some((price) => price.vehicleType === vp.vehicleType)).slice(0, 3);
-  const vehicle = vehicles.find((item) => item.type === vp.vehicleType && item.images.length > 0) || vehicles.find((item) => item.type === vp.vehicleType);
-  const relatedPosts = posts.filter((post) => {
-    const text = `${post.title} ${post.excerpt}`.toLowerCase();
-    return text.includes(route.to.toLowerCase()) || text.includes(route.from.toLowerCase()) || text.includes(route.region.toLowerCase()) || text.includes(vp.vehicleType.toLowerCase());
-  }).slice(0, 3);
+  const similarRoutes = allRoutes
+    .filter(
+      (item) =>
+        item.regionSlug === route.regionSlug &&
+        item.slug !== route.slug &&
+        item.pricingByVehicle.some((price) => price.vehicleType === vp.vehicleType),
+    )
+    .slice(0, 3);
+  const vehicle =
+    vehicles.find((item) => item.type === vp.vehicleType && item.images.length > 0) ||
+    vehicles.find((item) => item.type === vp.vehicleType);
+  const relatedPosts = posts
+    .filter((post) => {
+      const text = `${post.title} ${post.excerpt}`.toLowerCase();
+      return (
+        text.includes(route.to.toLowerCase()) ||
+        text.includes(route.from.toLowerCase()) ||
+        text.includes(route.region.toLowerCase()) ||
+        text.includes(vp.vehicleType.toLowerCase())
+      );
+    })
+    .slice(0, 3);
   const description = comboDescriptionOrDefault(route, vp);
-  const serviceSchema = buildServiceSchema({ name: `Thuê xe ${vp.vehicleType.toLowerCase()} đi ${route.from} – ${route.to}`, description, url: routeComboHref(route, loaiXe), areaServed: [route.from, route.to] });
+  const fixedPrice = vp.pricingMode === "fixed" && vp.numericPrice && vp.numericPrice > 0 ? vp.numericPrice : undefined;
+  const serviceSchema = buildServiceSchema({
+    name: `Thuê xe ${vp.vehicleType.toLowerCase()} đi ${route.from} – ${route.to}`,
+    description,
+    url: routeComboHref(route, loaiXe),
+    areaServed: [route.from, route.to],
+    offers: fixedPrice
+      ? {
+          lowPrice: fixedPrice,
+          highPrice: fixedPrice,
+          priceCurrency: "VND",
+          offers: [
+            {
+              name: `${vp.vehicleType} · ${vp.packageLabel || "Gói hành trình"} · ${route.from} → ${route.to}`,
+              price: fixedPrice,
+            },
+          ],
+        }
+      : undefined,
+  });
 
-  return <><JsonLd data={serviceSchema} /><ComboLandingPage route={route} vehiclePrice={vp} category={category} similarRoutes={similarRoutes} relatedPosts={relatedPosts} vehicle={vehicle} /></>;
+  return (
+    <>
+      <JsonLd data={serviceSchema} />
+      <ComboLandingPage
+        route={route}
+        vehiclePrice={vp}
+        category={category}
+        similarRoutes={similarRoutes}
+        relatedPosts={relatedPosts}
+        vehicle={vehicle}
+      />
+    </>
+  );
 }
