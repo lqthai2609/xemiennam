@@ -6,23 +6,16 @@ import { promotions as mockPromotions } from "@/data/promotions";
 import { fetchRawPromotions, type WPPromotion } from "./raw";
 import { fetchRoutes } from "./routes";
 import { fetchVehicles } from "./vehicles";
+import { shouldUseMockFallback } from "./mock-fallback";
 import { stripHtml } from "@/lib/wp";
 
-/**
- * fetchPromotions() — Ngày 18.
- * Cùng chiến lược fallback mock như routes.ts/vehicles.ts/services.ts (Ngày 12/13): WP chưa
- * có bài `promotion` nào (nhập liệu thật dời tới Ngày 24/27), nên khi API trả về rỗng, dùng
- * lại data/promotions.ts. Đổi `useMockFallback` thành false để thấy đúng trạng thái CMS thật.
- */
-const useMockFallback = true;
+const useMockFallback = shouldUseMockFallback();
 
 function mapWPPromotionToPromotion(wp: WPPromotion, routes: Route[], vehicles: Vehicle[]): Promotion {
   const discountType = wp.meta.loai_giam_gia ?? "phan_tram";
   const discountValue = wp.meta.gia_tri_giam ?? 0;
   const endDate = wp.meta.ngay_ket_thuc ?? "";
 
-  // ap_dung_route/ap_dung_vehicle rỗng = áp dụng cho MỌI tuyến/loại xe (không phải lỗi thiếu dữ liệu) —
-  // PromotionCard hiển thị "Tất cả tuyến"/"Mọi loại xe" cho trường hợp này.
   const routeIds = (wp.meta.ap_dung_route ?? []).map(String);
   const routeLabels = routeIds.length
     ? routes.filter((r) => routeIds.includes(r.id)).map((r) => `${r.from} – ${r.to}`)
@@ -53,7 +46,7 @@ export async function fetchPromotions(): Promise<Promotion[]> {
   const raw = await fetchRawPromotions();
   if (raw.length === 0) {
     if (useMockFallback) {
-      console.warn("[fetchPromotions] WP chưa có khuyến mãi nào — dùng dữ liệu mock tạm (xem ghi chú trong promotions.ts).");
+      console.warn("[fetchPromotions] WP chưa có khuyến mãi nào — dùng dữ liệu mock theo policy môi trường.");
       return mockPromotions;
     }
     return [];
@@ -61,5 +54,5 @@ export async function fetchPromotions(): Promise<Promotion[]> {
   const [routes, vehicles] = await Promise.all([fetchRoutes(), fetchVehicles()]);
   return raw
     .map((wp) => mapWPPromotionToPromotion(wp, routes, vehicles))
-    .sort((a, b) => Number(a.isExpired) - Number(b.isExpired)); // Đang áp dụng lên trước, hết hạn xuống cuối.
+    .sort((a, b) => Number(a.isExpired) - Number(b.isExpired));
 }

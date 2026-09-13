@@ -7,33 +7,34 @@ import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
 
-/**
- * POST /api/booking (Ngày 20, Route V2 compatibility Ngày 7).
- *
- * Route relation phải luôn lưu ID bài `route` thật. Route legacy resolve bằng diem_di/diem_den;
- * Route Pair V2 resolve tên điểm đi/đến qua origin_location_id/destination_location_id. Airport
- * không có nhánh riêng — location_type=airport dùng cùng Location resolver như locality/city.
- *
- * Nếu chưa dò được ID thật, không bỏ lead: quan hệ để 0 và giữ nhãn tuyến/xe trong ghi_chu.
- */
-
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
 const bookingRequestSchema = z.object({
   fullName: z.string().trim().min(1, "Thiếu họ tên."),
   phone: z.string().trim().regex(phoneRegex, "Số điện thoại không đúng định dạng Việt Nam."),
   route: z.string().trim().min(1, "Thiếu tuyến quan tâm."),
+  routeId: z.string().trim().regex(/^\d+$/).optional(),
   vehicleType: z.string().trim().min(1, "Thiếu loại xe."),
   departureDate: z.string().trim().optional().default(""),
+  direction: z.enum(["outbound", "inbound"]).optional(),
+  packageKey: z.string().trim().max(80).optional(),
+  pricingMode: z.enum(["fixed", "contact"]).optional(),
   note: z.string().trim().max(500).optional().default(""),
 });
 
 const OTHER_ROUTE_LABEL = "Tuyến khác";
 
-async function resolveRouteId(routeLabel: string): Promise<number | null> {
+async function resolveRouteId(routeId: string | undefined, routeLabel: string): Promise<number | null> {
+  const routes = await fetchRawRoutes();
+
+  if (routeId) {
+    const stableId = Number(routeId);
+    if (routes.some((route) => route.id === stableId)) return stableId;
+  }
+
   if (routeLabel === OTHER_ROUTE_LABEL) return null;
 
-  const [routes, locations] = await Promise.all([fetchRawRoutes(), fetchLocationsV2()]);
+  const locations = await fetchLocationsV2();
   const locationsById = locationById(locations);
   const match = routes.find((route) => {
     const pair = mapWPRouteToRoutePairV2(route);
@@ -71,13 +72,20 @@ export async function POST(request: Request) {
   const data = parsed.data;
 
   const [routeId, vehicleId] = await Promise.all([
-    resolveRouteId(data.route),
+    resolveRouteId(data.routeId, data.route),
     resolveVehicleId(data.vehicleType),
   ]);
 
   const noteParts: string[] = [];
   if (routeId === null) noteParts.push(`Tuyến quan tâm (chưa khớp CMS): ${data.route}`);
   if (vehicleId === null) noteParts.push(`Loại xe (chưa khớp CMS): ${data.vehicleType}`);
+
+  const pricingContext = [
+    data.direction ? `direction=${data.direction}` : "",
+    data.packageKey ? `package=${data.packageKey}` : "",
+    data.pricingMode ? `mode=${data.pricingMode}` : "",
+  ].filter(Boolean);
+  if (pricingContext.length) noteParts.push(`Pricing context: ${pricingContext.join("; ")}.`);
   if (data.note) noteParts.push(data.note);
 
   const result = await wpAuthedFetch<{ id: number }>("/booking_request", {

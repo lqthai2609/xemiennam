@@ -1,20 +1,10 @@
 import type { BlogPost } from "@/types/blog";
 import { blogPosts as mockPosts } from "@/data/blog";
 import { fetchRawPosts, fetchRawPostBySlug, embeddedTermName, embeddedTerms, embeddedFeaturedImage, type WPPost } from "./raw";
+import { shouldUseMockFallback } from "./mock-fallback";
 import { stripHtml, parseFaqItems } from "@/lib/wp";
 
-/**
- * fetchPosts()/fetchPostBySlug() — Ngày 17.
- * Cùng chiến lược fallback mock như routes.ts/vehicles.ts/services.ts (Ngày 12–13): WP
- * hiện chỉ có bài "Hello world!" mặc định, chưa có bài blog thật nào (nhập liệu thật dời
- * tới Ngày 25–26), nên khi API không trả về bài nào ngoài bài mặc định, dùng lại
- * data/blog.ts. Đổi `useMockFallback` thành false để thấy đúng trạng thái CMS thật.
- *
- * Khác các CPT khác: `post` LUÔN có sẵn bài "Hello world!" do WordPress tự tạo lúc cài
- * đặt (Ngày 1) — nên điều kiện fallback không chỉ kiểm tra "rỗng" mà còn loại trừ đúng
- * slug mặc định đó, tránh set fallback không kích hoạt vì API trả về đúng 1 bài rác.
- */
-const useMockFallback = true;
+const useMockFallback = shouldUseMockFallback();
 const DEFAULT_WP_SLUG = "hello-world";
 
 function mapWPPostToBlogPost(wp: WPPost): BlogPost {
@@ -38,7 +28,7 @@ export async function fetchPosts(): Promise<BlogPost[]> {
   const raw = (await fetchRawPosts()).filter((wp) => wp.slug !== DEFAULT_WP_SLUG);
   if (raw.length === 0) {
     if (useMockFallback) {
-      console.warn("[fetchPosts] WP chưa có bài blog thật — dùng dữ liệu mock tạm (xem ghi chú trong blog.ts).");
+      console.warn("[fetchPosts] WP chưa có bài blog thật — dùng dữ liệu mock theo policy môi trường.");
       return mockPosts;
     }
     return [];
@@ -50,9 +40,6 @@ export async function fetchPostBySlug(slug: string): Promise<BlogPost | undefine
   const wp = await fetchRawPostBySlug(slug);
   if (wp && wp.slug !== DEFAULT_WP_SLUG) return mapWPPostToBlogPost(wp);
   if (useMockFallback) {
-    // Bugfix: chỉ fallback về mock khi CẢ blog trên WP đang rỗng (chỉ có bài "Hello world!"
-    // mặc định, chưa có bài thật nào). Trước đây fallback theo từng slug riêng lẻ, nên xoá 1
-    // bài blog thật trùng slug mock sẽ khiến trang "hồi sinh" bằng nội dung mock thay vì báo 404.
     const raw = (await fetchRawPosts()).filter((p) => p.slug !== DEFAULT_WP_SLUG);
     if (raw.length === 0) {
       return mockPosts.find((post) => post.slug === slug);
@@ -75,7 +62,6 @@ export async function fetchRelatedPosts(currentSlug: string, count = 3): Promise
   return all.filter((post) => post.slug !== currentSlug).slice(0, count);
 }
 
-/** Bài viết được biên tập cho các tuyến trong cùng tỉnh (taxonomy `province`). */
 export async function fetchPostsByRegion(regionSlug: string, count = 3): Promise<BlogPost[]> {
   const raw = (await fetchRawPosts()).filter((wp) => wp.slug !== DEFAULT_WP_SLUG);
   const matched = raw.filter((wp) => embeddedTerms(wp._embedded, "province").some((term) => term.slug === regionSlug));

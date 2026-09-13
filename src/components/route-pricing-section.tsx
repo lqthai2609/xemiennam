@@ -55,7 +55,7 @@ function LegacyPricingGrid({
               Thuê xe {vp.vehicleType} đi {route.to} <ArrowRight size={15} />
             </Link>
           </Button>
-          <RouteBookingActions route={routeLabel} vehicleType={vp.vehicleType} price={vp.price} />
+          <RouteBookingActions route={routeLabel} routeId={route.id} vehicleType={vp.vehicleType} price={vp.price} />
         </article>
       ))}
     </div>
@@ -153,6 +153,7 @@ export function RoutePricingSection({
                       <small>{fixed ? "Giá tham khảo" : "Xác nhận giá theo lịch thực tế"}</small>
                       <RouteBookingActions
                         route={canonicalRoute}
+                        routeId={route.id}
                         displayRoute={displayRoute}
                         vehicleType={vehicleType}
                         price={fixed ? pkg.priceLabel : undefined}

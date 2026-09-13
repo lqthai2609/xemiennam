@@ -25,16 +25,11 @@ import {
 } from "./pricing-v2";
 import { mapWPRouteToRoutePairV2, type RouteDirectionKey } from "./route-directions";
 import { fetchLocationsV2, locationById, type LocationV2 } from "./locations";
+import { shouldUseMockFallback } from "./mock-fallback";
 import { formatPriceShort, splitCommaList } from "@/lib/wp";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
-/**
- * fetchRoutes()/fetchRouteBySlug() — Ngày 12, chuyển Route/Location/Pricing consumer sang V2 ở Ngày 7.
- *
- * Route V2 resolve origin/destination từ Location ID. Route legacy tiếp tục dùng diem_di/diem_den.
- * Airport không có nhánh riêng: location_type=airport đi qua cùng resolver như mọi Location khác.
- */
-const useMockFallback = true;
+const useMockFallback = shouldUseMockFallback();
 
 export const VEHICLE_TYPE_ORDER = ["4 chỗ", "4–7 chỗ", "7 chỗ", "16 chỗ", "16–29 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
 function byVehicleTypeOrder(a: string, b: string) {
@@ -125,10 +120,6 @@ function buildRoutePricingV2(wp: WPRoute, rawVehicles: WPVehicle[]): RoutePricin
   };
 }
 
-/**
- * Compatibility adapter cho consumer cũ (`route.pricingByVehicle`).
- * Chỉ derive từ outbound Pricing V2; contact là combination hợp lệ, disabled bị loại.
- */
 function buildLegacyPricingByVehicle(pricingV2: RoutePricingV2): VehiclePrice[] {
   if (!pricingV2.outbound.enabled) return [];
 
@@ -181,9 +172,6 @@ function resolveRouteEndpoints(wp: WPRoute, locations: Map<number, LocationV2>) 
   const pair = mapWPRouteToRoutePairV2(wp);
   const origin = pair.originLocationId > 0 ? locations.get(pair.originLocationId) : undefined;
   const destination = pair.destinationLocationId > 0 ? locations.get(pair.destinationLocationId) : undefined;
-
-  // Không suy đoán Location khi ID không resolve được. Legacy label chỉ là backward compatibility
-  // cho route chưa migrate; route V2 có Location thật sẽ ưu tiên title của Location entity.
   const from = origin?.name || wp.meta.diem_di || "";
   const to = destination?.name || wp.meta.diem_den || "";
 
@@ -244,7 +232,7 @@ export async function fetchRoutes(): Promise<Route[]> {
   ]);
   if (rawRoutes.length === 0) {
     if (useMockFallback) {
-      console.warn("[fetchRoutes] WP chưa có route nào — dùng dữ liệu mock tạm (xem ghi chú trong routes.ts).");
+      console.warn("[fetchRoutes] WP chưa có route nào — dùng dữ liệu mock theo policy môi trường.");
       return mockRoutes;
     }
     return [];
