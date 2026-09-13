@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { fetchLocationsV2 } from "@/lib/api/locations";
 import { embeddedTerms, fetchRawRoutes, fetchRawVehicles, type WPRoute } from "@/lib/api/raw";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
+import { WP_API_BASE } from "@/lib/wp";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +36,43 @@ type LocationPlan = {
   provinceSlug: string;
   review: boolean;
 };
+
+type MigrationLocation = {
+  id: number;
+  slug: string;
+  type: string;
+  provinceSlug: string;
+};
+
+type WPMigrationLocation = {
+  id: number;
+  slug: string;
+  meta?: {
+    location_type?: string;
+    province_slug?: string;
+  };
+};
+
+async function fetchMigrationLocations(): Promise<MigrationLocation[]> {
+  const output: MigrationLocation[] = [];
+  const perPage = 100;
+  for (let page = 1; page <= 20; page += 1) {
+    const response = await fetch(`${WP_API_BASE}/location?per_page=${perPage}&page=${page}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`[day8-migrate] location inventory failed: HTTP ${response.status}`);
+    const batch = (await response.json()) as WPMigrationLocation[];
+    output.push(...batch.map((item) => ({
+      id: item.id,
+      slug: item.slug,
+      type: item.meta?.location_type?.trim() || "custom",
+      provinceSlug: item.meta?.province_slug?.trim() || "",
+    })));
+    if (batch.length < perPage) break;
+  }
+  return output;
+}
 
 function stripVietnamese(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d");
@@ -160,7 +197,7 @@ export async function GET(request: NextRequest) {
   if (environment !== "preview" && !productionAuthorized) return NextResponse.json({ ok: false }, { status: 404 });
 
   const apply = request.nextUrl.searchParams.get("apply") === APPLY_TOKEN;
-  const [routes, locations, vehicles] = await Promise.all([fetchRawRoutes(), fetchLocationsV2(), fetchRawVehicles()]);
+  const [routes, locations, vehicles] = await Promise.all([fetchRawRoutes(), fetchMigrationLocations(), fetchRawVehicles()]);
   const plans = new Map<string, LocationPlan>();
   const excludedRoutes: Array<{ id: number; slug: string; endpoint: string }> = [];
 
