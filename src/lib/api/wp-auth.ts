@@ -1,8 +1,8 @@
 import { WP_API_BASE } from "@/lib/wp";
 
 /**
- * JWT Authentication for WP REST API (Ngày 20) — dùng khi Route Handler cần TẠO/SỬA dữ liệu
- * (hiện tại: booking_request), khác wpFetch() ở lib/wp.ts vốn chỉ đọc (GET) và không cần auth.
+ * JWT Authentication for WP REST API (Ngày 20) — dùng khi Route Handler cần đọc/ghi
+ * dữ liệu có xác thực. wpFetch() ở lib/wp.ts vẫn là đường đọc công khai không cần auth.
  *
  * Plugin "JWT Authentication for WP-API" (đã cài Ngày 2) cấp token qua
  * POST {WP_ORIGIN}/wp-json/jwt-auth/v1/token với { username, password }.
@@ -19,11 +19,6 @@ const TOKEN_URL = `${WP_ORIGIN}/wp-json/jwt-auth/v1/token`;
 type CachedToken = { value: string; expiresAt: number };
 let cachedToken: CachedToken | null = null;
 
-// JWT plugin không trả hạn token trong response (token JWT thật có "exp" riêng trong payload,
-// mặc định plugin ~7 ngày) — để đơn giản, không tự giải mã JWT, chủ động coi cache hết hạn sau
-// 6 giờ rồi xin token mới, an toàn hơn nhiều so với đợi tới khi WordPress từ chối token cũ.
-// Lưu ý: cache chỉ tồn tại trong bộ nhớ 1 tiến trình (module-level) — trên Vercel serverless,
-// mỗi lần "cold start" sẽ mất cache và xin token mới, đó là hành vi bình thường, không phải lỗi.
 const TOKEN_CACHE_MS = 6 * 60 * 60 * 1000;
 
 async function requestNewToken(): Promise<string> {
@@ -49,7 +44,6 @@ async function requestNewToken(): Promise<string> {
   return data.token;
 }
 
-/** Lấy JWT token còn hiệu lực — tái dùng token trong bộ nhớ nếu chưa hết hạn cache. */
 async function getWpAuthToken(forceRefresh = false): Promise<string> {
   if (!forceRefresh && cachedToken && cachedToken.expiresAt > Date.now()) {
     return cachedToken.value;
@@ -64,15 +58,13 @@ export type WpAuthedResult<T> =
   | { ok: false; status: number; message: string };
 
 /**
- * Gọi WP REST API có xác thực JWT (POST/PUT/DELETE — tạo/sửa dữ liệu). Khác wpFetch()
- * (lib/wp.ts, chỉ GET công khai, không throw). Tự thử lại 1 lần với token mới nếu gặp
- * 401/403 (token cũ hết hạn/bị thu hồi phía WordPress, không đồng bộ với cache phía Next.js).
- * Không throw ra ngoài — trả về discriminated union để nơi gọi (Route Handler) tự quyết định
- * mã lỗi HTTP trả về cho client.
+ * Gọi WP REST API có xác thực JWT. GET được hỗ trợ cho các auth/read probe cần quyền;
+ * POST/PUT/DELETE tiếp tục phục vụ tạo/sửa dữ liệu. Tự thử lại 1 lần với token mới nếu gặp
+ * 401/403. Không throw ra ngoài — trả discriminated union để nơi gọi tự xử lý.
  */
 export async function wpAuthedFetch<T>(
   path: string,
-  init: { method: "POST" | "PUT" | "DELETE"; body?: unknown },
+  init: { method: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown },
 ): Promise<WpAuthedResult<T>> {
   const doRequest = (token: string) =>
     fetch(`${WP_API_BASE}${path}`, {
@@ -81,7 +73,7 @@ export async function wpAuthedFetch<T>(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+      body: init.method !== "GET" && init.body !== undefined ? JSON.stringify(init.body) : undefined,
       cache: "no-store",
     });
 
