@@ -32,24 +32,62 @@ export function slugifyLocation(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+const CANONICAL_ALIASES = new Map([
+  ["tphcm", "TP. Hồ Chí Minh"],
+  ["tp hcm", "TP. Hồ Chí Minh"],
+  ["tp ho chi minh", "TP. Hồ Chí Minh"],
+  ["thanh pho ho chi minh", "TP. Hồ Chí Minh"],
+  ["ho chi minh", "TP. Hồ Chí Minh"],
+  ["sai gon", "TP. Hồ Chí Minh"],
+  ["tp vung tau", "Vũng Tàu"],
+  ["thanh pho vung tau", "Vũng Tàu"],
+  ["vung tau", "Vũng Tàu"],
+  ["da lat lam dong", "Đà Lạt"],
+  ["chau doc an giang", "Châu Đốc"],
+  ["cai be tien giang", "Cái Bè"],
+  ["tien giang my tho", "Mỹ Tho"],
+  ["moc bai", "Cửa khẩu Mộc Bài"],
+  ["cua khau moc bai", "Cửa khẩu Mộc Bài"],
+]);
+
+const REVIEW_KEYS = new Set([
+  "tay ninh",
+  "thanh pho tay ninh",
+  "tp moi binh duong",
+  "kcn vsip 1 2",
+  "ben tre tp ben tre",
+]);
+
 export function normalizeLegacyLocation(raw) {
   let label = decodeHtml(raw);
 
+  // Package/thời lượng thuộc Pricing, không phải Location.
   label = label.replace(/\s+\d+\s*(?:ngày|ngay)(?:\s+\d+\s*(?:đêm|dem))?\s*$/iu, "");
   label = label.replace(/\s+\d+\s*n\s*\d+\s*[đd]\s*$/iu, "");
   label = label.replace(/\s+/g, " ").trim();
 
   const key = comparisonKey(label);
-  if (["tphcm", "tp hcm", "tp ho chi minh", "thanh pho ho chi minh", "ho chi minh", "sai gon"].includes(key)) {
-    return "TP. Hồ Chí Minh";
-  }
+  const canonical = CANONICAL_ALIASES.get(key);
+  if (canonical) return canonical;
 
   const cityMatch = label.match(/^TP\s+(.+)$/iu);
-  if (cityMatch) return `TP. ${cityMatch[1].trim()}`;
+  if (cityMatch) label = `TP. ${cityMatch[1].trim()}`;
 
   return label;
 }
 
+export function locationDisposition(label) {
+  const text = String(label ?? "").trim();
+  const key = comparisonKey(text);
+
+  if (!text) return "exclude";
+  if (/^city\s*tour\b/i.test(stripVietnamese(text))) return "exclude";
+  if (REVIEW_KEYS.has(key)) return "review";
+  if (/[\/()&]/u.test(text)) return "review";
+
+  return "apply";
+}
+
 export function locationNeedsReview(label) {
-  return /[\/()]/u.test(String(label ?? ""));
+  return locationDisposition(label) === "review";
 }
