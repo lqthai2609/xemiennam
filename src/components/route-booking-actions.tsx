@@ -10,6 +10,8 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { getZaloChatLink } from "@/lib/zalo";
 import { trackBookingLead } from "@/lib/analytics";
+import { SITE_HOTLINE_TEL } from "@/lib/site-config";
+import type { RoutePricingDirectionKey, RoutePricingMode } from "@/types/route";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
@@ -24,7 +26,6 @@ function FieldError({ message }: { message?: string }) {
   return message ? <p className="text-sm text-destructive">{message}</p> : null;
 }
 
-/** "2026-09-10T14:30" (giá trị thô input datetime-local) → "10/09/2026 14:30" cho dễ đọc trong ghi_chu. */
 function formatDepartureLabel(value: string): string {
   const [datePart, timePart] = value.split("T");
   const d = new Date(`${datePart}T00:00:00`);
@@ -35,22 +36,33 @@ function formatDepartureLabel(value: string): string {
   return timePart ? `${dateLabel} ${timePart}` : dateLabel;
 }
 
-/**
- * Modal "Đặt xe online" (mở từ mỗi card giá trong route-detail.tsx) — tuyến/loại xe/giá LUÔN
- * cố định theo card đã bấm (không cho sửa), khách chỉ cần điền họ tên + SĐT (+ ngày giờ đi,
- * không bắt buộc). Gửi tới cùng /api/booking mà ContactBookingForm (trang /lien-he) đang dùng —
- * ghép route/vehicleType đúng định dạng "from – to" mà resolveRouteId() ở đó kỳ vọng để khớp
- * được ID route thật bên WP.
- */
+type BookingPricingContext = {
+  displayRoute?: string;
+  direction?: RoutePricingDirectionKey;
+  packageKey?: string;
+  packageLabel?: string;
+  pricingMode?: Exclude<RoutePricingMode, "disabled">;
+};
+
 function QuickBookingDialog({
   route,
+  displayRoute,
   vehicleType,
   price,
+  direction = "outbound",
+  packageKey,
+  packageLabel,
+  pricingMode = "fixed",
   onClose,
 }: {
   route: string;
+  displayRoute?: string;
   vehicleType: string;
-  price: string;
+  price?: string;
+  direction?: RoutePricingDirectionKey;
+  packageKey?: string;
+  packageLabel?: string;
+  pricingMode?: Exclude<RoutePricingMode, "disabled">;
   onClose: () => void;
 }) {
   const {
@@ -58,6 +70,9 @@ function QuickBookingDialog({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<QuickBookingData>({ resolver: zodResolver(quickBookingSchema) });
+
+  const visibleRoute = displayRoute || route;
+  const visiblePrice = pricingMode === "contact" ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -69,23 +84,30 @@ function QuickBookingDialog({
 
   async function submitForm(data: QuickBookingData) {
     try {
-      // Chỉ gửi phần NGÀY (yyyy-mm-dd) vào field có cấu trúc departureDate (khớp meta ngay_di
-      // bên WP — vốn là date picker, không có giờ) — phần GIỜ ghép riêng vào ghi_chu để không
-      // làm hỏng định dạng ngày khi lưu, nhưng vẫn giữ lại thông tin giờ khách chọn cho nhân
-      // viên gọi xác nhận.
       const departureDate = data.departureAt ? data.departureAt.split("T")[0] : "";
       const departureLabel = data.departureAt ? formatDepartureLabel(data.departureAt) : "";
+      const pricingNote =
+        pricingMode === "contact"
+          ? "Trạng thái giá: liên hệ báo giá."
+          : price
+            ? `Giá tham khảo: ${price}.`
+            : "Trạng thái giá: liên hệ báo giá.";
       const res = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: data.fullName,
           phone: data.phone,
+          // Giữ route canonical outbound để resolveRouteId() hiện tại vẫn khớp ID route thật.
+          // Chiều thực tế của khách được lưu đầy đủ ở note bên dưới.
           route,
           vehicleType,
           departureDate,
           note: [
-            `Đặt xe online từ trang chi tiết tuyến — giá tham khảo ${price}.`,
+            `Đặt xe online từ trang chi tiết tuyến.`,
+            `Chiều: ${visibleRoute} (${direction}).`,
+            packageLabel && `Gói: ${packageLabel}${packageKey ? ` (${packageKey})` : ""}.`,
+            pricingNote,
             departureLabel && `Ngày giờ đi mong muốn: ${departureLabel}.`,
           ]
             .filter(Boolean)
@@ -96,14 +118,14 @@ function QuickBookingDialog({
         const body = await res.json().catch(() => null);
         throw new Error(body?.error ?? `Gửi yêu cầu đặt xe thất bại (HTTP ${res.status}).`);
       }
-      trackBookingLead({ route, vehicleType });
+      trackBookingLead({ route: visibleRoute, vehicleType });
       toast.success("Đã nhận thông tin đặt xe", {
-        description: "Xe Miền Nam sẽ liên hệ với bạn trong thời gian sớm nhất.",
+        description: "Đội ngũ sẽ liên hệ với bạn trong thời gian sớm nhất.",
       });
       onClose();
     } catch {
       toast.error("Gửi thông tin chưa thành công", {
-        description: "Vui lòng thử lại hoặc gọi trực tiếp cho Xe Miền Nam.",
+        description: "Vui lòng thử lại hoặc gọi trực tiếp cho chúng tôi.",
       });
     }
   }
@@ -124,13 +146,18 @@ function QuickBookingDialog({
         <h3>Xác nhận thông tin.</h3>
         <div className="quick-booking-summary">
           <div>
-            Tuyến: <strong>{route}</strong>
+            Tuyến: <strong>{visibleRoute}</strong>
           </div>
           <div>
             Loại xe: <strong>{vehicleType}</strong>
           </div>
+          {packageLabel && (
+            <div>
+              Gói: <strong>{packageLabel}</strong>
+            </div>
+          )}
           <div>
-            Giá: <strong>{price}</strong>
+            Giá: <strong>{visiblePrice}</strong>
           </div>
         </div>
         <form onSubmit={handleSubmit(submitForm)} className="quick-booking-form" noValidate>
@@ -176,20 +203,29 @@ function QuickBookingDialog({
   );
 }
 
-/** 3 CTA của mỗi card giá ở route-detail.tsx: đặt online (modal), Zalo, gọi điện trực tiếp. */
+/**
+ * CTA đặt xe dùng chung cho card giá legacy và Pricing V2.
+ * `route` luôn là canonical outbound label để backend hiện tại resolve được route ID;
+ * `displayRoute` là chiều thực tế khách đang xem (có thể inbound).
+ */
 export function RouteBookingActions({
   route,
+  displayRoute,
   vehicleType,
   price,
+  direction = "outbound",
+  packageKey,
+  packageLabel,
+  pricingMode = "fixed",
 }: {
   route: string;
   vehicleType: string;
-  price: string;
-}) {
+  price?: string;
+} & BookingPricingContext) {
   const [open, setOpen] = useState(false);
-  // null khi chưa cấu hình NEXT_PUBLIC_ZALO_OA_ID (xem lib/zalo.ts) — ẩn hẳn nút Zalo thay vì
-  // hiển thị link chết.
   const zaloLink = getZaloChatLink();
+
+  if (pricingMode === "disabled") return null;
 
   return (
     <>
@@ -208,11 +244,27 @@ export function RouteBookingActions({
             <MessageCircle size={16} />
           </a>
         )}
-        <a href="tel:19006789" className="detail-price-icon-cta" aria-label={`Gọi điện đặt xe ${vehicleType}`}>
+        <a
+          href={`tel:${SITE_HOTLINE_TEL}`}
+          className="detail-price-icon-cta"
+          aria-label={`Gọi điện đặt xe ${vehicleType}`}
+        >
           <Phone size={16} />
         </a>
       </div>
-      {open && <QuickBookingDialog route={route} vehicleType={vehicleType} price={price} onClose={() => setOpen(false)} />}
+      {open && (
+        <QuickBookingDialog
+          route={route}
+          displayRoute={displayRoute}
+          vehicleType={vehicleType}
+          price={price}
+          direction={direction}
+          packageKey={packageKey}
+          packageLabel={packageLabel}
+          pricingMode={pricingMode === "contact" ? "contact" : "fixed"}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </>
   );
 }
