@@ -30,6 +30,7 @@
 - Inbound starts as `contact` for the same vehicle combinations when no inbound price exists.
 - Legacy `pricing_by_vehicle` is preserved as compatibility data.
 - The one-time migration runner probes authenticated WordPress access before any write and is removed after execution.
+- Production apply completed successfully on 2026-09-13 after one idempotent retry for a transient fetch failure; a fresh Preview deployment is used for uncached post-migration audit before cleanup.
 
 ## Exit gate
 
