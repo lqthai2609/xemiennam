@@ -6,6 +6,7 @@ import { navItems } from "@/data/nav";
 import { routeHref, routePriceKicker, type Route } from "@/types/route";
 import type { DiemDen } from "@/types/diem-den";
 import { UnifiedHero } from "@/components/unified-hero";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
   {
@@ -94,7 +95,13 @@ export function DiemDenDetailPage({
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
 
       <UnifiedHero
         eyebrow="THUÊ XE LIÊN TỈNH"
@@ -117,12 +124,12 @@ export function DiemDenDetailPage({
         ) : (
           <article className="blog-detail-body">
             <p>
-              Gocar VN nhận thuê xe nguyên chuyến đi {regionName} cho gia đình, nhóm khách và doanh nghiệp.
+              {SITE_NAME} nhận thuê xe nguyên chuyến đi {regionName} cho gia đình, nhóm khách và doanh nghiệp.
               Khách chủ động chọn giờ khởi hành, điểm đón trả và loại xe phù hợp, không phụ thuộc lịch trình cố định.
             </p>
             <p>
               Chọn một tuyến bên dưới để xem thông tin hành trình và mức giá hiện có. Với nhu cầu riêng hoặc tuyến
-              chưa niêm yết, Gocar VN sẽ tư vấn phương án phù hợp trước khi xác nhận chuyến.
+              chưa niêm yết, {SITE_NAME} sẽ tư vấn phương án phù hợp trước khi xác nhận chuyến.
             </p>
           </article>
         )}
@@ -143,7 +150,7 @@ export function DiemDenDetailPage({
             {routes.map((route) => <RegionRouteCard route={route} key={route.id} />)}
           </div>
         ) : (
-          <p>Chưa có tuyến niêm yết cho khu vực này. Liên hệ Gocar VN để được tư vấn hành trình phù hợp.</p>
+          <p>Chưa có tuyến niêm yết cho khu vực này. Liên hệ {SITE_NAME} để được tư vấn hành trình phù hợp.</p>
         )}
       </section>
 
@@ -182,22 +189,23 @@ export function DiemDenDetailPage({
         <div>
           <p className="section-label">CẦN TƯ VẤN HÀNH TRÌNH?</p>
           <h2>Đặt xe đi {regionName}.</h2>
-          <p>Gọi Gocar VN để được tư vấn tuyến, loại xe và phương án phù hợp trước khi xác nhận chuyến.</p>
+          <p>Gọi {SITE_NAME} để được tư vấn tuyến, loại xe và phương án phù hợp trước khi xác nhận chuyến.</p>
         </div>
-        <a className="button button-primary" href="tel:0898400800">
-          Gọi 0898 400 800 <Phone size={16} />
+        <a className="button button-primary" href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi ${SITE_HOTLINE}`}>
+          Gọi {SITE_HOTLINE} <Phone size={16} />
         </a>
       </section>
 
       <SiteFooter
-        tagline={<>Đi đâu cũng có Gocar VN.<br />Kết nối những hành trình tử tế.</>}
-        phone="1900 6789"
+        tagline={<>Đi đâu cũng có {SITE_NAME}.<br />Kết nối những hành trình tử tế.</>}
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Gocar VN"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
         brandMark="GC"
-        brandName="GOCAR VN"
+        brandName={SITE_NAME}
       />
     </main>
   );
