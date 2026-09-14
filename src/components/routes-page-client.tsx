@@ -9,6 +9,7 @@ import { RouteResults } from "@/components/route-results";
 import { SubpageHero, defaultSubpageHeroImage } from "@/components/subpage-hero";
 import { emptyFilters, type FilterState, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
   {
@@ -81,7 +82,13 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
 
   return (
     <main className={`site-shell routes-variant-${layout}`}>
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
       <SubpageHero
         title="Tuyến đường đáng để đi."
         description="Chọn điểm đến, loại xe và số chỗ phù hợp. Chúng tôi lo phần còn lại của hành trình."
@@ -116,16 +123,18 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có {SITE_NAME}.
             <br />
             Kết nối những hành trình tử tế.
           </>
         }
-        phone="1900 6789"
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
+        brandName={SITE_NAME}
       />
     </main>
   );
