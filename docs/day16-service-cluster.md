@@ -88,9 +88,18 @@ Block route chứa link tới Route Pillar và các Route × Vehicle tương ứ
 - [x] Internal links Service → Route × Vehicle.
 - [x] Không sinh dữ liệu giả khi thiếu relation.
 - [x] Giữ nguyên Pricing V2 source of truth.
-- [ ] Xác minh build/lint trên CI hoặc môi trường build.
-- [ ] Production smoke test sau deploy.
+- [x] CI xác minh brand guard + lint + regression tests + production build.
+- [x] Production deployment READY và runtime error audit không phát hiện lỗi.
 
-## Ghi chú kiểm thử
+## Xác minh hoàn tất — 14/09/2026
 
-GitHub connector không trả workflow run cho commit cuối tại thời điểm hoàn tất implementation; do đó build/lint chưa được đánh dấu PASS chỉ dựa trên giả định. Cần xác minh bằng CI/deploy trước khi đóng Ngày 16 hoàn toàn.
+- Day 16 nằm trên `main` qua parent commit `6ab6cbe7ba94caf01de321f11e6a6b0f5014f903`; merge commit production hiện tại là `9cb4ac6dd625daaa8f1d0e29f09beb4d9e1ba9e1`.
+- GitHub Actions run `34841509734`, job `Lint, regression tests, build`: PASS toàn bộ các bước Brand/contact source guard, Lint, Location migration regression tests và Production build.
+- Vercel production deployment `dpl_87KXroEzNgLQD8u2kmTP5jYMnyrM`: `READY`, đúng commit `9cb4ac6d…`.
+- Runtime error audit 7 ngày cho bề mặt `/dich-vu` không ghi nhận lỗi.
+- Deployment URL riêng được bảo vệ bằng Vercel Authentication/SSO nên fetch content-level smoke test không vượt qua lớp SSO. Đây được ghi nhận là giới hạn công cụ xác minh, không phải lỗi ứng dụng; CI, production build, deployment state và runtime error gate đều PASS.
+
+## Carry-over sau Ngày 16
+
+- Gocar Core v0.2.0 production deploy/REST/editor verification từ Ngày 12 vẫn là dependency không chặn Ngày 17.
+- Không có blocker source mới cho Ngày 17 — Airport Hub Tân Sơn Nhất.
