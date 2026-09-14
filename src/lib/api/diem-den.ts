@@ -26,6 +26,17 @@ export function getDestinationImageUrl(slug: string, featuredImageUrl?: string):
 }
 
 /**
+ * Day 10 carry-over: production hiện expose FAQ của CPT `diem_den` tại `meta.faq_items`,
+ * trong khi contract cũ từng đọc top-level `faq_items`. Chuẩn hoá tại adapter để UI + FAQPage
+ * schema dùng cùng một nguồn dữ liệu và vẫn tương thích ngược nếu snippet WP sau này/ở môi
+ * trường khác tiếp tục expose top-level field.
+ */
+function getRawDiemDenFaqItems(wp: WPDiemDen): string | undefined {
+  const metaFaq = (wp as WPDiemDen & { meta?: { faq_items?: string } }).meta?.faq_items;
+  return metaFaq || wp.faq_items;
+}
+
+/**
  * fetchDiemDenBySlug() — Ngày 25.
  *
  * KHÔNG có fallback mock (khác routes.ts/blog.ts/vehicles.ts): hub tỉnh là nội dung biên tập
@@ -41,7 +52,7 @@ function mapWPDiemDenToDiemDen(wp: WPDiemDen): DiemDen {
     title: stripHtml(wp.title.rendered),
     contentHtml: wp.content.rendered,
     featuredImageUrl: embeddedFeaturedImage(wp._embedded),
-    faqItems: parseFaqItems(wp.faq_items),
+    faqItems: parseFaqItems(getRawDiemDenFaqItems(wp)),
     modifiedDate: wp.modified,
     rankMathTitle: wp.rank_math_title || undefined,
     rankMathDescription: wp.rank_math_description || undefined,
