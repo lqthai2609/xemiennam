@@ -88,6 +88,13 @@ export interface ComboDescription {
   description: string;
 }
 
+export interface RouteLocationRef {
+  id: number;
+  name: string;
+  slug: string;
+  type: string;
+}
+
 export interface Route {
   id: string;
   /** URL slug — chữ thường, không dấu, nối gạch ngang. Khớp với slug field của WordPress khi nối API thật (Ngày 12). */
@@ -109,6 +116,9 @@ export interface Route {
   pricingV2?: RoutePricingV2;
   /** Day 12: content CMS riêng cho route × vehicle, độc lập với Pricing V2. */
   comboDescriptions?: ComboDescription[];
+  /** Location Model V2 endpoints, when the route is backed by Location IDs. */
+  originLocation?: RouteLocationRef;
+  destinationLocation?: RouteLocationRef;
   /** Điểm đón — mô tả ngắn, có thể nhiều điểm. */
   pickupPoints: string[];
   /** Điểm trả — mô tả ngắn, có thể nhiều điểm. */
