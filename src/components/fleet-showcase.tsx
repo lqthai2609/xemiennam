@@ -6,6 +6,7 @@ import Link from "next/link";
 import { vehicleTypeSlug } from "@/types/route";
 import { MediaPhoto } from "@/components/media-photo";
 import { buildPlaceholderImage } from "@/lib/placeholder-image";
+import { SITE_NAME } from "@/lib/site-config";
 
 const fleetTabs = ["Tất cả", "Đi một mình", "Đi cùng nhóm", "Thuê riêng"] as const;
 
@@ -72,7 +73,7 @@ export function FleetShowcase() {
                 <span className="fleet-sticker">{item.tag}</span>
               </div>
               <div className="fleet-info">
-                <span className="fleet-kicker">XE MIỀN NAM</span>
+                <span className="fleet-kicker">{SITE_NAME.toUpperCase()}</span>
                 <h3>{item.type}</h3>
                 <p>{item.detail}</p>
                 {/* Trỏ sang trang riêng của loại xe (Ngày 13), dùng đúng vehicleTypeSlug() —
