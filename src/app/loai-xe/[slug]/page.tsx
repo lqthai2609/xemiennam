@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { VehicleTypeLanding } from "@/components/vehicle-type-landing";
+import { VehicleTypeLanding } from "@/components/vehicle-type-landing-day13";
 import { getVehicleCategory, vehicleCategories, withRealCategoryImage, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchRoutes } from "@/lib/api/routes";
