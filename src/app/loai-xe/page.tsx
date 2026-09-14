@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { VehicleCategoryIndex } from "@/components/vehicle-type-landing";
+import { VehicleCategoryIndex } from "@/components/vehicle-type-landing-day13";
 import { vehicleCategories, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchRoutes } from "@/lib/api/routes";
