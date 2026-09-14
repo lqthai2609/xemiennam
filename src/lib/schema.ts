@@ -1,11 +1,5 @@
 import { SITE_AREA_SERVED, SITE_DESCRIPTION, SITE_HOTLINE_TEL, SITE_NAME, SITE_URL } from "@/lib/site-config";
 
-/**
- * Dựng object JSON-LD (mục 5, kiến trúc kỹ thuật) — component <JsonLd /> (json-ld.tsx)
- * chỉ lo phần render <script>, còn shape dữ liệu từng loại schema nằm hết ở đây để tái
- * dùng được giữa nhiều trang mà không lặp code.
- */
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type JsonLdObject = Record<string, any>;
 
@@ -21,7 +15,6 @@ export type ServiceAggregateOfferInput = {
   offers: ServiceOfferInput[];
 };
 
-/** LocalBusiness — trang chủ (mục 5). */
 export function buildLocalBusinessSchema(): JsonLdObject {
   return {
     "@context": "https://schema.org",
@@ -40,30 +33,24 @@ export function buildLocalBusinessSchema(): JsonLdObject {
   };
 }
 
-/**
- * Service — dùng chung cho route/vehicle/service/combo pages. Ngày 7 bổ sung `offers` tùy
- * chọn để route Pricing V2 có thể xuất AggregateOffer mà không ép các Service khác phải có giá.
- * Caller chỉ truyền fixed price > 0; contact/disabled không được biến thành Offer giá 0.
- */
 export function buildServiceSchema({
   name,
   description,
   url,
   areaServed,
   offers,
+  providerName = SITE_NAME,
 }: {
   name: string;
   description: string;
   url: string;
   areaServed?: string | string[];
   offers?: ServiceAggregateOfferInput;
+  providerName?: string;
 }): JsonLdObject {
   const validOffers = offers?.offers.filter((offer) => Number.isFinite(offer.price) && offer.price > 0) ?? [];
   const aggregateOffer =
-    offers &&
-    validOffers.length > 0 &&
-    offers.lowPrice > 0 &&
-    offers.highPrice > 0
+    offers && validOffers.length > 0 && offers.lowPrice > 0 && offers.highPrice > 0
       ? {
           "@type": "AggregateOffer",
           priceCurrency: offers.priceCurrency,
@@ -88,7 +75,7 @@ export function buildServiceSchema({
     url: `${SITE_URL}${url}`,
     provider: {
       "@type": "LocalBusiness",
-      name: SITE_NAME,
+      name: providerName,
       telephone: SITE_HOTLINE_TEL,
       url: SITE_URL,
     },
@@ -97,9 +84,6 @@ export function buildServiceSchema({
   };
 }
 
-/**
- * FAQPage — bài blog dạng hỏi-đáp (mục 5). `items` rỗng thì KHÔNG gọi hàm này ở nơi gọi.
- */
 export function buildFaqPageSchema(items: { question: string; answer: string }[]): JsonLdObject {
   return {
     "@context": "https://schema.org",
@@ -115,7 +99,6 @@ export function buildFaqPageSchema(items: { question: string; answer: string }[]
   };
 }
 
-/** Review/AggregateRating — trang /danh-gia (mục 5). */
 export function buildAggregateRatingSchema({
   ratingValue,
   reviewCount,
