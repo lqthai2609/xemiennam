@@ -74,12 +74,15 @@ export function RoutePricingSection({
   vehicleImageByType?: Record<string, string>;
 }) {
   const pricing = route.pricingV2;
-  const active = pricing?.[direction];
+  const availableDirections = pricing ? (["outbound", "inbound"] as const).filter((key) => pricing[key].enabled) : [];
+  const activeDirection = pricing && availableDirections.includes(direction) ? direction : availableDirections[0];
+  const active = activeDirection ? pricing?.[activeDirection] : undefined;
   const grouped = useMemo(() => {
-    if (!active) return [];
+    if (!active?.enabled) return [];
     const groups = new Map<string, RoutePricingPackage[]>();
     for (const row of active.packages) {
-      if (row.mode === "disabled") continue;
+      const renderable = row.mode === "contact" || (row.mode === "fixed" && typeof row.price === "number" && row.price > 0);
+      if (!renderable) continue;
       const current = groups.get(row.vehicleType) ?? [];
       current.push(row);
       groups.set(row.vehicleType, current);
@@ -91,10 +94,9 @@ export function RoutePricingSection({
     return <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
   }
 
-  const availableDirections = (["outbound", "inbound"] as const).filter((key) => pricing[key].enabled);
   const canonicalRoute = `${route.from} – ${route.to}`;
-  const displayRoute = direction === "outbound" ? canonicalRoute : `${route.to} – ${route.from}`;
-  const destination = direction === "outbound" ? route.to : route.from;
+  const displayRoute = activeDirection === "outbound" ? canonicalRoute : `${route.to} – ${route.from}`;
+  const destination = activeDirection === "outbound" ? route.to : route.from;
 
   return (
     <>
@@ -141,8 +143,9 @@ export function RoutePricingSection({
 
               <div className="flex w-full flex-col gap-4">
                 {packages.map((pkg) => {
-                  const fixed = pkg.mode === "fixed" && pkg.price && pkg.priceLabel;
-                  const priceLabel = fixed ? pkg.priceLabel : pkg.contactText || "Liên hệ để nhận báo giá";
+                  const fixedPrice = pkg.mode === "fixed" && typeof pkg.price === "number" && pkg.price > 0 ? pkg.price : undefined;
+                  const fixed = fixedPrice !== undefined;
+                  const priceLabel = fixed ? pkg.priceLabel || `${fixedPrice.toLocaleString("vi-VN")} đ` : pkg.contactText || "Liên hệ để nhận báo giá";
                   return (
                     <div className="border-border border-t pt-3 first:border-t-0 first:pt-0" key={`${pkg.vehicleId}-${pkg.packageKey}`}>
                       <div className="mb-1 flex items-start justify-between gap-3">
@@ -155,8 +158,8 @@ export function RoutePricingSection({
                         routeId={route.id}
                         displayRoute={displayRoute}
                         vehicleType={vehicleType}
-                        price={fixed ? pkg.priceLabel : undefined}
-                        direction={direction}
+                        price={fixed ? priceLabel : undefined}
+                        direction={activeDirection}
                         packageKey={pkg.packageKey}
                         packageLabel={packageDisplayLabel(pkg)}
                         pricingMode={pkg.mode}
@@ -167,8 +170,8 @@ export function RoutePricingSection({
               </div>
 
               <Button size="sm" variant="outline" asChild>
-                <Link href={routeComboHref(route, vehicleTypeSlug(vehicleType))}>
-                  Xem xe {vehicleType} đi {destination} <ArrowRight size={15} />
+                <Link href={activeDirection === "outbound" ? routeComboHref(route, vehicleTypeSlug(vehicleType)) : `/loai-xe/${vehicleTypeSlug(vehicleType)}`}>
+                  {activeDirection === "outbound" ? `Xem xe ${vehicleType} đi ${destination}` : `Xem xe ${vehicleType}`} <ArrowRight size={15} />
                 </Link>
               </Button>
             </article>
