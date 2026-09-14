@@ -12,6 +12,7 @@ export type NavItem = { label: string; href: string };
 interface SiteHeaderProps {
   menuItems: NavItem[];
   hotline: string;
+  hotlineHref?: string;
   ctaLabel: string;
   ctaHref: string;
 }
@@ -22,9 +23,10 @@ function isActive(pathname: string, href: string) {
   return base === pathname;
 }
 
-export function SiteHeader({ menuItems, hotline, ctaLabel, ctaHref }: SiteHeaderProps) {
+export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref }: SiteHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname();
+  const resolvedHotlineHref = hotlineHref || `tel:${hotline.replace(/\s/g, "")}`;
 
   function handleRouteSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,7 +59,7 @@ export function SiteHeader({ menuItems, hotline, ctaLabel, ctaHref }: SiteHeader
             {item.label}
           </Link>
         ))}
-        <a className="nav-hotline" href={`tel:${hotline.replace(/\s/g, "")}`}>
+        <a className="nav-hotline" href={resolvedHotlineHref}>
           <Phone size={16} /> {hotline}
         </a>
         <Button className="nav-cta" asChild>
