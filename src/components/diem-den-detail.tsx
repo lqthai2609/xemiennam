@@ -38,12 +38,40 @@ function RegionRouteCard({ route }: { route: Route }) {
           <span>{route.to}</span>
         </div>
         <div className="rt-meta">
-          <span><Clock3 size={13} /> {route.time}</span>
-          <span><Milestone size={13} /> {route.distance}</span>
-          <span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span>
+          {route.time && <span><Clock3 size={13} /> {route.time}</span>}
+          {route.distance && <span><Milestone size={13} /> {route.distance}</span>}
+          {route.vehicleTypes.length > 0 && <span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span>}
         </div>
       </div>
       <div className="rt-cta">Xem chi tiết <ArrowRight size={14} /></div>
+    </Link>
+  );
+}
+
+function RelatedResourceCard({
+  href,
+  kicker,
+  title,
+  description,
+  cta,
+}: {
+  href: string;
+  kicker: string;
+  title: string;
+  description: string;
+  cta: string;
+}) {
+  return (
+    <Link className="route-ticket related-ticket" href={href}>
+      <div className="rt-price">
+        <span>Khám phá</span>
+        <b>{kicker}</b>
+      </div>
+      <div className="rt-body">
+        <div className="rt-route"><span>{title}</span></div>
+        <div className="rt-meta"><span>{description}</span></div>
+      </div>
+      <div className="rt-cta">{cta} <ArrowRight size={14} /></div>
     </Link>
   );
 }
@@ -144,18 +172,9 @@ export function DiemDenDetailPage({
           </div>
         </div>
         <div className="route-list related-list">
-          <Link className="route-ticket related-ticket" href="/tuyen-duong">
-            <div className="rt-body"><div className="rt-route"><span>Tất cả tuyến đường</span></div><div className="rt-meta"><span>So sánh các hành trình đang phục vụ</span></div></div>
-            <div className="rt-cta">Khám phá <ArrowRight size={14} /></div>
-          </Link>
-          <Link className="route-ticket related-ticket" href="/loai-xe">
-            <div className="rt-body"><div className="rt-route"><span>Chọn loại xe</span></div><div className="rt-meta"><span>Tìm xe phù hợp với số người và nhu cầu</span></div></div>
-            <div className="rt-cta">Xem loại xe <ArrowRight size={14} /></div>
-          </Link>
-          <Link className="route-ticket related-ticket" href="/blog">
-            <div className="rt-body"><div className="rt-route"><span>Cẩm nang đi đường</span></div><div className="rt-meta"><span>Tham khảo kinh nghiệm trước chuyến đi</span></div></div>
-            <div className="rt-cta">Đọc cẩm nang <ArrowRight size={14} /></div>
-          </Link>
+          <RelatedResourceCard href="/tuyen-duong" kicker="Tuyến" title="Tất cả tuyến đường" description="So sánh các hành trình đang phục vụ" cta="Khám phá" />
+          <RelatedResourceCard href="/loai-xe" kicker="Xe" title="Chọn loại xe" description="Tìm xe phù hợp với số người và nhu cầu" cta="Xem loại xe" />
+          <RelatedResourceCard href="/blog" kicker="Blog" title="Cẩm nang đi đường" description="Tham khảo kinh nghiệm trước chuyến đi" cta="Đọc cẩm nang" />
         </div>
       </section>
 
@@ -177,6 +196,8 @@ export function DiemDenDetailPage({
         socialLinks={defaultSocialLinks}
         copyright="© 2026 Gocar VN"
         madeFor="Made for the road."
+        brandMark="GC"
+        brandName="GOCAR VN"
       />
     </main>
   );
