@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, BusFront } from "lucide-react";
 
@@ -10,6 +10,7 @@ import { RouteBookingActions } from "@/components/route-booking-actions";
 import {
   priceTypeLabel,
   routeComboHref,
+  routeHref,
   vehicleTypeSlug,
   type Route,
   type RoutePricingDirectionKey,
@@ -64,15 +65,14 @@ function LegacyPricingGrid({
 
 export function RoutePricingSection({
   route,
+  direction,
   vehicleImageByType = {},
 }: {
   route: Route;
+  direction: RoutePricingDirectionKey;
   vehicleImageByType?: Record<string, string>;
 }) {
   const pricing = route.pricingV2;
-  const initialDirection: RoutePricingDirectionKey = pricing?.outbound.enabled ? "outbound" : "inbound";
-  const [direction, setDirection] = useState<RoutePricingDirectionKey>(initialDirection);
-
   const active = pricing?.[direction];
   const grouped = useMemo(() => {
     if (!active) return [];
@@ -90,9 +90,7 @@ export function RoutePricingSection({
     return <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
   }
 
-  const availableDirections = (["outbound", "inbound"] as const).filter(
-    (key) => pricing[key].enabled,
-  );
+  const availableDirections = (["outbound", "inbound"] as const).filter((key) => pricing[key].enabled);
   const canonicalRoute = `${route.from} – ${route.to}`;
   const displayRoute = direction === "outbound" ? canonicalRoute : `${route.to} – ${route.from}`;
   const destination = direction === "outbound" ? route.to : route.from;
@@ -104,16 +102,12 @@ export function RoutePricingSection({
           {availableDirections.map((key) => {
             const selected = key === direction;
             const label = key === "outbound" ? `${route.from} → ${route.to}` : `${route.to} → ${route.from}`;
+            const href = key === "outbound" ? routeHref(route) : `${routeHref(route)}?direction=inbound`;
             return (
-              <Button
-                key={key}
-                type="button"
-                size="sm"
-                variant={selected ? "default" : "outline"}
-                aria-pressed={selected}
-                onClick={() => setDirection(key)}
-              >
-                {label}
+              <Button key={key} size="sm" variant={selected ? "default" : "outline"} asChild>
+                <Link href={href} scroll={false} aria-current={selected ? "page" : undefined}>
+                  {label}
+                </Link>
               </Button>
             );
           })}
