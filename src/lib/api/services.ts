@@ -1,9 +1,11 @@
-import type { Service, ServiceIcon, ServiceVehicle, ServiceVehicleType } from "@/types/service";
+import type { Service, ServiceIcon, ServiceRelatedRoute, ServiceUseCase, ServiceVehicle, ServiceVehicleType } from "@/types/service";
+import type { Route } from "@/types/route";
 import type { Vehicle } from "@/types/vehicle";
-import { vehicleTypeSlug } from "@/types/route";
+import { routeComboHref, routeHref, vehicleTypeSlug } from "@/types/route";
 import { services as mockServices } from "@/data/services";
 import { fetchRawServices, fetchRawServiceBySlug, embeddedTerms, embeddedFeaturedImage, type WPService } from "./raw";
 import { fetchVehicles } from "./vehicles";
+import { fetchRoutes } from "./routes";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { splitCommaList, stripHtml } from "@/lib/wp";
 import { SITE_HOTLINE } from "@/lib/site-config";
@@ -17,11 +19,94 @@ const ICON_BY_SLUG: Record<string, ServiceIcon> = {
   "city-tour": "city-tour",
 };
 
+type ServiceClusterEditorial = {
+  searchIntent: string;
+  useCases: ServiceUseCase[];
+};
+
+const SERVICE_CLUSTER_BY_SLUG: Record<string, ServiceClusterEditorial> = {
+  "xe-cuoi": {
+    searchIntent: "Thuê xe cưới có tài xế, đúng giờ, phù hợp lễ cưới và đoàn rước dâu.",
+    useCases: [
+      { title: "Xe cô dâu chú rể", description: "Ưu tiên xe chỉn chu, riêng tư và phù hợp phong cách ngày cưới." },
+      { title: "Đoàn rước dâu", description: "Chọn loại xe theo số người và lịch trình nhiều điểm đón trả." },
+    ],
+  },
+  "dua-don-san-bay": {
+    searchIntent: "Thuê xe đưa đón sân bay theo giờ bay, có tài xế và hỗ trợ hành lý.",
+    useCases: [
+      { title: "Khách cá nhân và công tác", description: "Đi đúng giờ, ít người, cần hành trình gọn và chủ động." },
+      { title: "Gia đình và nhóm có hành lý", description: "Ưu tiên khoang xe rộng và đủ chỗ cho người cùng hành lý." },
+    ],
+  },
+  "thue-xe-theo-thang": {
+    searchIntent: "Thuê xe dài hạn theo tháng cho doanh nghiệp, chuyên gia, gia đình hoặc đưa đón nhân sự.",
+    useCases: [
+      { title: "Doanh nghiệp và chuyên gia", description: "Nhu cầu đi lại thường xuyên với lịch cố định hoặc linh hoạt." },
+      { title: "Đưa đón đội nhóm", description: "Chọn xe theo quy mô nhân sự và tần suất sử dụng thực tế." },
+    ],
+  },
+  "city-tour": {
+    searchIntent: "Thuê xe city tour có tài xế cho nhóm du lịch, gia đình hoặc đoàn tham quan trong ngày.",
+    useCases: [
+      { title: "Gia đình và nhóm nhỏ", description: "Lịch trình linh hoạt, nhiều điểm dừng và dễ điều chỉnh trong ngày." },
+      { title: "Đoàn tham quan", description: "Chọn xe theo quy mô đoàn để cả nhóm di chuyển cùng lịch trình." },
+    ],
+  },
+};
+
+const GROUP_COMPATIBILITY: Record<string, string[]> = {
+  "4-7-cho": ["4-cho", "7-cho"],
+  "16-29-cho": ["16-cho", "29-cho"],
+};
+
+function acceptedVehicleSlugs(service: Service): Set<string> {
+  const accepted = new Set<string>();
+  for (const type of service.vehicleTypes) {
+    const slug = type.slug || vehicleTypeSlug(type.name);
+    accepted.add(slug);
+    for (const expanded of GROUP_COMPATIBILITY[slug] ?? []) accepted.add(expanded);
+  }
+  return accepted;
+}
+
+function relatedRoutesForService(service: Service, routes: Route[], count = 4): ServiceRelatedRoute[] {
+  const accepted = acceptedVehicleSlugs(service);
+  if (accepted.size === 0) return [];
+
+  return routes
+    .map((route) => {
+      const matchingTypes = route.vehicleTypes.filter((type) => accepted.has(vehicleTypeSlug(type)));
+      if (matchingTypes.length === 0) return undefined;
+      return {
+        name: `${route.from} → ${route.to}`,
+        href: routeHref(route),
+        summary: route.summary || [route.distance, route.time].filter(Boolean).join(" · "),
+        combos: matchingTypes.map((vehicleType) => ({
+          vehicleType,
+          href: routeComboHref(route, vehicleTypeSlug(vehicleType)),
+        })),
+      } satisfies ServiceRelatedRoute;
+    })
+    .filter((route): route is ServiceRelatedRoute => Boolean(route))
+    .slice(0, count);
+}
+
+function enrichServiceCluster(service: Service, routes: Route[]): Service {
+  const editorial = SERVICE_CLUSTER_BY_SLUG[service.slug];
+  return {
+    ...service,
+    searchIntent: editorial?.searchIntent,
+    useCases: editorial?.useCases,
+    relatedRoutes: relatedRoutesForService(service, routes),
+  };
+}
+
 async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Promise<Service> {
   const vehicleTypes: ServiceVehicleType[] = embeddedTerms(wp._embedded, "vehicle_type").map((t) => ({
     name: t.name,
     slug: vehicleTypeSlug(t.name) || t.slug,
-    description: "",
+    description: stripHtml(t.description ?? ""),
   }));
 
   const suggestedIds = (wp.meta.loai_xe_phu_hop ?? []).map(String);
@@ -29,8 +114,6 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
     .filter((v) => suggestedIds.includes(v.id))
     .map((v) => ({
       name: v.name,
-      // Day 25 đã gộp trang xe cụ thể vào /loai-xe. Link gợi ý phải trỏ tới slug loại xe,
-      // không dùng vehicle post slug vì redirect /doi-xe/:slug -> /loai-xe/:slug sẽ 404.
       slug: vehicleTypeSlug(v.type),
       detail: v.description,
     }));
@@ -58,27 +141,31 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
 
 export async function fetchServices(): Promise<Service[]> {
   const raw = await fetchRawServices();
+  const routes = await fetchRoutes();
   if (raw.length === 0) {
     if (useMockFallback) {
       console.warn("[fetchServices] WP chưa có dịch vụ nào — dùng dữ liệu mock theo policy môi trường.");
-      return mockServices;
+      return mockServices.map((service) => enrichServiceCluster(service, routes));
     }
     return [];
   }
   const vehicles = await fetchVehicles();
-  return Promise.all(raw.map((wp) => mapWPServiceToService(wp, vehicles)));
+  const services = await Promise.all(raw.map((wp) => mapWPServiceToService(wp, vehicles)));
+  return services.map((service) => enrichServiceCluster(service, routes));
 }
 
 export async function fetchServiceBySlug(slug: string): Promise<Service | undefined> {
   const wp = await fetchRawServiceBySlug(slug);
+  const routes = await fetchRoutes();
   if (wp) {
     const vehicles = await fetchVehicles();
-    return mapWPServiceToService(wp, vehicles);
+    return enrichServiceCluster(await mapWPServiceToService(wp, vehicles), routes);
   }
   if (useMockFallback) {
     const raw = await fetchRawServices();
     if (raw.length === 0) {
-      return mockServices.find((service) => service.slug === slug);
+      const service = mockServices.find((item) => item.slug === slug);
+      return service ? enrichServiceCluster(service, routes) : undefined;
     }
   }
   return undefined;
