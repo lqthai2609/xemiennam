@@ -6,7 +6,7 @@ import { ArrowRight, BusFront } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { MediaPhoto } from "@/components/media-photo";
-import { RouteBookingActions } from "@/components/route-booking-actions";
+import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
 import {
   priceTypeLabel,
   routeComboHref,
@@ -97,8 +97,30 @@ export function RoutePricingSection({
   const canonicalRoute = `${route.from} – ${route.to}`;
   const displayRoute = activeDirection === "outbound" ? canonicalRoute : `${route.to} – ${route.from}`;
   const destination = activeDirection === "outbound" ? route.to : route.from;
-  const activeEndpoint = activeDirection === "outbound" ? route.destinationLocation : route.originLocation;
-  const airportRoute = activeEndpoint?.type === "airport";
+  const pickupLocation =
+    activeDirection === "outbound"
+      ? route.originLocation
+      : activeDirection === "inbound"
+        ? route.destinationLocation
+        : undefined;
+  const dropoffLocation =
+    activeDirection === "outbound"
+      ? route.destinationLocation
+      : activeDirection === "inbound"
+        ? route.originLocation
+        : undefined;
+  const airportContext: AirportBookingContext | undefined =
+    pickupLocation?.type === "airport"
+      ? "pickup_from_airport"
+      : dropoffLocation?.type === "airport"
+        ? "dropoff_at_airport"
+        : undefined;
+  const airportName =
+    airportContext === "pickup_from_airport"
+      ? pickupLocation?.name
+      : airportContext === "dropoff_at_airport"
+        ? dropoffLocation?.name
+        : undefined;
 
   return (
     <>
@@ -165,7 +187,8 @@ export function RoutePricingSection({
                         packageKey={pkg.packageKey}
                         packageLabel={packageDisplayLabel(pkg)}
                         pricingMode={pkg.mode}
-                        airportRoute={airportRoute}
+                        airportContext={airportContext}
+                        airportName={airportName}
                       />
                     </div>
                   );
