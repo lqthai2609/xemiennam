@@ -250,15 +250,6 @@ export async function fetchRawVehicleBySlug(slug: string): Promise<WPVehicle | n
   return list?.[0] ?? null;
 }
 
-export async function fetchRawPosts(): Promise<WPPost[]> {
-  return (await wpFetch<WPPost[]>(`/posts?${LIST_QUERY}`)) ?? [];
-}
-
-export async function fetchRawPostBySlug(slug: string): Promise<WPPost | null> {
-  const list = await wpFetch<WPPost[]>(`/posts?slug=${encodeURIComponent(slug)}&_embed=1`);
-  return list?.[0] ?? null;
-}
-
 export async function fetchRawServices(): Promise<WPService[]> {
   return (await wpFetch<WPService[]>(`/dich_vu?${LIST_QUERY}`)) ?? [];
 }
@@ -276,11 +267,23 @@ export async function fetchRawTestimonials(): Promise<WPTestimonial[]> {
   return (await wpFetch<WPTestimonial[]>(`/testimonial?${LIST_QUERY}`)) ?? [];
 }
 
+// rest_base của post type mặc định là "posts" (số nhiều), khác các CPT còn lại (rest_base
+// trùng slug post type) — xem ghi chú ở WPPost phía trên.
+export async function fetchRawPosts(): Promise<WPPost[]> {
+  return (await wpFetch<WPPost[]>(`/posts?${LIST_QUERY}`)) ?? [];
+}
+
+export async function fetchRawPostBySlug(slug: string): Promise<WPPost | null> {
+  const list = await wpFetch<WPPost[]>(`/posts?slug=${encodeURIComponent(slug)}&_embed=1`);
+  return list?.[0] ?? null;
+}
+
+// rest_base là "diem-den" (có gạch nối), khác post_type "diem_den" (gạch dưới) — xem snippet ID 9080.
 export async function fetchRawDiemDen(): Promise<WPDiemDen[]> {
-  return (await wpFetch<WPDiemDen[]>(`/diem_den?${LIST_QUERY}`)) ?? [];
+  return (await wpFetch<WPDiemDen[]>(`/diem-den?${LIST_QUERY}`)) ?? [];
 }
 
 export async function fetchRawDiemDenBySlug(slug: string): Promise<WPDiemDen | null> {
-  const list = await wpFetch<WPDiemDen[]>(`/diem_den?slug=${encodeURIComponent(slug)}&_embed=1`);
+  const list = await wpFetch<WPDiemDen[]>(`/diem-den?slug=${encodeURIComponent(slug)}&_embed=1`);
   return list?.[0] ?? null;
 }
