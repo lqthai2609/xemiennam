@@ -228,6 +228,27 @@ export function RouteBookingActions({
 
   if (pricingMode === "disabled") return null;
 
+  if (pricingMode === "contact") {
+    return (
+      <div className="detail-price-actions">
+        {zaloLink && (
+          <Button size="sm" asChild>
+            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`Nhắn Zalo nhận báo giá xe ${vehicleType}`}>
+              <MessageCircle data-icon="inline-start" size={16} />
+              Nhắn Zalo báo giá
+            </a>
+          </Button>
+        )}
+        <Button size="sm" variant="outline" asChild>
+          <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi nhận báo giá xe ${vehicleType}`}>
+            <Phone data-icon="inline-start" size={16} />
+            Gọi nhận báo giá
+          </a>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="detail-price-actions">
@@ -263,7 +284,7 @@ export function RouteBookingActions({
           direction={direction}
           packageKey={packageKey}
           packageLabel={packageLabel}
-          pricingMode={pricingMode === "contact" ? "contact" : "fixed"}
+          pricingMode="fixed"
           onClose={() => setOpen(false)}
         />
       )}
