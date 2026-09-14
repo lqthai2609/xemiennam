@@ -16,6 +16,8 @@ interface SiteFooterProps {
   socialLinks: SocialLink[];
   copyright: string;
   madeFor: string;
+  brandMark?: string;
+  brandName?: string;
 }
 
 export function SiteFooter({
@@ -25,13 +27,15 @@ export function SiteFooter({
   socialLinks,
   copyright,
   madeFor,
+  brandMark = "XM",
+  brandName = "XE MIỀN NAM",
 }: SiteFooterProps) {
   return (
     <footer className="site-footer">
       <div className="footer-main">
         <Link href="/" className="brand">
-          <span className="brand-mark">XM</span>
-          <span>XE MIỀN NAM</span>
+          <span className="brand-mark">{brandMark}</span>
+          <span>{brandName}</span>
         </Link>
         <p>{tagline}</p>
         <a className="phone-link" href={`tel:${phone.replace(/\s/g, "")}`}>
@@ -66,7 +70,6 @@ export function SiteFooter({
   );
 }
 
-// Danh sách mạng xã hội dùng chung.
 export const defaultSocialLinks: SocialLink[] = [
   { label: "Instagram", href: "#" },
   { label: "Facebook", href: "#" },
