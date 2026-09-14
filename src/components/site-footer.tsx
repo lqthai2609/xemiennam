@@ -12,6 +12,7 @@ export type SocialLink = { label: string; href: string };
 interface SiteFooterProps {
   tagline: ReactNode;
   phone: string;
+  phoneHref?: string;
   linkGroups: FooterLinkGroup[];
   socialLinks: SocialLink[];
   copyright: string;
@@ -23,6 +24,7 @@ interface SiteFooterProps {
 export function SiteFooter({
   tagline,
   phone,
+  phoneHref,
   linkGroups,
   socialLinks,
   copyright,
@@ -30,6 +32,8 @@ export function SiteFooter({
   brandMark = "G",
   brandName = "GOCARVN",
 }: SiteFooterProps) {
+  const resolvedPhoneHref = phoneHref || `tel:${phone.replace(/\s/g, "")}`;
+
   return (
     <footer className="site-footer">
       <div className="footer-main">
@@ -38,7 +42,7 @@ export function SiteFooter({
           <span>{brandName}</span>
         </Link>
         <p>{tagline}</p>
-        <a className="phone-link" href={`tel:${phone.replace(/\s/g, "")}`}>
+        <a className="phone-link" href={resolvedPhoneHref}>
           <Phone size={17} /> {phone}
         </a>
       </div>
