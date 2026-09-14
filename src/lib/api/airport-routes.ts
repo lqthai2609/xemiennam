@@ -1,21 +1,23 @@
+import { fetchLocationsV2, type LocationV2 } from "./locations";
+import { fetchRoutePairsV2, type RouteDirectionKey, type RoutePairV2 } from "./route-directions";
 import { fetchRoutes } from "./routes";
-import type { Route } from "@/types/route";
-import { fetchLocationsV2, locationById, type LocationV2 } from "./locations";
-import { mapWPRouteToRoutePairV2 } from "./route-directions";
-import { fetchRawRouteBySlug } from "./raw";
+import { routeHref, type Route, type RoutePricingPackage } from "@/types/route";
 
-export type AirportHubRoute = {
+export type AirportTravelDirection = "from_airport" | "to_airport";
+
+export interface AirportHubRoute {
   route: Route;
+  routePair: RoutePairV2;
   airport: LocationV2;
-  counterpart: LocationV2 | undefined;
-  travelDirection: "from_airport" | "to_airport";
-  pricingDirection: "outbound" | "inbound";
+  counterpart: LocationV2;
+  travelDirection: AirportTravelDirection;
+  pricingDirection: RouteDirectionKey;
   from: string;
   to: string;
   href: string;
-  featuredPrice: number | undefined;
+  featuredPrice?: RoutePricingPackage;
   priceLabel: string;
-};
+}
 
 export interface AirportHubData {
   airport: LocationV2;
@@ -24,82 +26,107 @@ export interface AirportHubData {
   toAirport: AirportHubRoute[];
 }
 
-export async function fetchAirportHubBySlug(airportSlug: string): Promise<AirportHubData | undefined> {
-  const [allRoutes, locations] = await Promise.all([fetchRoutes(), fetchLocationsV2()]);
-  const locationsMap = locationById(locations);
+function featuredPriceForDirection(route: Route, direction: RouteDirectionKey) {
+  return route.pricingV2?.[direction].featured;
+}
 
-  const airport = locations.find((loc) => loc.slug === airportSlug && loc.type === "airport");
+function priceLabelForDirection(route: Route, direction: RouteDirectionKey): string {
+  const pricing = route.pricingV2?.[direction];
+  if (!pricing?.enabled) return "—";
+
+  const featured = pricing.featured;
+  if (!featured) return "Liên hệ báo giá";
+  if (featured.mode === "fixed") return featured.priceLabel || "Liên hệ báo giá";
+  if (featured.mode === "contact") return featured.contactText || "Liên hệ báo giá";
+  return "—";
+}
+
+function buildAirportRoute(
+  route: Route,
+  pair: RoutePairV2,
+  airport: LocationV2,
+  counterpart: LocationV2,
+  travelDirection: AirportTravelDirection,
+  pricingDirection: RouteDirectionKey,
+): AirportHubRoute {
+  const from = travelDirection === "from_airport" ? airport.name : counterpart.name;
+  const to = travelDirection === "from_airport" ? counterpart.name : airport.name;
+
+  return {
+    route,
+    routePair: pair,
+    airport,
+    counterpart,
+    travelDirection,
+    pricingDirection,
+    from,
+    to,
+    href: routeHref(route),
+    featuredPrice: featuredPriceForDirection(route, pricingDirection),
+    priceLabel: priceLabelForDirection(route, pricingDirection),
+  };
+}
+
+/**
+ * Day 17 — Airport Hub query layer.
+ *
+ * Airport vẫn là Location V2 bình thường. Hàm này chỉ ghép Location + Route Pair + Pricing V2
+ * để consumer có thể dựng Airport Hub; không tạo route/pricing engine riêng.
+ */
+export async function fetchAirportHubBySlug(airportSlug: string): Promise<AirportHubData | undefined> {
+  const [locations, pairs, routes] = await Promise.all([
+    fetchLocationsV2(),
+    fetchRoutePairsV2(),
+    fetchRoutes(),
+  ]);
+
+  const airport = locations.find((location) => location.slug === airportSlug && location.type === "airport");
   if (!airport) return undefined;
 
-  const routes: AirportHubRoute[] = [];
+  const locationsById = new Map(locations.map((location) => [location.id, location]));
+  const routesBySlug = new Map(routes.map((route) => [route.slug, route]));
+  const output: AirportHubRoute[] = [];
 
-  for (const route of allRoutes) {
-    const rawRoute = await fetchRawRouteBySlug(route.slug);
-    if (!rawRoute) continue;
+  for (const pair of pairs) {
+    if (pair.usesLegacyLocationFallback) continue;
 
-    const pair = mapWPRouteToRoutePairV2(rawRoute);
+    const route = routesBySlug.get(pair.routeSlug);
+    if (!route) continue;
 
-    const isOriginAirport = pair.originLocationId === airport.id;
-    const isDestinationAirport = pair.destinationLocationId === airport.id;
+    const origin = locationsById.get(pair.originLocationId);
+    const destination = locationsById.get(pair.destinationLocationId);
+    if (!origin || !destination) continue;
 
-    if (!isOriginAirport && !isDestinationAirport) continue;
-
-    let counterpartLocationId: number | undefined;
-    let travelDirection: "from_airport" | "to_airport";
-    let pricingDirection: "outbound" | "inbound";
-
-    if (isOriginAirport) {
-      counterpartLocationId = pair.destinationLocationId;
-      travelDirection = "from_airport";
-      pricingDirection = "outbound";
-    } else {
-      counterpartLocationId = pair.originLocationId;
-      travelDirection = "to_airport";
-      pricingDirection = "inbound";
+    if (pair.originLocationId === airport.id) {
+      if (pair.outbound.enabled) {
+        output.push(buildAirportRoute(route, pair, airport, destination, "from_airport", "outbound"));
+      }
+      if (pair.inbound.enabled) {
+        output.push(buildAirportRoute(route, pair, airport, destination, "to_airport", "inbound"));
+      }
+      continue;
     }
 
-    const directionConfig =
-      pricingDirection === "outbound" ? pair.outbound : pair.inbound;
-
-    if (!directionConfig.enabled) continue;
-
-    const counterpart =
-      counterpartLocationId > 0 ? locationsMap.get(counterpartLocationId) : undefined;
-
-    const pricingDirectionData =
-      route.pricingV2?.[pricingDirection];
-    const featured = pricingDirectionData?.featured;
-
-    let featuredPrice: number | undefined;
-    let priceLabel: string = "—";
-
-    if (featured) {
-      if (featured.mode === "fixed" && featured.price) {
-        featuredPrice = featured.price;
-        priceLabel = featured.priceLabel || "—";
-      } else if (featured.mode === "contact") {
-        priceLabel = featured.contactText || "Liên hệ báo giá";
+    if (pair.destinationLocationId === airport.id) {
+      if (pair.outbound.enabled) {
+        output.push(buildAirportRoute(route, pair, airport, origin, "to_airport", "outbound"));
+      }
+      if (pair.inbound.enabled) {
+        output.push(buildAirportRoute(route, pair, airport, origin, "from_airport", "inbound"));
       }
     }
-
-    routes.push({
-      route,
-      airport,
-      counterpart,
-      travelDirection,
-      pricingDirection,
-      from: route.from,
-      to: route.to,
-      href: route.slug ? `/tuyen-duong/${route.regionSlug || "khac"}/${route.slug}` : "",
-      featuredPrice,
-      priceLabel,
-    });
   }
+
+  output.sort((a, b) => {
+    const directionOrder = a.travelDirection.localeCompare(b.travelDirection);
+    if (directionOrder !== 0) return directionOrder;
+    return a.counterpart.name.localeCompare(b.counterpart.name, "vi");
+  });
 
   return {
     airport,
-    routes,
-    fromAirport: routes.filter((r) => r.travelDirection === "from_airport"),
-    toAirport: routes.filter((r) => r.travelDirection === "to_airport"),
+    routes: output,
+    fromAirport: output.filter((item) => item.travelDirection === "from_airport"),
+    toAirport: output.filter((item) => item.travelDirection === "to_airport"),
   };
 }
