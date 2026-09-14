@@ -2,6 +2,7 @@ import type {
   ComboDescription,
   PriceType,
   Route,
+  RouteLocationRef,
   RouteDirectionPricing,
   RoutePricingPackage,
   RoutePricingV2,
@@ -210,7 +211,11 @@ function mapWPRouteToRoute(
   const vehicleTypes = pricingByVehicle.map((p) => p.vehicleType);
   const seatCount = vehicleTypes.filter((t) => t !== "Limousine");
 
-  const { destination, from, to } = resolveRouteEndpoints(wp, locations);
+  const { origin, destination, from, to } = resolveRouteEndpoints(wp, locations);
+  const toLocationRef = (location: LocationV2 | undefined): RouteLocationRef | undefined =>
+    location
+      ? { id: location.id, name: location.name, slug: location.slug, type: location.type }
+      : undefined;
   const provinceTerm = embeddedTerms(wp._embedded, "province")[0];
   const region = provinceTerm?.name ?? to;
   const regionSlug = provinceTerm?.slug ?? destination?.provinceSlug ?? "";
@@ -232,6 +237,8 @@ function mapWPRouteToRoute(
     seatCount,
     pricingByVehicle,
     pricingV2,
+    originLocation: toLocationRef(origin),
+    destinationLocation: toLocationRef(destination),
     comboDescriptions: buildComboDescriptions(wp, rawVehicles),
     pickupPoints: splitCommaList(wp.meta.diem_don),
     dropoffPoints: splitCommaList(wp.meta.diem_tra),

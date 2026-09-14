@@ -19,6 +19,14 @@ const quickBookingSchema = z.object({
   fullName: z.string().trim().min(1, "Vui lòng nhập họ tên."),
   phone: z.string().trim().regex(phoneRegex, "Số điện thoại chưa đúng định dạng Việt Nam."),
   departureAt: z.string().optional(),
+  airportTerminal: z.string().trim().optional(),
+  flightNumber: z.string().trim().optional(),
+  passengerCount: z.string().optional(),
+  luggage: z.string().trim().optional(),
+}).superRefine((data, context) => {
+  if (data.flightNumber && !data.airportTerminal) {
+    context.addIssue({ code: "custom", path: ["airportTerminal"], message: "Vui lòng chọn nhà ga." });
+  }
 });
 type QuickBookingData = z.infer<typeof quickBookingSchema>;
 
@@ -43,6 +51,7 @@ type BookingPricingContext = {
   packageKey?: string;
   packageLabel?: string;
   pricingMode?: RoutePricingMode;
+  airportRoute?: boolean;
 };
 
 function QuickBookingDialog({
@@ -55,6 +64,7 @@ function QuickBookingDialog({
   packageKey,
   packageLabel,
   pricingMode = "fixed",
+  airportRoute = false,
   onClose,
 }: {
   route: string;
@@ -66,13 +76,17 @@ function QuickBookingDialog({
   packageKey?: string;
   packageLabel?: string;
   pricingMode?: Exclude<RoutePricingMode, "disabled">;
+  airportRoute?: boolean;
   onClose: () => void;
 }) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<QuickBookingData>({ resolver: zodResolver(quickBookingSchema) });
+  } = useForm<QuickBookingData>({
+    resolver: zodResolver(quickBookingSchema),
+    defaultValues: { passengerCount: "1" },
+  });
 
   const visibleRoute = displayRoute || route;
   const visiblePrice = pricingMode === "contact" ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
@@ -106,6 +120,11 @@ function QuickBookingDialog({
           vehicleType,
           departureDate,
           direction,
+          airportTerminal: data.airportTerminal,
+          flightNumber: data.flightNumber,
+          passengerCount: data.passengerCount,
+          luggage: data.luggage,
+          requestType: pricingMode === "contact" ? "quote" : "booking",
           packageKey,
           pricingMode,
           note: [
@@ -114,6 +133,10 @@ function QuickBookingDialog({
             packageLabel && `Gói: ${packageLabel}${packageKey ? ` (${packageKey})` : ""}.`,
             pricingNote,
             departureLabel && `Ngày giờ đi mong muốn: ${departureLabel}.`,
+            airportRoute && data.airportTerminal && `Nhà ga: ${data.airportTerminal}.`,
+            airportRoute && data.flightNumber && `Số chuyến bay: ${data.flightNumber}.`,
+            airportRoute && data.passengerCount && `Số hành khách: ${data.passengerCount}.`,
+            airportRoute && data.luggage && `Hành lý: ${data.luggage}.`,
           ]
             .filter(Boolean)
             .join(" "),
@@ -198,6 +221,34 @@ function QuickBookingDialog({
             </span>
             <input {...register("departureAt")} type="datetime-local" className="form-control" />
           </label>
+          {airportRoute && (
+            <fieldset className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
+              <legend className="px-1 text-sm font-semibold">Thông tin chuyến bay</legend>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                <span>Nhà ga {errors.airportTerminal ? <span className="text-destructive">*</span> : <span className="font-normal text-muted-foreground">(nếu có chuyến bay)</span>}</span>
+                <select {...register("airportTerminal")} className="form-control">
+                  <option value="">Chọn nhà ga</option>
+                  <option value="T1">T1 — Nội địa</option>
+                  <option value="T2">T2 — Quốc tế</option>
+                </select>
+                <FieldError message={errors.airportTerminal?.message} />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                <span>Số chuyến bay <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+                <input {...register("flightNumber")} className="form-control" placeholder="VN123" />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>Số hành khách</span>
+                  <select {...register("passengerCount")} className="form-control">{Array.from({ length: 9 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1} người</option>)}</select>
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>Hành lý <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+                  <input {...register("luggage")} className="form-control" placeholder="2 vali lớn" />
+                </label>
+              </div>
+            </fieldset>
+          )}
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
             {isSubmitting ? "Đang gửi..." : "Xác nhận đặt xe"}
@@ -218,6 +269,7 @@ export function RouteBookingActions({
   packageKey,
   packageLabel,
   pricingMode = "fixed",
+  airportRoute = false,
 }: {
   route: string;
   vehicleType: string;
@@ -230,6 +282,7 @@ export function RouteBookingActions({
 
   if (pricingMode === "contact") {
     return (
+      <>
       <div className="detail-price-actions">
         {zaloLink && (
           <Button size="sm" asChild>
@@ -239,13 +292,13 @@ export function RouteBookingActions({
             </a>
           </Button>
         )}
-        <Button size="sm" variant="outline" asChild>
-          <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi nhận báo giá xe ${vehicleType}`}>
-            <Phone data-icon="inline-start" size={16} />
-            Gọi nhận báo giá
-          </a>
+        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+          <Phone data-icon="inline-start" size={16} />
+          Nhận báo giá
         </Button>
       </div>
+      {open && <QuickBookingDialog route={route} routeId={routeId} displayRoute={displayRoute} vehicleType={vehicleType} price={price} direction={direction} packageKey={packageKey} packageLabel={packageLabel} pricingMode="contact" airportRoute={airportRoute} onClose={() => setOpen(false)} />}
+      </>
     );
   }
 
@@ -285,6 +338,7 @@ export function RouteBookingActions({
           packageKey={packageKey}
           packageLabel={packageLabel}
           pricingMode="fixed"
+          airportRoute={airportRoute}
           onClose={() => setOpen(false)}
         />
       )}

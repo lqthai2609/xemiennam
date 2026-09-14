@@ -97,6 +97,8 @@ export function RoutePricingSection({
   const canonicalRoute = `${route.from} – ${route.to}`;
   const displayRoute = activeDirection === "outbound" ? canonicalRoute : `${route.to} – ${route.from}`;
   const destination = activeDirection === "outbound" ? route.to : route.from;
+  const activeEndpoint = activeDirection === "outbound" ? route.destinationLocation : route.originLocation;
+  const airportRoute = activeEndpoint?.type === "airport";
 
   return (
     <>
@@ -163,6 +165,7 @@ export function RoutePricingSection({
                         packageKey={pkg.packageKey}
                         packageLabel={packageDisplayLabel(pkg)}
                         pricingMode={pkg.mode}
+                        airportRoute={airportRoute}
                       />
                     </div>
                   );

@@ -19,6 +19,11 @@ const bookingRequestSchema = z.object({
   direction: z.enum(["outbound", "inbound"]).optional(),
   packageKey: z.string().trim().max(80).optional(),
   pricingMode: z.enum(["fixed", "contact"]).optional(),
+  requestType: z.enum(["booking", "quote"]).optional(),
+  airportTerminal: z.string().trim().max(20).optional(),
+  flightNumber: z.string().trim().max(40).optional(),
+  passengerCount: z.string().trim().max(3).optional(),
+  luggage: z.string().trim().max(120).optional(),
   note: z.string().trim().max(500).optional().default(""),
 });
 
@@ -86,6 +91,11 @@ export async function POST(request: Request) {
     data.pricingMode ? `mode=${data.pricingMode}` : "",
   ].filter(Boolean);
   if (pricingContext.length) noteParts.push(`Pricing context: ${pricingContext.join("; ")}.`);
+  if (data.requestType === "quote") noteParts.push("Yêu cầu báo giá.");
+  if (data.airportTerminal) noteParts.push(`Nhà ga: ${data.airportTerminal}.`);
+  if (data.flightNumber) noteParts.push(`Số chuyến bay: ${data.flightNumber}.`);
+  if (data.passengerCount) noteParts.push(`Số hành khách: ${data.passengerCount}.`);
+  if (data.luggage) noteParts.push(`Hành lý: ${data.luggage}.`);
   if (data.note) noteParts.push(data.note);
 
   const result = await wpAuthedFetch<{ id: number }>("/booking_request", {
