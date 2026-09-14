@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,16 +44,20 @@ function directionDescription(route: Route, direction: RoutePricingDirectionKey)
   return `Thuê xe nguyên chiếc từ ${from} đến ${to}. Chọn loại xe và gói hành trình phù hợp, xem giá theo đúng chiều hoặc liên hệ Gocar VN để nhận báo giá theo lịch thực tế.`;
 }
 
+function defaultDirection(route: Route): RoutePricingDirectionKey {
+  if (route.pricingV2?.outbound.enabled) return "outbound";
+  if (route.pricingV2?.inbound.enabled) return "inbound";
+  return "outbound";
+}
+
 export function RouteDetailPage({
   route,
-  direction,
   relatedRoutes,
   testimonials,
   relatedPosts,
   vehicleImageByType = {},
 }: {
   route: Route;
-  direction: RoutePricingDirectionKey;
   relatedRoutes: Route[];
   testimonials: Testimonial[];
   relatedPosts: BlogPost[];
@@ -59,6 +66,7 @@ export function RouteDetailPage({
    * nếu loại xe đó chưa có xe nào nhập ảnh, card tự fallback về icon. */
   vehicleImageByType?: Record<string, string>;
 }) {
+  const [direction, setDirection] = useState<RoutePricingDirectionKey>(() => defaultDirection(route));
   // Một số tuyến chưa có featured image trong CMS. Dùng ảnh WebP nhẹ làm fallback
   // thay cho city-tour.png (2.3 MB), vì hero luôn là ảnh LCP được tải ưu tiên.
   const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
@@ -77,7 +85,7 @@ export function RouteDetailPage({
         <div className="detail-main">
           <div className="section-heading detail-heading"><div><p className="section-label">GIÁ THUÊ XE THEO CHIỀU</p><h2>Chọn cách bạn muốn đi.</h2></div><p className="heading-note">Giá và package hiển thị theo đúng chiều đã chọn.<br />Không dùng giá mặc định của chiều ngược lại.</p></div>
           <div id="pricing">
-            <RoutePricingSection route={route} direction={direction} vehicleImageByType={vehicleImageByType} />
+            <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} />
           </div>
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">ĐIỂM ĐÓN & TRẢ</p><h2>Điểm nào cũng gần bạn.</h2></div></div><div className="stops-grid"><div><span className="stop-kicker"><MapPin size={15} /> Điểm đón tại {displayFrom}</span><ul>{pickupPoints.map((stop) => <li key={stop}><span className="stop-dot" />{stop}</li>)}</ul></div><div><span className="stop-kicker"><MapPin size={15} /> Điểm trả tại {displayTo}</span><ul>{dropoffPoints.map((stop) => <li key={stop}><span className="stop-dot destination" />{stop}</li>)}</ul></div></div></div>
