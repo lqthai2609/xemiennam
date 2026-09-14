@@ -27,10 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tuyen, "loai-xe": loaiXe } = await params;
   const route = await fetchRouteBySlug(tuyen);
   const vp = route ? findComboVehiclePrice(route, loaiXe) : undefined;
-  if (!route || !vp) return { title: "Không tìm thấy | Xe Miền Nam" };
+  if (!route || !vp) return { title: "Không tìm thấy | Gocar VN" };
   const priceText = vp.pricingMode === "contact" ? "liên hệ báo giá" : `giá từ ${vp.price}`;
   return {
-    title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, ${priceText} | Xe Miền Nam`,
+    title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, ${priceText} | Gocar VN`,
     description: comboDescriptionOrDefault(route, vp),
   };
 }

@@ -1,0 +1,57 @@
+name: Gocar Core Package
+
+on:
+  pull_request:
+    paths:
+      - "wordpress/gocar-core/**"
+      - ".github/workflows/gocar-core-package.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "wordpress/gocar-core/**"
+      - ".github/workflows/gocar-core-package.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Validate and package Gocar Core
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          coverage: none
+
+      - name: PHP syntax check
+        shell: bash
+        run: |
+          set -euo pipefail
+          find wordpress/gocar-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Build plugin ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist
+          mkdir -p dist/stage
+          cp -R wordpress/gocar-core dist/stage/gocar-core
+          cd dist/stage
+          zip -qr ../gocar-core.zip gocar-core
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gocar-core-plugin
+          path: dist/gocar-core.zip
+          if-no-files-found: error
+          retention-days: 14

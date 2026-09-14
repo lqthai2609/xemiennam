@@ -1,10 +1,9 @@
 import { vehicleTypeSlug, type Route, type VehiclePrice } from "@/types/route";
 
 /**
- * Trang kết hợp /tuyen-duong/[slug]/[loai-xe] — Ngày 14.
- * Ngày 7: `route.pricingByVehicle` vẫn là compatibility surface cho trang combo, nhưng dữ liệu
- * route thật đã được derive từ Pricing V2 ở `lib/api/routes.ts`; component không parse pricing
- * meta riêng lần nữa.
+ * Trang kết hợp /tuyen-duong/[slug]/[loai-xe].
+ * Pricing vẫn đi qua compatibility surface `route.pricingByVehicle`, còn nội dung Day 12
+ * được lấy riêng từ `route.comboDescriptions` để không trộn content với business pricing.
  */
 
 /** Tìm đúng dòng giá (VehiclePrice) trong 1 route khớp với slug loại xe trên URL. */
@@ -13,11 +12,26 @@ export function findComboVehiclePrice(route: Route, vehicleSlug: string): Vehicl
 }
 
 /**
- * Mô tả riêng cho tổ hợp tuyến + loại xe — ưu tiên nội dung biên tập tay.
- * Contact pricing dùng wording báo giá tự nhiên, không ghép chuỗi kiểu "giá tham khảo Liên hệ".
+ * Lấy nội dung biên tập riêng của route × vehicle.
+ * Dữ liệu CMS mới được ưu tiên; `VehiclePrice.comboDescription` chỉ giữ compatibility
+ * với mock/static data cũ và không phải nguồn production dài hạn.
+ */
+export function findComboDescription(route: Route, vp: VehiclePrice): string | undefined {
+  const cmsDescription = route.comboDescriptions?.find((item) => item.vehicleType === vp.vehicleType)?.description.trim();
+  if (cmsDescription) return cmsDescription;
+
+  const legacyDescription = vp.comboDescription?.trim();
+  return legacyDescription || undefined;
+}
+
+/**
+ * Mô tả dùng để render khi CMS chưa có content riêng.
+ * Fallback này chỉ bảo đảm trang không lỗi/không rỗng; nó KHÔNG được xem là nội dung unique
+ * để quyết định indexability. Thin-content guard sẽ xử lý ở Day 14.
  */
 export function comboDescriptionOrDefault(route: Route, vp: VehiclePrice): string {
-  if (vp.comboDescription) return vp.comboDescription;
+  const editorialDescription = findComboDescription(route, vp);
+  if (editorialDescription) return editorialDescription;
 
   const prefix = route.summary ? `${route.summary} ` : "";
   if (vp.pricingMode === "contact") {

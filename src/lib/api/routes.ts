@@ -1,4 +1,5 @@
 import type {
+  ComboDescription,
   PriceType,
   Route,
   RouteDirectionPricing,
@@ -52,6 +53,27 @@ function buildVehicleTypeById(rawVehicles: WPVehicle[]): Map<string, string> {
       embeddedTermName(vehicle._embedded, "vehicle_type") ?? "",
     ]),
   );
+}
+
+function buildComboDescriptions(wp: WPRoute, rawVehicles: WPVehicle[]): ComboDescription[] {
+  const rows = Array.isArray(wp.meta.combo_descriptions) ? wp.meta.combo_descriptions : [];
+  if (rows.length === 0) return [];
+
+  const vehicleTypeById = buildVehicleTypeById(rawVehicles);
+  const seenVehicleTypes = new Set<string>();
+  const descriptions: ComboDescription[] = [];
+
+  for (const row of rows) {
+    const vehicleId = String(row.vehicle_id ?? "").trim();
+    const vehicleType = vehicleTypeById.get(vehicleId) ?? "";
+    const description = typeof row.description === "string" ? row.description.trim() : "";
+
+    if (!vehicleId || !vehicleType || !description || seenVehicleTypes.has(vehicleType)) continue;
+    seenVehicleTypes.add(vehicleType);
+    descriptions.push({ vehicleId, vehicleType, description });
+  }
+
+  return descriptions.sort((a, b) => byVehicleTypeOrder(a.vehicleType, b.vehicleType));
 }
 
 function toPresentationPackage(
@@ -210,6 +232,7 @@ function mapWPRouteToRoute(
     seatCount,
     pricingByVehicle,
     pricingV2,
+    comboDescriptions: buildComboDescriptions(wp, rawVehicles),
     pickupPoints: splitCommaList(wp.meta.diem_don),
     dropoffPoints: splitCommaList(wp.meta.diem_tra),
     mapEmbedSrc: wp.meta.google_maps_embed || buildRouteMapEmbedSrc(from, to),
