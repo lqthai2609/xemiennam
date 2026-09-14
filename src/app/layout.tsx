@@ -24,7 +24,7 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Xe Miền Nam",
+  title: "Gocar VN",
   description: "Dịch vụ cho thuê xe các tuyến miền Nam — TP.HCM, Vũng Tàu, Cần Thơ, Đà Lạt.",
 };
 

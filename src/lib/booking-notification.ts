@@ -53,8 +53,8 @@ export async function sendBookingNotification(
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
         access_key: accessKey,
-        subject: `[Xe Miền Nam] Yêu cầu đặt xe mới #${data.bookingId}`,
-        from_name: "Website Xe Miền Nam",
+        subject: `[Gocar VN] Yêu cầu đặt xe mới #${data.bookingId}`,
+        from_name: "Website Gocar VN",
         "Mã lead CMS": data.bookingId,
         "Họ tên": data.fullName,
         "Số điện thoại": data.phone,
