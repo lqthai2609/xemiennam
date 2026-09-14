@@ -37,6 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE_URL}/danh-gia`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${SITE_URL}/lien-he`, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${SITE_URL}/san-bay/tan-son-nhat`, changeFrequency: "weekly", priority: 0.85 },
   ];
 
   // Hub tỉnh /tuyen-duong/[tinh] (Ngày 25) — 1 entry/tỉnh có ít nhất 1 tuyến (fetchRegionSlugs()
