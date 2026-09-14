@@ -10,7 +10,6 @@ import { RouteBookingActions } from "@/components/route-booking-actions";
 import {
   priceTypeLabel,
   routeComboHref,
-  routeHref,
   vehicleTypeSlug,
   type Route,
   type RoutePricingDirectionKey,
@@ -66,10 +65,12 @@ function LegacyPricingGrid({
 export function RoutePricingSection({
   route,
   direction,
+  onDirectionChange,
   vehicleImageByType = {},
 }: {
   route: Route;
   direction: RoutePricingDirectionKey;
+  onDirectionChange: (direction: RoutePricingDirectionKey) => void;
   vehicleImageByType?: Record<string, string>;
 }) {
   const pricing = route.pricingV2;
@@ -102,12 +103,16 @@ export function RoutePricingSection({
           {availableDirections.map((key) => {
             const selected = key === direction;
             const label = key === "outbound" ? `${route.from} → ${route.to}` : `${route.to} → ${route.from}`;
-            const href = key === "outbound" ? routeHref(route) : `${routeHref(route)}?direction=inbound`;
             return (
-              <Button key={key} size="sm" variant={selected ? "default" : "outline"} asChild>
-                <Link href={href} scroll={false} aria-current={selected ? "page" : undefined}>
-                  {label}
-                </Link>
+              <Button
+                key={key}
+                type="button"
+                size="sm"
+                variant={selected ? "default" : "outline"}
+                aria-pressed={selected}
+                onClick={() => onDirectionChange(key)}
+              >
+                {label}
               </Button>
             );
           })}
