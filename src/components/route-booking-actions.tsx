@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, MessageCircle, Phone, X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -10,31 +10,70 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { getZaloChatLink } from "@/lib/zalo";
 import { trackBookingLead } from "@/lib/analytics";
-import { SITE_HOTLINE_TEL } from "@/lib/site-config";
+import { SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import type { RoutePricingDirectionKey, RoutePricingMode } from "@/types/route";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
-const quickBookingSchema = z.object({
-  fullName: z.string().trim().min(1, "Vui lòng nhập họ tên."),
-  phone: z.string().trim().regex(phoneRegex, "Số điện thoại chưa đúng định dạng Việt Nam."),
-  departureAt: z.string().optional(),
-  airportTerminal: z.string().trim().optional(),
-  flightNumber: z.string().trim().optional(),
-  passengerCount: z.string().optional(),
-  luggage: z.string().trim().optional(),
-}).superRefine((data, context) => {
-  if (data.flightNumber && !data.airportTerminal) {
-    context.addIssue({ code: "custom", path: ["airportTerminal"], message: "Vui lòng chọn nhà ga." });
-  }
-});
-type QuickBookingData = z.infer<typeof quickBookingSchema>;
+export type AirportBookingContext = "pickup_from_airport" | "dropoff_at_airport";
+
+function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
+  return z
+    .object({
+      fullName: z.string().trim().min(1, "Vui lòng nhập họ tên."),
+      phone: z.string().trim().regex(phoneRegex, "Số điện thoại chưa đúng định dạng Việt Nam."),
+      departureAt: z.string().optional(),
+      flightNumber: z.string().trim().max(40, "Số hiệu chuyến bay tối đa 40 ký tự.").optional(),
+      landingAt: z.string().optional(),
+      airportTerminal: z.string().trim().max(80, "Thông tin nhà ga tối đa 80 ký tự.").optional(),
+      flightAt: z.string().optional(),
+      airportArrivalAt: z.string().optional(),
+      passengerCount: z.string().trim().optional(),
+      luggageCount: z.string().trim().optional(),
+      requestNameplate: z.boolean().optional(),
+      nameplateName: z.string().trim().max(80, "Tên trên bảng tối đa 80 ký tự.").optional(),
+    })
+    .superRefine((data, context) => {
+      if (!airportContext) return;
+
+      const passengerCount = Number(data.passengerCount);
+      if (!data.passengerCount || !Number.isInteger(passengerCount) || passengerCount < 1) {
+        context.addIssue({
+          code: "custom",
+          path: ["passengerCount"],
+          message: "Vui lòng nhập số khách từ 1 trở lên.",
+        });
+      }
+
+      if (data.luggageCount) {
+        const luggageCount = Number(data.luggageCount);
+        if (!Number.isInteger(luggageCount) || luggageCount < 0) {
+          context.addIssue({
+            code: "custom",
+            path: ["luggageCount"],
+            message: "Số kiện hành lý phải là số nguyên từ 0 trở lên.",
+          });
+        }
+      }
+
+      if (airportContext === "pickup_from_airport" && data.requestNameplate && !data.nameplateName) {
+        context.addIssue({
+          code: "custom",
+          path: ["nameplateName"],
+          message: "Vui lòng nhập tên cần hiển thị trên bảng đón khách.",
+        });
+      }
+    });
+}
+
+type QuickBookingSchema = ReturnType<typeof buildQuickBookingSchema>;
+type QuickBookingData = z.infer<QuickBookingSchema>;
 
 function FieldError({ message }: { message?: string }) {
   return message ? <p className="text-sm text-destructive">{message}</p> : null;
 }
 
-function formatDepartureLabel(value: string): string {
+function formatDateTimeLabel(value: string): string {
   const [datePart, timePart] = value.split("T");
   const d = new Date(`${datePart}T00:00:00`);
   if (Number.isNaN(d.getTime())) return value;
@@ -44,6 +83,10 @@ function formatDepartureLabel(value: string): string {
   return timePart ? `${dateLabel} ${timePart}` : dateLabel;
 }
 
+function datePart(value?: string): string {
+  return value ? value.split("T")[0] : "";
+}
+
 type BookingPricingContext = {
   routeId?: string;
   displayRoute?: string;
@@ -51,7 +94,8 @@ type BookingPricingContext = {
   packageKey?: string;
   packageLabel?: string;
   pricingMode?: RoutePricingMode;
-  airportRoute?: boolean;
+  airportContext?: AirportBookingContext;
+  airportName?: string;
 };
 
 function QuickBookingDialog({
@@ -64,7 +108,8 @@ function QuickBookingDialog({
   packageKey,
   packageLabel,
   pricingMode = "fixed",
-  airportRoute = false,
+  airportContext,
+  airportName,
   onClose,
 }: {
   route: string;
@@ -76,20 +121,29 @@ function QuickBookingDialog({
   packageKey?: string;
   packageLabel?: string;
   pricingMode?: Exclude<RoutePricingMode, "disabled">;
-  airportRoute?: boolean;
+  airportContext?: AirportBookingContext;
+  airportName?: string;
   onClose: () => void;
 }) {
+  const schema = useMemo(() => buildQuickBookingSchema(airportContext), [airportContext]);
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<QuickBookingData>({
-    resolver: zodResolver(quickBookingSchema),
-    defaultValues: { passengerCount: "1" },
+    resolver: zodResolver(schema),
+    defaultValues: {
+      passengerCount: airportContext ? "1" : "",
+      luggageCount: airportContext ? "0" : "",
+      requestNameplate: false,
+    },
   });
 
   const visibleRoute = displayRoute || route;
-  const visiblePrice = pricingMode === "contact" ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
+  const isQuote = pricingMode === "contact";
+  const visiblePrice = isQuote ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
+  const requestNameplate = watch("requestNameplate");
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -101,14 +155,37 @@ function QuickBookingDialog({
 
   async function submitForm(data: QuickBookingData) {
     try {
-      const departureDate = data.departureAt ? data.departureAt.split("T")[0] : "";
-      const departureLabel = data.departureAt ? formatDepartureLabel(data.departureAt) : "";
-      const pricingNote =
-        pricingMode === "contact"
-          ? "Trạng thái giá: liên hệ báo giá."
-          : price
-            ? `Giá tham khảo: ${price}.`
-            : "Trạng thái giá: liên hệ báo giá.";
+      const schedulingValue =
+        airportContext === "pickup_from_airport"
+          ? data.landingAt
+          : airportContext === "dropoff_at_airport"
+            ? data.airportArrivalAt || data.flightAt
+            : data.departureAt;
+      const departureDate = datePart(schedulingValue);
+      const noteParts: string[] = [isQuote ? "Yêu cầu báo giá online." : "Đặt xe online."];
+
+      if (packageLabel) noteParts.push(`Gói: ${packageLabel}.`);
+
+      if (airportContext === "pickup_from_airport") {
+        noteParts.push("Ngữ cảnh: Đón tại sân bay.");
+        if (data.flightNumber) noteParts.push(`Chuyến bay: ${data.flightNumber}.`);
+        if (data.landingAt) noteParts.push(`Hạ cánh: ${formatDateTimeLabel(data.landingAt)}.`);
+        if (data.airportTerminal) noteParts.push(`Nhà ga: ${data.airportTerminal}.`);
+        if (data.passengerCount) noteParts.push(`Khách: ${data.passengerCount}.`);
+        if (data.luggageCount) noteParts.push(`Hành lý: ${data.luggageCount} kiện.`);
+        if (data.requestNameplate) {
+          noteParts.push(`Bảng tên: Có${data.nameplateName ? ` — ${data.nameplateName}` : ""}.`);
+        }
+      } else if (airportContext === "dropoff_at_airport") {
+        noteParts.push("Ngữ cảnh: Tiễn sân bay.");
+        if (data.flightAt) noteParts.push(`Giờ bay: ${formatDateTimeLabel(data.flightAt)}.`);
+        if (data.airportArrivalAt) noteParts.push(`Có mặt sân bay: ${formatDateTimeLabel(data.airportArrivalAt)}.`);
+        if (data.passengerCount) noteParts.push(`Khách: ${data.passengerCount}.`);
+        if (data.luggageCount) noteParts.push(`Hành lý: ${data.luggageCount} kiện.`);
+      } else if (data.departureAt) {
+        noteParts.push(`Ngày giờ đi: ${formatDateTimeLabel(data.departureAt)}.`);
+      }
+
       const res = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -120,26 +197,9 @@ function QuickBookingDialog({
           vehicleType,
           departureDate,
           direction,
-          airportTerminal: data.airportTerminal,
-          flightNumber: data.flightNumber,
-          passengerCount: data.passengerCount,
-          luggage: data.luggage,
-          requestType: pricingMode === "contact" ? "quote" : "booking",
           packageKey,
           pricingMode,
-          note: [
-            `Đặt xe online từ trang chi tiết tuyến.`,
-            `Chiều: ${visibleRoute} (${direction}).`,
-            packageLabel && `Gói: ${packageLabel}${packageKey ? ` (${packageKey})` : ""}.`,
-            pricingNote,
-            departureLabel && `Ngày giờ đi mong muốn: ${departureLabel}.`,
-            airportRoute && data.airportTerminal && `Nhà ga: ${data.airportTerminal}.`,
-            airportRoute && data.flightNumber && `Số chuyến bay: ${data.flightNumber}.`,
-            airportRoute && data.passengerCount && `Số hành khách: ${data.passengerCount}.`,
-            airportRoute && data.luggage && `Hành lý: ${data.luggage}.`,
-          ]
-            .filter(Boolean)
-            .join(" "),
+          note: noteParts.join(" "),
         }),
       });
       if (!res.ok) {
@@ -147,13 +207,13 @@ function QuickBookingDialog({
         throw new Error(body?.error ?? `Gửi yêu cầu đặt xe thất bại (HTTP ${res.status}).`);
       }
       trackBookingLead({ route: visibleRoute, vehicleType });
-      toast.success("Đã nhận thông tin đặt xe", {
-        description: "Đội ngũ sẽ liên hệ với bạn trong thời gian sớm nhất.",
+      toast.success(isQuote ? "Đã nhận yêu cầu báo giá" : "Đã nhận thông tin đặt xe", {
+        description: `${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
       });
       onClose();
     } catch {
       toast.error("Gửi thông tin chưa thành công", {
-        description: "Vui lòng thử lại hoặc gọi trực tiếp cho chúng tôi.",
+        description: `Vui lòng thử lại hoặc gọi trực tiếp cho ${SITE_NAME}.`,
       });
     }
   }
@@ -164,14 +224,14 @@ function QuickBookingDialog({
         className="quick-booking-panel"
         role="dialog"
         aria-modal="true"
-        aria-label={`Đặt xe ${vehicleType}`}
+        aria-label={`${isQuote ? "Yêu cầu báo giá" : "Đặt xe"} ${vehicleType}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button type="button" className="quick-booking-close" onClick={onClose} aria-label="Đóng">
           <X size={18} />
         </button>
-        <p className="section-label">ĐẶT XE ONLINE</p>
-        <h3>Xác nhận thông tin.</h3>
+        <p className="section-label">{isQuote ? "YÊU CẦU BÁO GIÁ" : "ĐẶT XE ONLINE"}</p>
+        <h3>Xác nhận thông tin chuyến.</h3>
         <div className="quick-booking-summary">
           <div>
             Tuyến: <strong>{visibleRoute}</strong>
@@ -184,74 +244,200 @@ function QuickBookingDialog({
               Gói: <strong>{packageLabel}</strong>
             </div>
           )}
+          {airportName && (
+            <div>
+              Sân bay: <strong>{airportName}</strong>
+            </div>
+          )}
           <div>
             Giá: <strong>{visiblePrice}</strong>
           </div>
         </div>
+
         <form onSubmit={handleSubmit(submitForm)} className="quick-booking-form" noValidate>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-            <span>
-              Họ tên <span className="text-destructive">*</span>
-            </span>
-            <input
-              {...register("fullName")}
-              aria-invalid={!!errors.fullName}
-              placeholder="Nguyễn Văn A"
-              className="form-control"
-              autoFocus
-            />
-            <FieldError message={errors.fullName?.message} />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-            <span>
-              Số điện thoại <span className="text-destructive">*</span>
-            </span>
-            <input
-              {...register("phone")}
-              aria-invalid={!!errors.phone}
-              inputMode="tel"
-              placeholder="0901 234 567"
-              className="form-control"
-            />
-            <FieldError message={errors.phone?.message} />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-            <span>
-              Ngày giờ đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
-            </span>
-            <input {...register("departureAt")} type="datetime-local" className="form-control" />
-          </label>
-          {airportRoute && (
+          <fieldset className="flex flex-col gap-3">
+            <legend className="mb-2 text-sm font-semibold text-foreground">Thông tin khách hàng</legend>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span>
+                Họ tên <span className="text-destructive">*</span>
+              </span>
+              <input
+                {...register("fullName")}
+                aria-invalid={!!errors.fullName}
+                placeholder="Nguyễn Văn A"
+                className="form-control"
+                autoFocus
+              />
+              <FieldError message={errors.fullName?.message} />
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span>
+                Số điện thoại <span className="text-destructive">*</span>
+              </span>
+              <input
+                {...register("phone")}
+                aria-invalid={!!errors.phone}
+                inputMode="tel"
+                placeholder="0901 234 567"
+                className="form-control"
+              />
+              <FieldError message={errors.phone?.message} />
+            </label>
+          </fieldset>
+
+          {!airportContext && (
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span>
+                Ngày giờ đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+              </span>
+              <input {...register("departureAt")} type="datetime-local" className="form-control" />
+            </label>
+          )}
+
+          {airportContext === "pickup_from_airport" && (
             <fieldset className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
-              <legend className="px-1 text-sm font-semibold">Thông tin chuyến bay</legend>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Nhà ga {errors.airportTerminal ? <span className="text-destructive">*</span> : <span className="font-normal text-muted-foreground">(nếu có chuyến bay)</span>}</span>
-                <select {...register("airportTerminal")} className="form-control">
-                  <option value="">Chọn nhà ga</option>
-                  <option value="T1">T1 — Nội địa</option>
-                  <option value="T2">T2 — Quốc tế</option>
-                </select>
-                <FieldError message={errors.airportTerminal?.message} />
-              </label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Số chuyến bay <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
-                <input {...register("flightNumber")} className="form-control" placeholder="VN123" />
-              </label>
+              <legend className="px-1 text-sm font-semibold text-foreground">Thông tin chuyến bay đến</legend>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>Số hành khách</span>
-                  <select {...register("passengerCount")} className="form-control">{Array.from({ length: 9 }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1} người</option>)}</select>
+                  <span>
+                    Số hiệu chuyến bay <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                  </span>
+                  <input
+                    {...register("flightNumber")}
+                    aria-invalid={!!errors.flightNumber}
+                    className="form-control"
+                    placeholder="VN123"
+                  />
+                  <FieldError message={errors.flightNumber?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>Hành lý <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
-                  <input {...register("luggage")} className="form-control" placeholder="2 vali lớn" />
+                  <span>
+                    Giờ hạ cánh dự kiến <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                  </span>
+                  <input {...register("landingAt")} type="datetime-local" className="form-control" />
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>
+                    Nhà ga <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                  </span>
+                  <input
+                    {...register("airportTerminal")}
+                    aria-invalid={!!errors.airportTerminal}
+                    className="form-control"
+                    placeholder="Ví dụ: T3 / Quốc tế"
+                  />
+                  <FieldError message={errors.airportTerminal?.message} />
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>
+                    Số khách <span className="text-destructive">*</span>
+                  </span>
+                  <input
+                    {...register("passengerCount")}
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputMode="numeric"
+                    aria-invalid={!!errors.passengerCount}
+                    className="form-control"
+                  />
+                  <FieldError message={errors.passengerCount?.message} />
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>
+                    Số kiện hành lý <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                  </span>
+                  <input
+                    {...register("luggageCount")}
+                    type="number"
+                    min="0"
+                    step="1"
+                    inputMode="numeric"
+                    aria-invalid={!!errors.luggageCount}
+                    className="form-control"
+                  />
+                  <FieldError message={errors.luggageCount?.message} />
+                </label>
+              </div>
+
+              <label className="flex items-start gap-2 text-sm font-semibold text-foreground">
+                <input {...register("requestNameplate")} type="checkbox" className="mt-1 size-4" />
+                <span>Cần bảng tên đón khách</span>
+              </label>
+
+              {requestNameplate && (
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>
+                    Tên hiển thị trên bảng <span className="text-destructive">*</span>
+                  </span>
+                  <input
+                    {...register("nameplateName")}
+                    aria-invalid={!!errors.nameplateName}
+                    className="form-control"
+                    placeholder="NGUYEN VAN A"
+                  />
+                  <FieldError message={errors.nameplateName?.message} />
+                </label>
+              )}
+            </fieldset>
+          )}
+
+          {airportContext === "dropoff_at_airport" && (
+            <fieldset className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
+              <legend className="px-1 text-sm font-semibold text-foreground">Thông tin chuyến bay</legend>
+              <p className="m-0 text-xs leading-5 text-muted-foreground">
+                Thông tin này giúp {SITE_NAME} tư vấn giờ đón phù hợp với thời gian di chuyển thực tế.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>
+                    Giờ bay dự kiến <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                  </span>
+                  <input {...register("flightAt")} type="datetime-local" className="form-control" />
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>
+                    Giờ cần có mặt tại sân bay <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                  </span>
+                  <input {...register("airportArrivalAt")} type="datetime-local" className="form-control" />
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>
+                    Số khách <span className="text-destructive">*</span>
+                  </span>
+                  <input
+                    {...register("passengerCount")}
+                    type="number"
+                    min="1"
+                    step="1"
+                    inputMode="numeric"
+                    aria-invalid={!!errors.passengerCount}
+                    className="form-control"
+                  />
+                  <FieldError message={errors.passengerCount?.message} />
+                </label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>
+                    Số kiện hành lý <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                  </span>
+                  <input
+                    {...register("luggageCount")}
+                    type="number"
+                    min="0"
+                    step="1"
+                    inputMode="numeric"
+                    aria-invalid={!!errors.luggageCount}
+                    className="form-control"
+                  />
+                  <FieldError message={errors.luggageCount?.message} />
                 </label>
               </div>
             </fieldset>
           )}
+
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
-            {isSubmitting ? "Đang gửi..." : "Xác nhận đặt xe"}
+            {isSubmitting ? "Đang gửi..." : isQuote ? "Gửi yêu cầu báo giá" : "Xác nhận đặt xe"}
           </Button>
         </form>
       </div>
@@ -269,35 +455,62 @@ export function RouteBookingActions({
   packageKey,
   packageLabel,
   pricingMode = "fixed",
-  airportRoute = false,
+  airportContext,
+  airportName,
 }: {
   route: string;
   vehicleType: string;
   price?: string;
 } & BookingPricingContext) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const zaloLink = getZaloChatLink();
+
+  function closeDialog() {
+    setOpen(false);
+    window.setTimeout(() => triggerRef.current?.focus(), 0);
+  }
 
   if (pricingMode === "disabled") return null;
 
   if (pricingMode === "contact") {
     return (
       <>
-      <div className="detail-price-actions">
-        {zaloLink && (
-          <Button size="sm" asChild>
-            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`Nhắn Zalo nhận báo giá xe ${vehicleType}`}>
-              <MessageCircle data-icon="inline-start" size={16} />
-              Nhắn Zalo báo giá
+        <div className="detail-price-actions flex-wrap">
+          <Button ref={triggerRef} size="sm" className="detail-price-cta min-w-full" onClick={() => setOpen(true)}>
+            Yêu cầu báo giá
+          </Button>
+          {zaloLink && (
+            <Button size="sm" variant="outline" className="flex-1" asChild>
+              <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`Nhắn Zalo nhận báo giá xe ${vehicleType}`}>
+                <MessageCircle data-icon="inline-start" size={16} />
+                Nhắn Zalo
+              </a>
+            </Button>
+          )}
+          <Button size="sm" variant="outline" className="flex-1" asChild>
+            <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi nhận báo giá xe ${vehicleType}`}>
+              <Phone data-icon="inline-start" size={16} />
+              Gọi báo giá
             </a>
           </Button>
+        </div>
+        {open && (
+          <QuickBookingDialog
+            route={route}
+            routeId={routeId}
+            displayRoute={displayRoute}
+            vehicleType={vehicleType}
+            price={price}
+            direction={direction}
+            packageKey={packageKey}
+            packageLabel={packageLabel}
+            pricingMode="contact"
+            airportContext={airportContext}
+            airportName={airportName}
+            onClose={closeDialog}
+          />
         )}
-        <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          <Phone data-icon="inline-start" size={16} />
-          Nhận báo giá
-        </Button>
-      </div>
-      {open && <QuickBookingDialog route={route} routeId={routeId} displayRoute={displayRoute} vehicleType={vehicleType} price={price} direction={direction} packageKey={packageKey} packageLabel={packageLabel} pricingMode="contact" airportRoute={airportRoute} onClose={() => setOpen(false)} />}
       </>
     );
   }
@@ -305,7 +518,7 @@ export function RouteBookingActions({
   return (
     <>
       <div className="detail-price-actions">
-        <Button size="sm" className="detail-price-cta" onClick={() => setOpen(true)}>
+        <Button ref={triggerRef} size="sm" className="detail-price-cta" onClick={() => setOpen(true)}>
           Đặt xe online
         </Button>
         {zaloLink && (
@@ -338,8 +551,9 @@ export function RouteBookingActions({
           packageKey={packageKey}
           packageLabel={packageLabel}
           pricingMode="fixed"
-          airportRoute={airportRoute}
-          onClose={() => setOpen(false)}
+          airportContext={airportContext}
+          airportName={airportName}
+          onClose={closeDialog}
         />
       )}
     </>
