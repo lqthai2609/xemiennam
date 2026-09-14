@@ -1,0 +1,46 @@
+.service-type-card:focus-visible,
+.suggested-vehicle-card:focus-visible,
+.service-route-link:focus-visible,
+.service-route-combo:focus-visible,
+.service-phone:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 65%, white);
+  outline-offset: 3px;
+}
+
+.service-route-link,
+.service-route-combo {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  text-underline-offset: 3px;
+}
+
+.service-route-link:hover,
+.service-route-combo:hover {
+  text-decoration-color: currentColor;
+}
+
+.service-route-combos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.service-route-combo {
+  font-weight: 700;
+}
+
+.service-route-combo::after {
+  content: "↗";
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 10px;
+  text-decoration: none;
+}
+
+@media (max-width: 520px) {
+  .service-detail-content { padding-inline: 20px; }
+  .service-type-card,
+  .suggested-vehicle-card { padding: 16px; }
+  .service-route-combos { gap: 8px 10px; }
+}
