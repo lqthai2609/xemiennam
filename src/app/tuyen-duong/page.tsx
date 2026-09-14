@@ -3,7 +3,7 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { RoutesPageClient } from "@/components/routes-page-client";
 
 export const metadata: Metadata = {
-  title: "Các tuyến cho thuê xe nguyên chiếc | Xe Miền Nam",
+  title: "Các tuyến cho thuê xe nguyên chiếc | Gocar VN",
   description: "Toàn bộ tuyến cho thuê xe nguyên chiếc TP.HCM đi Vũng Tàu, Cần Thơ, Đà Lạt... lọc theo khu vực, loại xe và số chỗ.",
 };
 

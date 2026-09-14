@@ -3,7 +3,7 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { BangGiaPageClient } from "@/components/bang-gia-page-client";
 
 export const metadata: Metadata = {
-  title: "Bảng giá thuê xe nguyên chiếc theo tuyến | Xe Miền Nam",
+  title: "Bảng giá thuê xe nguyên chiếc theo tuyến | Gocar VN",
   description: "Bảng giá tham khảo cho thuê xe nguyên chiếc theo từng tuyến và loại xe (4–7/16–29/45 chỗ/Limousine), cập nhật theo dữ liệu mới nhất.",
 };
 

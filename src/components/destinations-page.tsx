@@ -5,6 +5,7 @@ import { DestinationCardTile } from "@/components/destination-card-tile";
 import { navItems } from "@/data/nav";
 import type { DestinationCard } from "@/types/diem-den";
 import type { Route } from "@/types/route";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
@@ -20,9 +21,15 @@ export function DestinationsPage({
 }) {
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
       <SubpageHero
-        title="Đi đâu, Xe Miền Nam có tuyến."
+        title={`Đi đâu, ${SITE_NAME} có tuyến.`}
         description="Mỗi điểm đến là một cách đi khác nhau. Chọn khu vực bạn muốn đến để xem các tuyến xe đang chạy và bắt đầu lên lịch."
         backgroundImage={defaultSubpageHeroImage}
         routes={routes}
@@ -40,7 +47,16 @@ export function DestinationsPage({
           </div>
         ) : <p className="blog-empty">Danh sách điểm đến đang được cập nhật.</p>}
       </section>
-      <SiteFooter tagline={<>Đi đâu cũng có Xe Miền Nam.<br />Kết nối những hành trình tử tế.</>} phone="1900 6789" linkGroups={footerLinkGroups} socialLinks={defaultSocialLinks} copyright="© 2026 Xe Miền Nam" madeFor="Made for the road." />
+      <SiteFooter
+        tagline={<>Đi đâu cũng có {SITE_NAME}.<br />Kết nối những hành trình tử tế.</>}
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
+        linkGroups={footerLinkGroups}
+        socialLinks={defaultSocialLinks}
+        copyright={`© 2026 ${SITE_NAME}`}
+        madeFor="Made for the road."
+        brandName={SITE_NAME}
+      />
     </main>
   );
 }

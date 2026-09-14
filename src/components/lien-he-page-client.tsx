@@ -8,6 +8,7 @@ import { ContactBookingForm, type BookingFormData } from "@/components/contact-b
 import { navItems } from "@/data/nav";
 import { getZaloChatLink } from "@/lib/zalo";
 import { UnifiedHero } from "@/components/unified-hero";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
   {
@@ -72,9 +73,15 @@ export function LienHePageClient({
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
 
-      <UnifiedHero eyebrow="LIÊN HỆ" title={<>Cùng lên kế hoạch<br /><em>cho chuyến đi.</em></>} description="Để lại thông tin, Xe Miền Nam sẽ tư vấn lịch trình và loại xe phù hợp." />
+      <UnifiedHero eyebrow="LIÊN HỆ" title={<>Cùng lên kế hoạch<br /><em>cho chuyến đi.</em></>} description={`Để lại thông tin, ${SITE_NAME} sẽ tư vấn lịch trình và loại xe phù hợp.`} />
 
       <section className="section-wrap lien-he-content">
         <div className="lien-he-form-card">
@@ -90,8 +97,8 @@ export function LienHePageClient({
 
         <aside className="lien-he-info-card">
           <h3>Thông tin liên hệ</h3>
-          <a className="lien-he-info-row" href="tel:19006789">
-            <Phone /> 1900 6789 (24/7)
+          <a className="lien-he-info-row" href={`tel:${SITE_HOTLINE_TEL}`}>
+            <Phone /> {SITE_HOTLINE} (24/7)
           </a>
           <span className="lien-he-info-row">
             <MapPin /> TP. Hồ Chí Minh
@@ -111,16 +118,18 @@ export function LienHePageClient({
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có {SITE_NAME}.
             <br />
             Kết nối những hành trình tử tế.
           </>
         }
-        phone="1900 6789"
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
+        brandName={SITE_NAME}
       />
     </main>
   );

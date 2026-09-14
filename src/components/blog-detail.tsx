@@ -6,6 +6,7 @@ import { formatVNDate } from "@/lib/wp";
 import { navItems } from "@/data/nav";
 import type { BlogPost } from "@/types/blog";
 import { routeHref, routePriceKicker, type Route } from "@/types/route";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
   {
@@ -74,7 +75,13 @@ export function BlogDetailPage({ post, relatedPosts, relatedRoutes }: { post: Bl
 
   return (
     <main className="site-shell post-detail-page">
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
 
       <section className="post-hero">
         <Link className="back-link" href="/blog">
@@ -159,16 +166,18 @@ export function BlogDetailPage({ post, relatedPosts, relatedRoutes }: { post: Bl
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có {SITE_NAME}.
             <br />
             Kết nối những hành trình tử tế.
           </>
         }
-        phone="1900 6789"
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
+        brandName={SITE_NAME}
       />
     </main>
   );

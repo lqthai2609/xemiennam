@@ -1,3 +1,5 @@
+import { SITE_NAME } from "@/lib/site-config";
+
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 const NOTIFICATION_TIMEOUT_MS = 8_000;
 
@@ -53,8 +55,8 @@ export async function sendBookingNotification(
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
         access_key: accessKey,
-        subject: `[Xe Miền Nam] Yêu cầu đặt xe mới #${data.bookingId}`,
-        from_name: "Website Xe Miền Nam",
+        subject: `[${SITE_NAME}] Yêu cầu đặt xe mới #${data.bookingId}`,
+        from_name: `Website ${SITE_NAME}`,
         "Mã lead CMS": data.bookingId,
         "Họ tên": data.fullName,
         "Số điện thoại": data.phone,

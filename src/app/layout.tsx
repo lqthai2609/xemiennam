@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { FloatingContactActions } from "@/components/floating-contact-actions";
 import { AnalyticsScripts } from "@/components/analytics-scripts";
 import { AnalyticsPageview } from "@/components/analytics-pageview";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-config";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -24,8 +25,8 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Xe Miền Nam",
-  description: "Dịch vụ cho thuê xe các tuyến miền Nam — TP.HCM, Vũng Tàu, Cần Thơ, Đà Lạt.",
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

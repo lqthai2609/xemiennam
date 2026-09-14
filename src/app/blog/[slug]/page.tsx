@@ -12,6 +12,7 @@ import { JsonLd } from "@/components/json-ld";
 import { buildFaqPageSchema } from "@/lib/schema";
 import { routeHref } from "@/types/route";
 import { UnifiedHero } from "@/components/unified-hero";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 export type Props = { params: Promise<{ slug: string }> };
 
@@ -26,10 +27,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await fetchPostBySlug(slug);
   return post
     ? {
-        title: post.rankMathTitle || `${post.title} | Blog Xe Miền Nam`,
+        title: post.rankMathTitle || `${post.title} | Blog ${SITE_NAME}`,
         description: post.rankMathDescription || post.excerpt,
       }
-    : { title: "Không tìm thấy bài viết | Xe Miền Nam" };
+    : { title: `Không tìm thấy bài viết | ${SITE_NAME}` };
 }
 
 const footerLinkGroups = [
@@ -69,7 +70,13 @@ export default async function BlogDetailPage({ params }: Props) {
       {faqItems.length > 0 && (
         <JsonLd data={buildFaqPageSchema(faqItems.map((f) => ({ question: f.question, answer: f.answer })))} />
       )}
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
 
       <UnifiedHero eyebrow={post.category} title={post.title} description={post.excerpt} backgroundImage={post.featuredImageUrl || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
 
@@ -110,16 +117,18 @@ export default async function BlogDetailPage({ params }: Props) {
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có {SITE_NAME}.
             <br />
             Kết nối những hành trình tử tế.
           </>
         }
-        phone="1900 6789"
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
+        brandName={SITE_NAME}
       />
     </main>
   );

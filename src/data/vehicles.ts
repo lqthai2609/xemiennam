@@ -3,7 +3,7 @@ import { buildPlaceholderImage } from "@/lib/placeholder-image";
 
 /**
  * images hiện là ẢNH PLACEHOLDER TẠM (xem lib/placeholder-image.ts) — chỉ để test giao
- * diện ảnh hoạt động đúng, KHÔNG phải ảnh xe thật của Xe Miền Nam. BẮT BUỘC thay bằng ảnh
+ * diện ảnh hoạt động đúng, KHÔNG phải ảnh xe thật của Gocar VN. BẮT BUỘC thay bằng ảnh
  * thật (anh Dúi tự chụp, hoặc ảnh stock đã mua bản quyền) khi nhập dữ liệu thật Ngày 24 —
  * khi đó nối qua wp.meta.gallery_anh, không còn dùng mảng cứng ở đây nữa.
  */

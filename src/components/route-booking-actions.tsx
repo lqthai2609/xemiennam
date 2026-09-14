@@ -187,7 +187,7 @@ function QuickBookingDialog({
               {...register("phone")}
               aria-invalid={!!errors.phone}
               inputMode="tel"
-              placeholder="0898 400 800"
+              placeholder="0901 234 567"
               className="form-control"
             />
             <FieldError message={errors.phone?.message} />

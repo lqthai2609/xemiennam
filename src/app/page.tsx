@@ -12,11 +12,11 @@ import { HomeDynamicSections } from "@/components/home-dynamic-sections";
 import { navItems } from "@/data/nav";
 import { JsonLd } from "@/components/json-ld";
 import { buildLocalBusinessSchema } from "@/lib/schema";
-import { SITE_DESCRIPTION } from "@/lib/site-config";
+import { SITE_DESCRIPTION, SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 /** Ngày 23 — trang chủ trước đây không khai báo metadata riêng, chỉ ăn theo layout.tsx gốc. */
 export const metadata: Metadata = {
-  title: "Xe Miền Nam — Thuê xe nguyên chiếc 4–45 chỗ và Limousine",
+  title: `${SITE_NAME} — Thuê xe nguyên chiếc 4–45 chỗ và Limousine`,
   description: SITE_DESCRIPTION,
 };
 
@@ -75,13 +75,19 @@ export default function Home() {
   return (
     <main className="site-shell">
       <JsonLd data={buildLocalBusinessSchema()} />
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
 
       <section className="hero" id="top">
         <div className="hero-inner">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span className="eyebrow-line" /> Đi đâu cũng có Xe Miền Nam
+              <span className="eyebrow-line" /> Đi đâu cũng có {SITE_NAME}
             </div>
             <h1>
               Đi xa hơn.
@@ -118,7 +124,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-usp-section" aria-label="Lợi ích khi chọn Xe Miền Nam">
+      <section className="home-usp-section" aria-label={`Lợi ích khi chọn ${SITE_NAME}`}>
         <div className="home-usp-grid">
           {homeUsps.map(({ icon: Icon, title, description }) => (
             <article className="home-usp-card" key={title}>
@@ -156,7 +162,7 @@ export default function Home() {
             <Ticket size={29} />
             <span>THUÊ TRỌN CHUYẾN</span>
             <strong>ĐI TỬ TẾ</strong>
-            <small>XE MIỀN NAM · 2012—2024</small>
+            <small>GOCAR VN</small>
           </div>
         </div>
         <div className="promise-copy">
@@ -187,8 +193,6 @@ export default function Home() {
         </div>
       </section>
 
-
-
       <section className="final-cta">
         <div>
           <SectionLabel>SẴN SÀNG LÊN ĐƯỜNG?</SectionLabel>
@@ -213,16 +217,18 @@ export default function Home() {
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có {SITE_NAME}.
             <br />
             Kết nối những hành trình tử tế.
           </>
         }
-        phone="1900 6789"
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
+        brandName={SITE_NAME}
       />
     </main>
   );

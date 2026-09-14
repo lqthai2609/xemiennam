@@ -4,6 +4,7 @@ import { navItems } from "@/data/nav";
 import { PromotionCard } from "@/components/promotion-card";
 import type { Promotion } from "@/types/promotion";
 import { UnifiedHero } from "@/components/unified-hero";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
   {
@@ -33,7 +34,13 @@ export function PromotionsPage({ promotions }: { promotions: Promotion[] }) {
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
 
       <UnifiedHero eyebrow="KHUYẾN MÃI" title={<>Ưu đãi<br /><em>đang chờ bạn.</em></>} description="Các chương trình giảm giá theo tuyến và loại xe, cập nhật thường xuyên." />
 
@@ -52,16 +59,18 @@ export function PromotionsPage({ promotions }: { promotions: Promotion[] }) {
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có {SITE_NAME}.
             <br />
             Kết nối những hành trình tử tế.
           </>
         }
-        phone="1900 6789"
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
+        brandName={SITE_NAME}
       />
     </main>
   );

@@ -5,10 +5,11 @@ import { navItems } from "@/data/nav";
 import { BlogCard } from "@/components/blog-card";
 import { fetchPosts } from "@/lib/api/blog";
 import { UnifiedHero } from "@/components/unified-hero";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 export const metadata: Metadata = {
-  title: "Blog | Xe Miền Nam",
-  description: "Kinh nghiệm du lịch, cẩm nang tuyến đường và review điểm đến cho hành trình cùng Xe Miền Nam.",
+  title: `Blog | ${SITE_NAME}`,
+  description: `Kinh nghiệm du lịch, cẩm nang tuyến đường và review điểm đến cho hành trình cùng ${SITE_NAME}.`,
 };
 
 const footerLinkGroups = [
@@ -34,7 +35,13 @@ export default async function BlogPage() {
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
 
       <UnifiedHero eyebrow="BLOG" title={<>Cẩm nang<br /><em>trước khi lên xe.</em></>} description="Kinh nghiệm du lịch, cẩm nang tuyến đường và review điểm đến — cập nhật đều đặn." />
 
@@ -53,16 +60,18 @@ export default async function BlogPage() {
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có {SITE_NAME}.
             <br />
             Kết nối những hành trình tử tế.
           </>
         }
-        phone="1900 6789"
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
+        brandName={SITE_NAME}
       />
     </main>
   );

@@ -6,8 +6,8 @@ import { JsonLd } from "@/components/json-ld";
 import { buildAggregateRatingSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "Đánh giá khách hàng | Xe Miền Nam",
-  description: "Đánh giá thật từ khách hàng đã thuê xe cùng Xe Miền Nam, lọc theo số sao và theo tuyến.",
+  title: "Đánh giá khách hàng | Gocar VN",
+  description: "Đánh giá thật từ khách hàng đã thuê xe cùng Gocar VN, lọc theo số sao và theo tuyến.",
 };
 
 /**

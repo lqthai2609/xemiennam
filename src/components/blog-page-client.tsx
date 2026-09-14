@@ -8,6 +8,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { formatVNDate } from "@/lib/wp";
 import { navItems } from "@/data/nav";
 import type { BlogPost } from "@/types/blog";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
   {
@@ -79,7 +80,13 @@ export function BlogPageClient({ posts }: { posts: BlogPost[] }) {
 
   return (
     <main className="site-shell">
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="/#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="/#booking"
+      />
       <section className="routes-hero">
         <div>
           <p className="eyebrow">
@@ -93,7 +100,7 @@ export function BlogPageClient({ posts }: { posts: BlogPost[] }) {
           <p>Kinh nghiệm đi đường, cẩm nang thuê xe và vài điểm dừng chân đáng ghé — góp nhặt từ những chuyến đi thật.</p>
         </div>
         <div className="routes-hero-sign">
-          <span>XE MIỀN NAM</span>
+          <span>GOCAR VN</span>
           <strong>{posts.length}</strong>
           <small>BÀI VIẾT</small>
         </div>
@@ -141,16 +148,18 @@ export function BlogPageClient({ posts }: { posts: BlogPost[] }) {
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có {SITE_NAME}.
             <br />
             Kết nối những hành trình tử tế.
           </>
         }
-        phone="1900 6789"
+        phone={SITE_HOTLINE}
+        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright={`© 2026 ${SITE_NAME}`}
         madeFor="Made for the road."
+        brandName={SITE_NAME}
       />
     </main>
   );

@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { trackBookingLead } from "@/lib/analytics";
+import { SITE_NAME } from "@/lib/site-config";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
@@ -71,12 +72,12 @@ export function ContactBookingForm({
       // ảo cho những lượt gửi lỗi. Tự tắt nếu chưa cấu hình GA4/FB Pixel, xem lib/analytics.ts.
       trackBookingLead({ route: data.route, vehicleType: data.vehicleType });
       toast.success("Đã nhận thông tin đặt xe", {
-        description: "Xe Miền Nam sẽ liên hệ với bạn trong thời gian sớm nhất.",
+        description: `${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
       });
       reset({ ...data, fullName: "", phone: "", note: "" });
     } catch {
       toast.error("Gửi thông tin chưa thành công", {
-        description: "Vui lòng thử lại hoặc gọi trực tiếp cho Xe Miền Nam.",
+        description: `Vui lòng thử lại hoặc gọi trực tiếp cho ${SITE_NAME}.`,
       });
     }
   };
@@ -91,7 +92,7 @@ export function ContactBookingForm({
         </label>
         <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
           Số điện thoại <span className="text-destructive">*</span>
-          <input {...register("phone")} aria-invalid={!!errors.phone} inputMode="tel" placeholder="0898 400 800" className="form-control" />
+          <input {...register("phone")} aria-invalid={!!errors.phone} inputMode="tel" placeholder="0901 234 567" className="form-control" />
           <FieldError message={errors.phone?.message} />
         </label>
         <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">

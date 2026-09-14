@@ -3,8 +3,8 @@ import { fetchRoutes, VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
 import { LienHePageClient } from "@/components/lien-he-page-client";
 
 export const metadata: Metadata = {
-  title: "Liên hệ đặt xe | Xe Miền Nam",
-  description: "Gửi yêu cầu đặt xe hoặc liên hệ tư vấn — Xe Miền Nam phản hồi trong ít phút, hotline hỗ trợ 24/7.",
+  title: "Liên hệ đặt xe | Gocar VN",
+  description: "Gửi yêu cầu đặt xe hoặc liên hệ tư vấn — Gocar VN phản hồi trong ít phút, hotline hỗ trợ 24/7.",
 };
 
 /**
