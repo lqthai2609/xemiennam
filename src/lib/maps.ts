@@ -25,3 +25,30 @@ export function buildRouteMapEmbedSrc(from: string | undefined | null, to: strin
   const fallbackPoint = safeTo || safeFrom || "Việt Nam";
   return `https://maps.google.com/maps?q=${encodeURIComponent(fallbackPoint)}&output=embed`;
 }
+
+/**
+ * Đảo chiều một URL map đã có mà vẫn ưu tiên giữ các điểm saddr/daddr chính xác từ CMS.
+ * Nếu URL CMS không phải dạng chỉ đường hoặc không parse được, fallback về tên hai đầu tuyến.
+ */
+export function reverseRouteMapEmbedSrc(
+  source: string | undefined | null,
+  reversedFrom: string | undefined | null,
+  reversedTo: string | undefined | null,
+): string {
+  const fallback = buildRouteMapEmbedSrc(reversedFrom, reversedTo);
+  if (!source) return fallback;
+
+  try {
+    const url = new URL(source);
+    const sourceAddress = url.searchParams.get("saddr");
+    const destinationAddress = url.searchParams.get("daddr");
+
+    if (!sourceAddress || !destinationAddress) return fallback;
+
+    url.searchParams.set("saddr", destinationAddress);
+    url.searchParams.set("daddr", sourceAddress);
+    return url.toString();
+  } catch {
+    return fallback;
+  }
+}
