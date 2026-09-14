@@ -8,6 +8,7 @@ import { fetchPostsByRegion } from "@/lib/api/blog";
 import { getPricingSchemaRangeV2, type PricingPackageV2 } from "@/lib/api/pricing-v2";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema, type ServiceAggregateOfferInput } from "@/lib/schema";
+import { SITE_NAME } from "@/lib/site-config";
 import { routeHref, type Route } from "@/types/route";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
@@ -82,9 +83,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tuyen } = await params;
   const route = await fetchRouteBySlug(tuyen);
-  if (!route) return { title: "Không tìm thấy tuyến | Xe Miền Nam" };
+  if (!route) return { title: `Không tìm thấy tuyến | ${SITE_NAME}` };
   return {
-    title: route.rankMathTitle || `Thuê xe ${route.from} đi ${route.to}${metadataPriceSuffix(route)} | Xe Miền Nam`,
+    title: route.rankMathTitle || `Thuê xe ${route.from} đi ${route.to}${metadataPriceSuffix(route)} | ${SITE_NAME}`,
     description: route.rankMathDescription || route.summary || fallbackRouteDescription(route),
   };
 }
