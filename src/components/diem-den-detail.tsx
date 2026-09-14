@@ -85,7 +85,7 @@ export function DiemDenDetailPage({
         ) : (
           <article className="blog-detail-body">
             <p>
-              Xe Miền Nam nhận thuê nguyên chuyến đi khắp khu vực {regionName}. Khách chủ động chọn khung giờ khởi
+              Gocar VN nhận thuê nguyên chuyến đi khắp khu vực {regionName}. Khách chủ động chọn khung giờ khởi
               hành, không phụ thuộc lịch trình cố định.
             </p>
           </article>
@@ -126,7 +126,7 @@ export function DiemDenDetailPage({
       <SiteFooter
         tagline={
           <>
-            Đi đâu cũng có Xe Miền Nam.
+            Đi đâu cũng có Gocar VN.
             <br />
             Kết nối những hành trình tử tế.
           </>
@@ -134,7 +134,7 @@ export function DiemDenDetailPage({
         phone="1900 6789"
         linkGroups={footerLinkGroups}
         socialLinks={defaultSocialLinks}
-        copyright="© 2026 Xe Miền Nam"
+        copyright="© 2026 Gocar VN"
         madeFor="Made for the road."
       />
     </main>
