@@ -7,9 +7,9 @@
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://xemiennam.vercel.app").replace(/\/$/, "");
 
 export const SITE_NAME = "Gocar VN";
-export const SITE_HOTLINE = "1900 6789";
-/** Dạng E.164 không dấu cách — dùng cho JSON-LD `telephone`. */
-export const SITE_HOTLINE_TEL = "+8419006789";
+export const SITE_HOTLINE = "0898 400 800";
+/** Dạng E.164 không dấu cách — dùng cho JSON-LD `telephone` và tel links. */
+export const SITE_HOTLINE_TEL = "+84898400800";
 
 /**
  * Số tư vấn trực tiếp/Zalo. Cho phép override bằng environment để không phải hard-code
