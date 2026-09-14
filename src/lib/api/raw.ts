@@ -40,6 +40,11 @@ export type WPRoute = {
     diem_nhan_hero?: string;
     khung_gio_hay_chon?: string[];
     luu_y_tuyen?: string[];
+    /** Day 12: source-controlled by Gocar Core v0.2.0. One editorial description per route × vehicle. */
+    combo_descriptions?: {
+      vehicle_id: number | string;
+      description?: string;
+    }[];
   };
   _embedded?: { "wp:term"?: WPTerm[][] };
 };
