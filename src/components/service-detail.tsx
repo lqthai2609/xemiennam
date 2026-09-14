@@ -28,9 +28,6 @@ export function ServiceDetail({ service }: { service: Service }) {
           <p className="section-label">VÌ SAO CHỌN DỊCH VỤ NÀY</p>
           <h2>Được chuẩn bị<br />cho điều bạn cần.</h2>
           <p>{service.detailDescription}</p>
-          {service.searchIntent && (
-            <p><strong>Nhu cầu tìm kiếm chính:</strong> {service.searchIntent}</p>
-          )}
         </div>
 
         <div className="service-detail-sections">
