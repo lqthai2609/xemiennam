@@ -5,8 +5,13 @@ import { fetchRoutes, fetchRouteBySlug } from "@/lib/api/routes";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchPosts } from "@/lib/api/blog";
 import { getVehicleCategory } from "@/data/vehicle-categories";
-import { findComboVehiclePrice, comboDescriptionOrDefault } from "@/lib/combo";
-import { routeComboHref, vehicleTypeSlug } from "@/types/route";
+import {
+  comboDescriptionOrDefault,
+  findComboVehiclePrice,
+  getComboIndexability,
+  getRenderableComboVehicleSlugs,
+} from "@/lib/combo";
+import { routeComboHref } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
 
@@ -15,10 +20,10 @@ type Props = { params: Promise<{ tinh: string; tuyen: string; "loai-xe": string 
 export async function generateStaticParams() {
   const routes = await fetchRoutes();
   return routes.flatMap((route) =>
-    route.pricingByVehicle.map((vp) => ({
+    getRenderableComboVehicleSlugs(route).map((vehicleSlug) => ({
       tinh: route.regionSlug || "khac",
       tuyen: route.slug,
-      "loai-xe": vehicleTypeSlug(vp.vehicleType),
+      "loai-xe": vehicleSlug,
     })),
   );
 }
@@ -27,11 +32,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tuyen, "loai-xe": loaiXe } = await params;
   const route = await fetchRouteBySlug(tuyen);
   const vp = route ? findComboVehiclePrice(route, loaiXe) : undefined;
-  if (!route || !vp) return { title: "Không tìm thấy | Gocar VN" };
+  if (!route || !vp) {
+    return {
+      title: "Không tìm thấy | Gocar VN",
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const guard = getComboIndexability(route, loaiXe);
   const priceText = vp.pricingMode === "contact" ? "liên hệ báo giá" : `giá từ ${vp.price}`;
   return {
     title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, ${priceText} | Gocar VN`,
     description: comboDescriptionOrDefault(route, vp),
+    robots: {
+      index: guard.indexable,
+      follow: true,
+    },
   };
 }
 
@@ -49,7 +65,7 @@ export default async function Page({ params }: Props) {
       (item) =>
         item.regionSlug === route.regionSlug &&
         item.slug !== route.slug &&
-        item.pricingByVehicle.some((price) => price.vehicleType === vp.vehicleType),
+        Boolean(findComboVehiclePrice(item, loaiXe)),
     )
     .slice(0, 3);
   const vehicle =
