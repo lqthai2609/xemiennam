@@ -63,6 +63,22 @@ export function ServiceDetail({ service }: { service: Service }) {
             </div>
           </section>
 
+          {service.slug === "dua-don-san-bay" && (
+            <section>
+              <p className="section-label">KHÁM PHÁ TUYẾN SÂN BAY</p>
+              <div className="suggested-vehicle-list">
+                <Link href="/san-bay/tan-son-nhat" className="suggested-vehicle-card">
+                  <span className="suggested-vehicle-dot" />
+                  <div>
+                    <h3>Xem các tuyến đưa đón Sân bay Tân Sơn Nhất</h3>
+                    <p>Tìm tuyến phù hợp đến và đi từ sân bay.</p>
+                  </div>
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </div>
+            </section>
+          )}
+
           {service.suggestedVehicles.length > 0 && (
             <section>
               <p className="section-label">XE GỢI Ý CỤ THỂ</p>
