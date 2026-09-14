@@ -27,13 +27,13 @@ export function SiteFooter({
   socialLinks,
   copyright,
   madeFor,
-  brandMark = "XM",
-  brandName = "XE MIỀN NAM",
+  brandMark = "G",
+  brandName = "GOCARVN",
 }: SiteFooterProps) {
   return (
     <footer className="site-footer">
       <div className="footer-main">
-        <Link href="/" className="brand">
+        <Link href="/" className="brand" aria-label="Gocar VN trang chủ">
           <span className="brand-mark">{brandMark}</span>
           <span>{brandName}</span>
         </Link>
