@@ -88,15 +88,14 @@ export function ServiceDetail({ service }: { service: Service }) {
                   <div className="suggested-vehicle-card" key={route.href}>
                     <span className="suggested-vehicle-dot" />
                     <div>
-                      <h3><Link href={route.href}>{route.name}</Link></h3>
+                      <h3><Link className="service-route-link" href={route.href}>{route.name}</Link></h3>
                       {route.summary && <p>{route.summary}</p>}
                       {route.combos.length > 0 && (
-                        <p>
-                          {route.combos.map((combo, index) => (
-                            <span key={combo.href}>
-                              {index > 0 ? " · " : ""}
-                              <Link href={combo.href}>{combo.vehicleType}</Link>
-                            </span>
+                        <p className="service-route-combos" aria-label="Các loại xe phù hợp">
+                          {route.combos.map((combo) => (
+                            <Link className="service-route-combo" href={combo.href} key={combo.href}>
+                              {combo.vehicleType}
+                            </Link>
                           ))}
                         </p>
                       )}
