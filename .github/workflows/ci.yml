@@ -36,6 +36,34 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Brand/contact source guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail=0
+
+          check_forbidden() {
+            local label="$1"
+            local pattern="$2"
+            if grep -RniF -- "$pattern" src; then
+              echo "::error::$label"
+              fail=1
+            fi
+          }
+
+          check_forbidden "Legacy brand found in src" "Xe Miền Nam"
+          check_forbidden "Legacy hotline found in src" "1900 6789"
+          check_forbidden "Legacy hotline URI found in src" "19006789"
+
+          for pattern in "0898 400 800" "0898400800" "+84898400800"; do
+            if grep -RniF --exclude="site-config.ts" -- "$pattern" src; then
+              echo "::error::Hotline literal must be centralized in src/lib/site-config.ts: $pattern"
+              fail=1
+            fi
+          done
+
+          exit "$fail"
+
       - name: Lint
         run: npm run lint
 
