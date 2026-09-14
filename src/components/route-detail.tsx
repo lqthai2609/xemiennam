@@ -21,7 +21,7 @@ import { BlogCard } from "@/components/blog-card";
 import type { Testimonial } from "@/types/testimonial";
 import type { BlogPost } from "@/types/blog";
 import { reverseRouteMapEmbedSrc } from "@/lib/maps";
-import { SITE_HOTLINE, SITE_HOTLINE_TEL } from "@/lib/site-config";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
@@ -42,7 +42,7 @@ function directionDescription(route: Route, direction: RoutePricingDirectionKey)
   if (direction === "outbound" && route.summary) return route.summary;
   const from = direction === "outbound" ? route.from : route.to;
   const to = direction === "outbound" ? route.to : route.from;
-  return `Thuê xe nguyên chiếc từ ${from} đến ${to}. Chọn loại xe và gói hành trình phù hợp, xem giá theo đúng chiều hoặc liên hệ Gocar VN để nhận báo giá theo lịch thực tế.`;
+  return `Thuê xe nguyên chiếc từ ${from} đến ${to}. Chọn loại xe và gói hành trình phù hợp, xem giá theo đúng chiều hoặc liên hệ ${SITE_NAME} để nhận báo giá theo lịch thực tế.`;
 }
 
 function defaultDirection(route: Route): RoutePricingDirectionKey {
@@ -83,7 +83,13 @@ export function RouteDetailPage({
 
   return (
     <main className="site-shell route-detail-page">
-      <SiteHeader menuItems={navItems} hotline="0898 400 800" ctaLabel="Đặt xe ngay" ctaHref="#booking" />
+      <SiteHeader
+        menuItems={navItems}
+        hotline={SITE_HOTLINE}
+        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
+        ctaLabel="Đặt xe ngay"
+        ctaHref="#booking"
+      />
       <UnifiedHero eyebrow={heroEyebrow} title={<>{displayFrom}<br /><em>→ {displayTo}</em></>} description={directionDescription(route, direction)} backgroundImage={heroImage} backHref={`/tuyen-duong/${route.regionSlug || "khac"}`} backLabel={`Tất cả tuyến ${route.region}`} />
       <section className="detail-content section-wrap">
         <div className="detail-main">
@@ -98,7 +104,7 @@ export function RouteDetailPage({
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">LOẠI XE PHÙ HỢP</p><h2>Đi tuyến này bằng xe gì?</h2></div></div><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeComboHref(route, vehicleTypeSlug(vehicle))} className="vehicle-chip">{vehicle}</Link>)}</div></div>
         </div>
-        <aside className="detail-aside" id="booking"><div className="booking-card"><p className="section-label">ĐẶT CHUYẾN</p><h2>Sẵn sàng lên đường?</h2><p>Liên hệ Gocar VN để xác nhận xe, lịch đón và mức giá theo chiều {displayFrom} → {displayTo}.</p><Button size="lg" asChild><a href={`tel:${SITE_HOTLINE_TEL}`}>Gọi {SITE_HOTLINE} <Phone data-icon="inline-end" /></a></Button><span className="booking-note"><ShieldCheck size={16} /> Không cần thanh toán trước</span></div><div className="departures-card"><p className="section-label">KHUNG GIỜ KHÁCH HAY CHỌN</p><div className="departure-list">{route.departures.map((time) => <span key={time}>{time}</span>)}</div><ul className="detail-notes">{route.notes.map((note) => <li key={note}><Check size={15} />{note}</li>)}</ul></div></aside>
+        <aside className="detail-aside" id="booking"><div className="booking-card"><p className="section-label">ĐẶT CHUYẾN</p><h2>Sẵn sàng lên đường?</h2><p>Liên hệ {SITE_NAME} để xác nhận xe, lịch đón và mức giá theo chiều {displayFrom} → {displayTo}.</p><Button size="lg" asChild><a href={`tel:${SITE_HOTLINE_TEL}`}>Gọi {SITE_HOTLINE} <Phone data-icon="inline-end" /></a></Button><span className="booking-note"><ShieldCheck size={16} /> Không cần thanh toán trước</span></div><div className="departures-card"><p className="section-label">KHUNG GIỜ KHÁCH HAY CHỌN</p><div className="departure-list">{route.departures.map((time) => <span key={time}>{time}</span>)}</div><ul className="detail-notes">{route.notes.map((note) => <li key={note}><Check size={15} />{note}</li>)}</ul></div></aside>
       </section>
 
       {relatedRoutes.length > 0 && <section className="related-section section-wrap"><div className="section-heading"><div><p className="section-label">TUYẾN ĐƯỜNG LIÊN QUAN</p><h2>Thêm lựa chọn tại {route.region}.</h2></div><Link className="text-link" href={`/tuyen-duong/${route.regionSlug}`}>Xem tất cả tuyến <ArrowRight size={17} /></Link></div><div className="route-related-grid">{relatedRoutes.map((related) => <DetailCard route={related} key={related.id} />)}</div></section>}
@@ -106,7 +112,7 @@ export function RouteDetailPage({
       {testimonials.length > 0 && <section className="section-wrap route-testimonials"><div className="section-heading"><div><p className="section-label">KHÁCH HÀNG NÓI GÌ</p><h2>Trải nghiệm trên tuyến này.</h2></div><Link className="text-link" href="/danh-gia">Xem tất cả đánh giá <ArrowRight size={17} /></Link></div><div className="combo-testimonial-grid">{testimonials.map((item) => <article className="combo-testimonial-card" key={item.id}><div className="combo-testimonial-stars" aria-label={`${item.rating} trên 5 sao`}>{Array.from({ length: 5 }, (_, index) => <Star key={index} size={16} fill={index < item.rating ? "currentColor" : "none"} />)}</div><p>“{item.quote}”</p><div className="combo-testimonial-who"><span className="combo-testimonial-avatar">{item.initials}</span><b>{item.name}</b></div></article>)}</div></section>}
 
       {relatedPosts.length > 0 && <section className="section-wrap route-blog-section"><div className="section-heading"><div><p className="section-label">CẨM NANG {route.region.toUpperCase()}</p><h2>Bài viết liên quan.</h2></div><Link className="text-link" href="/blog">Xem tất cả bài viết <ArrowRight size={17} /></Link></div><div className="blog-grid">{relatedPosts.map((post) => <BlogCard post={post} key={post.id} />)}</div></section>}
-      <SiteFooter tagline={<>Gocar VN đồng hành trên mọi hành trình.<br />Thuê xe chủ động, an toàn và minh bạch.</>} phone={SITE_HOTLINE} linkGroups={footerLinkGroups} socialLinks={defaultSocialLinks} copyright="© 2026 Gocar VN" madeFor="Made for the road." />
+      <SiteFooter tagline={<>{SITE_NAME} đồng hành trên mọi hành trình.<br />Thuê xe chủ động, an toàn và minh bạch.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={footerLinkGroups} socialLinks={defaultSocialLinks} copyright={`© 2026 ${SITE_NAME}`} madeFor="Made for the road." brandName={SITE_NAME} />
     </main>
   );
 }
