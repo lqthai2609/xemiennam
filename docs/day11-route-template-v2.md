@@ -11,7 +11,7 @@ Hoàn thiện route landing page dùng Pricing V2 theo đúng `route × directio
 - Switch outbound/inbound chỉ hiển thị các direction được enable trong Pricing V2.
 - Giá/package đọc đúng `pricingV2[direction]`; package `disabled` không render.
 - `pricing_mode=contact` hiển thị CTA Gọi/Zalo rõ ràng thay vì giả lập giá số.
-- Điểm đón/trả đảo đúng theo direction.
+- Điểm đón/trả và bản đồ hành trình đảo đúng theo direction.
 - Booking context tiếp tục truyền stable `routeId`, `direction`, `packageKey`, `pricingMode`.
 - Related routes tiếp tục dùng dữ liệu route động hiện có.
 - Giữ static generation/ISR của route page; không đưa `searchParams` vào Server Page chỉ để quản lý switch direction.
@@ -31,18 +31,19 @@ Bối cảnh source hiện tại:
 Yêu cầu UI/flow:
 1. Tạo một direction state duy nhất tại Route Detail, mặc định outbound nếu enabled, nếu không thì inbound.
 2. Switch direction hiển thị nhãn `{from} → {to}` và `{to} → {from}`; chỉ render chiều được enabled.
-3. Khi đổi direction, cập nhật đồng bộ Hero H1, mô tả hướng đi, section giá, booking context, điểm đón/trả và label liên quan.
+3. Khi đổi direction, cập nhật đồng bộ Hero H1, mô tả hướng đi, section giá, booking context, điểm đón/trả, bản đồ hành trình và label liên quan.
 4. Không được dùng giá outbound làm fallback cho inbound.
 5. Pricing card nhóm theo vehicle, bên trong hiển thị package của đúng direction.
 6. `fixed`: hiện price label + CTA đặt xe online, Gọi và Zalo hiện có.
 7. `contact`: không hiện giá số giả; hiển thị text liên hệ và CTA rõ `Nhắn Zalo báo giá` / `Gọi nhận báo giá`.
 8. `disabled`: không render package đó.
 9. Điểm đón/trả outbound dùng `pickupPoints → dropoffPoints`; inbound đảo lại `dropoffPoints → pickupPoints`.
-10. Related routes tiếp tục dùng dữ liệu động hiện tại; không hard-code tuyến.
-11. Desktop/tablet/mobile phải giữ layout hiện tại, switch wrap tốt ở mobile, CTA contact không overflow.
-12. Giữ design system và brand palette hiện tại; không redesign toàn trang.
-13. Không chuyển Server Page sang request-time rendering chỉ để đọc query param; giữ SSG/ISR hiện tại.
-14. Không thay đổi API, database, Pricing V2 schema, route slug hay booking endpoint.
+10. Bản đồ outbound giữ map CMS hiện có; inbound đảo `saddr/daddr` khi có thể và fallback về tên hai đầu tuyến nếu URL CMS không hỗ trợ đảo trực tiếp.
+11. Related routes tiếp tục dùng dữ liệu động hiện tại; không hard-code tuyến.
+12. Desktop/tablet/mobile phải giữ layout hiện tại, switch wrap tốt ở mobile, CTA contact không overflow.
+13. Giữ design system và brand palette hiện tại; không redesign toàn trang.
+14. Không chuyển Server Page sang request-time rendering chỉ để đọc query param; giữ SSG/ISR hiện tại.
+15. Không thay đổi API, database, Pricing V2 schema, route slug hay booking endpoint.
 
 Loading/empty/error:
 - Route data loading tiếp tục theo Server Component hiện có.
@@ -55,7 +56,7 @@ Accessibility:
 - Không làm mất keyboard navigation hiện tại.
 
 Acceptance criteria:
-- Route có outbound + inbound: switch đổi H1, content, pricing, pickup/dropoff và booking direction đồng bộ.
+- Route có outbound + inbound: switch đổi H1, content, pricing, pickup/dropoff, map và booking direction đồng bộ.
 - Giá outbound và inbound khác nhau vẫn hiển thị đúng, không cross-fallback.
 - Contact package chỉ hiện contact state + Gọi/Zalo.
 - Disabled package không xuất hiện.

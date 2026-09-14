@@ -20,6 +20,7 @@ import { UnifiedHero } from "@/components/unified-hero";
 import { BlogCard } from "@/components/blog-card";
 import type { Testimonial } from "@/types/testimonial";
 import type { BlogPost } from "@/types/blog";
+import { reverseRouteMapEmbedSrc } from "@/lib/maps";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL } from "@/lib/site-config";
 
 const footerLinkGroups = [
@@ -76,6 +77,9 @@ export function RouteDetailPage({
   const pickupPoints = isInbound ? route.dropoffPoints : route.pickupPoints;
   const dropoffPoints = isInbound ? route.pickupPoints : route.dropoffPoints;
   const heroEyebrow = isInbound ? `CHIỀU ${displayFrom.toUpperCase()} → ${displayTo.toUpperCase()}` : route.heroNote;
+  const mapEmbedSrc = isInbound
+    ? reverseRouteMapEmbedSrc(route.mapEmbedSrc, displayFrom, displayTo)
+    : route.mapEmbedSrc;
 
   return (
     <main className="site-shell route-detail-page">
@@ -90,7 +94,7 @@ export function RouteDetailPage({
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">ĐIỂM ĐÓN & TRẢ</p><h2>Điểm nào cũng gần bạn.</h2></div></div><div className="stops-grid"><div><span className="stop-kicker"><MapPin size={15} /> Điểm đón tại {displayFrom}</span><ul>{pickupPoints.map((stop) => <li key={stop}><span className="stop-dot" />{stop}</li>)}</ul></div><div><span className="stop-kicker"><MapPin size={15} /> Điểm trả tại {displayTo}</span><ul>{dropoffPoints.map((stop) => <li key={stop}><span className="stop-dot destination" />{stop}</li>)}</ul></div></div></div>
 
-          <div className="detail-map-wrap"><div className="section-heading detail-heading"><div><p className="section-label">CUNG ĐƯỜNG</p><h2>Thấy trước hành trình.</h2></div></div><iframe className="detail-map" src={route.mapEmbedSrc} title={`Bản đồ tuyến ${displayFrom} đến ${displayTo}`} loading="lazy" /></div>
+          <div className="detail-map-wrap"><div className="section-heading detail-heading"><div><p className="section-label">CUNG ĐƯỜNG</p><h2>Thấy trước hành trình.</h2></div></div><iframe className="detail-map" src={mapEmbedSrc} title={`Bản đồ tuyến ${displayFrom} đến ${displayTo}`} loading="lazy" /></div>
 
           <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">LOẠI XE PHÙ HỢP</p><h2>Đi tuyến này bằng xe gì?</h2></div></div><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeComboHref(route, vehicleTypeSlug(vehicle))} className="vehicle-chip">{vehicle}</Link>)}</div></div>
         </div>
