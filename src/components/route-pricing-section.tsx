@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, BusFront } from "lucide-react";
 
@@ -64,15 +64,16 @@ function LegacyPricingGrid({
 
 export function RoutePricingSection({
   route,
+  direction,
+  onDirectionChange,
   vehicleImageByType = {},
 }: {
   route: Route;
+  direction: RoutePricingDirectionKey;
+  onDirectionChange: (direction: RoutePricingDirectionKey) => void;
   vehicleImageByType?: Record<string, string>;
 }) {
   const pricing = route.pricingV2;
-  const initialDirection: RoutePricingDirectionKey = pricing?.outbound.enabled ? "outbound" : "inbound";
-  const [direction, setDirection] = useState<RoutePricingDirectionKey>(initialDirection);
-
   const active = pricing?.[direction];
   const grouped = useMemo(() => {
     if (!active) return [];
@@ -90,9 +91,7 @@ export function RoutePricingSection({
     return <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
   }
 
-  const availableDirections = (["outbound", "inbound"] as const).filter(
-    (key) => pricing[key].enabled,
-  );
+  const availableDirections = (["outbound", "inbound"] as const).filter((key) => pricing[key].enabled);
   const canonicalRoute = `${route.from} – ${route.to}`;
   const displayRoute = direction === "outbound" ? canonicalRoute : `${route.to} – ${route.from}`;
   const destination = direction === "outbound" ? route.to : route.from;
@@ -111,7 +110,7 @@ export function RoutePricingSection({
                 size="sm"
                 variant={selected ? "default" : "outline"}
                 aria-pressed={selected}
-                onClick={() => setDirection(key)}
+                onClick={() => onDirectionChange(key)}
               >
                 {label}
               </Button>
