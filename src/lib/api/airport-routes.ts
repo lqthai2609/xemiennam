@@ -67,11 +67,22 @@ function buildAirportRoute(
   };
 }
 
+function resolveAirportLocation(locations: LocationV2[], publicSlug: string): LocationV2 | undefined {
+  const candidates = [publicSlug, `san-bay-${publicSlug}`];
+  return locations.find(
+    (location) => location.type === "airport" && candidates.includes(location.slug),
+  );
+}
+
 /**
  * Day 17 — Airport Hub query layer.
  *
  * Airport vẫn là Location V2 bình thường. Hàm này chỉ ghép Location + Route Pair + Pricing V2
  * để consumer có thể dựng Airport Hub; không tạo route/pricing engine riêng.
+ *
+ * Public URL dùng slug ngắn như `/san-bay/tan-son-nhat`, trong khi Location CMS hiện có thể
+ * dùng slug có tiền tố `san-bay-` (ví dụ `san-bay-tan-son-nhat`). Resolver chấp nhận cả hai
+ * mà không đổi slug CMS hoặc tạo dữ liệu giả.
  */
 export async function fetchAirportHubBySlug(airportSlug: string): Promise<AirportHubData | undefined> {
   const [locations, pairs, routes] = await Promise.all([
@@ -80,7 +91,7 @@ export async function fetchAirportHubBySlug(airportSlug: string): Promise<Airpor
     fetchRoutes(),
   ]);
 
-  const airport = locations.find((location) => location.slug === airportSlug && location.type === "airport");
+  const airport = resolveAirportLocation(locations, airportSlug);
   if (!airport) return undefined;
 
   const locationsById = new Map(locations.map((location) => [location.id, location]));
