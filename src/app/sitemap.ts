@@ -4,8 +4,9 @@ import { fetchRoutes, fetchRegionSlugs } from "@/lib/api/routes";
 import { fetchServices } from "@/lib/api/services";
 import { fetchPosts } from "@/lib/api/blog";
 import { fetchDiemDenBySlug } from "@/lib/api/diem-den";
+import { getIndexableComboVehicleSlugs } from "@/lib/combo";
 import { vehicleCategories } from "@/data/vehicle-categories";
-import { routeHref, routeComboHref, vehicleTypeSlug } from "@/types/route";
+import { routeHref, routeComboHref } from "@/types/route";
 
 /**
  * Sitemap động (Ngày 23, mục 5 kiến trúc kỹ thuật) — tự sinh từ dữ liệu WP REST thật
@@ -60,11 +61,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Trang kết hợp tuyến × loại xe (Ngày 14) — sinh đúng những tổ hợp có thật trong pricingByVehicle,
-  // giống hệt logic generateStaticParams() ở app/tuyen-duong/[tinh]/[tuyen]/[loai-xe]/page.tsx.
+  // Day 14: combo chỉ xuất hiện trong sitemap khi cùng guard với metadata xác nhận:
+  // route/vehicle hợp lệ + Pricing V2 renderable + nội dung CMS đủ minimum editorial threshold.
+  // Thin-content vẫn có thể render cho người dùng nhưng nhận noindex,follow và không vào sitemap.
   const comboEntries: MetadataRoute.Sitemap = routes.flatMap((route) =>
-    route.pricingByVehicle.map((vp) => ({
-      url: `${SITE_URL}${routeComboHref(route, vehicleTypeSlug(vp.vehicleType))}`,
+    getIndexableComboVehicleSlugs(route).map((vehicleSlug) => ({
+      url: `${SITE_URL}${routeComboHref(route, vehicleSlug)}`,
       lastModified: route.modifiedDate,
       changeFrequency: "weekly" as const,
       priority: 0.6,
