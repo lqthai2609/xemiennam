@@ -43,9 +43,8 @@ export interface VehiclePrice {
   packageLabel?: string;
   numericPrice?: number;
   /**
-   * Mô tả riêng cho đúng tổ hợp tuyến + loại xe này (Ngày 14) — dùng cho trang
-   * /tuyen-duong/[slug]/[loai-xe]. Bắt buộc viết tay riêng từng tổ hợp, không nội suy
-   * từ số liệu, để tránh nội dung mỏng/trùng lặp giữa các trang.
+   * Compatibility cho mock/static data cũ. Route thật ưu tiên `Route.comboDescriptions`
+   * làm nguồn content riêng của tổ hợp tuyến + loại xe.
    */
   comboDescription?: string;
 }
@@ -82,8 +81,9 @@ export interface RoutePricingV2 {
   inbound: RouteDirectionPricing;
 }
 
-/** Mô tả riêng cho 1 tổ hợp tuyến + loại xe (Ngày 14) — dùng ở trang /tuyen-duong/[slug]/[loai-xe]. */
+/** Day 12: nội dung biên tập riêng cho đúng một route × vehicle. */
 export interface ComboDescription {
+  vehicleId: string;
   vehicleType: string;
   description: string;
 }
@@ -107,6 +107,8 @@ export interface Route {
   pricingByVehicle: VehiclePrice[];
   /** Pricing V2 đầy đủ theo direction × vehicle × package. Mock route cũ có thể chưa có. */
   pricingV2?: RoutePricingV2;
+  /** Day 12: content CMS riêng cho route × vehicle, độc lập với Pricing V2. */
+  comboDescriptions?: ComboDescription[];
   /** Điểm đón — mô tả ngắn, có thể nhiều điểm. */
   pickupPoints: string[];
   /** Điểm trả — mô tả ngắn, có thể nhiều điểm. */
