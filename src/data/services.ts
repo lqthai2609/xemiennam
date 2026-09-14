@@ -1,39 +1,32 @@
 import type { Service } from "@/types/service";
+import { SITE_HOTLINE } from "@/lib/site-config";
 
-/**
- * Mock tạm cho CPT `dich_vu` — dùng khi WordPress chưa có bài dịch vụ nào (nhập liệu
- * thật là Ngày 24), theo đúng cơ chế fallback trong lib/api/services.ts (giống
- * fetchRoutes()/fetchVehicles() Ngày 12).
- *
- * `vehicleTypes[].slug` PHẢI khớp đúng slug trong data/vehicle-categories.ts (4-7-cho,
- * 16-29-cho, 45-cho, limousine) để link 2 chiều /dich-vu ↔ /loai-xe không bị 404.
- * `suggestedVehicles[].slug` PHẢI khớp đúng slug thật trong data/vehicles.ts để link
- * sang /doi-xe/[slug] không bị 404.
- */
+/** Mock cho CPT `dich_vu`, chỉ dùng theo policy môi trường. Slug phải khớp 6 category hiện tại. */
 export const services: Service[] = [
   {
     slug: "xe-cuoi",
     name: "Xe cưới",
     shortDescription: "Đón đưa trọn vẹn ngày vui với chiếc xe chỉn chu, đúng giờ và riêng tư.",
     detailDescription:
-      "Dịch vụ xe cưới được chuẩn bị cho những hành trình quan trọng nhất trong ngày thành hôn. Xe được vệ sinh kỹ, tài xế có kinh nghiệm phục vụ nghi lễ và lịch trình được thống nhất trước để gia đình chủ động từng điểm đón, điểm trả. Bạn có thể chọn xe theo phong cách lễ cưới, số lượng người đi cùng và quãng đường di chuyển.",
+      "Dịch vụ xe cưới được chuẩn bị cho những hành trình quan trọng nhất trong ngày thành hôn. Xe được vệ sinh kỹ, tài xế có kinh nghiệm phục vụ nghi lễ và lịch trình được thống nhất trước để gia đình chủ động từng điểm đón, từng điểm trả. Bạn có thể chọn xe theo phong cách lễ cưới, số lượng người đi cùng và quãng đường di chuyển.",
     icon: "wedding",
     iconLabel: "Xe cưới",
     image: "/images/services/wedding.png",
     vehicleTypes: [
-      { name: "4–7 chỗ", slug: "4-7-cho", description: "Thanh lịch cho cô dâu chú rể." },
+      { name: "4 chỗ", slug: "4-cho", description: "Thanh lịch cho cô dâu chú rể." },
+      { name: "7 chỗ", slug: "7-cho", description: "Linh hoạt cho gia đình và người thân." },
       { name: "Limousine", slug: "limousine", description: "Sang trọng cho đoàn rước dâu." },
     ],
     suggestedVehicles: [
-      { name: "Toyota Camry", slug: "premium-sedan", detail: "Êm ái, riêng tư và lịch sự cho ngày trọng đại." },
-      { name: "Dcar Limousine", slug: "limousine-22", detail: "Khoang thương gia, chỉn chu cho cả đoàn rước dâu." },
+      { name: "Toyota Camry", slug: "4-cho", detail: "Êm ái, riêng tư và lịch sự cho ngày trọng đại." },
+      { name: "Dcar Limousine", slug: "limousine", detail: "Khoang thương gia, chỉn chu cho cả đoàn rước dâu." },
     ],
     notes: [
       "Nên đặt xe trước ngày cưới để giữ đúng mẫu xe mong muốn.",
       "Gửi lịch trình và địa chỉ các điểm đón trước để tài xế chủ động.",
       "Có thể yêu cầu trang trí xe theo concept của buổi lễ.",
     ],
-    hotline: "1900 6789",
+    hotline: SITE_HOTLINE,
   },
   {
     slug: "dua-don-san-bay",
@@ -44,17 +37,20 @@ export const services: Service[] = [
     icon: "airport",
     iconLabel: "Đưa đón sân bay",
     image: "/images/services/airport.png",
-    vehicleTypes: [{ name: "4–7 chỗ", slug: "4-7-cho", description: "Gọn gàng cho 1–7 hành khách, đủ chỗ hành lý." }],
+    vehicleTypes: [
+      { name: "4 chỗ", slug: "4-cho", description: "Gọn gàng cho khách cá nhân hoặc công tác." },
+      { name: "7 chỗ", slug: "7-cho", description: "Phù hợp gia đình và nhóm có nhiều hành lý." },
+    ],
     suggestedVehicles: [
-      { name: "Toyota Innova", slug: "family-mpv", detail: "Cốp rộng, phù hợp gia đình nhiều hành lý." },
-      { name: "Toyota Camry", slug: "premium-sedan", detail: "Gọn gàng cho khách công tác 1–3 người." },
+      { name: "Toyota Innova", slug: "7-cho", detail: "Cốp rộng, phù hợp gia đình nhiều hành lý." },
+      { name: "Toyota Camry", slug: "4-cho", detail: "Gọn gàng cho khách công tác 1–3 người." },
     ],
     notes: [
       "Cung cấp mã chuyến bay để chúng tôi theo dõi giờ đến chính xác.",
       "Vui lòng báo trước số lượng hành lý cồng kềnh.",
       "Tài xế sẽ liên hệ khi xe đến điểm đón.",
     ],
-    hotline: "1900 6789",
+    hotline: SITE_HOTLINE,
   },
   {
     slug: "thue-xe-theo-thang",
@@ -66,19 +62,21 @@ export const services: Service[] = [
     iconLabel: "Thuê xe theo tháng",
     image: "/images/services/monthly.png",
     vehicleTypes: [
-      { name: "4–7 chỗ", slug: "4-7-cho", description: "Phù hợp lịch công tác hằng ngày." },
-      { name: "16–29 chỗ", slug: "16-29-cho", description: "Linh hoạt cho đội nhóm và công ty." },
+      { name: "4 chỗ", slug: "4-cho", description: "Phù hợp lịch công tác hằng ngày." },
+      { name: "7 chỗ", slug: "7-cho", description: "Linh hoạt cho gia đình và chuyên gia." },
+      { name: "16 chỗ", slug: "16-cho", description: "Phù hợp đưa đón đội nhóm." },
+      { name: "29 chỗ", slug: "29-cho", description: "Phù hợp doanh nghiệp và đoàn vừa." },
     ],
     suggestedVehicles: [
-      { name: "Toyota Camry", slug: "premium-sedan", detail: "Bền bỉ cho nhu cầu sử dụng thường xuyên." },
-      { name: "Mercedes Sprinter", slug: "sprinter-16", detail: "Gọn gàng cho đưa đón nhân viên hằng ngày." },
+      { name: "Toyota Camry", slug: "4-cho", detail: "Bền bỉ cho nhu cầu sử dụng thường xuyên." },
+      { name: "Mercedes Sprinter", slug: "16-cho", detail: "Gọn gàng cho đưa đón nhân viên hằng ngày." },
     ],
     notes: [
       "Thời hạn và số ngày sử dụng được thống nhất trong hợp đồng.",
       "Có thể điều chỉnh lịch xe theo lịch làm việc thực tế.",
       "Báo trước nhu cầu đi tỉnh để được tư vấn gói phù hợp.",
     ],
-    hotline: "1900 6789",
+    hotline: SITE_HOTLINE,
   },
   {
     slug: "city-tour",
@@ -90,19 +88,20 @@ export const services: Service[] = [
     iconLabel: "City tour",
     image: "/images/services/city-tour.png",
     vehicleTypes: [
-      { name: "16–29 chỗ", slug: "16-29-cho", description: "Phù hợp đoàn đông và nhiều điểm đến." },
+      { name: "16 chỗ", slug: "16-cho", description: "Phù hợp đoàn nhỏ và nhiều điểm đến." },
+      { name: "29 chỗ", slug: "29-cho", description: "Phù hợp đoàn vừa đi cùng nhau." },
       { name: "45 chỗ", slug: "45-cho", description: "Cho đoàn tour lớn cả ngày." },
     ],
     suggestedVehicles: [
-      { name: "Mercedes Sprinter", slug: "sprinter-16", detail: "Wifi 4G, thoải mái cho cả ngày di chuyển." },
-      { name: "Thaco Universe", slug: "coach-45", detail: "Đủ rộng cho đoàn tour đông người." },
+      { name: "Mercedes Sprinter", slug: "16-cho", detail: "Thoải mái cho cả ngày di chuyển." },
+      { name: "Thaco Universe", slug: "45-cho", detail: "Đủ rộng cho đoàn tour đông người." },
     ],
     notes: [
       "Lịch trình có thể thay đổi trong ngày theo nhu cầu của nhóm.",
       "Nên gom các điểm đến theo khu vực để tối ưu thời gian.",
       "Phí phát sinh ngoài lịch trình sẽ được báo trước.",
     ],
-    hotline: "1900 6789",
+    hotline: SITE_HOTLINE,
   },
 ];
 

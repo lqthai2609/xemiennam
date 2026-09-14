@@ -4,6 +4,7 @@ import { ServiceDetail } from "@/components/service-detail";
 import { fetchServices, fetchServiceBySlug } from "@/lib/api/services";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
+import { SITE_NAME } from "@/lib/site-config";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -12,16 +13,16 @@ export async function generateStaticParams() {
   return services.map(({ slug }) => ({ slug }));
 }
 
-/** Ngày 23 — ưu tiên rankMathTitle/rankMathDescription trước khi tự soạn (mục 5, kiến trúc kỹ thuật). */
+/** Ngày 23 — ưu tiên Rank Math trước fallback metadata của Gocar VN. */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const service = await fetchServiceBySlug(slug);
   return service
     ? {
-        title: service.rankMathTitle || `${service.name} | Xe Miền Nam`,
+        title: service.rankMathTitle || `${service.name} | ${SITE_NAME}`,
         description: service.rankMathDescription || service.shortDescription,
       }
-    : { title: "Không tìm thấy dịch vụ | Xe Miền Nam" };
+    : { title: `Không tìm thấy dịch vụ | ${SITE_NAME}` };
 }
 
 export default async function Page({ params }: Props) {

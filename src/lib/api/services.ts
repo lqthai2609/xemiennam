@@ -6,6 +6,7 @@ import { fetchRawServices, fetchRawServiceBySlug, embeddedTerms, embeddedFeature
 import { fetchVehicles } from "./vehicles";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { splitCommaList, stripHtml } from "@/lib/wp";
+import { SITE_HOTLINE } from "@/lib/site-config";
 
 const useMockFallback = shouldUseMockFallback();
 
@@ -26,7 +27,13 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
   const suggestedIds = (wp.meta.loai_xe_phu_hop ?? []).map(String);
   const suggestedVehicles: ServiceVehicle[] = allVehicles
     .filter((v) => suggestedIds.includes(v.id))
-    .map((v) => ({ name: v.name, slug: v.slug, detail: v.description }));
+    .map((v) => ({
+      name: v.name,
+      // Day 25 đã gộp trang xe cụ thể vào /loai-xe. Link gợi ý phải trỏ tới slug loại xe,
+      // không dùng vehicle post slug vì redirect /doi-xe/:slug -> /loai-xe/:slug sẽ 404.
+      slug: vehicleTypeSlug(v.type),
+      detail: v.description,
+    }));
 
   const need = wp.meta.mo_ta_nhu_cau ?? "";
   const body = stripHtml(wp.content?.rendered) || need;
@@ -42,7 +49,7 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
     vehicleTypes,
     suggestedVehicles,
     notes: splitCommaList(wp.meta.luu_y_dich_vu),
-    hotline: "1900 6789",
+    hotline: SITE_HOTLINE,
     modifiedDate: wp.modified,
     rankMathTitle: wp.rank_math_title || undefined,
     rankMathDescription: wp.rank_math_description || undefined,
