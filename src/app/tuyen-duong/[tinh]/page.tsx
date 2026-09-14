@@ -22,11 +22,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tinh } = await params;
   const [hub, routes] = await Promise.all([fetchDiemDenBySlug(tinh), fetchRoutesByRegion(tinh)]);
-  if (routes.length === 0 && !hub) return { title: "Không tìm thấy điểm đến | Xe Miền Nam" };
+  if (routes.length === 0 && !hub) return { title: "Không tìm thấy điểm đến | Gocar VN" };
 
   const regionName = routes[0]?.region || hub?.title || tinh;
   return {
-    title: hub?.rankMathTitle || `Thuê xe nguyên chiếc đi ${regionName} | Xe Miền Nam`,
+    title: hub?.rankMathTitle || `Thuê xe nguyên chiếc đi ${regionName} | Gocar VN`,
     description:
       hub?.rankMathDescription ||
       (hub ? stripHtml(hub.contentHtml).slice(0, 155) : `Thuê xe nguyên chiếc đi khắp khu vực ${regionName}, ${routes.length} tuyến đang chạy, giá theo từng loại xe.`),
