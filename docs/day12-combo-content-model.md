@@ -64,6 +64,16 @@ Do not:
 - no synthetic CMS row is created;
 - the fallback must not be used as evidence that the page has unique content.
 
+## Connector-independent WordPress deployment
+
+Production deployment must not depend on WPVibe, WPWriter, or another chat connector.
+
+- GitHub remains the source of truth for `wordpress/gocar-core`.
+- `.github/workflows/gocar-core-package.yml` runs PHP syntax validation and packages `gocar-core.zip` whenever Gocar Core changes.
+- `docs/wordpress-deployment-without-wpvibe.md` defines the standard artifact → wp-admin/hosting deployment, rollback and smoke-verification path.
+- Connector quota/outage/removal must not block source development, CI, packaging, or read-only production verification.
+- Authenticated production writes may remain manual through wp-admin/hosting until a separate secure GitHub Actions + SSH/SFTP/deploy-hook integration is explicitly configured.
+
 ## Acceptance criteria
 
 - [ ] Gocar Core v0.2.0 loads without PHP fatal errors.
@@ -75,8 +85,9 @@ Do not:
 - [ ] Route without the field still renders through fallback.
 - [ ] No Pricing V2 behavior changes.
 - [ ] No new business logic depends on `pricingByVehicle`.
-- [ ] Lint, location migration regression and production build pass before merge.
+- [ ] Gocar Core can be packaged as a ZIP without any connector.
+- [ ] Lint, location migration regression, PHP syntax validation and production build pass before merge.
 
 ## Production dependency
 
-The WordPress deployment/verification step depends on access to the connected CMS. Source completion alone is not sufficient to mark Day 12 complete; REST and editor behavior must be verified after deploying Gocar Core v0.2.0.
+Source completion alone is not sufficient to mark Day 12 complete. Gocar Core v0.2.0 still needs production deployment and REST/editor/frontend smoke verification, but that deployment is now a standard WordPress/hosting task rather than a WPVibe dependency.
