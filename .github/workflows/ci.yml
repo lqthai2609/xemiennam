@@ -82,5 +82,8 @@ jobs:
       - name: Indexability regression guard
         run: npm run test:indexability
 
+      - name: Schema pricing regression guard
+        run: npm run test:schema-pricing
+
       - name: Production build
         run: npm run build
