@@ -5,12 +5,14 @@ import { navItems } from "@/data/nav";
 import { BlogCard } from "@/components/blog-card";
 import { fetchPosts } from "@/lib/api/blog";
 import { UnifiedHero } from "@/components/unified-hero";
+import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: `Blog | ${SITE_NAME}`,
   description: `Kinh nghiệm du lịch, cẩm nang tuyến đường và review điểm đến cho hành trình cùng ${SITE_NAME}.`,
-};
+  path: "/blog",
+});
 
 const footerLinkGroups = [
   {
