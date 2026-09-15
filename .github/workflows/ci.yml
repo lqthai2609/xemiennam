@@ -76,5 +76,8 @@ jobs:
       - name: Blog semantic relation regression guard
         run: npm run test:blog-relations
 
+      - name: Metadata regression guard
+        run: npm run test:metadata
+
       - name: Production build
         run: npm run build
