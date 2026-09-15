@@ -16,6 +16,10 @@ const pagePaths = [
   "../src/app/blog/page.tsx",
   "../src/app/blog/[slug]/page.tsx",
   "../src/app/bang-gia/page.tsx",
+  "../src/app/lien-he/page.tsx",
+  "../src/app/diem-den/page.tsx",
+  "../src/app/danh-gia/page.tsx",
+  "../src/app/khuyen-mai/page.tsx",
 ];
 
 const [layout, metadataHelper, ...pages] = await Promise.all([
@@ -46,15 +50,15 @@ test("shared metadata builder normalizes brand titles and emits canonical, Open 
   assert.match(metadataHelper, /robots:\s*\{/);
 });
 
-test("all Day 26 primary page families use the shared metadata contract", () => {
+test("all existing page metadata declarations use the shared Day 26 contract", () => {
   pagePaths.forEach((path, index) => {
     assert.match(pages[index], /buildPageMetadata\(/, `${path} must use buildPageMetadata()`);
   });
 });
 
-test("canonical paths are attached to the primary page families", () => {
+test("canonical paths are attached to all valid page metadata families", () => {
   const canonicalPages = pages.filter((source) => /path:\s*/.test(source));
-  assert.equal(canonicalPages.length, pages.length, "every Day 26 page family must provide a canonical path for valid pages");
+  assert.equal(canonicalPages.length, pages.length, "every metadata page must provide a canonical path for valid pages");
 });
 
 test("Day 26 preserves Long Thanh and thin combo indexability guards", () => {
