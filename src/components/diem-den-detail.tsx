@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Clock3, Milestone, Phone } from "lucide-react";
+import { ArrowRight, Clock3, Milestone, Phone, PlaneTakeoff } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { routeHref, routePriceKicker, type Route } from "@/types/route";
 import type { DiemDen } from "@/types/diem-den";
+import type { AirportConnectionLink } from "@/lib/api/airport-routes";
 import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
@@ -81,11 +82,13 @@ export function DiemDenDetailPage({
   regionName,
   hub,
   routes,
+  airportConnections = [],
   heroImageUrl,
 }: {
   regionName: string;
   hub?: DiemDen;
   routes: Route[];
+  airportConnections?: AirportConnectionLink[];
   heroImageUrl?: string;
 }) {
   const routeCount = routes.length;
@@ -153,6 +156,24 @@ export function DiemDenDetailPage({
           <p>Chưa có tuyến niêm yết cho khu vực này. Liên hệ {SITE_NAME} để được tư vấn hành trình phù hợp.</p>
         )}
       </section>
+
+      {airportConnections.length > 0 && (
+        <section className="section-wrap vehicle-type-related-routes">
+          <div className="section-heading-row">
+            <div>
+              <p className="section-label">KẾT NỐI SÂN BAY</p>
+              <h2>Tuyến sân bay liên quan đến {regionName}.</h2>
+            </div>
+          </div>
+          <div className="departure-list">
+            {airportConnections.map((airport) => (
+              <Link key={airport.airportId} href={airport.href} className="vehicle-chip">
+                <PlaneTakeoff size={15} /> {airport.label} · {airport.routeCount} tuyến
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {hub && hub.faqItems.length > 0 && (
         <section className="section-wrap blog-detail-content" id="faq">
