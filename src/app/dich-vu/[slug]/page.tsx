@@ -4,6 +4,7 @@ import { ServiceDetail } from "@/components/service-detail";
 import { fetchServices, fetchServiceBySlug } from "@/lib/api/services";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
+import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -18,11 +19,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const service = await fetchServiceBySlug(slug);
   return service
-    ? {
+    ? buildPageMetadata({
         title: service.rankMathTitle || `${service.name} | ${SITE_NAME}`,
         description: service.rankMathDescription || service.shortDescription,
-      }
-    : { title: `Không tìm thấy dịch vụ | ${SITE_NAME}` };
+        path: `/dich-vu/${service.slug}`,
+      })
+    : buildPageMetadata({
+        title: "Không tìm thấy dịch vụ",
+        description: "Dịch vụ này không tồn tại hoặc hiện không khả dụng.",
+        noIndex: true,
+      });
 }
 
 export default async function Page({ params }: Props) {
