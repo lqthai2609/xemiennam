@@ -8,7 +8,7 @@ import { fetchPostsByRegion } from "@/lib/api/blog";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
-import { SITE_NAME } from "@/lib/site-config";
+import { SITE_NAME, SITE_URL } from "@/lib/site-config";
 import { routeHref, type Route } from "@/types/route";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const route = await fetchRouteBySlug(tuyen);
   if (!route) return { title: `Không tìm thấy tuyến | ${SITE_NAME}` };
 
-  const canonical = routeHref(route);
+  const canonical = `${SITE_URL}${routeHref(route)}`;
   if (isPrelaunchAirportRoute(route)) {
     return {
       title: `Chuẩn bị tuyến xe ${route.from} ↔ ${route.to} | ${SITE_NAME}`,
