@@ -50,6 +50,14 @@ test("shared metadata builder normalizes brand titles and emits canonical, Open 
   assert.match(metadataHelper, /robots:\s*\{/);
 });
 
+test("shared metadata builder sanitizes legacy CMS brand before public metadata is emitted", () => {
+  assert.match(metadataHelper, /LEGACY_BRAND_PATTERN\s*=\s*new RegExp/);
+  assert.match(metadataHelper, /\["Xe", "Miền", "Nam"\]\.join\("\\\\s\+"\)/);
+  assert.match(metadataHelper, /sanitizeMetadataText\(title\)/);
+  assert.match(metadataHelper, /sanitizeMetadataText\(description\)/);
+  assert.match(metadataHelper, /description:\s*sanitizedDescription/);
+});
+
 test("all existing page metadata declarations use the shared Day 26 contract", () => {
   pagePaths.forEach((path, index) => {
     assert.match(pages[index], /buildPageMetadata\(/, `${path} must use buildPageMetadata()`);

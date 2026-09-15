@@ -10,9 +10,18 @@ type PageMetadataOptions = {
   openGraphType?: "website" | "article";
 };
 
+const LEGACY_BRAND_PATTERN = new RegExp(["Xe", "Miền", "Nam"].join("\\s+"), "gi");
 const escapedSiteName = SITE_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const leadingBrandPattern = new RegExp(`^${escapedSiteName}\\s*(?:[|:·\\-–—])\\s*`, "i");
 const trailingBrandPattern = new RegExp(`\\s*(?:[|:·\\-–—])\\s*${escapedSiteName}$`, "i");
+
+/**
+ * Metadata is allowed to consume CMS / Rank Math content, but the public brand
+ * must remain Gocar VN even while legacy CMS copy is being cleaned separately.
+ */
+export function sanitizeMetadataText(value: string): string {
+  return value.replace(LEGACY_BRAND_PATTERN, SITE_NAME).trim();
+}
 
 /**
  * Normalizes page titles before the root `%s | Gocar VN` template is applied.
@@ -20,7 +29,7 @@ const trailingBrandPattern = new RegExp(`\\s*(?:[|:·\\-–—])\\s*${escapedSit
  * leading or trailing brand token so metadata never renders the brand twice.
  */
 export function normalizeMetadataTitle(title: string): string {
-  let normalized = title.trim();
+  let normalized = sanitizeMetadataText(title);
 
   for (let index = 0; index < 2; index += 1) {
     normalized = normalized.replace(leadingBrandPattern, "").replace(trailingBrandPattern, "").trim();
@@ -49,10 +58,11 @@ export function buildPageMetadata({
 }: PageMetadataOptions): Metadata {
   const normalizedTitle = normalizeMetadataTitle(title);
   const shareTitle = brandedMetadataTitle(title);
+  const sanitizedDescription = sanitizeMetadataText(description);
 
   return {
     title: normalizedTitle === SITE_NAME ? { absolute: SITE_NAME } : normalizedTitle,
-    description,
+    description: sanitizedDescription,
     ...(path ? { alternates: { canonical: path } } : {}),
     ...(noIndex || noFollow
       ? {
@@ -67,13 +77,13 @@ export function buildPageMetadata({
       locale: "vi_VN",
       siteName: SITE_NAME,
       title: shareTitle,
-      description,
+      description: sanitizedDescription,
       ...(path ? { url: path } : {}),
     },
     twitter: {
       card: "summary",
       title: shareTitle,
-      description,
+      description: sanitizedDescription,
     },
   };
 }
