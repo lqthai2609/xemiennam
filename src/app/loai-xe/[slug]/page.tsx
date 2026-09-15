@@ -9,6 +9,7 @@ import { fetchPostsByVehicleType } from "@/lib/api/blog";
 import { fetchAirportRouteLinksForVehicleType } from "@/lib/api/airport-routes";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
+import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 import { buildVehicleCategoryRoutePrices, getVehicleCategoryStartingPrice } from "@/lib/vehicle-category-pricing";
 
@@ -22,8 +23,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const category = getVehicleCategory(slug);
   return category
-    ? { title: `${category.label} | ${SITE_NAME}`, description: category.description }
-    : { title: `Không tìm thấy loại xe | ${SITE_NAME}` };
+    ? buildPageMetadata({
+        title: `${category.label} | ${SITE_NAME}`,
+        description: category.description,
+        path: `/loai-xe/${category.slug}`,
+      })
+    : buildPageMetadata({
+        title: "Không tìm thấy loại xe",
+        description: "Loại xe này không tồn tại hoặc hiện không khả dụng.",
+        noIndex: true,
+      });
 }
 
 export default async function VehicleTypeDetailPage({ params }: Props) {
