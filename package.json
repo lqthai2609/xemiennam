@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "locations:preview": "node scripts/gocar-location-migration.mjs",
-    "test:location-migration": "node --test scripts/gocar-location-normalizer.test.mjs"
+    "audit:airport-day20": "node scripts/gocar-airport-hub-audit.mjs",
+    "test:location-migration": "node --test scripts/gocar-location-normalizer.test.mjs",
+    "test:airport-hub-audit": "node --test scripts/gocar-airport-hub-audit.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -29,7 +31,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react-dom": "^19.2.8",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
