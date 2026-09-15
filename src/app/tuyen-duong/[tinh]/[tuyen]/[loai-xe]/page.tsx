@@ -86,7 +86,7 @@ export default async function Page({ params }: Props) {
   const serviceOffers = buildFixedServiceOffers([
     {
       name: `${vp.vehicleType} · ${vp.packageLabel || "Gói hành trình"} · ${route.from} → ${route.to}`,
-      mode: vp.pricingMode,
+      mode: vp.pricingMode ?? "contact",
       price: vp.numericPrice,
     },
   ]);
