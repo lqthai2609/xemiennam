@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useId, useMemo, useState } from "react";
-import { ArrowRight, BusFront, CalendarDays, LoaderCircle, MapPin, Repeat2, X } from "lucide-react";
+import { ArrowRight, BusFront, CalendarDays, LoaderCircle, MapPin, Plane, Repeat2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { routeHref, type Route, type RoutePricingDirectionKey } from "@/types/route";
 
 type BookingSearchVariant = "default" | "hero" | "compact";
+export type BookingSearchMode = "standard" | "airport";
+type AirportTransferDirection = "pickup" | "dropoff";
 type BookingTripType = "one_way" | "round_trip";
 type SearchPricingMode = "fixed" | "contact";
 
@@ -26,6 +28,7 @@ export type BookingSearchFormProps = {
   variant?: BookingSearchVariant;
   initialPickup?: string;
   initialDestination?: string;
+  initialMode?: BookingSearchMode;
   source?: string;
 };
 
@@ -52,6 +55,10 @@ function formatDateLabel(value: string) {
 
 function tripTypeLabel(value: BookingTripType) {
   return value === "round_trip" ? "Khứ hồi" : "Một chiều";
+}
+
+function airportDirectionLabel(value: AirportTransferDirection) {
+  return value === "pickup" ? "Đón sân bay" : "Đi sân bay";
 }
 
 function supportsDirection(route: Route, direction: RoutePricingDirectionKey) {
@@ -94,6 +101,21 @@ function uniqueLocations(routes: Route[]) {
   for (const route of routes) {
     values.set(normalizeSearch(route.from), route.from);
     values.set(normalizeSearch(route.to), route.to);
+  }
+
+  return Array.from(values.values()).sort((a, b) => a.localeCompare(b, "vi"));
+}
+
+function uniqueAirportLocations(routes: Route[]) {
+  const values = new Map<string, string>();
+
+  for (const route of routes) {
+    if (route.originLocation?.type === "airport") {
+      values.set(normalizeSearch(route.from), route.from);
+    }
+    if (route.destinationLocation?.type === "airport") {
+      values.set(normalizeSearch(route.to), route.to);
+    }
   }
 
   return Array.from(values.values()).sort((a, b) => a.localeCompare(b, "vi"));
@@ -209,6 +231,8 @@ function JourneyQuoteDialog({
   vehicleType,
   journey,
   source,
+  searchMode,
+  airportDirection,
   onClose,
 }: {
   pickup: string;
@@ -218,6 +242,8 @@ function JourneyQuoteDialog({
   vehicleType: string;
   journey?: BookingJourney;
   source: string;
+  searchMode: BookingSearchMode;
+  airportDirection?: AirportTransferDirection;
   onClose: () => void;
 }) {
   const [fullName, setFullName] = useState("");
@@ -257,6 +283,9 @@ function JourneyQuoteDialog({
         `Loại chuyến: ${tripTypeLabel(tripType)}.`,
         `Nguồn: ${source}.`,
       ];
+      if (searchMode === "airport" && airportDirection) {
+        noteParts.push(`Dịch vụ sân bay: ${airportDirectionLabel(airportDirection)}.`);
+      }
       if (vehicleType === CONSULT_VEHICLE) noteParts.push("Khách cần tư vấn loại xe phù hợp.");
 
       const response = await fetch("/api/booking", {
@@ -316,6 +345,9 @@ function JourneyQuoteDialog({
             <h3>Xác nhận nhu cầu chuyến xe.</h3>
             <div className="quick-booking-summary">
               <div>Tuyến: <strong>{pickup} → {destination}</strong></div>
+              {searchMode === "airport" && airportDirection && (
+                <div>Dịch vụ: <strong>{airportDirectionLabel(airportDirection)}</strong></div>
+              )}
               <div>Ngày đi: <strong>{formatDateLabel(departureDate)}</strong></div>
               <div>Loại chuyến: <strong>{tripTypeLabel(tripType)}</strong></div>
               <div>Loại xe: <strong>{visibleVehicle}</strong></div>
@@ -358,8 +390,8 @@ function JourneyQuoteDialog({
 
 /**
  * Entry point chung cho booking funnel.
- * Route canonical có Pricing V2 thì dẫn tới đúng bảng giá; hành trình chưa có Route vẫn được nhận
- * như Custom Journey để tư vấn/báo giá, tuyệt đối không tự suy diễn giá từ tuyến khác.
+ * Hai tab chỉ thay đổi cách nhập hành trình; cả chuyến thường và sân bay đều dùng chung
+ * Route resolver, Pricing V2 và Custom Journey fallback.
  */
 export function BookingSearchForm({
   routes,
@@ -367,28 +399,75 @@ export function BookingSearchForm({
   variant = "default",
   initialPickup = "",
   initialDestination = "",
+  initialMode = "standard",
   source,
 }: BookingSearchFormProps) {
   const instanceId = useId();
   const pickupListId = `${instanceId}-pickup`;
   const destinationListId = `${instanceId}-destination`;
+  const airportPlaceListId = `${instanceId}-airport-place`;
   const headingId = `${instanceId}-title`;
-  const [pickup, setPickup] = useState(initialPickup);
-  const [destination, setDestination] = useState(initialDestination);
+  const searchPanelId = `${instanceId}-search-panel`;
+
+  const locations = useMemo(() => uniqueLocations(routes), [routes]);
+  const airportLocations = useMemo(() => uniqueAirportLocations(routes), [routes]);
+  const airportLocationKeys = useMemo(
+    () => new Set(airportLocations.map((location) => normalizeSearch(location))),
+    [airportLocations],
+  );
+  const nonAirportLocations = useMemo(
+    () => locations.filter((location) => !airportLocationKeys.has(normalizeSearch(location))),
+    [airportLocationKeys, locations],
+  );
+  const globalVehicleTypes = useMemo(() => uniqueVehicleTypes(routes), [routes]);
+
+  const initialPickupIsAirport = airportLocationKeys.has(normalizeSearch(initialPickup));
+  const initialDestinationIsAirport = airportLocationKeys.has(normalizeSearch(initialDestination));
+  const inferredInitialMode = initialMode === "airport" || initialPickupIsAirport || initialDestinationIsAirport
+    ? "airport"
+    : "standard";
+  const inferredAirportDirection: AirportTransferDirection = initialPickupIsAirport ? "pickup" : "dropoff";
+
+  const [searchMode, setSearchMode] = useState<BookingSearchMode>(inferredInitialMode);
+  const [standardPickup, setStandardPickup] = useState(inferredInitialMode === "standard" ? initialPickup : "");
+  const [standardDestination, setStandardDestination] = useState(inferredInitialMode === "standard" ? initialDestination : "");
+  const [airportDirection, setAirportDirection] = useState<AirportTransferDirection>(inferredAirportDirection);
+  const [selectedAirport, setSelectedAirport] = useState(
+    inferredInitialMode === "airport"
+      ? initialPickupIsAirport
+        ? initialPickup
+        : initialDestinationIsAirport
+          ? initialDestination
+          : ""
+      : "",
+  );
+  const [airportPlace, setAirportPlace] = useState(
+    inferredInitialMode === "airport"
+      ? initialPickupIsAirport
+        ? initialDestination
+        : initialPickup
+      : "",
+  );
   const [departureDate, setDepartureDate] = useState("");
   const [tripType, setTripType] = useState<BookingTripType>("one_way");
   const [vehicleType, setVehicleType] = useState("");
   const [error, setError] = useState("");
   const [quoteOpen, setQuoteOpen] = useState(false);
 
-  const locations = useMemo(() => uniqueLocations(routes), [routes]);
-  const globalVehicleTypes = useMemo(() => uniqueVehicleTypes(routes), [routes]);
+  const pickup = searchMode === "airport"
+    ? airportDirection === "pickup" ? selectedAirport : airportPlace
+    : standardPickup;
+  const destination = searchMode === "airport"
+    ? airportDirection === "pickup" ? airportPlace : selectedAirport
+    : standardDestination;
+
   const journey = useMemo(() => findJourney(routes, pickup, destination), [routes, pickup, destination]);
   const availableVehicleTypes = useMemo(
     () => (journey ? vehicleTypesForJourney(journey) : globalVehicleTypes),
     [globalVehicleTypes, journey],
   );
-  const resolvedSource = source || (variant === "hero" ? "homepage_hero" : `booking_search_${variant}`);
+  const sourceBase = source || (variant === "hero" ? "homepage_hero" : `booking_search_${variant}`);
+  const resolvedSource = `${sourceBase}_${searchMode}`;
   const isCompact = variant === "compact";
   const selectedPricingMode = vehicleType ? pricingModeForVehicle(journey, vehicleType) : undefined;
   const needsQuote = Boolean(vehicleType && (!journey || selectedPricingMode === "contact"));
@@ -398,12 +477,21 @@ export function BookingSearchForm({
     setError("");
   }
 
+  function changeSearchMode(mode: BookingSearchMode) {
+    setSearchMode(mode);
+    resetJourneyDependentFields();
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
+    if (searchMode === "airport" && !selectedAirport) {
+      setError("Vui lòng chọn sân bay.");
+      return;
+    }
     if (!pickup.trim() || !destination.trim()) {
-      setError("Vui lòng chọn đầy đủ điểm đón và điểm đến.");
+      setError(searchMode === "airport" ? "Vui lòng nhập địa điểm còn lại của chuyến sân bay." : "Vui lòng chọn đầy đủ điểm đón và điểm đến.");
       return;
     }
     if (normalizeSearch(pickup) === normalizeSearch(destination)) {
@@ -433,7 +521,9 @@ export function BookingSearchForm({
       ngay_di: departureDate,
       trip_type: tripType,
       source: resolvedSource,
+      search_mode: searchMode,
     });
+    if (searchMode === "airport") params.set("airport_direction", airportDirection);
     if (vehicleType !== CONSULT_VEHICLE) params.set("vehicle_type", vehicleType);
 
     window.location.assign(`${routeHref(journey.route)}?${params.toString()}#pricing`);
@@ -446,11 +536,19 @@ export function BookingSearchForm({
       ? "rounded-[28px] border border-border bg-card/95 p-5 text-foreground shadow-[0_22px_70px_rgba(11,79,75,0.16)] backdrop-blur sm:p-6"
       : "rounded-[28px] border border-border bg-card p-5 text-foreground sm:p-6";
   const fieldsClass = isCompact ? "grid gap-3 md:grid-cols-2 xl:grid-cols-5" : "grid gap-3 sm:grid-cols-2";
-  const helperText = pickup.trim() && destination.trim() && !journey
-    ? "Chưa có bảng giá sẵn cho hành trình này. Bạn vẫn có thể chọn xe và gửi yêu cầu báo giá ngay."
-    : journey
-      ? "Đã nhận diện tuyến có dữ liệu. Loại xe được lọc theo đúng chiều di chuyển và Pricing V2 hiện có."
-      : "Nhập hành trình để hệ thống kiểm tra bảng giá; tuyến chưa có dữ liệu vẫn được tiếp nhận báo giá riêng.";
+  const helperText = searchMode === "airport"
+    ? !selectedAirport
+      ? "Chọn sân bay và chiều di chuyển. Hệ thống sẽ ưu tiên bảng giá sân bay hiện có; tuyến chưa có giá vẫn nhận báo giá riêng."
+      : pickup.trim() && destination.trim() && !journey
+        ? "Chưa có bảng giá sẵn cho chuyến sân bay này. Bạn vẫn có thể chọn xe và gửi yêu cầu báo giá ngay."
+        : journey
+          ? "Đã nhận diện tuyến sân bay có dữ liệu. Loại xe được lọc theo đúng chiều di chuyển và Pricing V2 hiện có."
+          : "Nhập địa điểm còn lại để kiểm tra giá cho chuyến sân bay."
+    : pickup.trim() && destination.trim() && !journey
+      ? "Chưa có bảng giá sẵn cho hành trình này. Bạn vẫn có thể chọn xe và gửi yêu cầu báo giá ngay."
+      : journey
+        ? "Đã nhận diện tuyến có dữ liệu. Loại xe được lọc theo đúng chiều di chuyển và Pricing V2 hiện có."
+        : "Nhập hành trình để hệ thống kiểm tra bảng giá; tuyến chưa có dữ liệu vẫn được tiếp nhận báo giá riêng.";
 
   return (
     <section className={outerClass} id={id} aria-labelledby={headingId}>
@@ -462,107 +560,205 @@ export function BookingSearchForm({
               Bạn muốn đi đâu?
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-              Chọn hành trình, ngày đi và loại xe. Tuyến có bảng giá sẽ hiển thị giá; tuyến khác vẫn nhận báo giá riêng.
+              Chọn chuyến đi tỉnh hoặc chế độ đưa đón sân bay. Cả hai đều dùng chung hệ thống giá và yêu cầu báo giá của Gocar VN.
             </p>
           </div>
         )}
 
         {isCompact && <h2 id={headingId} className="sr-only">Tìm chuyến xe</h2>}
 
-        <div className={fieldsClass}>
-          <LocationField
-            label="Điểm đón"
-            value={pickup}
-            onChange={(value) => {
-              setPickup(value);
-              resetJourneyDependentFields();
-            }}
-            placeholder="Ví dụ: Biên Hòa"
-            listId={pickupListId}
-            options={locations}
-          />
+        <div
+          className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted p-1"
+          role="tablist"
+          aria-label="Loại hành trình"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={searchMode === "standard"}
+            aria-controls={searchPanelId}
+            onClick={() => changeSearchMode("standard")}
+            className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition ${searchMode === "standard" ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Đi tỉnh / Thuê xe
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={searchMode === "airport"}
+            aria-controls={searchPanelId}
+            onClick={() => changeSearchMode("airport")}
+            className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition ${searchMode === "airport" ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            <Plane size={16} aria-hidden="true" />
+            Đưa đón sân bay
+          </button>
+        </div>
 
-          <LocationField
-            label="Điểm đến"
-            value={destination}
-            onChange={(value) => {
-              setDestination(value);
-              resetJourneyDependentFields();
-            }}
-            placeholder="Ví dụ: Cần Thơ"
-            listId={destinationListId}
-            options={locations}
-          />
-
-          <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-            <span>Ngày đi</span>
-            <span className="relative block">
-              <CalendarDays
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
-                size={18}
-              />
-              <input
-                type="date"
-                min={localDateIso(new Date())}
-                value={departureDate}
-                onChange={(event) => {
-                  setDepartureDate(event.target.value);
-                  setError("");
+        <div id={searchPanelId} role="tabpanel">
+          {searchMode === "airport" && (
+            <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-secondary p-1.5" aria-label="Chiều chuyến sân bay">
+              <button
+                type="button"
+                onClick={() => {
+                  setAirportDirection("pickup");
+                  resetJourneyDependentFields();
                 }}
-                className="h-12 w-full rounded-xl border border-border bg-background pl-10 pr-3 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-                required
-              />
-            </span>
-          </label>
-
-          <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-            <span>Loại chuyến</span>
-            <span className="relative block">
-              <Repeat2
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
-                size={18}
-              />
-              <select
-                value={tripType}
-                onChange={(event) => {
-                  setTripType(event.target.value as BookingTripType);
-                  setError("");
-                }}
-                className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${airportDirection === "pickup" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               >
-                <option value="one_way">Một chiều</option>
-                <option value="round_trip">Khứ hồi</option>
-              </select>
-            </span>
-          </label>
-
-          <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2 xl:col-span-1">
-            <span>Loại xe</span>
-            <span className="relative block">
-              <BusFront
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
-                size={18}
-              />
-              <select
-                value={vehicleType}
-                onChange={(event) => {
-                  setVehicleType(event.target.value);
-                  setError("");
+                Đón sân bay
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAirportDirection("dropoff");
+                  resetJourneyDependentFields();
                 }}
-                className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-                required
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${airportDirection === "dropoff" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               >
-                <option value="">Chọn loại xe</option>
-                {availableVehicleTypes.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-                <option value={CONSULT_VEHICLE}>{CONSULT_VEHICLE_LABEL}</option>
-              </select>
-            </span>
-          </label>
+                Đi sân bay
+              </button>
+            </div>
+          )}
+
+          <div className={fieldsClass}>
+            {searchMode === "standard" ? (
+              <>
+                <LocationField
+                  label="Điểm đón"
+                  value={standardPickup}
+                  onChange={(value) => {
+                    setStandardPickup(value);
+                    resetJourneyDependentFields();
+                  }}
+                  placeholder="Ví dụ: Biên Hòa"
+                  listId={pickupListId}
+                  options={nonAirportLocations}
+                />
+
+                <LocationField
+                  label="Điểm đến"
+                  value={standardDestination}
+                  onChange={(value) => {
+                    setStandardDestination(value);
+                    resetJourneyDependentFields();
+                  }}
+                  placeholder="Ví dụ: Cần Thơ"
+                  listId={destinationListId}
+                  options={nonAirportLocations}
+                />
+              </>
+            ) : (
+              <>
+                <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
+                  <span>Sân bay</span>
+                  <span className="relative block">
+                    <Plane
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
+                      size={18}
+                    />
+                    <select
+                      value={selectedAirport}
+                      onChange={(event) => {
+                        setSelectedAirport(event.target.value);
+                        resetJourneyDependentFields();
+                      }}
+                      className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                      required
+                    >
+                      <option value="">Chọn sân bay</option>
+                      {airportLocations.map((airport) => (
+                        <option key={airport} value={airport}>{airport}</option>
+                      ))}
+                    </select>
+                  </span>
+                </label>
+
+                <LocationField
+                  label={airportDirection === "pickup" ? "Điểm đến" : "Điểm đón"}
+                  value={airportPlace}
+                  onChange={(value) => {
+                    setAirportPlace(value);
+                    resetJourneyDependentFields();
+                  }}
+                  placeholder={airportDirection === "pickup" ? "Ví dụ: Vũng Tàu" : "Ví dụ: Biên Hòa"}
+                  listId={airportPlaceListId}
+                  options={nonAirportLocations}
+                />
+              </>
+            )}
+
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span>Ngày đi</span>
+              <span className="relative block">
+                <CalendarDays
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
+                  size={18}
+                />
+                <input
+                  type="date"
+                  min={localDateIso(new Date())}
+                  value={departureDate}
+                  onChange={(event) => {
+                    setDepartureDate(event.target.value);
+                    setError("");
+                  }}
+                  className="h-12 w-full rounded-xl border border-border bg-background pl-10 pr-3 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  required
+                />
+              </span>
+            </label>
+
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span>Loại chuyến</span>
+              <span className="relative block">
+                <Repeat2
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
+                  size={18}
+                />
+                <select
+                  value={tripType}
+                  onChange={(event) => {
+                    setTripType(event.target.value as BookingTripType);
+                    setError("");
+                  }}
+                  className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                >
+                  <option value="one_way">Một chiều</option>
+                  <option value="round_trip">Khứ hồi</option>
+                </select>
+              </span>
+            </label>
+
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2 xl:col-span-1">
+              <span>Loại xe</span>
+              <span className="relative block">
+                <BusFront
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
+                  size={18}
+                />
+                <select
+                  value={vehicleType}
+                  onChange={(event) => {
+                    setVehicleType(event.target.value);
+                    setError("");
+                  }}
+                  className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                  required
+                >
+                  <option value="">Chọn loại xe</option>
+                  {availableVehicleTypes.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                  <option value={CONSULT_VEHICLE}>{CONSULT_VEHICLE_LABEL}</option>
+                </select>
+              </span>
+            </label>
+          </div>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
@@ -589,6 +785,8 @@ export function BookingSearchForm({
           vehicleType={vehicleType}
           journey={journey}
           source={resolvedSource}
+          searchMode={searchMode}
+          airportDirection={searchMode === "airport" ? airportDirection : undefined}
           onClose={() => setQuoteOpen(false)}
         />
       )}
