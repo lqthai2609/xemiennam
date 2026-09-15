@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useState } from "react";
-import { ArrowRight, BusFront, CalendarDays, LoaderCircle, MapPin, Plane, Repeat2, X } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, LoaderCircle, MapPin, Plane, Repeat2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { routeHref, type Route, type RoutePricingDirectionKey } from "@/types/route";
@@ -482,6 +482,16 @@ export function BookingSearchForm({
     resetJourneyDependentFields();
   }
 
+  function swapJourneyEndpoints() {
+    if (searchMode === "airport") {
+      setAirportDirection((current) => current === "pickup" ? "dropoff" : "pickup");
+    } else {
+      setStandardPickup(standardDestination);
+      setStandardDestination(standardPickup);
+    }
+    resetJourneyDependentFields();
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -622,72 +632,94 @@ export function BookingSearchForm({
           )}
 
           <div className={fieldsClass}>
-            {searchMode === "standard" ? (
-              <>
-                <LocationField
-                  label="Điểm đón"
-                  value={standardPickup}
-                  onChange={(value) => {
-                    setStandardPickup(value);
-                    resetJourneyDependentFields();
-                  }}
-                  placeholder="Ví dụ: Biên Hòa"
-                  listId={pickupListId}
-                  options={nonAirportLocations}
-                />
+            <div className="relative grid gap-2 sm:col-span-2 sm:grid-cols-2 sm:gap-3 xl:col-span-2">
+              {searchMode === "standard" ? (
+                <>
+                  <LocationField
+                    label="Điểm đón"
+                    value={standardPickup}
+                    onChange={(value) => {
+                      setStandardPickup(value);
+                      resetJourneyDependentFields();
+                    }}
+                    placeholder="Ví dụ: Biên Hòa"
+                    listId={pickupListId}
+                    options={nonAirportLocations}
+                  />
 
-                <LocationField
-                  label="Điểm đến"
-                  value={standardDestination}
-                  onChange={(value) => {
-                    setStandardDestination(value);
-                    resetJourneyDependentFields();
-                  }}
-                  placeholder="Ví dụ: Cần Thơ"
-                  listId={destinationListId}
-                  options={nonAirportLocations}
-                />
-              </>
-            ) : (
-              <>
-                <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>Sân bay</span>
-                  <span className="relative block">
-                    <Plane
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
-                      size={18}
-                    />
-                    <select
-                      value={selectedAirport}
-                      onChange={(event) => {
-                        setSelectedAirport(event.target.value);
-                        resetJourneyDependentFields();
-                      }}
-                      className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-                      required
-                    >
-                      <option value="">Chọn sân bay</option>
-                      {airportLocations.map((airport) => (
-                        <option key={airport} value={airport}>{airport}</option>
-                      ))}
-                    </select>
-                  </span>
-                </label>
+                  <button
+                    type="button"
+                    onClick={swapJourneyEndpoints}
+                    aria-label="Đổi chiều điểm đón và điểm đến"
+                    title="Đổi chiều điểm đón và điểm đến"
+                    className="z-10 mx-auto -my-1 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:absolute sm:left-1/2 sm:top-[2.45rem] sm:m-0 sm:-translate-x-1/2 sm:-translate-y-1/2"
+                  >
+                    <ArrowRightLeft aria-hidden="true" size={17} className="rotate-90 sm:rotate-0" />
+                  </button>
 
-                <LocationField
-                  label={airportDirection === "pickup" ? "Điểm đến" : "Điểm đón"}
-                  value={airportPlace}
-                  onChange={(value) => {
-                    setAirportPlace(value);
-                    resetJourneyDependentFields();
-                  }}
-                  placeholder={airportDirection === "pickup" ? "Ví dụ: Vũng Tàu" : "Ví dụ: Biên Hòa"}
-                  listId={airportPlaceListId}
-                  options={nonAirportLocations}
-                />
-              </>
-            )}
+                  <LocationField
+                    label="Điểm đến"
+                    value={standardDestination}
+                    onChange={(value) => {
+                      setStandardDestination(value);
+                      resetJourneyDependentFields();
+                    }}
+                    placeholder="Ví dụ: Cần Thơ"
+                    listId={destinationListId}
+                    options={nonAirportLocations}
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
+                    <span>{airportDirection === "pickup" ? "Điểm đón · Sân bay" : "Điểm đến · Sân bay"}</span>
+                    <span className="relative block">
+                      <Plane
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
+                        size={18}
+                      />
+                      <select
+                        value={selectedAirport}
+                        onChange={(event) => {
+                          setSelectedAirport(event.target.value);
+                          resetJourneyDependentFields();
+                        }}
+                        className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                        required
+                      >
+                        <option value="">Chọn sân bay</option>
+                        {airportLocations.map((airport) => (
+                          <option key={airport} value={airport}>{airport}</option>
+                        ))}
+                      </select>
+                    </span>
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={swapJourneyEndpoints}
+                    aria-label="Đổi chiều điểm đón và điểm đến"
+                    title="Đổi chiều điểm đón và điểm đến"
+                    className="z-10 mx-auto -my-1 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:absolute sm:left-1/2 sm:top-[2.45rem] sm:m-0 sm:-translate-x-1/2 sm:-translate-y-1/2"
+                  >
+                    <ArrowRightLeft aria-hidden="true" size={17} className="rotate-90 sm:rotate-0" />
+                  </button>
+
+                  <LocationField
+                    label={airportDirection === "pickup" ? "Điểm đến" : "Điểm đón"}
+                    value={airportPlace}
+                    onChange={(value) => {
+                      setAirportPlace(value);
+                      resetJourneyDependentFields();
+                    }}
+                    placeholder={airportDirection === "pickup" ? "Ví dụ: Vũng Tàu" : "Ví dụ: Biên Hòa"}
+                    listId={airportPlaceListId}
+                    options={nonAirportLocations}
+                  />
+                </>
+              )}
+            </div>
 
             <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
               <span>Ngày đi</span>
