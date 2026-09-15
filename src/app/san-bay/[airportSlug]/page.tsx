@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AirportHubPage } from "@/components/airport-hub-page";
 import { JsonLd } from "@/components/json-ld";
 import { fetchAirportHubBySlug } from "@/lib/api/airport-routes";
+import { fetchPostsByAirportLocationId } from "@/lib/api/blog";
 import { getAirportHubReadiness } from "@/lib/airport-readiness";
 import { airportDisplayName, airportHubHref } from "@/lib/airport-seo";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
@@ -34,6 +35,7 @@ export default async function Page({ params }: Props) {
   const hub = await fetchAirportHubBySlug(airportSlug);
   if (!hub) notFound();
 
+  const relatedPosts = await fetchPostsByAirportLocationId(hub.airport.id, 3);
   const readiness = getAirportHubReadiness(hub.airport.slug);
   const airportName = airportDisplayName(hub.airport.name);
   const canonicalPath = airportHubHref(hub.airport.slug);
@@ -73,7 +75,7 @@ export default async function Page({ params }: Props) {
     <>
       <JsonLd data={breadcrumbSchema} />
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
-      <AirportHubPage data={hub} />
+      <AirportHubPage data={hub} relatedPosts={relatedPosts} />
     </>
   );
 }
