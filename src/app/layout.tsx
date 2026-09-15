@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import { FloatingContactActions } from "@/components/floating-contact-actions";
 import { AnalyticsScripts } from "@/components/analytics-scripts";
 import { AnalyticsPageview } from "@/components/analytics-pageview";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site-config";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site-config";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -25,8 +25,25 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: SITE_NAME,
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
   description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: "website",
+    locale: "vi_VN",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
