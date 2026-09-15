@@ -12,9 +12,9 @@ import {
   getRenderableComboVehicleSlugs,
 } from "@/lib/combo";
 import { buildPageMetadata } from "@/lib/metadata";
-import { routeComboHref } from "@/types/route";
+import { routeComboHref, routeHref } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
-import { buildServiceSchema } from "@/lib/schema";
+import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
 
 type Props = { params: Promise<{ tinh: string; tuyen: string; "loai-xe": string }> };
 
@@ -83,29 +83,30 @@ export default async function Page({ params }: Props) {
     })
     .slice(0, 3);
   const description = comboDescriptionOrDefault(route, vp);
-  const fixedPrice = vp.pricingMode === "fixed" && vp.numericPrice && vp.numericPrice > 0 ? vp.numericPrice : undefined;
+  const serviceOffers = buildFixedServiceOffers([
+    {
+      name: `${vp.vehicleType} · ${vp.packageLabel || "Gói hành trình"} · ${route.from} → ${route.to}`,
+      mode: vp.pricingMode,
+      price: vp.numericPrice,
+    },
+  ]);
   const serviceSchema = buildServiceSchema({
     name: `Thuê xe ${vp.vehicleType.toLowerCase()} đi ${route.from} – ${route.to}`,
     description,
     url: routeComboHref(route, loaiXe),
     areaServed: [route.from, route.to],
-    offers: fixedPrice
-      ? {
-          lowPrice: fixedPrice,
-          highPrice: fixedPrice,
-          priceCurrency: "VND",
-          offers: [
-            {
-              name: `${vp.vehicleType} · ${vp.packageLabel || "Gói hành trình"} · ${route.from} → ${route.to}`,
-              price: fixedPrice,
-            },
-          ],
-        }
-      : undefined,
+    offers: serviceOffers,
   });
+  const breadcrumbSchema = buildBreadcrumbListSchema([
+    { name: "Trang chủ", url: "/" },
+    { name: route.region, url: `/tuyen-duong/${route.regionSlug || "khac"}` },
+    { name: `${route.from} → ${route.to}`, url: routeHref(route) },
+    { name: vp.vehicleType, url: routeComboHref(route, loaiXe) },
+  ]);
 
   return (
     <>
+      <JsonLd data={breadcrumbSchema} />
       <JsonLd data={serviceSchema} />
       <ComboLandingPage
         route={route}
