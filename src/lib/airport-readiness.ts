@@ -33,7 +33,7 @@ const DEFAULT_AIRPORT_READINESS: AirportHubReadiness = {
 const LONG_THANH_READINESS: AirportHubReadiness = {
   phase: "prelaunch",
   eyebrow: "Chuẩn bị dịch vụ đưa đón sân bay",
-  heroTitle: (airportName) => `Chuẩn bị xe đưa đón sân bay ${airportName} ↔ các tỉnh thành`,
+  heroTitle: (airportName) => `Chuẩn bị xe đưa đón ${airportName} ↔ các tỉnh thành`,
   heroDescription:
     "Gocar VN đang chuẩn bị các tuyến đón và trả khách cho giai đoạn Sân bay Long Thành đi vào khai thác. Các tuyến hiển thị dùng để tham khảo nhu cầu và liên hệ trước; lịch khai thác thực tế cần đối chiếu thông báo chính thức.",
   routeCountLabel: (count) => `${count} tuyến đang chuẩn bị`,
