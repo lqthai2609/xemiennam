@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [blogApi, blogType, plugin] = await Promise.all([
+const [blogApi, blogType, plugin, blogDetailPage, airportHubPage, airportHubComponent] = await Promise.all([
   readFile(new URL("../src/lib/api/blog.ts", import.meta.url), "utf8"),
   readFile(new URL("../src/types/blog.ts", import.meta.url), "utf8"),
   readFile(new URL("../wordpress/gocar-core/includes/class-gocar-blog-relations.php", import.meta.url), "utf8"),
+  readFile(new URL("../src/app/blog/[slug]/page.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/app/san-bay/[airportSlug]/page.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../src/components/airport-hub-page.tsx", import.meta.url), "utf8"),
 ]);
 
 test("blog model exposes structured Province, Vehicle and Airport relations", () => {
@@ -29,6 +32,22 @@ test("semantic related-post ranking does not inspect free text", () => {
   assert.match(scorer, /airportLocationIds/);
   assert.match(scorer, /provinceSlugs/);
   assert.match(scorer, /vehicleTypeSlugs/);
+});
+
+test("Day 25 Blog Detail uses semantic related posts and structured hub links", () => {
+  assert.match(blogDetailPage, /fetchRelatedPosts\(slug,\s*3\)/);
+  assert.doesNotMatch(blogDetailPage, /routes\.slice\(0,\s*3\)/);
+  assert.match(blogDetailPage, /airportHubHref\(airport\.slug\)/);
+  assert.match(blogDetailPage, /`\/tuyen-duong\/\$\{provinceSlug\}`/);
+  assert.match(blogDetailPage, /`\/loai-xe\/\$\{vehicleSlug\}`/);
+  assert.match(blogDetailPage, /<BlogCard post=\{related\}/);
+});
+
+test("Day 25 Airport Hub queries related posts by Location V2 ID and renders them only when present", () => {
+  assert.match(airportHubPage, /fetchPostsByAirportLocationId\(hub\.airport\.id,\s*3\)/);
+  assert.match(airportHubPage, /<AirportHubPage data=\{hub\} relatedPosts=\{relatedPosts\}/);
+  assert.match(airportHubComponent, /relatedPosts\.length > 0/);
+  assert.match(airportHubComponent, /<BlogCard post=\{post\}/);
 });
 
 test("Gocar Core airport relation validates Location V2 airport entities", () => {

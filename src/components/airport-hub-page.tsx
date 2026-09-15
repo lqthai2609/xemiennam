@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowDown, ArrowRight, CheckCircle2, MapPin, MessageCircle, Phone, PlaneLanding, PlaneTakeoff } from "lucide-react";
+import { BlogCard } from "@/components/blog-card";
 import { Button } from "@/components/ui/button";
 import { JsonLd } from "@/components/json-ld";
 import { buildFaqPageSchema } from "@/lib/schema";
@@ -10,6 +11,7 @@ import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME, SITE_CONTACT_PHONE_TEL } fro
 import { getAirportHubReadiness, type AirportReadinessPhase } from "@/lib/airport-readiness";
 import { airportDisplayName } from "@/lib/airport-seo";
 import type { AirportHubData, AirportHubRoute } from "@/lib/api/airport-routes";
+import type { BlogPost } from "@/types/blog";
 
 function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "live") {
   if (phase === "prelaunch") {
@@ -108,7 +110,7 @@ function RouteList({ routes }: { routes: AirportHubRoute[] }) {
   );
 }
 
-export function AirportHubPage({ data }: { data: AirportHubData }) {
+export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubData; relatedPosts?: BlogPost[] }) {
   const airportName = airportDisplayName(data.airport.name);
   const readiness = getAirportHubReadiness(data.airport.slug);
   const isPrelaunch = readiness.phase === "prelaunch";
@@ -225,6 +227,23 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
                   {location.name}<ArrowRight aria-hidden="true" />
                 </Link>
               ))}
+            </div>
+          </section>
+        ) : null}
+
+        {relatedPosts.length > 0 ? (
+          <section className="route-blog-section" aria-labelledby="airport-related-posts-heading">
+            <div className="section-heading">
+              <div>
+                <p className="section-label">CẨM NANG SÂN BAY</p>
+                <h2 id="airport-related-posts-heading">Bài viết liên quan đến {airportName}.</h2>
+              </div>
+              <Link className="text-link" href="/blog">
+                Xem tất cả bài viết <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="route-grid blog-grid">
+              {relatedPosts.map((post) => <BlogCard post={post} key={post.id} />)}
             </div>
           </section>
         ) : null}
