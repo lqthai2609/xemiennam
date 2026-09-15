@@ -74,6 +74,7 @@ export function RouteDetailPage({
 }) {
   const [direction, setDirection] = useState<RoutePricingDirectionKey>(() => defaultDirection(route));
   const isPrelaunch = isPrelaunchAirportRoute(route);
+  const isAirportRoute = route.originLocation?.type === "airport" || route.destinationLocation?.type === "airport";
   // Một số tuyến chưa có featured image trong CMS. Dùng ảnh WebP nhẹ làm fallback
   // thay cho city-tour.png (2.3 MB), vì hero luôn là ảnh LCP được tải ưu tiên.
   const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
@@ -112,7 +113,7 @@ export function RouteDetailPage({
 
           {!isPrelaunch && mapEmbedSrc ? <div className="detail-map-wrap"><div className="section-heading detail-heading"><div><p className="section-label">CUNG ĐƯỜNG</p><h2>Thấy trước hành trình.</h2></div></div><iframe className="detail-map" src={mapEmbedSrc} title={`Bản đồ tuyến ${displayFrom} đến ${displayTo}`} loading="lazy" /></div> : null}
 
-          {route.vehicleTypes.length > 0 ? <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">LOẠI XE PHÙ HỢP</p><h2>Đi tuyến này bằng xe gì?</h2></div></div><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeComboHref(route, vehicleTypeSlug(vehicle))} className="vehicle-chip">{vehicle}</Link>)}</div></div> : null}
+          {route.vehicleTypes.length > 0 ? <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">LOẠI XE PHÙ HỢP</p><h2>Đi tuyến này bằng xe gì?</h2></div></div><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeComboHref(route, vehicleTypeSlug(vehicle))} className="vehicle-chip">{vehicle}</Link>)}</div>{isAirportRoute ? <><p className="section-label">KHÁM PHÁ LOẠI XE</p><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={`pillar-${vehicle}`} href={`/loai-xe/${vehicleTypeSlug(vehicle)}`} className="vehicle-chip">Xem {vehicle}</Link>)}</div></> : null}</div> : null}
         </div>
         <aside className="detail-aside" id="booking">
           <div className="booking-card"><p className="section-label">{isPrelaunch ? "LIÊN HỆ TRƯỚC" : "ĐẶT CHUYẾN"}</p><h2>{isPrelaunch ? "Chuẩn bị hành trình?" : "Sẵn sàng lên đường?"}</h2><p>{isPrelaunch ? `Liên hệ ${SITE_NAME} để ghi nhận nhu cầu, kiểm tra điều kiện phục vụ và cập nhật báo giá khi dữ liệu vận hành đã đủ rõ.` : `Liên hệ ${SITE_NAME} để xác nhận xe, lịch đón và mức giá theo chiều ${displayFrom} → ${displayTo}.`}</p><Button size="lg" asChild><a href={`tel:${SITE_HOTLINE_TEL}`}>Gọi {SITE_HOTLINE} <Phone data-icon="inline-end" /></a></Button><span className="booking-note"><ShieldCheck size={16} /> {isPrelaunch ? "Chưa xác nhận chuyến khi lịch sân bay chưa được kiểm chứng" : "Không cần thanh toán trước"}</span></div>
