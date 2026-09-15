@@ -12,6 +12,7 @@ import { fetchPostBySlug, fetchPosts, fetchRelatedPosts } from "@/lib/api/blog";
 import { fetchLocationsV2, type LocationV2 } from "@/lib/api/locations";
 import { fetchRoutes } from "@/lib/api/routes";
 import { airportDisplayName, airportHubHref } from "@/lib/airport-seo";
+import { buildPageMetadata } from "@/lib/metadata";
 import { buildFaqPageSchema } from "@/lib/schema";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { decodeHtmlEntities } from "@/lib/wp";
@@ -76,11 +77,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await fetchPostBySlug(slug);
   return post
-    ? {
+    ? buildPageMetadata({
         title: post.rankMathTitle || `${post.title} | Blog ${SITE_NAME}`,
         description: post.rankMathDescription || post.excerpt,
-      }
-    : { title: `Không tìm thấy bài viết | ${SITE_NAME}` };
+        path: `/blog/${post.slug}`,
+        openGraphType: "article",
+      })
+    : buildPageMetadata({
+        title: "Không tìm thấy bài viết",
+        description: "Bài viết này không tồn tại hoặc hiện không khả dụng.",
+        noIndex: true,
+      });
 }
 
 const footerLinkGroups = [
