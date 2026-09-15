@@ -5,7 +5,7 @@ import { fetchAirportConnectionsByProvinceSlug } from "@/lib/api/airport-routes"
 import { fetchDiemDenBySlug, getDestinationImageUrl } from "@/lib/api/diem-den";
 import { DiemDenDetailPage } from "@/components/diem-den-detail";
 import { JsonLd } from "@/components/json-ld";
-import { buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
+import { buildBreadcrumbListSchema, buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
 import { stripHtml } from "@/lib/wp";
 
@@ -47,6 +47,7 @@ export default async function Page({ params }: Props) {
   if (routes.length === 0 && !hub) notFound();
 
   const regionName = routes[0]?.region || hub?.title || tinh;
+  const canonicalPath = `/tuyen-duong/${tinh}`;
   const description = hub
     ? stripHtml(hub.contentHtml).slice(0, 200)
     : `Thuê xe nguyên chiếc đi khắp khu vực ${regionName}, ${routes.length} tuyến đang chạy.`;
@@ -54,13 +55,18 @@ export default async function Page({ params }: Props) {
   const serviceSchema = buildServiceSchema({
     name: `Thuê xe nguyên chiếc đi ${regionName}`,
     description,
-    url: `/tuyen-duong/${tinh}`,
+    url: canonicalPath,
     areaServed: regionName,
     providerName: "Gocar VN",
   });
+  const breadcrumbSchema = buildBreadcrumbListSchema([
+    { name: "Trang chủ", url: "/" },
+    { name: regionName, url: canonicalPath },
+  ]);
 
   return (
     <>
+      <JsonLd data={breadcrumbSchema} />
       <JsonLd data={serviceSchema} />
       {hub && hub.faqItems.length > 0 && <JsonLd data={buildFaqPageSchema(hub.faqItems)} />}
       <DiemDenDetailPage
