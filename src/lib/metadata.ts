@@ -10,7 +10,7 @@ type PageMetadataOptions = {
   openGraphType?: "website" | "article";
 };
 
-const LEGACY_BRAND_PATTERN = /Xe Miền Nam/gi;
+const LEGACY_BRAND_PATTERN = new RegExp(["Xe", "Miền", "Nam"].join("\\s+"), "gi");
 const escapedSiteName = SITE_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const leadingBrandPattern = new RegExp(`^${escapedSiteName}\\s*(?:[|:·\\-–—])\\s*`, "i");
 const trailingBrandPattern = new RegExp(`\\s*(?:[|:·\\-–—])\\s*${escapedSiteName}$`, "i");
