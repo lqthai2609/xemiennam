@@ -16,9 +16,14 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    // Ngày 25: gộp "Đội xe" vào "Loại xe" — /doi-xe không còn route riêng, giữ redirect
-    // để URL cũ (nếu đã được chia sẻ/lưu ở đâu đó) không rơi vào 404.
     return [
+      // Day 27: CMS Location slug có thể dùng tiền tố `san-bay-`, trong khi URL public đã
+      // chuẩn hóa về slug ngắn. Resolver vẫn chấp nhận alias để tương thích dữ liệu, nhưng
+      // crawler/user không được nhận 200 cho hai URL tương đương — redirect permanent về URL chuẩn.
+      { source: "/san-bay/san-bay-:airportSlug", destination: "/san-bay/:airportSlug", permanent: true },
+
+      // Ngày 25: gộp "Đội xe" vào "Loại xe" — /doi-xe không còn route riêng, giữ redirect
+      // để URL cũ (nếu đã được chia sẻ/lưu ở đâu đó) không rơi vào 404.
       { source: "/doi-xe", destination: "/loai-xe", permanent: true },
       { source: "/doi-xe/:slug", destination: "/loai-xe/:slug", permanent: true },
     ];
