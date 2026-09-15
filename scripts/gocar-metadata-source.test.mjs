@@ -51,7 +51,8 @@ test("shared metadata builder normalizes brand titles and emits canonical, Open 
 });
 
 test("shared metadata builder sanitizes legacy CMS brand before public metadata is emitted", () => {
-  assert.match(metadataHelper, /LEGACY_BRAND_PATTERN\s*=\s*\/Xe Miền Nam\/gi/);
+  assert.match(metadataHelper, /LEGACY_BRAND_PATTERN\s*=\s*new RegExp/);
+  assert.match(metadataHelper, /\["Xe", "Miền", "Nam"\]\.join\("\\\\s\+"\)/);
   assert.match(metadataHelper, /sanitizeMetadataText\(title\)/);
   assert.match(metadataHelper, /sanitizeMetadataText\(description\)/);
   assert.match(metadataHelper, /description:\s*sanitizedDescription/);
