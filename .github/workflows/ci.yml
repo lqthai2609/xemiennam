@@ -73,5 +73,8 @@ jobs:
       - name: Airport Hub audit regression tests
         run: npm run test:airport-hub-audit
 
+      - name: Blog semantic relation regression guard
+        run: npm run test:blog-relations
+
       - name: Production build
         run: npm run build
