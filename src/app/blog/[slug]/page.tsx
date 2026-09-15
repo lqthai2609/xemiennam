@@ -1,20 +1,69 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CalendarClock, RefreshCw } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { BlogCard } from "@/components/blog-card";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-import { navItems } from "@/data/nav";
-import { fetchPosts, fetchPostBySlug } from "@/lib/api/blog";
-import { fetchRoutes } from "@/lib/api/routes";
-import { formatVNDate } from "@/lib/wp";
-import { JsonLd } from "@/components/json-ld";
-import { buildFaqPageSchema } from "@/lib/schema";
-import { routeHref } from "@/types/route";
 import { UnifiedHero } from "@/components/unified-hero";
+import { getVehicleCategory } from "@/data/vehicle-categories";
+import { navItems } from "@/data/nav";
+import { fetchPostBySlug, fetchPosts, fetchRelatedPosts } from "@/lib/api/blog";
+import { fetchLocationsV2, type LocationV2 } from "@/lib/api/locations";
+import { fetchRoutes } from "@/lib/api/routes";
+import { airportDisplayName, airportHubHref } from "@/lib/airport-seo";
+import { buildFaqPageSchema } from "@/lib/schema";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import type { BlogPost } from "@/types/blog";
+import type { Route } from "@/types/route";
+import { JsonLd } from "@/components/json-ld";
 
 export type Props = { params: Promise<{ slug: string }> };
+
+type RelatedHubLink = {
+  href: string;
+  label: string;
+  relation: "Sân bay" | "Điểm đến" | "Loại xe";
+};
+
+function buildRelatedHubLinks(post: BlogPost, routes: Route[], locations: LocationV2[]): RelatedHubLink[] {
+  const links: RelatedHubLink[] = [];
+  const locationById = new Map(locations.map((location) => [location.id, location]));
+  const regionNameBySlug = new Map(routes.map((route) => [route.regionSlug, route.region]));
+  const exactLocationNameBySlug = new Map(locations.map((location) => [location.slug, location.name]));
+
+  for (const airportLocationId of post.airportLocationIds) {
+    const airport = locationById.get(airportLocationId);
+    if (!airport || airport.type !== "airport") continue;
+    links.push({
+      href: airportHubHref(airport.slug),
+      label: airportDisplayName(airport.name),
+      relation: "Sân bay",
+    });
+  }
+
+  for (const provinceSlug of post.provinceSlugs) {
+    const label = exactLocationNameBySlug.get(provinceSlug) || regionNameBySlug.get(provinceSlug);
+    if (!label) continue;
+    links.push({
+      href: `/tuyen-duong/${provinceSlug}`,
+      label,
+      relation: "Điểm đến",
+    });
+  }
+
+  for (const vehicleSlug of post.vehicleTypeSlugs) {
+    const category = getVehicleCategory(vehicleSlug);
+    if (!category) continue;
+    links.push({
+      href: `/loai-xe/${vehicleSlug}`,
+      label: category.label,
+      relation: "Loại xe",
+    });
+  }
+
+  return Array.from(new Map(links.map((link) => [link.href, link])).values());
+}
 
 export async function generateStaticParams() {
   const posts = await fetchPosts();
@@ -51,22 +100,25 @@ const footerLinkGroups = [
 ];
 
 /**
- * Server Component — gọi fetchPostBySlug() (WP REST API thật + fallback mock, Ngày 17)
- * song song fetchRoutes() để dựng khối "Tuyến liên quan" cuối bài (internal-link về trang
- * tuyến, đúng mục 10 xemiennam-v0-prompts.md). "Cập nhật lần cuối" hiển thị modifiedDate
- * thật từ WordPress ngay từ bây giờ — chỉ khác ngày đăng thì mới hiện dòng này.
+ * Day 25 — internal graph dùng structured relations từ Day 24.
+ * Related Blog được xếp hạng bằng fetchRelatedPosts(); Blog → Hub chỉ resolve từ
+ * Airport Location V2, province taxonomy và vehicle taxonomy, không text matching.
  */
 export default async function BlogDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [post, routes] = await Promise.all([fetchPostBySlug(slug), fetchRoutes()]);
+  const post = await fetchPostBySlug(slug);
   if (!post) notFound();
 
-  const relatedRoutes = routes.slice(0, 3);
+  const [relatedPosts, routes, locations] = await Promise.all([
+    fetchRelatedPosts(slug, 3),
+    fetchRoutes(),
+    fetchLocationsV2(),
+  ]);
+  const relatedHubLinks = buildRelatedHubLinks(post, routes, locations);
   const faqItems = post.faqItems ?? [];
 
   return (
     <main className="site-shell">
-      {/* Ngày 23 — chỉ dựng FAQPage khi bài có faq_items thật (đa số bài không phải dạng hỏi-đáp, xem mục 5 kiến trúc kỹ thuật). */}
       {faqItems.length > 0 && (
         <JsonLd data={buildFaqPageSchema(faqItems.map((f) => ({ question: f.question, answer: f.answer })))} />
       )}
@@ -81,11 +133,8 @@ export default async function BlogDetailPage({ params }: Props) {
       <UnifiedHero eyebrow={post.category} title={post.title} description={post.excerpt} backgroundImage={post.featuredImageUrl || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
 
       <section className="section-wrap blog-detail-content">
-        {/* Nội dung do admin site tự nhập trong wp-admin (không phải do người dùng cuối gửi lên) nên render trực tiếp HTML — xem ghi chú trong lib/api/blog.ts. */}
         <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
 
-        {/* Ngày 23 — hiển thị đúng nội dung FAQ đã đưa vào JSON-LD (Google khuyến nghị FAQPage
-            phải có nội dung hiển thị tương ứng, không chỉ nằm trong structured data). */}
         {faqItems.length > 0 && (
           <section className="blog-detail-faq">
             <p className="section-label">CÂU HỎI THƯỜNG GẶP</p>
@@ -100,19 +149,36 @@ export default async function BlogDetailPage({ params }: Props) {
           </section>
         )}
 
-        {relatedRoutes.length > 0 && (
-          <aside className="blog-detail-related">
-            <p className="section-label">TUYẾN LIÊN QUAN</p>
+        {relatedHubLinks.length > 0 && (
+          <aside className="blog-detail-related" aria-labelledby="blog-related-hubs-heading">
+            <p className="section-label" id="blog-related-hubs-heading">KHÁM PHÁ LIÊN QUAN</p>
             <div className="blog-related-links">
-              {relatedRoutes.map((route) => (
-                <Link key={route.slug} href={routeHref(route)} className="text-link">
-                  {route.from} – {route.to} <ArrowRight size={15} />
+              {relatedHubLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="text-link">
+                  {link.relation}: {link.label} <ArrowRight size={15} aria-hidden="true" />
                 </Link>
               ))}
             </div>
           </aside>
         )}
       </section>
+
+      {relatedPosts.length > 0 && (
+        <section className="related-section section-wrap post-related-posts">
+          <div className="section-heading">
+            <div>
+              <p className="section-label">BÀI VIẾT LIÊN QUAN</p>
+              <h2>Đọc tiếp theo chủ đề.</h2>
+            </div>
+            <Link className="text-link" href="/blog">
+              Xem tất cả bài viết <ArrowRight size={17} aria-hidden="true" />
+            </Link>
+          </div>
+          <div className="route-grid blog-grid">
+            {relatedPosts.map((related) => <BlogCard post={related} key={related.id} />)}
+          </div>
+        </section>
+      )}
 
       <SiteFooter
         tagline={
