@@ -11,7 +11,8 @@
     "audit:airport-day20": "node scripts/gocar-airport-hub-audit.mjs",
     "test:location-migration": "node --test scripts/gocar-location-normalizer.test.mjs",
     "test:airport-hub-audit": "node --test scripts/gocar-airport-hub-audit.test.mjs",
-    "test:blog-relations": "node --test scripts/gocar-blog-relations-source.test.mjs"
+    "test:blog-relations": "node --test scripts/gocar-blog-relations-source.test.mjs",
+    "test:metadata": "node --test scripts/gocar-metadata-source.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

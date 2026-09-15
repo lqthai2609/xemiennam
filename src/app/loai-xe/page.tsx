@@ -3,13 +3,15 @@ import { VehicleCategoryIndex } from "@/components/vehicle-type-landing-day13";
 import { vehicleCategories, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchRoutes } from "@/lib/api/routes";
+import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 import { getVehicleCategoryStartingPrice } from "@/lib/vehicle-category-pricing";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: `Loại xe | ${SITE_NAME}`,
   description: "Chọn loại xe phù hợp cho gia đình, đoàn nhỏ, limousine và đoàn lớn.",
-};
+  path: "/loai-xe",
+});
 
 // 6 loại xe là nội dung cấu trúc tĩnh; ảnh và giá đại diện được nối từ dữ liệu production.
 export default async function VehicleTypesPage() {

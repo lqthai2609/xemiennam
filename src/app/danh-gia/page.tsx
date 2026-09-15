@@ -4,11 +4,13 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { DanhGiaPageClient } from "@/components/danh-gia-page-client";
 import { JsonLd } from "@/components/json-ld";
 import { buildAggregateRatingSchema } from "@/lib/schema";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Đánh giá khách hàng | Gocar VN",
   description: "Đánh giá thật từ khách hàng đã thuê xe cùng Gocar VN, lọc theo số sao và theo tuyến.",
-};
+  path: "/danh-gia",
+});
 
 /**
  * Server Component — gọi fetchTestimonials() (WP REST API thật + fallback mock, Ngày 18)

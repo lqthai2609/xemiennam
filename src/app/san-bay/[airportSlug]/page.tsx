@@ -6,28 +6,35 @@ import { fetchAirportHubBySlug } from "@/lib/api/airport-routes";
 import { fetchPostsByAirportLocationId } from "@/lib/api/blog";
 import { getAirportHubReadiness } from "@/lib/airport-readiness";
 import { airportDisplayName, airportHubHref } from "@/lib/airport-seo";
+import { buildPageMetadata } from "@/lib/metadata";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
-import { SITE_NAME, SITE_URL } from "@/lib/site-config";
+import { SITE_NAME } from "@/lib/site-config";
 
 type Props = { params: Promise<{ airportSlug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { airportSlug } = await params;
   const hub = await fetchAirportHubBySlug(airportSlug);
-  if (!hub) return { title: `Không tìm thấy sân bay | ${SITE_NAME}` };
+  if (!hub) {
+    return buildPageMetadata({
+      title: "Không tìm thấy sân bay",
+      description: "Trang sân bay này không tồn tại hoặc hiện chưa có dữ liệu phù hợp.",
+      noIndex: true,
+    });
+  }
 
   const readiness = getAirportHubReadiness(hub.airport.slug);
   const airportName = airportDisplayName(hub.airport.name);
   const canonicalPath = airportHubHref(hub.airport.slug);
-  return {
+  return buildPageMetadata({
     title:
       readiness.metadataTitle?.(hub.airport.name) ??
       `Xe Đưa Đón ${airportName} Đi Tỉnh | ${SITE_NAME}`,
     description:
       readiness.metadataDescription?.(hub.airport.name) ??
       `Thuê xe đưa đón ${airportName} đi các tỉnh và chiều về sân bay. Xe riêng có tài xế, nhiều loại xe, xem tuyến và liên hệ báo giá tại ${SITE_NAME}.`,
-    alternates: { canonical: `${SITE_URL}${canonicalPath}` },
-  };
+    path: canonicalPath,
+  });
 }
 
 export default async function Page({ params }: Props) {

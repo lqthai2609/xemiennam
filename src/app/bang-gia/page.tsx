@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { fetchRoutes } from "@/lib/api/routes";
 import { BangGiaPageClient } from "@/components/bang-gia-page-client";
+import { buildPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Bảng giá thuê xe nguyên chiếc theo tuyến | Gocar VN",
   description: "Bảng giá tham khảo cho thuê xe nguyên chiếc theo từng tuyến và loại xe (4–7/16–29/45 chỗ/Limousine), cập nhật theo dữ liệu mới nhất.",
-};
+  path: "/bang-gia",
+});
 
 /**
  * Server Component — gọi fetchRoutes() (WP REST API thật, Ngày 12) rồi giao dữ liệu

@@ -12,13 +12,15 @@ import { HomeDynamicSections } from "@/components/home-dynamic-sections";
 import { navItems } from "@/data/nav";
 import { JsonLd } from "@/components/json-ld";
 import { buildLocalBusinessSchema } from "@/lib/schema";
+import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_DESCRIPTION, SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
-/** Ngày 23 — trang chủ trước đây không khai báo metadata riêng, chỉ ăn theo layout.tsx gốc. */
-export const metadata: Metadata = {
+/** Ngày 26 — metadata trang chủ dùng chung canonical + social contract. */
+export const metadata: Metadata = buildPageMetadata({
   title: `${SITE_NAME} — Thuê xe nguyên chiếc 4–45 chỗ và Limousine`,
   description: SITE_DESCRIPTION,
-};
+  path: "/",
+});
 
 /**
  * KHÔI PHỤC Ngày 12: commit "ngay 11" trên GitHub đã vô tình ghi đè toàn bộ trang chủ

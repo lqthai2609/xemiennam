@@ -11,6 +11,7 @@ import {
   getComboIndexability,
   getRenderableComboVehicleSlugs,
 } from "@/lib/combo";
+import { buildPageMetadata } from "@/lib/metadata";
 import { routeComboHref } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
@@ -33,22 +34,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const route = await fetchRouteBySlug(tuyen);
   const vp = route ? findComboVehiclePrice(route, loaiXe) : undefined;
   if (!route || !vp) {
-    return {
-      title: "Không tìm thấy | Gocar VN",
-      robots: { index: false, follow: true },
-    };
+    return buildPageMetadata({
+      title: "Không tìm thấy",
+      description: "Trang kết hợp tuyến và loại xe này không tồn tại hoặc hiện không khả dụng.",
+      noIndex: true,
+    });
   }
 
   const guard = getComboIndexability(route, loaiXe);
   const priceText = vp.pricingMode === "contact" ? "liên hệ báo giá" : `giá từ ${vp.price}`;
-  return {
+  return buildPageMetadata({
     title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, ${priceText} | Gocar VN`,
     description: comboDescriptionOrDefault(route, vp),
-    robots: {
-      index: guard.indexable,
-      follow: true,
-    },
-  };
+    path: routeComboHref(route, loaiXe),
+    noIndex: !guard.indexable,
+  });
 }
 
 export default async function Page({ params }: Props) {

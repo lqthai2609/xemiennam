@@ -6,6 +6,7 @@ import { fetchDiemDenBySlug, getDestinationImageUrl } from "@/lib/api/diem-den";
 import { DiemDenDetailPage } from "@/components/diem-den-detail";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
+import { buildPageMetadata } from "@/lib/metadata";
 import { stripHtml } from "@/lib/wp";
 
 type Props = { params: Promise<{ tinh: string }> };
@@ -18,15 +19,22 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tinh } = await params;
   const [hub, routes] = await Promise.all([fetchDiemDenBySlug(tinh), fetchRoutesByRegion(tinh)]);
-  if (routes.length === 0 && !hub) return { title: "Không tìm thấy điểm đến | Gocar VN" };
+  if (routes.length === 0 && !hub) {
+    return buildPageMetadata({
+      title: "Không tìm thấy điểm đến",
+      description: "Điểm đến này không tồn tại hoặc hiện chưa có dữ liệu tuyến phù hợp.",
+      noIndex: true,
+    });
+  }
 
   const regionName = routes[0]?.region || hub?.title || tinh;
-  return {
+  return buildPageMetadata({
     title: hub?.rankMathTitle || `Thuê xe nguyên chiếc đi ${regionName} | Gocar VN`,
     description:
       hub?.rankMathDescription ||
       (hub ? stripHtml(hub.contentHtml).slice(0, 155) : `Thuê xe nguyên chiếc đi khắp khu vực ${regionName}, ${routes.length} tuyến đang chạy, giá theo từng loại xe.`),
-  };
+    path: `/tuyen-duong/${tinh}`,
+  });
 }
 
 export default async function Page({ params }: Props) {
