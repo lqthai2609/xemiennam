@@ -21,6 +21,20 @@ interface SiteFooterProps {
   brandName?: string;
 }
 
+function isRenderableFooterHref(href: string): boolean {
+  const normalizedHref = href.trim();
+  return normalizedHref.length > 0 && normalizedHref !== "#";
+}
+
+function sanitizeFooterLinkGroups(linkGroups: FooterLinkGroup[]): FooterLinkGroup[] {
+  return linkGroups
+    .map((group) => ({
+      ...group,
+      links: group.links.filter((link) => isRenderableFooterHref(link.href)),
+    }))
+    .filter((group) => group.links.length > 0);
+}
+
 export function SiteFooter({
   tagline,
   phone,
@@ -33,6 +47,8 @@ export function SiteFooter({
   brandName = "GOCARVN",
 }: SiteFooterProps) {
   const resolvedPhoneHref = phoneHref || `tel:${phone.replace(/\s/g, "")}`;
+  const safeLinkGroups = sanitizeFooterLinkGroups(linkGroups);
+  const safeSocialLinks = socialLinks.filter((social) => isRenderableFooterHref(social.href));
 
   return (
     <footer className="site-footer">
@@ -47,7 +63,7 @@ export function SiteFooter({
         </a>
       </div>
       <div className="footer-links">
-        {linkGroups.map((group) => (
+        {safeLinkGroups.map((group) => (
           <div key={group.title}>
             <span>{group.title}</span>
             {group.links.map((link) => (
@@ -57,14 +73,16 @@ export function SiteFooter({
             ))}
           </div>
         ))}
-        <div>
-          <span>THEO DÕI CHÚNG TÔI</span>
-          {socialLinks.map((social) => (
-            <a key={social.label} href={social.href}>
-              {social.label}
-            </a>
-          ))}
-        </div>
+        {safeSocialLinks.length > 0 ? (
+          <div>
+            <span>THEO DÕI CHÚNG TÔI</span>
+            {safeSocialLinks.map((social) => (
+              <a key={social.label} href={social.href}>
+                {social.label}
+              </a>
+            ))}
+          </div>
+        ) : null}
       </div>
       <div className="footer-bottom">
         <span>{copyright}</span>
@@ -74,7 +92,4 @@ export function SiteFooter({
   );
 }
 
-export const defaultSocialLinks: SocialLink[] = [
-  { label: "Instagram", href: "#" },
-  { label: "Facebook", href: "#" },
-];
+export const defaultSocialLinks: SocialLink[] = [];
