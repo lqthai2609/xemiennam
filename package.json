@@ -14,7 +14,8 @@
     "test:blog-relations": "node --test scripts/gocar-blog-relations-source.test.mjs",
     "test:metadata": "node --test scripts/gocar-metadata-source.test.mjs",
     "test:indexability": "node --test scripts/gocar-indexability-source.test.mjs",
-    "test:schema-pricing": "node --test scripts/gocar-schema-pricing-source.test.mjs"
+    "test:schema-pricing": "node --test scripts/gocar-schema-pricing-source.test.mjs",
+    "test:footer": "node --test scripts/gocar-footer-source.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
