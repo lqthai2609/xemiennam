@@ -8,6 +8,7 @@ import { fetchPostsByRegion } from "@/lib/api/blog";
 import { getPricingSchemaRangeV2, type PricingPackageV2 } from "@/lib/api/pricing-v2";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema, type ServiceAggregateOfferInput } from "@/lib/schema";
+import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { routeHref, type Route } from "@/types/route";
 
@@ -84,6 +85,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tuyen } = await params;
   const route = await fetchRouteBySlug(tuyen);
   if (!route) return { title: `Không tìm thấy tuyến | ${SITE_NAME}` };
+
+  if (isPrelaunchAirportRoute(route)) {
+    return {
+      title: `Chuẩn bị tuyến xe ${route.from} ↔ ${route.to} | ${SITE_NAME}`,
+      description: `Thông tin chuẩn bị tuyến ${route.from} ↔ ${route.to}. Liên hệ ${SITE_NAME} để ghi nhận nhu cầu; lịch khai thác sân bay thực tế cần đối chiếu thông báo chính thức.`,
+      robots: { index: false, follow: true },
+    };
+  }
+
   return {
     title: route.rankMathTitle || `Thuê xe ${route.from} đi ${route.to}${metadataPriceSuffix(route)} | ${SITE_NAME}`,
     description: route.rankMathDescription || route.summary || fallbackRouteDescription(route),
@@ -94,6 +104,7 @@ export default async function Page({ params }: Props) {
   const { tinh, tuyen } = await params;
   const route = await fetchRouteBySlug(tuyen);
   if (!route || route.regionSlug !== tinh) notFound();
+  const isPrelaunch = isPrelaunchAirportRoute(route);
 
   const [regionRoutes, vehicleImageByType, allTestimonials, relatedPosts] = await Promise.all([
     fetchRoutesByRegion(route.regionSlug),
@@ -104,17 +115,19 @@ export default async function Page({ params }: Props) {
   const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug).slice(0, 6);
   const matchingTestimonials = allTestimonials.filter((item) => item.routeSlug === route.slug);
   const routeTestimonials = (matchingTestimonials.length > 0 ? matchingTestimonials : allTestimonials).slice(0, 6);
-  const serviceSchema = buildServiceSchema({
-    name: `Thuê xe nguyên chiếc ${route.from} đi ${route.to}`,
-    description: route.summary || fallbackRouteDescription(route),
-    url: routeHref(route),
-    areaServed: [route.from, route.to],
-    offers: buildRouteSchemaOffers(route),
-  });
+  const serviceSchema = isPrelaunch
+    ? undefined
+    : buildServiceSchema({
+        name: `Thuê xe nguyên chiếc ${route.from} đi ${route.to}`,
+        description: route.summary || fallbackRouteDescription(route),
+        url: routeHref(route),
+        areaServed: [route.from, route.to],
+        offers: buildRouteSchemaOffers(route),
+      });
 
   return (
     <>
-      <JsonLd data={serviceSchema} />
+      {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <RouteDetailPage route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
     </>
   );
