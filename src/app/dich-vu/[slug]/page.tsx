@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ServiceDetail } from "@/components/service-detail";
 import { fetchServices, fetchServiceBySlug } from "@/lib/api/services";
 import { JsonLd } from "@/components/json-ld";
-import { buildServiceSchema } from "@/lib/schema";
+import { buildBreadcrumbListSchema, buildServiceSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 
@@ -35,13 +35,20 @@ export default async function Page({ params }: Props) {
   const { slug } = await params;
   const service = await fetchServiceBySlug(slug);
   if (!service) notFound();
+  const canonicalPath = `/dich-vu/${service.slug}`;
   const serviceSchema = buildServiceSchema({
     name: service.name,
     description: service.shortDescription,
-    url: `/dich-vu/${service.slug}`,
+    url: canonicalPath,
   });
+  const breadcrumbSchema = buildBreadcrumbListSchema([
+    { name: "Trang chủ", url: "/" },
+    { name: "Dịch vụ", url: "/dich-vu" },
+    { name: service.name, url: canonicalPath },
+  ]);
   return (
     <>
+      <JsonLd data={breadcrumbSchema} />
       <JsonLd data={serviceSchema} />
       <ServiceDetail service={service} />
     </>
