@@ -7,9 +7,31 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME, SITE_CONTACT_PHONE_TEL } from "@/lib/site-config";
+import { getAirportHubReadiness, type AirportReadinessPhase } from "@/lib/airport-readiness";
 import type { AirportHubData, AirportHubRoute } from "@/lib/api/airport-routes";
 
-function buildAirportFaqs(airportName: string) {
+function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "live") {
+  if (phase === "prelaunch") {
+    return [
+      {
+        question: `Gocar VN đã mở dịch vụ tại ${airportName} chưa?`,
+        answer: `${SITE_NAME} đang chuẩn bị các tuyến đón và trả khách cho giai đoạn sân bay đi vào khai thác. Lịch khai thác thực tế cần đối chiếu thông báo chính thức trước khi chốt hành trình.`,
+      },
+      {
+        question: `Có thể liên hệ trước cho tuyến từ hoặc đến ${airportName} không?`,
+        answer: `Có. Bạn có thể gửi hành trình dự kiến để ${SITE_NAME} ghi nhận nhu cầu, tư vấn loại xe và báo giá khi đủ dữ liệu vận hành cần thiết.`,
+      },
+      {
+        question: "Vì sao một số tuyến chưa có giá cố định?",
+        answer: "Các tuyến chưa có mức giá sân bay được xác minh sẽ hiển thị “Liên hệ báo giá”. Gocar VN không sao chép giá từ TP.HCM, Tân Sơn Nhất hoặc tuyến khác để làm giá Long Thành.",
+      },
+      {
+        question: "Thông tin vận hành sân bay trên trang có phải lịch bay chính thức không?",
+        answer: "Không. Trang này mô tả mức độ sẵn sàng dịch vụ xe của Gocar VN. Lịch khai thác sân bay và chuyến bay cần được kiểm tra từ cơ quan, hãng hàng không hoặc đơn vị khai thác có thẩm quyền.",
+      },
+    ];
+  }
+
   return [
     {
       question: `Có xe từ sân bay ${airportName} đi các tỉnh không?`,
@@ -87,7 +109,9 @@ function RouteList({ routes }: { routes: AirportHubRoute[] }) {
 
 export function AirportHubPage({ data }: { data: AirportHubData }) {
   const airportName = data.airport.name;
-  const faqs = buildAirportFaqs(airportName);
+  const readiness = getAirportHubReadiness(data.airport.slug);
+  const isPrelaunch = readiness.phase === "prelaunch";
+  const faqs = buildAirportFaqs(airportName, readiness.phase);
   const routePairCount = new Set(data.routes.map((item) => item.route.slug)).size;
   const allProvinceLinks = data.routes
     .filter((item) => item.counterpart.provinceSlug)
@@ -101,8 +125,8 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
         menuItems={navItems}
         hotline={SITE_HOTLINE}
         hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
-        ctaLabel="Đặt xe ngay"
-        ctaHref="/#booking"
+        ctaLabel={isPrelaunch ? "Liên hệ tư vấn" : "Đặt xe ngay"}
+        ctaHref={isPrelaunch ? "/lien-he" : "/#booking"}
       />
       <div className="airport-container">
         <nav className="airport-breadcrumb" aria-label="Đường dẫn trang">
@@ -115,11 +139,9 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
 
         <section className="airport-hero">
           <div className="airport-hero-copy">
-            <p className="airport-eyebrow"><PlaneLanding aria-hidden="true" /> Dịch vụ đưa đón sân bay</p>
-            <h1>Xe đưa đón sân bay {airportName} ↔ các tỉnh thành</h1>
-            <p className="airport-hero-lede">
-              Xe riêng có tài xế, hỗ trợ hành lý, phù hợp khách cá nhân, gia đình và nhóm công tác. Chọn tuyến liên tỉnh hai chiều và nhận báo giá rõ ràng từ {SITE_NAME}.
-            </p>
+            <p className="airport-eyebrow"><PlaneLanding aria-hidden="true" /> {readiness.eyebrow}</p>
+            <h1>{readiness.heroTitle(airportName)}</h1>
+            <p className="airport-hero-lede">{readiness.heroDescription}</p>
             <div className="airport-actions">
               <Button size="lg" asChild>
                 <a href="#airport-routes">Xem tuyến <ArrowRight data-icon="inline-end" /></a>
@@ -134,9 +156,9 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
           </div>
           <div className="airport-hero-panel">
             <PlaneTakeoff aria-hidden="true" />
-            <span>Hành trình chủ động</span>
-            <strong>{routePairCount} tuyến đang mở</strong>
-            <p>Đặt xe theo nhu cầu, không ghép khách.</p>
+            <span>{isPrelaunch ? "Sẵn sàng theo dữ liệu xác minh" : "Hành trình chủ động"}</span>
+            <strong>{readiness.routeCountLabel(routePairCount)}</strong>
+            <p>{isPrelaunch ? "Liên hệ trước để kiểm tra lịch và điều kiện phục vụ thực tế." : "Đặt xe theo nhu cầu, không ghép khách."}</p>
           </div>
         </section>
 
@@ -146,7 +168,7 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
               <p className="airport-eyebrow">Danh sách tuyến</p>
               <h2>Chọn chiều hành trình</h2>
             </div>
-            <p>Giá và thông tin tuyến được cập nhật theo dữ liệu hiện có của {SITE_NAME}.</p>
+            <p>{readiness.routesDescription}</p>
           </div>
 
           <nav className="airport-tabs" aria-label="Chuyển đến chiều hành trình">
@@ -171,8 +193,12 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
         <section className="airport-service-callout">
           <div>
             <p className="airport-eyebrow">Dịch vụ {SITE_NAME}</p>
-            <h2>Đưa đón sân bay nhẹ nhàng, đúng nhu cầu</h2>
-            <p>Xe có tài xế, hỗ trợ hành lý và linh hoạt cho cá nhân, gia đình hoặc nhóm công tác.</p>
+            <h2>{isPrelaunch ? "Chuẩn bị hành trình trước khi sân bay khai thác" : "Đưa đón sân bay nhẹ nhàng, đúng nhu cầu"}</h2>
+            <p>
+              {isPrelaunch
+                ? "Gửi nhu cầu trước để được tư vấn loại xe, chiều hành trình và cách cập nhật báo giá khi dữ liệu vận hành đã đủ rõ."
+                : "Xe có tài xế, hỗ trợ hành lý và linh hoạt cho cá nhân, gia đình hoặc nhóm công tác."}
+            </p>
           </div>
           <Button variant="outline" asChild>
             <Link href="/dich-vu/dua-don-san-bay">Tìm hiểu dịch vụ <ArrowRight data-icon="inline-end" /></Link>
@@ -208,7 +234,7 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
         <section className="airport-contact-banner">
           <div>
             <p className="airport-eyebrow">Cần tư vấn riêng?</p>
-            <h2>Gửi hành trình, {SITE_NAME} báo giá</h2>
+            <h2>{isPrelaunch ? `Gửi hành trình dự kiến, ${SITE_NAME} tư vấn` : `Gửi hành trình, ${SITE_NAME} báo giá`}</h2>
             <p>Gọi {SITE_HOTLINE} hoặc nhắn Zalo để được hỗ trợ chọn xe và tuyến phù hợp.</p>
           </div>
           <div className="airport-actions">

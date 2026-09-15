@@ -5,6 +5,7 @@ import { fetchServices } from "@/lib/api/services";
 import { fetchPosts } from "@/lib/api/blog";
 import { fetchDiemDenBySlug } from "@/lib/api/diem-den";
 import { getIndexableComboVehicleSlugs } from "@/lib/combo";
+import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { vehicleCategories } from "@/data/vehicle-categories";
 import { routeHref, routeComboHref } from "@/types/route";
 
@@ -37,8 +38,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE_URL}/danh-gia`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${SITE_URL}/lien-he`, changeFrequency: "monthly", priority: 0.4 },
-    { url: `${SITE_URL}/san-bay/tan-son-nhat`, changeFrequency: "weekly", priority: 0.85 },
   ];
+
+  // Day 21: Airport Hub cũng phải theo data model, không hard-code riêng Tân Sơn Nhất.
+  // Chỉ location type=airport đã thực sự xuất hiện trong ít nhất một Route Pair V2 mới có
+  // entry /san-bay/[slug]. Cách này tự đưa Long Thành vào sitemap khi route readiness đã có,
+  // đồng thời áp dụng được cho các sân bay tiếp theo mà không sửa danh sách tĩnh.
+  const airportHubSlugs = Array.from(
+    new Set(
+      routes.flatMap((route) => {
+        const slugs: string[] = [];
+        for (const location of [route.originLocation, route.destinationLocation]) {
+          if (location?.type === "airport") slugs.push(location.slug.replace(/^san-bay-/, ""));
+        }
+        return slugs;
+      }),
+    ),
+  ).filter(Boolean);
+
+  const airportHubEntries: MetadataRoute.Sitemap = airportHubSlugs.map((airportSlug) => ({
+    url: `${SITE_URL}/san-bay/${airportSlug}`,
+    changeFrequency: "weekly",
+    priority: 0.85,
+  }));
 
   // Hub tỉnh /tuyen-duong/[tinh] (Ngày 25) — 1 entry/tỉnh có ít nhất 1 tuyến (fetchRegionSlugs()
   // đã loại tỉnh rỗng, xem lib/api/routes.ts). lastModified lấy từ bài `diem_den` nếu tỉnh đó đã
@@ -55,7 +77,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
-  const routeEntries: MetadataRoute.Sitemap = routes.map((route) => ({
+  // Route detail Long Thành vẫn render để QA/ghi nhận nhu cầu, nhưng Day 21 giữ noindex
+  // cho tới khi trạng thái khai thác thương mại được xác minh. Do đó không đưa chúng vào sitemap.
+  const indexableRoutes = routes.filter((route) => !isPrelaunchAirportRoute(route));
+  const routeEntries: MetadataRoute.Sitemap = indexableRoutes.map((route) => ({
     url: `${SITE_URL}${routeHref(route)}`,
     lastModified: route.modifiedDate,
     changeFrequency: "weekly",
@@ -64,8 +89,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Day 14: combo chỉ xuất hiện trong sitemap khi cùng guard với metadata xác nhận:
   // route/vehicle hợp lệ + Pricing V2 renderable + nội dung CMS đủ minimum editorial threshold.
-  // Thin-content vẫn có thể render cho người dùng nhưng nhận noindex,follow và không vào sitemap.
-  const comboEntries: MetadataRoute.Sitemap = routes.flatMap((route) =>
+  // Day 21 bổ sung: route thuộc airport prelaunch cũng không sinh combo sitemap.
+  const comboEntries: MetadataRoute.Sitemap = indexableRoutes.flatMap((route) =>
     getIndexableComboVehicleSlugs(route).map((vehicleSlug) => ({
       url: `${SITE_URL}${routeComboHref(route, vehicleSlug)}`,
       lastModified: route.modifiedDate,
@@ -96,6 +121,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticEntries,
+    ...airportHubEntries,
     ...hubEntries,
     ...routeEntries,
     ...comboEntries,
