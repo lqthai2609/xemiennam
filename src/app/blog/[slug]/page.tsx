@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await fetchPostBySlug(slug);
   return post
     ? buildPageMetadata({
-        title: post.rankMathTitle || `${post.title} | Blog ${SITE_NAME}`,
+        title: post.rankMathTitle || `${post.title} | Blog`,
         description: post.rankMathDescription || post.excerpt,
         path: `/blog/${post.slug}`,
         openGraphType: "article",
