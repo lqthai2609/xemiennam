@@ -116,10 +116,16 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
   const routePairCount = new Set(data.routes.map((item) => item.route.slug)).size;
   const allProvinceLinks = data.routes
     .filter((item) => item.counterpart.provinceSlug)
-    .map((item) => ({
-      provinceSlug: item.counterpart.provinceSlug,
-      name: item.provinceName || item.route.region || item.counterpart.name,
-    }))
+    .map((item) => {
+      const provinceSlug = item.counterpart.provinceSlug;
+      const taxonomyMatchesLocationProvince = item.route.regionSlug === provinceSlug;
+      return {
+        provinceSlug,
+        name:
+          item.provinceName ||
+          (taxonomyMatchesLocationProvince ? item.route.region : item.counterpart.name),
+      };
+    })
     .filter((location, index, list) => list.findIndex((item) => item.provinceSlug === location.provinceSlug) === index);
 
   return (
