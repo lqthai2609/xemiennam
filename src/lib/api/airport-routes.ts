@@ -11,6 +11,7 @@ export interface AirportHubRoute {
   routePair: RoutePairV2;
   airport: LocationV2;
   counterpart: LocationV2;
+  provinceName?: string;
   travelDirection: AirportTravelDirection;
   pricingDirection: RouteDirectionKey;
   from: string;
@@ -59,6 +60,7 @@ function buildAirportRoute(
   pair: RoutePairV2,
   airport: LocationV2,
   counterpart: LocationV2,
+  provinceName: string | undefined,
   travelDirection: AirportTravelDirection,
   pricingDirection: RouteDirectionKey,
 ): AirportHubRoute {
@@ -71,6 +73,7 @@ function buildAirportRoute(
     routePair: pair,
     airport,
     counterpart,
+    provinceName,
     travelDirection,
     pricingDirection,
     from,
@@ -121,8 +124,16 @@ export async function fetchAirportHubBySlug(airportSlug: string): Promise<Airpor
   if (!airport) return undefined;
 
   const locationsById = new Map(locations.map((location) => [location.id, location]));
+  const provinceNamesBySlug = new Map(
+    locations
+      .filter((location) => location.type === "province")
+      .map((location) => [location.slug, location.name]),
+  );
   const routesBySlug = new Map(routes.map((route) => [route.slug, route]));
   const output: AirportHubRoute[] = [];
+
+  const provinceNameFor = (location: LocationV2) =>
+    location.provinceSlug ? provinceNamesBySlug.get(location.provinceSlug) : undefined;
 
   for (const pair of pairs) {
     if (pair.usesLegacyLocationFallback) continue;
@@ -136,20 +147,60 @@ export async function fetchAirportHubBySlug(airportSlug: string): Promise<Airpor
 
     if (pair.originLocationId === airport.id) {
       if (pair.outbound.enabled) {
-        output.push(buildAirportRoute(route, pair, airport, destination, "from_airport", "outbound"));
+        output.push(
+          buildAirportRoute(
+            route,
+            pair,
+            airport,
+            destination,
+            provinceNameFor(destination),
+            "from_airport",
+            "outbound",
+          ),
+        );
       }
       if (pair.inbound.enabled) {
-        output.push(buildAirportRoute(route, pair, airport, destination, "to_airport", "inbound"));
+        output.push(
+          buildAirportRoute(
+            route,
+            pair,
+            airport,
+            destination,
+            provinceNameFor(destination),
+            "to_airport",
+            "inbound",
+          ),
+        );
       }
       continue;
     }
 
     if (pair.destinationLocationId === airport.id) {
       if (pair.outbound.enabled) {
-        output.push(buildAirportRoute(route, pair, airport, origin, "to_airport", "outbound"));
+        output.push(
+          buildAirportRoute(
+            route,
+            pair,
+            airport,
+            origin,
+            provinceNameFor(origin),
+            "to_airport",
+            "outbound",
+          ),
+        );
       }
       if (pair.inbound.enabled) {
-        output.push(buildAirportRoute(route, pair, airport, origin, "from_airport", "inbound"));
+        output.push(
+          buildAirportRoute(
+            route,
+            pair,
+            airport,
+            origin,
+            provinceNameFor(origin),
+            "from_airport",
+            "inbound",
+          ),
+        );
       }
     }
   }

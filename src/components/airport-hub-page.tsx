@@ -118,7 +118,7 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
     .filter((item) => item.counterpart.provinceSlug)
     .map((item) => ({
       provinceSlug: item.counterpart.provinceSlug,
-      name: item.route.region || item.counterpart.name,
+      name: item.provinceName || item.route.region || item.counterpart.name,
     }))
     .filter((location, index, list) => list.findIndex((item) => item.provinceSlug === location.provinceSlug) === index);
 
