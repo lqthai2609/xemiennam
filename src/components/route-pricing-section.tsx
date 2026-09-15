@@ -7,6 +7,7 @@ import { ArrowRight, BusFront } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MediaPhoto } from "@/components/media-photo";
 import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
+import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import {
   priceTypeLabel,
   routeComboHref,
@@ -74,7 +75,7 @@ export function RoutePricingSection({
   vehicleImageByType?: Record<string, string>;
 }) {
   const pricing = route.pricingV2;
-  const isPrelaunch = Boolean(route.originLocation?.slug === "san-bay-long-thanh" || route.destinationLocation?.slug === "san-bay-long-thanh");
+  const isPrelaunch = isPrelaunchAirportRoute(route);
   const availableDirections = pricing ? (["outbound", "inbound"] as const).filter((key) => pricing[key].enabled) : [];
   const activeDirection = pricing && availableDirections.includes(direction) ? direction : availableDirections[0];
   const active = activeDirection ? pricing?.[activeDirection] : undefined;
@@ -92,7 +93,11 @@ export function RoutePricingSection({
   }, [active]);
 
   if (isPrelaunch && !pricing) {
-    return <div className="route-contact-state">Chưa có mức giá sân bay được xác minh. Vui lòng liên hệ để Gocar VN ghi nhận nhu cầu và báo giá khi đủ dữ liệu vận hành.</div>;
+    return (
+      <div className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">
+        Chưa có mức giá sân bay được xác minh. Vui lòng liên hệ để Gocar VN ghi nhận nhu cầu và báo giá khi đủ dữ liệu vận hành.
+      </div>
+    );
   }
 
   if (!pricing) {
