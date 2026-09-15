@@ -32,7 +32,7 @@ function featuredPriceForDirection(route: Route, direction: RouteDirectionKey) {
 
 function priceLabelForDirection(route: Route, direction: RouteDirectionKey): string {
   const pricing = route.pricingV2?.[direction];
-  if (!pricing?.enabled) return "—";
+  if (!pricing?.enabled) return "Liên hệ báo giá";
 
   const featured = pricing.featured;
   if (!featured) return "Liên hệ báo giá";

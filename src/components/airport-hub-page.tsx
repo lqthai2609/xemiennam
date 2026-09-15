@@ -140,6 +140,7 @@ export function AirportHubPage({ data }: { data: AirportHubData }) {
         <section className="airport-hero">
           <div className="airport-hero-copy">
             <p className="airport-eyebrow"><PlaneLanding aria-hidden="true" /> {readiness.eyebrow}</p>
+            {isPrelaunch ? <span className="airport-status-badge">PRE-LAUNCH · ĐANG CHUẨN BỊ</span> : null}
             <h1>{readiness.heroTitle(airportName)}</h1>
             <p className="airport-hero-lede">{readiness.heroDescription}</p>
             <div className="airport-actions">
