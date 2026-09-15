@@ -5,11 +5,10 @@ import { fetchRoutes, fetchRouteBySlug, fetchRoutesByRegion } from "@/lib/api/ro
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchTestimonials } from "@/lib/api/testimonials";
 import { fetchPostsByRegion } from "@/lib/api/blog";
-import { getPricingSchemaRangeV2, type PricingPackageV2 } from "@/lib/api/pricing-v2";
 import { JsonLd } from "@/components/json-ld";
-import { buildServiceSchema, type ServiceAggregateOfferInput } from "@/lib/schema";
+import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
-import { SITE_NAME } from "@/lib/site-config";
+import { SITE_NAME, SITE_URL } from "@/lib/site-config";
 import { routeHref, type Route } from "@/types/route";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
@@ -39,39 +38,18 @@ function fallbackRouteDescription(route: Route): string {
   return `${base}.`;
 }
 
-/**
- * Dùng đúng helper min/max của Pricing V2; contact/disabled không thể lọt vào Offer.
- * Presentation rows chỉ được chuyển lại sang PricingPackageV2 để tái sử dụng helper schema,
- * không parse WordPress meta lần thứ hai.
- */
-function buildRouteSchemaOffers(route: Route): ServiceAggregateOfferInput | undefined {
+function buildRouteSchemaOffers(route: Route) {
   if (!route.pricingV2) return undefined;
-  const directions = [route.pricingV2.outbound, route.pricingV2.inbound].filter((item) => item.enabled);
-  const fixedPackages = directions.flatMap((item) => item.packages).filter(
-    (item) => item.mode === "fixed" && typeof item.price === "number" && item.price > 0,
+  return buildFixedServiceOffers(
+    [route.pricingV2.outbound, route.pricingV2.inbound].flatMap((direction) => {
+      if (!direction.enabled) return [];
+      return direction.packages.map((item) => ({
+        name: `${item.vehicleType} · ${item.packageLabel} · ${item.direction === "outbound" ? `${route.from} → ${route.to}` : `${route.to} → ${route.from}`}`,
+        mode: item.mode,
+        price: item.price,
+      }));
+    }),
   );
-  if (fixedPackages.length === 0) return undefined;
-
-  const rows: PricingPackageV2[] = fixedPackages.map((item) => ({
-    routeId: route.id,
-    routeSlug: route.slug,
-    direction: item.direction,
-    vehicleId: item.vehicleId,
-    packageKey: item.packageKey,
-    mode: "fixed",
-    price: item.price,
-    source: "v2",
-  }));
-  const range = getPricingSchemaRangeV2(rows);
-  if (!range) return undefined;
-
-  return {
-    ...range,
-    offers: fixedPackages.map((item) => ({
-      name: `${item.vehicleType} · ${item.packageLabel} · ${item.direction === "outbound" ? `${route.from} → ${route.to}` : `${route.to} → ${route.from}`}`,
-      price: item.price as number,
-    })),
-  };
 }
 
 type Props = { params: Promise<{ tinh: string; tuyen: string }> };
@@ -86,17 +64,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const route = await fetchRouteBySlug(tuyen);
   if (!route) return { title: `Không tìm thấy tuyến | ${SITE_NAME}` };
 
+  const canonical = `${SITE_URL}${routeHref(route)}`;
   if (isPrelaunchAirportRoute(route)) {
     return {
       title: `Chuẩn bị tuyến xe ${route.from} ↔ ${route.to} | ${SITE_NAME}`,
       description: `Thông tin chuẩn bị tuyến ${route.from} ↔ ${route.to}. Liên hệ ${SITE_NAME} để ghi nhận nhu cầu; lịch khai thác sân bay thực tế cần đối chiếu thông báo chính thức.`,
       robots: { index: false, follow: true },
+      alternates: { canonical },
     };
   }
 
   return {
     title: route.rankMathTitle || `Thuê xe ${route.from} đi ${route.to}${metadataPriceSuffix(route)} | ${SITE_NAME}`,
     description: route.rankMathDescription || route.summary || fallbackRouteDescription(route),
+    alternates: { canonical },
   };
 }
 
@@ -124,9 +105,15 @@ export default async function Page({ params }: Props) {
         areaServed: [route.from, route.to],
         offers: buildRouteSchemaOffers(route),
       });
+  const breadcrumbSchema = buildBreadcrumbListSchema([
+    { name: "Trang chủ", url: "/" },
+    { name: route.region, url: `/tuyen-duong/${route.regionSlug || "khac"}` },
+    { name: `${route.from} → ${route.to}`, url: routeHref(route) },
+  ]);
 
   return (
     <>
+      <JsonLd data={breadcrumbSchema} />
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <RouteDetailPage route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
     </>

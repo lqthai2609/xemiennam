@@ -6,6 +6,7 @@ import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchRoutes } from "@/lib/api/routes";
 import { fetchServices } from "@/lib/api/services";
 import { fetchPostsByVehicleType } from "@/lib/api/blog";
+import { fetchAirportRouteLinksForVehicleType } from "@/lib/api/airport-routes";
 import { JsonLd } from "@/components/json-ld";
 import { buildServiceSchema } from "@/lib/schema";
 import { SITE_NAME } from "@/lib/site-config";
@@ -30,11 +31,12 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
   const category = getVehicleCategory(slug);
   if (!category) notFound();
 
-  const [allVehicles, allRoutes, allServices, relatedPosts] = await Promise.all([
+  const [allVehicles, allRoutes, allServices, relatedPosts, airportRoutes] = await Promise.all([
     fetchVehicles(),
     fetchRoutes(),
     fetchServices(),
     fetchPostsByVehicleType(category.slug, 3),
+    fetchAirportRouteLinksForVehicleType(category.type),
   ]);
 
   const vehicles = allVehicles.filter((vehicle) => vehicle.type === category.type);
@@ -75,6 +77,7 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
         category={displayCategory}
         routePrices={routePrices}
         relatedRoutes={relatedRoutes}
+        airportRoutes={airportRoutes}
         services={services}
         galleryImages={galleryImages}
         relatedPosts={relatedPosts}
