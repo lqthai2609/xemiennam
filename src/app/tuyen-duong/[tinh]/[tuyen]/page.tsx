@@ -8,7 +8,8 @@ import { fetchPostsByRegion } from "@/lib/api/blog";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
-import { SITE_NAME, SITE_URL } from "@/lib/site-config";
+import { SITE_NAME } from "@/lib/site-config";
+import { buildPageMetadata } from "@/lib/metadata";
 import { routeHref, type Route } from "@/types/route";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
@@ -62,23 +63,29 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tuyen } = await params;
   const route = await fetchRouteBySlug(tuyen);
-  if (!route) return { title: `Không tìm thấy tuyến | ${SITE_NAME}` };
-
-  const canonical = `${SITE_URL}${routeHref(route)}`;
-  if (isPrelaunchAirportRoute(route)) {
-    return {
-      title: `Chuẩn bị tuyến xe ${route.from} ↔ ${route.to} | ${SITE_NAME}`,
-      description: `Thông tin chuẩn bị tuyến ${route.from} ↔ ${route.to}. Liên hệ ${SITE_NAME} để ghi nhận nhu cầu; lịch khai thác sân bay thực tế cần đối chiếu thông báo chính thức.`,
-      robots: { index: false, follow: true },
-      alternates: { canonical },
-    };
+  if (!route) {
+    return buildPageMetadata({
+      title: "Không tìm thấy tuyến",
+      description: "Tuyến xe này không tồn tại hoặc hiện không khả dụng.",
+      noIndex: true,
+    });
   }
 
-  return {
+  const canonicalPath = routeHref(route);
+  if (isPrelaunchAirportRoute(route)) {
+    return buildPageMetadata({
+      title: `Chuẩn bị tuyến xe ${route.from} ↔ ${route.to} | ${SITE_NAME}`,
+      description: `Thông tin chuẩn bị tuyến ${route.from} ↔ ${route.to}. Liên hệ ${SITE_NAME} để ghi nhận nhu cầu; lịch khai thác sân bay thực tế cần đối chiếu thông báo chính thức.`,
+      path: canonicalPath,
+      noIndex: true,
+    });
+  }
+
+  return buildPageMetadata({
     title: route.rankMathTitle || `Thuê xe ${route.from} đi ${route.to}${metadataPriceSuffix(route)} | ${SITE_NAME}`,
     description: route.rankMathDescription || route.summary || fallbackRouteDescription(route),
-    alternates: { canonical },
-  };
+    path: canonicalPath,
+  });
 }
 
 export default async function Page({ params }: Props) {
