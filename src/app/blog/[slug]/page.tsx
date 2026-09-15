@@ -14,6 +14,7 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { airportDisplayName, airportHubHref } from "@/lib/airport-seo";
 import { buildFaqPageSchema } from "@/lib/schema";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { decodeHtmlEntities } from "@/lib/wp";
 import type { BlogPost } from "@/types/blog";
 import type { Route } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
@@ -43,11 +44,11 @@ function buildRelatedHubLinks(post: BlogPost, routes: Route[], locations: Locati
   }
 
   for (const provinceSlug of post.provinceSlugs) {
-    const label = exactLocationNameBySlug.get(provinceSlug) || regionNameBySlug.get(provinceSlug);
-    if (!label) continue;
+    const rawLabel = exactLocationNameBySlug.get(provinceSlug) || regionNameBySlug.get(provinceSlug);
+    if (!rawLabel) continue;
     links.push({
       href: `/tuyen-duong/${provinceSlug}`,
-      label,
+      label: decodeHtmlEntities(rawLabel),
       relation: "Điểm đến",
     });
   }
