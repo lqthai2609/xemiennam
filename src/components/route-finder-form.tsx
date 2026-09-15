@@ -714,7 +714,7 @@ export function BookingSearchForm({
           )}
 
           <div className={fieldsClass}>
-            <div className="relative grid gap-2 sm:col-span-2 sm:grid-cols-2 sm:gap-3 xl:col-span-2">
+            <div className="relative grid gap-3 sm:col-span-2 sm:grid-cols-2 sm:gap-3 xl:col-span-2">
               {searchMode === "standard" ? (
                 <>
                   <LocationField
@@ -734,7 +734,7 @@ export function BookingSearchForm({
                     onClick={swapJourneyEndpoints}
                     aria-label="Đổi chiều điểm đón và điểm đến"
                     title="Đổi chiều điểm đón và điểm đến"
-                    className="z-10 mx-auto -my-1 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:absolute sm:left-1/2 sm:top-[2.45rem] sm:m-0 sm:-translate-x-1/2 sm:-translate-y-1/2"
+                    className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:left-1/2 sm:right-auto sm:top-[2.45rem] sm:-translate-x-1/2"
                   >
                     <ArrowRightLeft aria-hidden="true" size={17} className="rotate-90 sm:rotate-0" />
                   </button>
@@ -783,7 +783,7 @@ export function BookingSearchForm({
                     onClick={swapJourneyEndpoints}
                     aria-label="Đổi chiều điểm đón và điểm đến"
                     title="Đổi chiều điểm đón và điểm đến"
-                    className="z-10 mx-auto -my-1 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:absolute sm:left-1/2 sm:top-[2.45rem] sm:m-0 sm:-translate-x-1/2 sm:-translate-y-1/2"
+                    className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:left-1/2 sm:right-auto sm:top-[2.45rem] sm:-translate-x-1/2"
                   >
                     <ArrowRightLeft aria-hidden="true" size={17} className="rotate-90 sm:rotate-0" />
                   </button>
