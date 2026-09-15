@@ -5,6 +5,7 @@ import { fetchServices } from "@/lib/api/services";
 import { fetchPosts } from "@/lib/api/blog";
 import { fetchDiemDenBySlug } from "@/lib/api/diem-den";
 import { getIndexableComboVehicleSlugs } from "@/lib/combo";
+import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { vehicleCategories } from "@/data/vehicle-categories";
 import { routeHref, routeComboHref } from "@/types/route";
 
@@ -76,7 +77,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
-  const routeEntries: MetadataRoute.Sitemap = routes.map((route) => ({
+  // Route detail Long Thành vẫn render để QA/ghi nhận nhu cầu, nhưng Day 21 giữ noindex
+  // cho tới khi trạng thái khai thác thương mại được xác minh. Do đó không đưa chúng vào sitemap.
+  const indexableRoutes = routes.filter((route) => !isPrelaunchAirportRoute(route));
+  const routeEntries: MetadataRoute.Sitemap = indexableRoutes.map((route) => ({
     url: `${SITE_URL}${routeHref(route)}`,
     lastModified: route.modifiedDate,
     changeFrequency: "weekly",
@@ -85,8 +89,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Day 14: combo chỉ xuất hiện trong sitemap khi cùng guard với metadata xác nhận:
   // route/vehicle hợp lệ + Pricing V2 renderable + nội dung CMS đủ minimum editorial threshold.
-  // Thin-content vẫn có thể render cho người dùng nhưng nhận noindex,follow và không vào sitemap.
-  const comboEntries: MetadataRoute.Sitemap = routes.flatMap((route) =>
+  // Day 21 bổ sung: route thuộc airport prelaunch cũng không sinh combo sitemap.
+  const comboEntries: MetadataRoute.Sitemap = indexableRoutes.flatMap((route) =>
     getIndexableComboVehicleSlugs(route).map((vehicleSlug) => ({
       url: `${SITE_URL}${routeComboHref(route, vehicleSlug)}`,
       lastModified: route.modifiedDate,
