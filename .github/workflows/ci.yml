@@ -85,5 +85,8 @@ jobs:
       - name: Schema pricing regression guard
         run: npm run test:schema-pricing
 
+      - name: Footer link regression guard
+        run: npm run test:footer
+
       - name: Production build
         run: npm run build
