@@ -33,9 +33,26 @@ Airport posts remain ordinary `location` entities. Existing airports such as Tâ
 
 The Next.js layer resolves `vehicle_id` to the canonical `vehicle_type` taxonomy and uses the editorial description before any legacy/mock fallback.
 
+## Day 24 scope — v0.3.0
+
+`class-gocar-blog-relations.php` adds the source-controlled Blog semantic relation contract:
+
+- Blog ↔ Province reuses the existing `province` taxonomy;
+- Blog ↔ Vehicle reuses the existing `vehicle_type` taxonomy;
+- the module attaches those existing taxonomies to normal WordPress `post` objects when they are registered;
+- Blog ↔ Airport uses post meta `related_airport_location_ids` containing Location V2 post IDs;
+- airport IDs are accepted only when the target post type is `location` and `location_type=airport`;
+- REST exposes the airport relation under `post.meta.related_airport_location_ids`;
+- a post edit-screen meta box lists only Location V2 airport entities;
+- no title, excerpt or body text matching is used to manufacture relations.
+
+The Next.js blog mapper converts embedded taxonomy terms into `provinceSlugs` and `vehicleTypeSlugs`, and converts the REST meta relation into `airportLocationIds`. Related-post ranking uses structured relations only, with Airport > Province > Vehicle > blog category priority.
+
 ## Content rule
 
 Each Route × Vehicle description must be materially specific to that combination. Editors should describe useful trip context such as group profile, luggage/capacity fit, pickup/dropoff reality or use case. Do not create near-duplicate text by only swapping destination or vehicle names. If no editorial content exists, the frontend may render a safe fallback for UX, but that fallback does not qualify as unique SEO content; indexability is handled separately by the thin-content guard.
+
+For blog relations, editors must assign the relevant Province/Vehicle taxonomy or Airport Location explicitly. Do not infer semantic relations from words in a title or article body when structured relation data exists.
 
 ## Safety
 
@@ -57,10 +74,12 @@ The apply command creates missing `location` posts with `location_type=locality`
 
 ## Rollout
 
-1. Package/deploy `gocar-core` v0.2.0 while existing WPCode V2 snippets remain active.
+1. Package/deploy `gocar-core` v0.3.0 while existing WPCode V2 snippets remain active.
 2. Verify Province Hub REST still exposes `rank_math_title` + `rank_math_description`.
-3. Open a `route` edit screen and confirm the new Route × Vehicle meta box lists vehicle posts.
-4. Save one combo description and verify `meta.combo_descriptions` through `/wp-json/wp/v2/route/<id>`.
-5. Smoke a combo landing page and confirm editorial text is rendered.
-6. Test a route without `combo_descriptions`; it must keep rendering via fallback without runtime/build errors.
-7. Continue migrating WPCode contracts into this plugin one module at a time only after acceptance tests.
+3. Verify route edit screens still expose the Route × Vehicle meta box and existing `combo_descriptions` data.
+4. Open a normal blog post and confirm Province/Vehicle taxonomies remain available where registered.
+5. Confirm the `Gocar VN — Quan hệ nội dung` meta box lists only Location posts with `location_type=airport`.
+6. Save one airport relation and verify `/wp-json/wp/v2/posts/<id>?_embed=1` returns `meta.related_airport_location_ids` together with embedded Province/Vehicle terms.
+7. Smoke Province/Vehicle blog-related sections and verify they return only exact taxonomy matches.
+8. Verify an Airport relation can be resolved by Location ID and that posts with no structured relation are not injected into Province/Vehicle/Airport sections.
+9. Continue migrating WPCode contracts into this plugin one module at a time only after acceptance tests.
