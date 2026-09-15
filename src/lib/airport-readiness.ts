@@ -1,3 +1,5 @@
+import { airportDisplayName } from "@/lib/airport-seo";
+
 export type AirportReadinessPhase = "live" | "prelaunch";
 
 export type AirportHubReadiness = {
@@ -14,7 +16,7 @@ export type AirportHubReadiness = {
 const DEFAULT_AIRPORT_READINESS: AirportHubReadiness = {
   phase: "live",
   eyebrow: "Dịch vụ đưa đón sân bay",
-  heroTitle: (airportName) => `Xe đưa đón sân bay ${airportName} ↔ các tỉnh thành`,
+  heroTitle: (airportName) => `Xe đưa đón ${airportDisplayName(airportName)} ↔ các tỉnh thành`,
   heroDescription:
     "Xe riêng có tài xế, hỗ trợ hành lý, phù hợp khách cá nhân, gia đình và nhóm công tác. Chọn tuyến liên tỉnh hai chiều và nhận báo giá rõ ràng từ Gocar VN.",
   routeCountLabel: (count) => `${count} tuyến đang mở`,
@@ -33,7 +35,7 @@ const DEFAULT_AIRPORT_READINESS: AirportHubReadiness = {
 const LONG_THANH_READINESS: AirportHubReadiness = {
   phase: "prelaunch",
   eyebrow: "Chuẩn bị dịch vụ đưa đón sân bay",
-  heroTitle: (airportName) => `Chuẩn bị xe đưa đón ${airportName} ↔ các tỉnh thành`,
+  heroTitle: (airportName) => `Chuẩn bị xe đưa đón ${airportDisplayName(airportName)} ↔ các tỉnh thành`,
   heroDescription:
     "Gocar VN đang chuẩn bị các tuyến đón và trả khách cho giai đoạn Sân bay Long Thành đi vào khai thác. Các tuyến hiển thị dùng để tham khảo nhu cầu và liên hệ trước; lịch khai thác thực tế cần đối chiếu thông báo chính thức.",
   routeCountLabel: (count) => `${count} tuyến đang chuẩn bị`,
