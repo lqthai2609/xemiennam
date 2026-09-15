@@ -74,6 +74,7 @@ export function RoutePricingSection({
   vehicleImageByType?: Record<string, string>;
 }) {
   const pricing = route.pricingV2;
+  const isPrelaunch = Boolean(route.originLocation?.slug === "san-bay-long-thanh" || route.destinationLocation?.slug === "san-bay-long-thanh");
   const availableDirections = pricing ? (["outbound", "inbound"] as const).filter((key) => pricing[key].enabled) : [];
   const activeDirection = pricing && availableDirections.includes(direction) ? direction : availableDirections[0];
   const active = activeDirection ? pricing?.[activeDirection] : undefined;
@@ -89,6 +90,10 @@ export function RoutePricingSection({
     }
     return Array.from(groups.entries());
   }, [active]);
+
+  if (isPrelaunch && !pricing) {
+    return <div className="route-contact-state">Chưa có mức giá sân bay được xác minh. Vui lòng liên hệ để Gocar VN ghi nhận nhu cầu và báo giá khi đủ dữ liệu vận hành.</div>;
+  }
 
   if (!pricing) {
     return <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
