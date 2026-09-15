@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchRegionSlugs, fetchRoutesByRegion } from "@/lib/api/routes";
+import { fetchAirportConnectionsByProvinceSlug } from "@/lib/api/airport-routes";
 import { fetchDiemDenBySlug, getDestinationImageUrl } from "@/lib/api/diem-den";
 import { DiemDenDetailPage } from "@/components/diem-den-detail";
 import { JsonLd } from "@/components/json-ld";
@@ -30,7 +31,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { tinh } = await params;
-  const [hub, routes] = await Promise.all([fetchDiemDenBySlug(tinh), fetchRoutesByRegion(tinh)]);
+  const [hub, routes, airportConnections] = await Promise.all([
+    fetchDiemDenBySlug(tinh),
+    fetchRoutesByRegion(tinh),
+    fetchAirportConnectionsByProvinceSlug(tinh),
+  ]);
   if (routes.length === 0 && !hub) notFound();
 
   const regionName = routes[0]?.region || hub?.title || tinh;
@@ -54,6 +59,7 @@ export default async function Page({ params }: Props) {
         regionName={regionName}
         hub={hub}
         routes={routes}
+        airportConnections={airportConnections}
         heroImageUrl={getDestinationImageUrl(tinh, hub?.featuredImageUrl)}
       />
     </>
