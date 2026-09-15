@@ -39,6 +39,7 @@ test("Day 25 Blog Detail uses semantic related posts and structured hub links", 
   assert.doesNotMatch(blogDetailPage, /routes\.slice\(0,\s*3\)/);
   assert.match(blogDetailPage, /airportHubHref\(airport\.slug\)/);
   assert.match(blogDetailPage, /`\/tuyen-duong\/\$\{provinceSlug\}`/);
+  assert.match(blogDetailPage, /decodeHtmlEntities\(rawLabel\)/);
   assert.match(blogDetailPage, /`\/loai-xe\/\$\{vehicleSlug\}`/);
   assert.match(blogDetailPage, /<BlogCard post=\{related\}/);
 });
