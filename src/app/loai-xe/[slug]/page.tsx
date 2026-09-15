@@ -8,7 +8,7 @@ import { fetchServices } from "@/lib/api/services";
 import { fetchPostsByVehicleType } from "@/lib/api/blog";
 import { fetchAirportRouteLinksForVehicleType } from "@/lib/api/airport-routes";
 import { JsonLd } from "@/components/json-ld";
-import { buildServiceSchema } from "@/lib/schema";
+import { buildBreadcrumbListSchema, buildServiceSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 import { buildVehicleCategoryRoutePrices, getVehicleCategoryStartingPrice } from "@/lib/vehicle-category-pricing";
@@ -73,14 +73,21 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
     }))
     .slice(0, 3);
 
+  const canonicalPath = `/loai-xe/${category.slug}`;
   const serviceSchema = buildServiceSchema({
     name: `Thuê xe ${category.label.toLowerCase()} nguyên chiếc`,
     description: category.description,
-    url: `/loai-xe/${category.slug}`,
+    url: canonicalPath,
   });
+  const breadcrumbSchema = buildBreadcrumbListSchema([
+    { name: "Trang chủ", url: "/" },
+    { name: "Loại xe", url: "/loai-xe" },
+    { name: category.label, url: canonicalPath },
+  ]);
 
   return (
     <>
+      <JsonLd data={breadcrumbSchema} />
       <JsonLd data={serviceSchema} />
       <VehicleTypeLanding
         category={displayCategory}
