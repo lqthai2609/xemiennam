@@ -37,8 +37,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE_URL}/danh-gia`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${SITE_URL}/lien-he`, changeFrequency: "monthly", priority: 0.4 },
-    { url: `${SITE_URL}/san-bay/tan-son-nhat`, changeFrequency: "weekly", priority: 0.85 },
   ];
+
+  // Day 21: Airport Hub cũng phải theo data model, không hard-code riêng Tân Sơn Nhất.
+  // Chỉ location type=airport đã thực sự xuất hiện trong ít nhất một Route Pair V2 mới có
+  // entry /san-bay/[slug]. Cách này tự đưa Long Thành vào sitemap khi route readiness đã có,
+  // đồng thời áp dụng được cho các sân bay tiếp theo mà không sửa danh sách tĩnh.
+  const airportHubSlugs = Array.from(
+    new Set(
+      routes.flatMap((route) => {
+        const slugs: string[] = [];
+        for (const location of [route.originLocation, route.destinationLocation]) {
+          if (location?.type === "airport") slugs.push(location.slug.replace(/^san-bay-/, ""));
+        }
+        return slugs;
+      }),
+    ),
+  ).filter(Boolean);
+
+  const airportHubEntries: MetadataRoute.Sitemap = airportHubSlugs.map((airportSlug) => ({
+    url: `${SITE_URL}/san-bay/${airportSlug}`,
+    changeFrequency: "weekly",
+    priority: 0.85,
+  }));
 
   // Hub tỉnh /tuyen-duong/[tinh] (Ngày 25) — 1 entry/tỉnh có ít nhất 1 tuyến (fetchRegionSlugs()
   // đã loại tỉnh rỗng, xem lib/api/routes.ts). lastModified lấy từ bài `diem_den` nếu tỉnh đó đã
@@ -96,6 +117,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticEntries,
+    ...airportHubEntries,
     ...hubEntries,
     ...routeEntries,
     ...comboEntries,
