@@ -70,5 +70,8 @@ jobs:
       - name: Location migration regression tests
         run: npm run test:location-migration
 
+      - name: Airport Hub audit regression tests
+        run: npm run test:airport-hub-audit
+
       - name: Production build
         run: npm run build
