@@ -8,6 +8,7 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME, SITE_CONTACT_PHONE_TEL } from "@/lib/site-config";
 import { getAirportHubReadiness, type AirportReadinessPhase } from "@/lib/airport-readiness";
+import { airportDisplayName } from "@/lib/airport-seo";
 import type { AirportHubData, AirportHubRoute } from "@/lib/api/airport-routes";
 
 function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "live") {
@@ -34,11 +35,11 @@ function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "l
 
   return [
     {
-      question: `Có xe từ sân bay ${airportName} đi các tỉnh không?`,
+      question: `Có xe từ ${airportName} đi các tỉnh không?`,
       answer: `${SITE_NAME} cung cấp xe riêng có tài xế cho các hành trình từ ${airportName} đến các địa phương đang có tuyến trong hệ thống.`,
     },
     {
-      question: `Có thể đặt chiều từ tỉnh lên sân bay ${airportName} không?`,
+      question: `Có thể đặt chiều từ tỉnh lên ${airportName} không?`,
       answer: `Có. Các tuyến hỗ trợ chiều đến sân bay được hiển thị trong mục “Đến ${airportName}”.`,
     },
     {
@@ -108,7 +109,7 @@ function RouteList({ routes }: { routes: AirportHubRoute[] }) {
 }
 
 export function AirportHubPage({ data }: { data: AirportHubData }) {
-  const airportName = data.airport.name;
+  const airportName = airportDisplayName(data.airport.name);
   const readiness = getAirportHubReadiness(data.airport.slug);
   const isPrelaunch = readiness.phase === "prelaunch";
   const faqs = buildAirportFaqs(airportName, readiness.phase);
