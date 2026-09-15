@@ -100,7 +100,7 @@ export default function Home() {
             <div className="hero-actions">
               <Button size="lg" asChild>
                 <a href="#booking">
-                  Tìm chuyến xe <ArrowRight data-icon="inline-end" />
+                  Xem giá chuyến xe <ArrowRight data-icon="inline-end" />
                 </a>
               </Button>
               <Link className="text-link" href="/tuyen-duong">
@@ -119,7 +119,7 @@ export default function Home() {
             </div>
           </div>
           <div className="hero-booking">
-            <Suspense fallback={<div className="hero-booking-skeleton" aria-label="Đang tải công cụ tìm tuyến" />}>
+            <Suspense fallback={<div className="hero-booking-skeleton" aria-label="Đang tải công cụ đặt xe" />}>
               <HeroBooking />
             </Suspense>
           </div>
@@ -210,8 +210,10 @@ export default function Home() {
             <br />
             và không có phí ẩn.
           </p>
-          <Button size="lg">
-            Bắt đầu đặt xe <ArrowRight data-icon="inline-end" />
+          <Button size="lg" asChild>
+            <a href="#booking">
+              Bắt đầu đặt xe <ArrowRight data-icon="inline-end" />
+            </a>
           </Button>
         </div>
       </section>

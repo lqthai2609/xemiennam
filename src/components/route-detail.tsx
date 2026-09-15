@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,21 @@ export function RouteDetailPage({
   vehicleImageByType?: Record<string, string>;
 }) {
   const [direction, setDirection] = useState<RoutePricingDirectionKey>(() => defaultDirection(route));
+
+  useEffect(() => {
+    const requestedDirection = new URLSearchParams(window.location.search).get("direction");
+    if (requestedDirection !== "outbound" && requestedDirection !== "inbound") return;
+
+    const enabled = route.pricingV2
+      ? route.pricingV2[requestedDirection].enabled
+      : requestedDirection === "outbound";
+    if (!enabled) return;
+
+    // Query param chỉ đồng bộ UI sau hydration để không đưa searchParams vào Server Page/ISR contract.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDirection(requestedDirection);
+  }, [route]);
+
   const isPrelaunch = isPrelaunchAirportRoute(route);
   const isAirportRoute = route.originLocation?.type === "airport" || route.destinationLocation?.type === "airport";
   const airportVehicleTypes = isAirportRoute && route.pricingV2
