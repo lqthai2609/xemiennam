@@ -5,10 +5,12 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
+import { RouteDestinationSearch } from "@/components/route-destination-search";
 import { RouteResults } from "@/components/route-results";
 import { SubpageHero, defaultSubpageHeroImage } from "@/components/subpage-hero";
 import { emptyFilters, type FilterState, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
+import { locationMatchesQuery } from "@/lib/location-search";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
@@ -38,6 +40,7 @@ const footerLinkGroups = [
  */
 export function RoutesPageClient({ routes }: { routes: Route[] }) {
   const [filters, setFilters] = useState<FilterState>(emptyFilters);
+  const [destinationQuery, setDestinationQuery] = useState("");
 
   // Đến từ form "Tìm tuyến phù hợp" (route-finder-form) ở trang chủ, /tuyen-duong hoặc /diem-den
   // với ?diem_den=<tỉnh>&khu_vuc=<khu vực>&loai_xe=<loại xe> — tự chọn sẵn bộ lọc tương ứng. Đọc
@@ -65,15 +68,21 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
           (!filters.region || route.region === filters.region) &&
           (!filters.area || route.to === filters.area) &&
           (!filters.vehicleType || route.vehicleTypes.includes(filters.vehicleType)) &&
-          (!filters.seats || route.seatCount.includes(filters.seats)),
+          (!filters.seats || route.seatCount.includes(filters.seats)) &&
+          (!destinationQuery ||
+            locationMatchesQuery(route.from, destinationQuery) ||
+            locationMatchesQuery(route.to, destinationQuery) ||
+            locationMatchesQuery(route.region, destinationQuery)),
       ),
-    [filters, routes],
+    [destinationQuery, filters, routes],
   );
+
   const [layout] = useState<"editorial" | "cards" | "compact">(() => {
     if (typeof window === "undefined") return "editorial";
     const variant = new URLSearchParams(window.location.search).get("variant");
     return variant === "2" ? "cards" : variant === "3" ? "compact" : "editorial";
   });
+
   const groupedRoutes = useMemo(() => {
     const groups = new Map<string, Route[]>();
     filteredRoutes.forEach((route) => groups.set(route.region, [...(groups.get(route.region) ?? []), route]));
@@ -103,17 +112,44 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
           </div>
           <p className="routes-count"><strong>{filteredRoutes.length}</strong> tuyến đang phục vụ</p>
         </div>
+
+        <RouteDestinationSearch
+          routes={routes}
+          value={destinationQuery}
+          onChange={setDestinationQuery}
+        />
+
         <div className="route-groups">
-          {groupedRoutes.map(([region, regionRoutes]) => (
-            <section className="route-region" key={region} aria-labelledby={`region-${region}`}>
-              <div className="route-region-heading">
-                <div><span className="route-region-dot" /><p className="section-label">ĐIỂM ĐẾN</p></div>
-                <h2 id={`region-${region}`}>{region}</h2>
-                <span>{regionRoutes.length} tuyến</span>
-              </div>
-              <RouteResults routes={regionRoutes} onClearFilters={() => setFilters(emptyFilters)} />
-            </section>
-          ))}
+          {groupedRoutes.length > 0 ? (
+            groupedRoutes.map(([region, regionRoutes]) => (
+              <section className="route-region" key={region} aria-labelledby={`region-${region}`}>
+                <div className="route-region-heading">
+                  <div><span className="route-region-dot" /><p className="section-label">ĐIỂM ĐẾN</p></div>
+                  <h2 id={`region-${region}`}>{region}</h2>
+                  <span>{regionRoutes.length} tuyến</span>
+                </div>
+                <RouteResults routes={regionRoutes} onClearFilters={() => setFilters(emptyFilters)} />
+              </section>
+            ))
+          ) : (
+            <div className="rounded-2xl border border-border bg-card px-5 py-8 text-center md:px-8 md:py-10" role="status">
+              <p className="m-0 text-lg font-bold text-foreground">
+                Chưa tìm thấy tuyến phù hợp{destinationQuery ? ` với “${destinationQuery}”` : ""}.
+              </p>
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+                Thử tìm tên tỉnh, thành phố hoặc điểm đến khác.
+              </p>
+              {destinationQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setDestinationQuery("")}
+                  className="button button-primary mt-5"
+                >
+                  Xóa tìm kiếm
+                </button>
+              ) : null}
+            </div>
+          )}
         </div>
         <section className="routes-cta" aria-labelledby="routes-cta-title">
           <div><p className="section-label">CHƯA BIẾT CHỌN TUYẾN NÀO?</p><h2 id="routes-cta-title">Nói điểm đến,<br /><em>để chúng tôi lo phần còn lại.</em></h2></div>
