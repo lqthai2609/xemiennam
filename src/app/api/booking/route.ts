@@ -19,33 +19,72 @@ const bookingRequestSchema = z.object({
   direction: z.enum(["outbound", "inbound"]).optional(),
   packageKey: z.string().trim().max(80).optional(),
   pricingMode: z.enum(["fixed", "contact"]).optional(),
+  pickupLocationId: z.coerce.number().int().positive().optional(),
+  dropoffLocationId: z.coerce.number().int().positive().optional(),
+  pickupAddress: z.string().trim().max(240, "Địa chỉ đón tối đa 240 ký tự.").optional().default(""),
+  dropoffAddress: z.string().trim().max(240, "Địa chỉ trả tối đa 240 ký tự.").optional().default(""),
+  pickupNote: z.string().trim().max(300, "Ghi chú điểm đón tối đa 300 ký tự.").optional().default(""),
   note: z.string().trim().max(500).optional().default(""),
 });
 
 const OTHER_ROUTE_LABEL = "Tuyến khác";
 
-async function resolveRouteId(routeId: string | undefined, routeLabel: string): Promise<number | null> {
-  const routes = await fetchRawRoutes();
+type ResolvedRouteContext = {
+  routeId: number | null;
+  originLocationId: number;
+  destinationLocationId: number;
+  validLocationIds: Set<number>;
+};
 
-  if (routeId) {
-    const stableId = Number(routeId);
-    if (routes.some((route) => route.id === stableId)) return stableId;
+async function resolveRouteContext(
+  routeId: string | undefined,
+  routeLabel: string,
+): Promise<ResolvedRouteContext> {
+  const [routes, locations] = await Promise.all([fetchRawRoutes(), fetchLocationsV2()]);
+  const locationsById = locationById(locations);
+  const validLocationIds = new Set(locations.map((location) => location.id));
+
+  let match = routeId
+    ? routes.find((route) => route.id === Number(routeId))
+    : undefined;
+
+  if (!match && routeLabel !== OTHER_ROUTE_LABEL) {
+    match = routes.find((route) => {
+      const pair = mapWPRouteToRoutePairV2(route);
+      const origin = pair.originLocationId > 0 ? locationsById.get(pair.originLocationId) : undefined;
+      const destination = pair.destinationLocationId > 0 ? locationsById.get(pair.destinationLocationId) : undefined;
+      const from = origin?.name || route.meta.diem_di || "";
+      const to = destination?.name || route.meta.diem_den || "";
+      return `${from} – ${to}` === routeLabel;
+    });
   }
 
-  if (routeLabel === OTHER_ROUTE_LABEL) return null;
+  if (!match) {
+    return {
+      routeId: null,
+      originLocationId: 0,
+      destinationLocationId: 0,
+      validLocationIds,
+    };
+  }
 
-  const locations = await fetchLocationsV2();
-  const locationsById = locationById(locations);
-  const match = routes.find((route) => {
-    const pair = mapWPRouteToRoutePairV2(route);
-    const origin = pair.originLocationId > 0 ? locationsById.get(pair.originLocationId) : undefined;
-    const destination = pair.destinationLocationId > 0 ? locationsById.get(pair.destinationLocationId) : undefined;
-    const from = origin?.name || route.meta.diem_di || "";
-    const to = destination?.name || route.meta.diem_den || "";
-    return `${from} – ${to}` === routeLabel;
-  });
+  const pair = mapWPRouteToRoutePairV2(match);
+  return {
+    routeId: match.id,
+    originLocationId: pair.originLocationId,
+    destinationLocationId: pair.destinationLocationId,
+    validLocationIds,
+  };
+}
 
-  return match?.id ?? null;
+function resolveBookingLocationId(
+  requestedId: number | undefined,
+  fallbackId: number,
+  validLocationIds: Set<number>,
+): number {
+  if (requestedId && validLocationIds.has(requestedId)) return requestedId;
+  if (fallbackId > 0 && validLocationIds.has(fallbackId)) return fallbackId;
+  return 0;
 }
 
 async function resolveVehicleId(vehicleTypeLabel: string): Promise<number | null> {
@@ -71,13 +110,30 @@ export async function POST(request: Request) {
   }
   const data = parsed.data;
 
-  const [routeId, vehicleId] = await Promise.all([
-    resolveRouteId(data.routeId, data.route),
+  const [routeContext, vehicleId] = await Promise.all([
+    resolveRouteContext(data.routeId, data.route),
     resolveVehicleId(data.vehicleType),
   ]);
 
+  const direction = data.direction ?? "outbound";
+  const defaultPickupLocationId =
+    direction === "inbound" ? routeContext.destinationLocationId : routeContext.originLocationId;
+  const defaultDropoffLocationId =
+    direction === "inbound" ? routeContext.originLocationId : routeContext.destinationLocationId;
+
+  const pickupLocationId = resolveBookingLocationId(
+    data.pickupLocationId,
+    defaultPickupLocationId,
+    routeContext.validLocationIds,
+  );
+  const dropoffLocationId = resolveBookingLocationId(
+    data.dropoffLocationId,
+    defaultDropoffLocationId,
+    routeContext.validLocationIds,
+  );
+
   const noteParts: string[] = [];
-  if (routeId === null) noteParts.push(`Tuyến quan tâm (chưa khớp CMS): ${data.route}`);
+  if (routeContext.routeId === null) noteParts.push(`Tuyến quan tâm (chưa khớp CMS): ${data.route}`);
   if (vehicleId === null) noteParts.push(`Loại xe (chưa khớp CMS): ${data.vehicleType}`);
 
   const pricingContext = [
@@ -86,6 +142,10 @@ export async function POST(request: Request) {
     data.pricingMode ? `mode=${data.pricingMode}` : "",
   ].filter(Boolean);
   if (pricingContext.length) noteParts.push(`Pricing context: ${pricingContext.join("; ")}.`);
+
+  if (data.pickupAddress) noteParts.push(`Điểm đón: ${data.pickupAddress}.`);
+  if (data.dropoffAddress) noteParts.push(`Điểm trả: ${data.dropoffAddress}.`);
+  if (data.pickupNote) noteParts.push(`Ghi chú điểm đón: ${data.pickupNote}.`);
   if (data.note) noteParts.push(data.note);
 
   const result = await wpAuthedFetch<{ id: number }>("/booking_request", {
@@ -95,9 +155,14 @@ export async function POST(request: Request) {
       status: "publish",
       meta: {
         so_dien_thoai: data.phone,
-        tuyen_quan_tam: routeId ?? 0,
+        tuyen_quan_tam: routeContext.routeId ?? 0,
         loai_xe_dat: vehicleId ?? 0,
         ngay_di: data.departureDate,
+        pickup_location_id: pickupLocationId,
+        dropoff_location_id: dropoffLocationId,
+        pickup_address: data.pickupAddress,
+        dropoff_address: data.dropoffAddress,
+        pickup_note: data.pickupNote,
         ghi_chu: noteParts.join(" | "),
         trang_thai_booking: "moi",
       },
@@ -115,6 +180,9 @@ export async function POST(request: Request) {
     route: data.route,
     vehicleType: data.vehicleType,
     departureDate: data.departureDate,
+    pickupAddress: data.pickupAddress,
+    dropoffAddress: data.dropoffAddress,
+    pickupNote: data.pickupNote,
     note: data.note,
   });
 
