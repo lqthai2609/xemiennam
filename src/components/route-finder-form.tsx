@@ -333,6 +333,9 @@ function JourneyQuoteDialog({
   const [pickupAddress, setPickupAddress] = useState("");
   const [dropoffAddress, setDropoffAddress] = useState("");
   const [pickupNote, setPickupNote] = useState("");
+  const [pickupAddressError, setPickupAddressError] = useState("");
+  const [dropoffAddressError, setDropoffAddressError] = useState("");
+  const [pickupNoteError, setPickupNoteError] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -351,6 +354,13 @@ function JourneyQuoteDialog({
   async function submitQuote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setPickupAddressError("");
+    setDropoffAddressError("");
+    setPickupNoteError("");
+
+    const normalizedPickupAddress = pickupAddress.trim();
+    const normalizedDropoffAddress = dropoffAddress.trim();
+    const normalizedPickupNote = pickupNote.trim();
 
     if (!fullName.trim()) {
       setError("Vui lòng nhập họ tên.");
@@ -360,10 +370,26 @@ function JourneyQuoteDialog({
       setError("Số điện thoại chưa đúng định dạng Việt Nam.");
       return;
     }
-    if (!pickupAddress.trim() || !dropoffAddress.trim()) {
-      setError("Vui lòng nhập điểm đón và điểm trả cụ thể.");
-      return;
+    let hasAddressError = false;
+    if (!normalizedPickupAddress) {
+      setPickupAddressError("Vui lòng nhập điểm đón cụ thể.");
+      hasAddressError = true;
+    } else if (normalizedPickupAddress.length > 240) {
+      setPickupAddressError("Điểm đón tối đa 240 ký tự.");
+      hasAddressError = true;
     }
+    if (!normalizedDropoffAddress) {
+      setDropoffAddressError("Vui lòng nhập điểm trả cụ thể.");
+      hasAddressError = true;
+    } else if (normalizedDropoffAddress.length > 240) {
+      setDropoffAddressError("Điểm trả tối đa 240 ký tự.");
+      hasAddressError = true;
+    }
+    if (normalizedPickupNote.length > 300) {
+      setPickupNoteError("Lưu ý điểm đón tối đa 300 ký tự.");
+      hasAddressError = true;
+    }
+    if (hasAddressError) return;
 
     setIsSubmitting(true);
     try {
@@ -387,9 +413,9 @@ function JourneyQuoteDialog({
           routeId: journey?.route.id,
           vehicleType: bookingVehicle,
           departureDate,
-          pickupAddress: pickupAddress.trim(),
-          dropoffAddress: dropoffAddress.trim(),
-          pickupNote: pickupNote.trim(),
+          pickupAddress: normalizedPickupAddress,
+          dropoffAddress: normalizedDropoffAddress,
+          pickupNote: normalizedPickupNote,
           direction: journey?.direction,
           pricingMode: "contact",
           note: noteParts.join(" "),
@@ -469,15 +495,48 @@ function JourneyQuoteDialog({
               </label>
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                 <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
-                <input value={pickupAddress} onChange={(event) => setPickupAddress(event.target.value)} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." aria-invalid={!!error && !pickupAddress.trim()} />
+                <input
+                  value={pickupAddress}
+                  onChange={(event) => {
+                    setPickupAddress(event.target.value);
+                    if (pickupAddressError) setPickupAddressError("");
+                  }}
+                  maxLength={240}
+                  className="form-control"
+                  placeholder="Số nhà, tên đường, phường/xã..."
+                  aria-invalid={!!pickupAddressError}
+                />
+                {pickupAddressError && <p className="m-0 text-sm text-destructive" role="alert">{pickupAddressError}</p>}
               </label>
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                 <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
-                <input value={dropoffAddress} onChange={(event) => setDropoffAddress(event.target.value)} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." aria-invalid={!!error && !dropoffAddress.trim()} />
+                <input
+                  value={dropoffAddress}
+                  onChange={(event) => {
+                    setDropoffAddress(event.target.value);
+                    if (dropoffAddressError) setDropoffAddressError("");
+                  }}
+                  maxLength={240}
+                  className="form-control"
+                  placeholder="Số nhà, tên đường, phường/xã..."
+                  aria-invalid={!!dropoffAddressError}
+                />
+                {dropoffAddressError && <p className="m-0 text-sm text-destructive" role="alert">{dropoffAddressError}</p>}
               </label>
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                 <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
-                <textarea value={pickupNote} onChange={(event) => setPickupNote(event.target.value)} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />
+                <textarea
+                  value={pickupNote}
+                  onChange={(event) => {
+                    setPickupNote(event.target.value);
+                    if (pickupNoteError) setPickupNoteError("");
+                  }}
+                  maxLength={300}
+                  className="form-control min-h-24 resize-y"
+                  placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..."
+                  aria-invalid={!!pickupNoteError}
+                />
+                {pickupNoteError && <p className="m-0 text-sm text-destructive" role="alert">{pickupNoteError}</p>}
               </label>
               {error && <p className="m-0 text-sm text-destructive" role="alert">{error}</p>}
               <Button type="submit" disabled={isSubmitting} className="w-full">

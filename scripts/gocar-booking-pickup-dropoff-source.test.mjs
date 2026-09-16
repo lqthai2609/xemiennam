@@ -7,6 +7,18 @@ const bookingContract = await readFile(
   new URL("../wordpress/gocar-core/includes/class-gocar-booking-request.php", import.meta.url),
   "utf8",
 );
+const contactBookingForm = await readFile(
+  new URL("../src/components/contact-booking-form.tsx", import.meta.url),
+  "utf8",
+);
+const quickBookingActions = await readFile(
+  new URL("../src/components/route-booking-actions.tsx", import.meta.url),
+  "utf8",
+);
+const routeFinderForm = await readFile(
+  new URL("../src/components/route-finder-form.tsx", import.meta.url),
+  "utf8",
+);
 
 test("Day 31 booking API accepts structured pickup/dropoff fields", () => {
   for (const field of [
@@ -58,4 +70,29 @@ test("Gocar Core exposes and sanitizes the Day 31 booking meta contract", () => 
 test("Day 31 does not introduce Zone or surcharge business logic", () => {
   assert.doesNotMatch(bookingApi, /center|suburb|outskirt|surcharge/i);
   assert.doesNotMatch(bookingContract, /center|suburb|outskirt|surcharge/i);
+});
+
+
+test("Day 31 frontend entry points keep the 240/240/300 pickup contract", () => {
+  for (const frontend of [contactBookingForm, quickBookingActions]) {
+    assert.match(frontend, /pickupAddress:[\s\S]{0,180}max\(240,/i);
+    assert.match(frontend, /dropoffAddress:[\s\S]{0,180}max\(240,/i);
+    assert.match(frontend, /pickupNote:[\s\S]{0,160}max\(300,/i);
+    assert.match(frontend, /maxLength=\{240\}/);
+    assert.match(frontend, /maxLength=\{300\}/);
+  }
+
+  assert.match(routeFinderForm, /normalizedPickupAddress\.length > 240/);
+  assert.match(routeFinderForm, /normalizedDropoffAddress\.length > 240/);
+  assert.match(routeFinderForm, /normalizedPickupNote\.length > 300/);
+  assert.ok((routeFinderForm.match(/maxLength=\{240\}/g) || []).length >= 2);
+  assert.match(routeFinderForm, /maxLength=\{300\}/);
+});
+
+test("Day 31 frontend entry points preserve structured pickup payload fields", () => {
+  for (const field of ["pickupAddress", "dropoffAddress", "pickupNote"]) {
+    assert.match(contactBookingForm, new RegExp(field));
+    assert.match(quickBookingActions, new RegExp(field + ":\\s*data\\." + field));
+    assert.match(routeFinderForm, new RegExp(field + ":\\s*normalized"));
+  }
 });
