@@ -54,7 +54,7 @@ jobs:
             '    assert.match(routeFinderForm, new RegExp(field + ":\\\\s*normalized"));',
             '  }',
             '});',
-          ].join("\\n");'''
+          ].join("\n");'''
           path.write_text(source[:start] + replacement + source[end:], encoding="utf-8")
           PY
 
