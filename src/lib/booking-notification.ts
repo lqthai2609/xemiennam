@@ -10,6 +10,9 @@ export interface BookingNotificationData {
   route: string;
   vehicleType: string;
   departureDate: string;
+  pickupAddress: string;
+  dropoffAddress: string;
+  pickupNote: string;
   note: string;
 }
 
@@ -62,9 +65,12 @@ export async function sendBookingNotification(
         "Số điện thoại": data.phone,
         "Gọi ngay": phoneCallUri(data.phone),
         "Tuyến quan tâm": data.route,
+        "Điểm đón thực tế": data.pickupAddress || "Khách chưa nhập",
+        "Điểm trả thực tế": data.dropoffAddress || "Khách chưa nhập",
+        "Ghi chú điểm đón": data.pickupNote || "Không có",
         "Loại xe": data.vehicleType,
         "Ngày đi": data.departureDate || "Khách chưa chọn",
-        "Ghi chú": data.note || "Không có",
+        "Ghi chú chung": data.note || "Không có",
         "Thời gian gửi": submittedAt,
       }),
       signal: AbortSignal.timeout(NOTIFICATION_TIMEOUT_MS),
