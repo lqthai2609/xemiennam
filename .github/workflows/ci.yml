@@ -88,5 +88,8 @@ jobs:
       - name: Footer link regression guard
         run: npm run test:footer
 
+      - name: Booking pickup/dropoff regression guard
+        run: npm run test:booking-pickup-dropoff
+
       - name: Production build
         run: npm run build
