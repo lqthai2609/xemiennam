@@ -1,6 +1,6 @@
 # Day 31 — Booking V2 Pickup/Dropoff Field Inventory
 
-Status: IN PROGRESS  
+Status: COMPLETE  
 Owner: Gocar VN — Core  
 Cross-project dependency: DEP-001  
 Base: `main@6e50d3ff3b2c46b0ad98d84c18b14a8301224986`
@@ -69,3 +69,14 @@ Day 32 — Zone / Service Area sẽ quyết định cách phân loại Location/
 - CI có regression guard cho contract này.
 - UI mới gửi exact pickup/dropoff rõ ràng, không dùng route search label thay thế exact address.
 - Không có Zone/surcharge business logic trong Day 31.
+
+## 8. Production acceptance — 2026-09-16
+
+- Production CMS: `https://xemiennam.datxesaigon.com`.
+- Gocar Core `0.4.0` đã được cài và đang Active.
+- `booking_request` REST endpoint hoạt động với năm meta mới: `pickup_location_id`, `dropoff_location_id`, `pickup_address`, `dropoff_address`, `pickup_note`.
+- Smoke test tạo `booking_request` ID `9220` ở trạng thái `draft`, đọc lại đủ năm meta đúng giá trị, sau đó chuyển bản ghi sang `trash`.
+- Smoke test không gọi `/api/booking`, không publish booking và không phát notification/lead giả.
+- Technical Receipt: `docs/technical-receipts/dep-001-day31-booking-v2.md`.
+
+Day 31 slice của DEP-001 hoàn tất ở Core. DEP-001 tổng thể tiếp tục lifecycle Day 31–36 cho Content Readiness API/fields; không được hiểu là đóng toàn bộ DEP-001 sớm.
