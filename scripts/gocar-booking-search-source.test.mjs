@@ -29,6 +29,20 @@ test("booking search reuses canonical Ho Chi Minh aliases", () => {
   assert.match(routeFinderForm, /canonicalLocationKey\(destination\)/);
 });
 
+test("district and area aliases resolve to the canonical Ho Chi Minh route", () => {
+  assert.match(locationSearch, /Array\.from\(\{ length: 12 \}/);
+  for (const alias of [
+    "tan binh", "tân bình", "phu nhuan", "phú nhuận", "thu duc", "thủ đức",
+    "binh thanh", "bình thạnh", "binh chanh", "bình chánh", "binh tan", "bình tân",
+  ]) {
+    assert.ok(locationSearch.includes(`\"${alias}\"`) || locationSearch.includes(`\`${alias}\``), `missing alias: ${alias}`);
+  }
+
+  assert.match(locationSearch, /resolveLocationAlias/);
+  assert.match(routeFinderForm, /Đã quy đổi về/);
+  assert.match(routeFinderForm, /Hai điểm này đều thuộc nhóm giá TP\.HCM/);
+});
+
 test("date and vehicle are optional and select the correct destination page", () => {
   assert.doesNotMatch(routeFinderForm, /Vui lòng chọn ngày đi/);
   assert.doesNotMatch(routeFinderForm, /Vui lòng chọn loại xe hoặc chọn phương án cần tư vấn/);

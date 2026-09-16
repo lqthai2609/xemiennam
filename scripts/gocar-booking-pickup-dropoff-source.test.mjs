@@ -95,3 +95,11 @@ test("Day 31 frontend entry points preserve structured pickup payload fields", (
     assert.match(routeFinderForm, new RegExp(field + ":\\s*normalized"));
   }
 });
+
+test("airport quote form fixes the airport endpoint and validates only the editable address", () => {
+  assert.match(quickBookingActions, /airportContext !== "pickup_from_airport" && !data\.pickupAddress/);
+  assert.match(quickBookingActions, /airportContext !== "dropoff_at_airport" && !data\.dropoffAddress/);
+  assert.match(quickBookingActions, /Đã xác định theo tuyến đã chọn/);
+  assert.match(quickBookingActions, /airportContext === "pickup_from_airport"/);
+  assert.match(quickBookingActions, /airportContext === "dropoff_at_airport"/);
+});

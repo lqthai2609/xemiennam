@@ -10,6 +10,7 @@ import {
   canonicalLocationLabel,
   locationMatchesQuery,
   normalizeSearch,
+  resolveLocationAlias,
 } from "@/lib/location-search";
 import {
   routeComboHref,
@@ -192,6 +193,7 @@ function LocationField({
   const suggestionsId = `${listId}-suggestions`;
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const aliasResolution = useMemo(() => resolveLocationAlias(value), [value]);
 
   const suggestions = useMemo(() => {
     const query = normalizeSearch(value);
@@ -202,7 +204,11 @@ function LocationField({
   }, [options, value]);
 
   function selectSuggestion(option: string) {
-    onChange(option);
+    onChange(
+      aliasResolution && canonicalLocationKey(option) === aliasResolution.canonicalKey
+        ? value.trim()
+        : option,
+    );
     setSuggestionsOpen(false);
     setActiveIndex(-1);
   }
@@ -288,12 +294,25 @@ function LocationField({
                 className={`flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition ${index === activeIndex ? "bg-secondary text-foreground" : "hover:bg-muted"}`}
               >
                 <MapPin aria-hidden="true" size={15} className="shrink-0 text-primary" />
-                <span>{option}</span>
+                {aliasResolution && canonicalLocationKey(option) === aliasResolution.canonicalKey ? (
+                  <span className="min-w-0">
+                    <span className="block font-semibold">{aliasResolution.displayLabel}</span>
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {aliasResolution.canonical} · Áp dụng giá tuyến TP.HCM
+                    </span>
+                  </span>
+                ) : <span>{option}</span>}
               </button>
             ))}
           </div>
         )}
       </div>
+      {aliasResolution && (
+        <p className="m-0 flex items-start gap-1.5 text-xs font-medium leading-5 text-primary" role="status">
+          <span aria-hidden="true">✓</span>
+          <span>Đã quy đổi về {aliasResolution.canonical} · Áp dụng giá tuyến TP.HCM</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -668,7 +687,12 @@ export function BookingSearchForm({
       return;
     }
     if (canonicalLocationKey(pickup) === canonicalLocationKey(destination)) {
-      setError("Điểm đón và điểm đến phải khác nhau.");
+      const canonicalKey = canonicalLocationKey(pickup);
+      if (canonicalKey === canonicalLocationKey("TP. Hồ Chí Minh")) {
+        setError("Hai điểm này đều thuộc nhóm giá TP.HCM. Vui lòng chọn điểm đến ngoài TP.HCM hoặc liên hệ để được tư vấn chuyến nội thành.");
+      } else {
+        setError("Điểm đón và điểm đến phải khác nhau.");
+      }
       return;
     }
     if (departureDate && departureDate < localDateIso(new Date())) {
