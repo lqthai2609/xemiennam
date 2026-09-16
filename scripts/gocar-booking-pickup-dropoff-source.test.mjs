@@ -102,4 +102,10 @@ test("airport quote form fixes the airport endpoint and validates only the edita
   assert.match(quickBookingActions, /Đã xác định theo tuyến đã chọn/);
   assert.match(quickBookingActions, /airportContext === "pickup_from_airport"/);
   assert.match(quickBookingActions, /airportContext === "dropoff_at_airport"/);
+
+  assert.match(routeFinderForm, /!isPickupFromAirport && !normalizedPickupAddress/);
+  assert.match(routeFinderForm, /!isDropoffAtAirport && !normalizedDropoffAddress/);
+  assert.match(routeFinderForm, /isPickupFromAirport \? \(/);
+  assert.match(routeFinderForm, /isDropoffAtAirport \? \(/);
+  assert.match(routeFinderForm, /Đã xác định theo tuyến đã chọn/);
 });

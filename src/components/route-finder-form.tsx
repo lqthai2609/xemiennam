@@ -359,6 +359,9 @@ function JourneyQuoteDialog({
     : vehicleType;
   const visibleDepartureDate = departureDate ? formatDateLabel(departureDate) : "Chưa chọn";
   const routeLabel = `${pickup.trim()} – ${destination.trim()}`;
+  const isPickupFromAirport = searchMode === "airport" && airportDirection === "pickup";
+  const isDropoffAtAirport = searchMode === "airport" && airportDirection === "dropoff";
+  const fixedAirportName = isPickupFromAirport ? pickup.trim() : isDropoffAtAirport ? destination.trim() : "";
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -388,14 +391,14 @@ function JourneyQuoteDialog({
       return;
     }
     let hasAddressError = false;
-    if (!normalizedPickupAddress) {
+    if (!isPickupFromAirport && !normalizedPickupAddress) {
       setPickupAddressError("Vui lòng nhập điểm đón cụ thể.");
       hasAddressError = true;
     } else if (normalizedPickupAddress.length > 240) {
       setPickupAddressError("Điểm đón tối đa 240 ký tự.");
       hasAddressError = true;
     }
-    if (!normalizedDropoffAddress) {
+    if (!isDropoffAtAirport && !normalizedDropoffAddress) {
       setDropoffAddressError("Vui lòng nhập điểm trả cụ thể.");
       hasAddressError = true;
     } else if (normalizedDropoffAddress.length > 240) {
@@ -510,36 +513,62 @@ function JourneyQuoteDialog({
                   placeholder="0901 234 567"
                 />
               </label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
-                <input
-                  value={pickupAddress}
-                  onChange={(event) => {
-                    setPickupAddress(event.target.value);
-                    if (pickupAddressError) setPickupAddressError("");
-                  }}
-                  maxLength={240}
-                  className="form-control"
-                  placeholder="Số nhà, tên đường, phường/xã..."
-                  aria-invalid={!!pickupAddressError}
-                />
-                {pickupAddressError && <p className="m-0 text-sm text-destructive" role="alert">{pickupAddressError}</p>}
-              </label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
-                <input
-                  value={dropoffAddress}
-                  onChange={(event) => {
-                    setDropoffAddress(event.target.value);
-                    if (dropoffAddressError) setDropoffAddressError("");
-                  }}
-                  maxLength={240}
-                  className="form-control"
-                  placeholder="Số nhà, tên đường, phường/xã..."
-                  aria-invalid={!!dropoffAddressError}
-                />
-                {dropoffAddressError && <p className="m-0 text-sm text-destructive" role="alert">{dropoffAddressError}</p>}
-              </label>
+              {isPickupFromAirport ? (
+                <div className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>Điểm đón</span>
+                  <div className="flex items-start gap-3 rounded-xl border border-border bg-secondary/60 px-3.5 py-3" role="status">
+                    <Plane aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-primary" />
+                    <span>
+                      <span className="block">{fixedAirportName}</span>
+                      <span className="block text-xs font-normal text-muted-foreground">Đã xác định theo tuyến đã chọn</span>
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+                  <input
+                    value={pickupAddress}
+                    onChange={(event) => {
+                      setPickupAddress(event.target.value);
+                      if (pickupAddressError) setPickupAddressError("");
+                    }}
+                    maxLength={240}
+                    className="form-control"
+                    placeholder="Số nhà, tên đường, phường/xã..."
+                    aria-invalid={!!pickupAddressError}
+                  />
+                  {pickupAddressError && <p className="m-0 text-sm text-destructive" role="alert">{pickupAddressError}</p>}
+                </label>
+              )}
+              {isDropoffAtAirport ? (
+                <div className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>Điểm trả</span>
+                  <div className="flex items-start gap-3 rounded-xl border border-border bg-secondary/60 px-3.5 py-3" role="status">
+                    <Plane aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-primary" />
+                    <span>
+                      <span className="block">{fixedAirportName}</span>
+                      <span className="block text-xs font-normal text-muted-foreground">Đã xác định theo tuyến đã chọn</span>
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+                  <input
+                    value={dropoffAddress}
+                    onChange={(event) => {
+                      setDropoffAddress(event.target.value);
+                      if (dropoffAddressError) setDropoffAddressError("");
+                    }}
+                    maxLength={240}
+                    className="form-control"
+                    placeholder="Số nhà, tên đường, phường/xã..."
+                    aria-invalid={!!dropoffAddressError}
+                  />
+                  {dropoffAddressError && <p className="m-0 text-sm text-destructive" role="alert">{dropoffAddressError}</p>}
+                </label>
+              )}
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                 <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
                 <textarea
