@@ -72,7 +72,6 @@ test("Day 31 does not introduce Zone or surcharge business logic", () => {
   assert.doesNotMatch(bookingContract, /center|suburb|outskirt|surcharge/i);
 });
 
-
 test("Day 31 frontend entry points keep the 240/240/300 pickup contract", () => {
   for (const frontend of [contactBookingForm, quickBookingActions]) {
     assert.match(frontend, /pickupAddress:[\s\S]{0,180}max\(240,/i);
