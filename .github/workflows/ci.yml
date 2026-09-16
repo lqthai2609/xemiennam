@@ -91,5 +91,8 @@ jobs:
       - name: Booking pickup/dropoff regression guard
         run: npm run test:booking-pickup-dropoff
 
+      - name: Booking search regression guard
+        run: npm run test:booking-search
+
       - name: Production build
         run: npm run build

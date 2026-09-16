@@ -22,6 +22,7 @@ export const LOCATION_SEARCH_ALIASES: LocationAliasGroup[] = [
       "Sài Gòn",
       "Sai Gon",
       "Saigon",
+      "HCM",
       "TP HCM",
       "TPHCM",
       "TP. HCM",
