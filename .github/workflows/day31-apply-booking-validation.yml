@@ -1,0 +1,40 @@
+name: Day31 Apply Booking Validation
+
+on:
+  push:
+    branches:
+      - day31/booking-pickup-dropoff-v2
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: day31/booking-pickup-dropoff-v2
+          fetch-depth: 0
+
+      - name: Validate patch script syntax
+        run: node --check scripts/day31-apply-booking-validation.mjs
+
+      - name: Apply Day 31 frontend validation patch
+        run: node scripts/day31-apply-booking-validation.mjs
+
+      - name: Run Day 31 regression guard
+        run: node --test scripts/gocar-booking-pickup-dropoff-source.test.mjs
+
+      - name: Check diff
+        run: git diff --check
+
+      - name: Commit and push patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: align Day 31 booking frontend validation"
+          git push origin HEAD:day31/booking-pickup-dropoff-v2
