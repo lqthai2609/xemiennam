@@ -330,6 +330,9 @@ function JourneyQuoteDialog({
 }) {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [dropoffAddress, setDropoffAddress] = useState("");
+  const [pickupNote, setPickupNote] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -357,6 +360,10 @@ function JourneyQuoteDialog({
       setError("Số điện thoại chưa đúng định dạng Việt Nam.");
       return;
     }
+    if (!pickupAddress.trim() || !dropoffAddress.trim()) {
+      setError("Vui lòng nhập điểm đón và điểm trả cụ thể.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -380,6 +387,9 @@ function JourneyQuoteDialog({
           routeId: journey?.route.id,
           vehicleType: bookingVehicle,
           departureDate,
+          pickupAddress: pickupAddress.trim(),
+          dropoffAddress: dropoffAddress.trim(),
+          pickupNote: pickupNote.trim(),
           direction: journey?.direction,
           pricingMode: "contact",
           note: noteParts.join(" "),
@@ -456,6 +466,18 @@ function JourneyQuoteDialog({
                   inputMode="tel"
                   placeholder="0901 234 567"
                 />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+                <input value={pickupAddress} onChange={(event) => setPickupAddress(event.target.value)} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." aria-invalid={!!error && !pickupAddress.trim()} />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+                <input value={dropoffAddress} onChange={(event) => setDropoffAddress(event.target.value)} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." aria-invalid={!!error && !dropoffAddress.trim()} />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+                <textarea value={pickupNote} onChange={(event) => setPickupNote(event.target.value)} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />
               </label>
               {error && <p className="m-0 text-sm text-destructive" role="alert">{error}</p>}
               <Button type="submit" disabled={isSubmitting} className="w-full">

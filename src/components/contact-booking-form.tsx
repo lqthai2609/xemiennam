@@ -21,6 +21,9 @@ const bookingSchema = z.object({
   route: z.string().min(1, "Vui lòng chọn tuyến quan tâm."),
   vehicleType: z.string().min(1, "Vui lòng chọn loại xe."),
   departureDate: z.string().optional(),
+  pickupAddress: z.string().trim().min(1, "Vui lòng nhập điểm đón cụ thể."),
+  dropoffAddress: z.string().trim().min(1, "Vui lòng nhập điểm trả cụ thể."),
+  pickupNote: z.string().trim().max(500, "Lưu ý điểm đón tối đa 500 ký tự.").optional(),
   note: z.string().trim().max(500, "Ghi chú tối đa 500 ký tự.").optional(),
 });
 
@@ -62,7 +65,15 @@ export function ContactBookingForm({
     reset,
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
-    defaultValues: { route: defaultRoute, vehicleType: "", departureDate: "", note: "" },
+    defaultValues: {
+      route: defaultRoute,
+      vehicleType: "",
+      departureDate: "",
+      pickupAddress: "",
+      dropoffAddress: "",
+      pickupNote: "",
+      note: "",
+    },
   });
 
   const submitForm = async (data: BookingFormData) => {
@@ -74,7 +85,7 @@ export function ContactBookingForm({
       toast.success("Đã nhận thông tin đặt xe", {
         description: `${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
       });
-      reset({ ...data, fullName: "", phone: "", note: "" });
+      reset({ ...data, fullName: "", phone: "", pickupAddress: "", dropoffAddress: "", pickupNote: "", note: "" });
     } catch {
       toast.error("Gửi thông tin chưa thành công", {
         description: `Vui lòng thử lại hoặc gọi trực tiếp cho ${SITE_NAME}.`,
@@ -114,6 +125,21 @@ export function ContactBookingForm({
         <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
           Ngày đi
           <input {...register("departureDate")} type="date" className="form-control" />
+        </label>
+        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
+          Điểm đón cụ thể <span className="text-destructive">*</span>
+          <input {...register("pickupAddress")} aria-invalid={!!errors.pickupAddress} placeholder="Số nhà, tên đường, phường/xã..." className="form-control" />
+          <FieldError message={errors.pickupAddress?.message} />
+        </label>
+        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
+          Điểm trả cụ thể <span className="text-destructive">*</span>
+          <input {...register("dropoffAddress")} aria-invalid={!!errors.dropoffAddress} placeholder="Số nhà, tên đường, phường/xã..." className="form-control" />
+          <FieldError message={errors.dropoffAddress?.message} />
+        </label>
+        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground sm:col-span-2">
+          Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+          <textarea {...register("pickupNote")} aria-invalid={!!errors.pickupNote} placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." className="form-control min-h-24 resize-y" />
+          <FieldError message={errors.pickupNote?.message} />
         </label>
         <label className="flex flex-col gap-2 text-sm font-semibold text-foreground sm:col-span-2">
           Ghi chú <span className="font-normal text-muted-foreground">(không bắt buộc)</span>

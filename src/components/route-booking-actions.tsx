@@ -22,6 +22,9 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
     .object({
       fullName: z.string().trim().min(1, "Vui lòng nhập họ tên."),
       phone: z.string().trim().regex(phoneRegex, "Số điện thoại chưa đúng định dạng Việt Nam."),
+      pickupAddress: z.string().trim().min(1, "Vui lòng nhập điểm đón cụ thể."),
+      dropoffAddress: z.string().trim().min(1, "Vui lòng nhập điểm trả cụ thể."),
+      pickupNote: z.string().trim().max(500, "Lưu ý điểm đón tối đa 500 ký tự.").optional(),
       departureAt: z.string().optional(),
       flightNumber: z.string().trim().max(40, "Số hiệu chuyến bay tối đa 40 ký tự.").optional(),
       landingAt: z.string().optional(),
@@ -195,6 +198,9 @@ function QuickBookingDialog({
           route,
           routeId,
           vehicleType,
+          pickupAddress: data.pickupAddress,
+          dropoffAddress: data.dropoffAddress,
+          pickupNote: data.pickupNote || "",
           departureDate,
           direction,
           packageKey,
@@ -282,6 +288,21 @@ function QuickBookingDialog({
                 className="form-control"
               />
               <FieldError message={errors.phone?.message} />
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+              <input {...register("pickupAddress")} aria-invalid={!!errors.pickupAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
+              <FieldError message={errors.pickupAddress?.message} />
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+              <input {...register("dropoffAddress")} aria-invalid={!!errors.dropoffAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
+              <FieldError message={errors.dropoffAddress?.message} />
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+              <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+              <textarea {...register("pickupNote")} aria-invalid={!!errors.pickupNote} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />
+              <FieldError message={errors.pickupNote?.message} />
             </label>
           </fieldset>
 

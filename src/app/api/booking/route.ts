@@ -142,7 +142,6 @@ export async function POST(request: Request) {
     data.pricingMode ? `mode=${data.pricingMode}` : "",
   ].filter(Boolean);
   if (pricingContext.length) noteParts.push(`Pricing context: ${pricingContext.join("; ")}.`);
-
   if (data.pickupAddress) noteParts.push(`Điểm đón: ${data.pickupAddress}.`);
   if (data.dropoffAddress) noteParts.push(`Điểm trả: ${data.dropoffAddress}.`);
   if (data.pickupNote) noteParts.push(`Ghi chú điểm đón: ${data.pickupNote}.`);
