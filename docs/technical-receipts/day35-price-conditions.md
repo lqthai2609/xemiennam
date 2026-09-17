@@ -1,6 +1,6 @@
 # Technical Receipt — Day 35 Pricing Conditions
 
-Trạng thái: SOURCE MERGED / SEO-004 SPEC CORE ACCEPTED / PRODUCTION PENDING.
+Trạng thái: DAY 35 SOURCE/SPEC COMPLETE / SEO-004 CORE ACCEPTED/CLOSED / PRODUCTION PENDING.
 Ngày: 17/09/2026. Owner: Core. PR #111; merge SHA `46ce668bf642a1f803634d93099296b9f6e35ee1`.
 
 ## Kết quả
@@ -29,6 +29,5 @@ Booking lưu snapshot server có policy version và timezone. Client gửi giờ
 1. Chưa deploy plugin 0.8.0, chưa nhập/kích hoạt dữ liệu Operations, chưa REST/booking production fixtures hoặc mobile QA.
 2. UI giờ cấu trúc thống nhất tiếp tục Day 36; thiếu giờ vẫn contact.
 3. Runtime SEO mapping/attribution, readiness/schema, xung đột endpoint và các dependency khác còn mở theo pre-flight ledger.
-4. Organic Growth cần xác nhận receipt SEO-004 trước final reconciliation Day 35.
 
-Source slice Day 35 đã merge sau khi mọi quality gate đạt. Day 35 vẫn mở đến khi Organic Growth xác nhận receipt SEO-004 và Core phát hành bộ Project Files chốt ngày. Merge không đồng nghĩa deploy hoặc kích hoạt policy.
+Source slice Day 35 đã merge sau khi mọi quality gate đạt; Organic Growth đã xác nhận đóng SEO-004 trong phạm vi specification và URL mapping. Day 35 được chốt ở phạm vi source/spec. Merge không đồng nghĩa deploy, kích hoạt policy hoặc production mapping.
