@@ -1,0 +1,80 @@
+[
+  {
+    "requested_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/tp-hcm-vung-tau",
+    "final_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/tp-hcm-vung-tau",
+    "http_status": 200,
+    "emitted_canonical": [
+      "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/tp-hcm-vung-tau"
+    ],
+    "robots": [],
+    "x_robots_tag": null,
+    "sitemap_membership": true,
+    "verified_at": "2026-09-17T06:55:17.112016+00:00",
+    "deployed_commit": null
+  },
+  {
+    "requested_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/san-bay-tan-son-nhat-vung-tau",
+    "final_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/san-bay-tan-son-nhat-vung-tau",
+    "http_status": 200,
+    "emitted_canonical": [
+      "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/san-bay-tan-son-nhat-vung-tau"
+    ],
+    "robots": [],
+    "x_robots_tag": null,
+    "sitemap_membership": true,
+    "verified_at": "2026-09-17T06:55:17.112016+00:00",
+    "deployed_commit": null
+  },
+  {
+    "requested_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau",
+    "final_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau",
+    "http_status": 200,
+    "emitted_canonical": [
+      "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau"
+    ],
+    "robots": [],
+    "x_robots_tag": null,
+    "sitemap_membership": true,
+    "verified_at": "2026-09-17T06:55:17.112016+00:00",
+    "deployed_commit": null
+  },
+  {
+    "requested_url": "https://xemiennam.vercel.app/san-bay/tan-son-nhat",
+    "final_url": "https://xemiennam.vercel.app/san-bay/tan-son-nhat",
+    "http_status": 200,
+    "emitted_canonical": [
+      "https://xemiennam.vercel.app/san-bay/tan-son-nhat"
+    ],
+    "robots": [],
+    "x_robots_tag": null,
+    "sitemap_membership": true,
+    "verified_at": "2026-09-17T06:55:17.112016+00:00",
+    "deployed_commit": null
+  },
+  {
+    "requested_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/tp-hcm-vung-tau?direction=inbound",
+    "final_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/tp-hcm-vung-tau?direction=inbound",
+    "http_status": 200,
+    "emitted_canonical": [
+      "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/tp-hcm-vung-tau"
+    ],
+    "robots": [],
+    "x_robots_tag": null,
+    "sitemap_membership": false,
+    "verified_at": "2026-09-17T06:55:17.112016+00:00",
+    "deployed_commit": null
+  },
+  {
+    "requested_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/san-bay-tan-son-nhat-vung-tau?direction=inbound",
+    "final_url": "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/san-bay-tan-son-nhat-vung-tau?direction=inbound",
+    "http_status": 200,
+    "emitted_canonical": [
+      "https://xemiennam.vercel.app/tuyen-duong/ba-ria-vung-tau/san-bay-tan-son-nhat-vung-tau"
+    ],
+    "robots": [],
+    "x_robots_tag": null,
+    "sitemap_membership": false,
+    "verified_at": "2026-09-17T06:55:17.112016+00:00",
+    "deployed_commit": null
+  }
+]

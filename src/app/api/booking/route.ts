@@ -18,6 +18,7 @@ const bookingRequestSchema = z.object({
   routeId: z.string().trim().regex(/^\d+$/).optional(),
   vehicleType: z.string().trim().min(1, "Thiếu loại xe."),
   departureDate: z.string().trim().optional().default(""),
+  departureTime: z.union([z.literal(""), z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Giờ khởi hành không hợp lệ.")]).optional().default(""),
   direction: z.enum(["outbound", "inbound"]).optional(),
   packageKey: z.string().trim().max(80).optional(),
   pricingMode: z.enum(["fixed", "contact"]).optional(),
@@ -152,6 +153,8 @@ export async function POST(request: Request) {
       extra_stop: data.intermediateStops.length,
       waiting_minute: data.intermediateStops.reduce((sum, stop) => sum + stop.waitingMinutes, 0),
     },
+    departureDate: data.departureDate,
+    departureTime: data.departureTime,
   });
   const surcharge = priceRules.surcharge;
 
@@ -167,6 +170,7 @@ export async function POST(request: Request) {
   if (pricingContext.length) noteParts.push(`Pricing context: ${pricingContext.join("; ")}.`);
   noteParts.push(`Surcharge: mode=${surcharge.mode}; reason=${surcharge.reason}.`);
   noteParts.push(`Price rules: mode=${priceRules.mode}; reason=${priceRules.reason}.`);
+  noteParts.push(`Price condition: mode=${priceRules.condition.mode}; reason=${priceRules.condition.reason}.`);
   if (data.pickupAddress) noteParts.push(`Điểm đón: ${data.pickupAddress}.`);
   if (data.dropoffAddress) noteParts.push(`Điểm trả: ${data.dropoffAddress}.`);
   if (data.pickupNote) noteParts.push(`Ghi chú điểm đón: ${data.pickupNote}.`);
@@ -214,6 +218,16 @@ export async function POST(request: Request) {
           ...(modifier.ruleKey ? { rule_key: modifier.ruleKey } : {}),
           reason: modifier.reason,
         })),
+        price_condition_resolution_v1: {
+          mode: priceRules.condition.mode,
+          ...(priceRules.condition.amount ? { amount: priceRules.condition.amount } : {}),
+          ...(priceRules.condition.ruleKey ? { rule_key: priceRules.condition.ruleKey } : {}),
+          reason: priceRules.condition.reason,
+          policy_version: priceRules.condition.policyVersion ?? 0,
+          timezone: priceRules.condition.timezone ?? "",
+          departure_date: data.departureDate,
+          departure_time: data.departureTime,
+        },
         ghi_chu: noteParts.join(" | "),
         trang_thai_booking: "moi",
       },
