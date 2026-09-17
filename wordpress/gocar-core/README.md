@@ -89,6 +89,18 @@ Booking V2 now accepts `intermediate_stops_v1` for up to three ordered intermedi
 
 The Contact form, Route Quick Booking and Booking Search quote dialog use the same limits and payload contract. Pricing integration is deferred to Day 34.
 
+## Day 34 scope — v0.7.0
+
+`class-gocar-price-rules.php` adds a version-gated modifier policy without changing Pricing V2 as
+the base-price source of truth. Route rules may cover extra stops, waiting minutes, overtime hours
+and extra kilometres, scoped by direction, vehicle and package. No policy is active by default and
+no operational rate ships with the plugin.
+
+Booking V2 stores a resolution snapshot only after the server combines the exact Pricing V2 row,
+the Day 32 surcharge result and applicable Day 34 modifier rules. Missing, invalid or ambiguous
+rules resolve to `contact`; `contact` and `disabled` never become a zero price. `estimated_total` is
+stored only when every component resolves numerically and is not recognized revenue or quoted price.
+
 ## Content rule
 
 Each Route × Vehicle description must be materially specific to that combination. Editors should describe useful trip context such as group profile, luggage/capacity fit, pickup/dropoff reality or use case. Do not create near-duplicate text by only swapping destination or vehicle names. If no editorial content exists, the frontend may render a safe fallback for UX, but that fallback does not qualify as unique SEO content; indexability is handled separately by the thin-content guard.

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gocar Core
  * Description: Core WordPress contracts and migration helpers for Gocar VN.
- * Version: 0.6.0
+ * Version: 0.7.0
  * Author: Gocar VN
  * Requires at least: 6.5
  * Requires PHP: 8.1
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'GOCAR_CORE_VERSION', '0.6.0' );
+define( 'GOCAR_CORE_VERSION', '0.7.0' );
 define( 'GOCAR_CORE_PATH', plugin_dir_path( __FILE__ ) );
 
 // Phase 1 is intentionally non-mutating: shared normalization only.
@@ -34,3 +34,6 @@ require_once GOCAR_CORE_PATH . 'includes/class-gocar-booking-request.php';
 
 // Day 32: authoritative Location service zones + Booking surcharge result persistence.
 require_once GOCAR_CORE_PATH . 'includes/class-gocar-service-area.php';
+
+// Day 34: version-gated stop/waiting/overtime/extra-distance price rules.
+require_once GOCAR_CORE_PATH . 'includes/class-gocar-price-rules.php';
