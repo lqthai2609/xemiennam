@@ -47,6 +47,20 @@ export type WPRoute = {
       amount?: number | string;
       contact_text?: string;
     }[];
+    /** Day 34: modifier rules are inactive until an operator approves version >= 1. */
+    price_modifier_policy_version?: number | string;
+    price_modifier_rules_v2?: {
+      rule_key?: string;
+      modifier_type?: "extra_stop" | "waiting_minute" | "overtime_hour" | "extra_km";
+      direction?: "outbound" | "inbound";
+      vehicle_id?: number | string;
+      package_key?: string;
+      charge_mode?: "none" | "fixed" | "contact";
+      amount_per_unit?: number | string;
+      included_units?: number | string;
+      increment_units?: number | string;
+      contact_text?: string;
+    }[];
     // Bổ sung Ngày 12 (snippet ID 20) — cần kích hoạt snippet trong wp-admin trước khi có dữ liệu thật.
     tom_tat_ngan?: string;
     diem_nhan_hero?: string;
