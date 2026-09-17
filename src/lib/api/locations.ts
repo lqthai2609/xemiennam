@@ -16,6 +16,9 @@ export interface LocationV2 {
   provinceSlug: string;
   latitude?: number;
   longitude?: number;
+  serviceZoneId?: string;
+  serviceZoneTier?: "center" | "suburb" | "outskirt";
+  serviceAreaStatus: "covered" | "contact" | "outside" | "unverified";
 }
 
 type WPLocation = {
@@ -28,6 +31,9 @@ type WPLocation = {
     province_slug?: string;
     latitude?: number | string;
     longitude?: number | string;
+    service_zone_id?: string;
+    service_zone_tier?: string;
+    service_area_status?: string;
   };
 };
 
@@ -39,6 +45,8 @@ function toNumber(value: unknown): number {
 export function mapWPLocationToLocationV2(wp: WPLocation): LocationV2 {
   const latitude = toNumber(wp.meta?.latitude);
   const longitude = toNumber(wp.meta?.longitude);
+  const tier = wp.meta?.service_zone_tier;
+  const status = wp.meta?.service_area_status;
   return {
     id: wp.id,
     slug: wp.slug,
@@ -48,6 +56,10 @@ export function mapWPLocationToLocationV2(wp: WPLocation): LocationV2 {
     provinceSlug: wp.meta?.province_slug?.trim() || "",
     latitude: latitude || undefined,
     longitude: longitude || undefined,
+    serviceZoneId: wp.meta?.service_zone_id?.trim() || undefined,
+    serviceZoneTier: tier === "center" || tier === "suburb" || tier === "outskirt" ? tier : undefined,
+    serviceAreaStatus:
+      status === "covered" || status === "contact" || status === "outside" ? status : "unverified",
   };
 }
 

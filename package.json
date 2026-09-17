@@ -16,7 +16,8 @@
     "test:indexability": "node --test scripts/gocar-indexability-source.test.mjs",
     "test:schema-pricing": "node --test scripts/gocar-schema-pricing-source.test.mjs",
     "test:footer": "node --test scripts/gocar-footer-source.test.mjs",
-    "test:booking-pickup-dropoff": "node --test scripts/gocar-booking-pickup-dropoff-source.test.mjs"
+    "test:booking-pickup-dropoff": "node --test scripts/gocar-booking-pickup-dropoff-source.test.mjs",
+    "test:service-zones": "node --test scripts/gocar-service-zone-source.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

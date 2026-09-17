@@ -4,6 +4,7 @@ import { z } from "zod";
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
 import { fetchLocationsV2, locationById } from "@/lib/api/locations";
 import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
+import { resolveSurchargeV2 } from "@/lib/api/service-zones";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
 
@@ -34,6 +35,8 @@ type ResolvedRouteContext = {
   originLocationId: number;
   destinationLocationId: number;
   validLocationIds: Set<number>;
+  route: Awaited<ReturnType<typeof fetchRawRoutes>>[number] | undefined;
+  locationsById: ReturnType<typeof locationById>;
 };
 
 async function resolveRouteContext(
@@ -65,6 +68,8 @@ async function resolveRouteContext(
       originLocationId: 0,
       destinationLocationId: 0,
       validLocationIds,
+      route: undefined,
+      locationsById,
     };
   }
 
@@ -74,6 +79,8 @@ async function resolveRouteContext(
     originLocationId: pair.originLocationId,
     destinationLocationId: pair.destinationLocationId,
     validLocationIds,
+    route: match,
+    locationsById,
   };
 }
 
@@ -132,6 +139,14 @@ export async function POST(request: Request) {
     routeContext.validLocationIds,
   );
 
+  const surcharge = resolveSurchargeV2(routeContext.route, {
+    direction,
+    vehicleId,
+    packageKey: data.packageKey,
+    pickup: routeContext.locationsById.get(pickupLocationId),
+    dropoff: routeContext.locationsById.get(dropoffLocationId),
+  });
+
   const noteParts: string[] = [];
   if (routeContext.routeId === null) noteParts.push(`Tuyến quan tâm (chưa khớp CMS): ${data.route}`);
   if (vehicleId === null) noteParts.push(`Loại xe (chưa khớp CMS): ${data.vehicleType}`);
@@ -142,6 +157,7 @@ export async function POST(request: Request) {
     data.pricingMode ? `mode=${data.pricingMode}` : "",
   ].filter(Boolean);
   if (pricingContext.length) noteParts.push(`Pricing context: ${pricingContext.join("; ")}.`);
+  noteParts.push(`Surcharge: mode=${surcharge.mode}; reason=${surcharge.reason}.`);
   if (data.pickupAddress) noteParts.push(`Điểm đón: ${data.pickupAddress}.`);
   if (data.dropoffAddress) noteParts.push(`Điểm trả: ${data.dropoffAddress}.`);
   if (data.pickupNote) noteParts.push(`Ghi chú điểm đón: ${data.pickupNote}.`);
@@ -162,6 +178,11 @@ export async function POST(request: Request) {
         pickup_address: data.pickupAddress,
         dropoff_address: data.dropoffAddress,
         pickup_note: data.pickupNote,
+        pickup_service_zone_id: routeContext.locationsById.get(pickupLocationId)?.serviceZoneId ?? "",
+        dropoff_service_zone_id: routeContext.locationsById.get(dropoffLocationId)?.serviceZoneId ?? "",
+        surcharge_mode: surcharge.mode,
+        ...(surcharge.mode === "fixed" && surcharge.amount ? { surcharge_amount: surcharge.amount } : {}),
+        surcharge_rule_keys: surcharge.matchedRuleKeys,
         ghi_chu: noteParts.join(" | "),
         trang_thai_booking: "moi",
       },
