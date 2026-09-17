@@ -64,6 +64,19 @@ The exact address fields are trip-instance data. They do not replace Route Pair/
 
 Day 31 intentionally does **not** create an authoritative `center/suburb` or surcharge flag. Zone/service-area classification and surcharge evaluation belong to Day 32. This prevents booking capture from forking future Zone/Pricing rules.
 
+## Day 32 scope — v0.5.0
+
+`class-gocar-service-area.php` adds the source-controlled service-area and surcharge contract:
+
+- Location V2 owns `service_zone_id`, `service_zone_tier` (`center/suburb/outskirt`) and `service_area_status`;
+- Route V2 owns the version-gated `zone_surcharge_rules_v2` policy;
+- Booking V2 persists the resolved zone IDs, surcharge mode, positive amount and matched rule keys;
+- missing policy, unverified/missing zones and outside-service-area cases fall back to `contact`;
+- exact pickup/dropoff address text is never used to classify a zone;
+- surcharge remains separate from Pricing V2 base price and from revenue.
+
+No operational zone assignment or fee value is seeded by the plugin. Operators must approve and enter those values before activating a route policy.
+
 ## Content rule
 
 Each Route × Vehicle description must be materially specific to that combination. Editors should describe useful trip context such as group profile, luggage/capacity fit, pickup/dropoff reality or use case. Do not create near-duplicate text by only swapping destination or vehicle names. If no editorial content exists, the frontend may render a safe fallback for UX, but that fallback does not qualify as unique SEO content; indexability is handled separately by the thin-content guard.
