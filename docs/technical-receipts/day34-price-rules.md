@@ -1,6 +1,6 @@
 # Technical Receipt — Day 34 Price Rules Engine
 
-Status: CODE COMPLETE — SEO-003B and production verification pending  
+Status: CODE COMPLETE — SEO-003B CORE ACCEPTED; production verification pending  
 Owner: Core  
 Date: 2026-09-17
 
@@ -26,6 +26,8 @@ These items are carry-over/pre-flight work, not architecture blockers for source
 - Derived stop and waiting quantities server-side; no private address text participates in resolution.
 - Persisted Booking V2 audit snapshots and upgraded Gocar Core to 0.7.0.
 - Added the Core input/acceptance contract for SEO-003B Price × Vehicle × Modifier.
+- Accepted SEO-003B v1.0: 15 parent clusters and 120 Price × Vehicle × Modifier rows, with no new
+  URL, invented operational value or modifier landing page.
 
 ## Verification
 
@@ -50,12 +52,11 @@ These items are carry-over/pre-flight work, not architecture blockers for source
 
 ## Pending
 
-1. Organic Growth must return SEO-003B covering all 15 deferred price clusters.
-2. Core must review/accept SEO-003B before marking DEP-005 implemented.
-3. Package and deploy Gocar Core 0.7.0.
-4. Enter only operator-approved modifier policies and rules.
-5. Verify REST read-back and safe fixed/contact/ambiguous booking fixtures, then remove fixtures.
-6. Complete inherited Day 32–33 production checks.
+1. Package and deploy Gocar Core 0.7.0.
+2. Enter only operator-approved modifier policies and rules.
+3. Verify REST read-back and safe fixed/contact/ambiguous booking fixtures, then remove fixtures.
+4. Complete inherited Day 32–33 production checks.
+5. Carry D34-01 through D34-09 to their assigned Day 35–41 owners and gates.
 
-Day 34 is not production verified and is not closed until SEO-003B is accepted and the production
-gates are recorded.
+Day 34 is not production verified. The source/specification slice is accepted; production gates remain
+recorded carry-over work.
