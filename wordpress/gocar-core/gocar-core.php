@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gocar Core
  * Description: Core WordPress contracts and migration helpers for Gocar VN.
- * Version: 0.5.0
+ * Version: 0.6.0
  * Author: Gocar VN
  * Requires at least: 6.5
  * Requires PHP: 8.1
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'GOCAR_CORE_VERSION', '0.5.0' );
+define( 'GOCAR_CORE_VERSION', '0.6.0' );
 define( 'GOCAR_CORE_PATH', plugin_dir_path( __FILE__ ) );
 
 // Phase 1 is intentionally non-mutating: shared normalization only.

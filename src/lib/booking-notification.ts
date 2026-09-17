@@ -1,4 +1,5 @@
 import { SITE_NAME } from "@/lib/site-config";
+import { formatIntermediateStops, type IntermediateStop } from "@/lib/booking-stops";
 
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 const NOTIFICATION_TIMEOUT_MS = 8_000;
@@ -13,6 +14,7 @@ export interface BookingNotificationData {
   pickupAddress: string;
   dropoffAddress: string;
   pickupNote: string;
+  intermediateStops: IntermediateStop[];
   note: string;
 }
 
@@ -68,6 +70,7 @@ export async function sendBookingNotification(
         "Điểm đón thực tế": data.pickupAddress || "Khách chưa nhập",
         "Điểm trả thực tế": data.dropoffAddress || "Khách chưa nhập",
         "Ghi chú điểm đón": data.pickupNote || "Không có",
+        "Điểm dừng trung gian": formatIntermediateStops(data.intermediateStops),
         "Loại xe": data.vehicleType,
         "Ngày đi": data.departureDate || "Khách chưa chọn",
         "Ghi chú chung": data.note || "Không có",

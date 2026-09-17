@@ -77,6 +77,18 @@ Day 31 intentionally does **not** create an authoritative `center/suburb` or sur
 
 No operational zone assignment or fee value is seeded by the plugin. Operators must approve and enter those values before activating a route policy.
 
+## Day 33 scope — v0.6.0
+
+Booking V2 now accepts `intermediate_stops_v1` for up to three ordered intermediate stops:
+
+- each stop stores an exact trip-instance address and waiting time in minutes;
+- the server rebuilds one-based sequential order and sanitizes every row;
+- old clients may omit the array and keep the existing booking behavior;
+- exact stop addresses remain private and are not Location V2, Route/Direction, SEO or analytics entities;
+- Day 33 does not calculate extra-stop, waiting, overtime or distance pricing.
+
+The Contact form, Route Quick Booking and Booking Search quote dialog use the same limits and payload contract. Pricing integration is deferred to Day 34.
+
 ## Content rule
 
 Each Route × Vehicle description must be materially specific to that combination. Editors should describe useful trip context such as group profile, luggage/capacity fit, pickup/dropoff reality or use case. Do not create near-duplicate text by only swapping destination or vehicle names. If no editorial content exists, the frontend may render a safe fallback for UX, but that fallback does not qualify as unique SEO content; indexability is handled separately by the thin-content guard.
@@ -113,4 +125,6 @@ The apply command creates missing `location` posts with `location_type=locality`
 8. Verify an Airport relation can be resolved by Location ID and that posts with no structured relation are not injected into Province/Vehicle/Airport sections.
 9. For Day 31, verify `booking_request` REST accepts and returns the five pickup/dropoff meta keys without changing Route/Pricing fields.
 10. Submit one representative booking and verify exact pickup/dropoff are persisted while the canonical Route + Direction remain unchanged.
-11. Continue migrating WPCode contracts into this plugin one module at a time only after acceptance tests.
+11. For Day 33, submit bookings with zero, one and three intermediate stops; verify order, address and waiting minutes round-trip through REST.
+12. Confirm a fourth stop and invalid waiting values are rejected by the frontend/API boundary and capped by WordPress defense-in-depth.
+13. Continue migrating WPCode contracts into this plugin one module at a time only after acceptance tests.
