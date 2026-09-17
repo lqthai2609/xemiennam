@@ -1,3 +1,4 @@
+import { resolveCondition, type PriceConditionResolution } from "./price-conditions";
 import type { WPRoute } from "./raw";
 import type { LocationV2 } from "./locations";
 import {
@@ -6,7 +7,7 @@ import {
   normalizePricingPackageKey,
   type PricingMode,
 } from "./pricing-v2";
-import type { RouteDirectionKey } from "./route-directions";
+import { mapWPRouteToRoutePairV2, type RouteDirectionKey } from "./route-directions";
 import { resolveSurchargeV2, type SurchargeResolution } from "./service-zones";
 
 export const PRICE_MODIFIER_TYPES = ["extra_stop", "waiting_minute", "overtime_hour", "extra_km"] as const;
@@ -21,6 +22,9 @@ export interface PriceRuleContext {
   pickup: LocationV2 | undefined;
   dropoff: LocationV2 | undefined;
   quantities?: Partial<Record<PriceModifierType, number>>;
+  /** Local service date/time. No timezone conversion is attempted. */
+  departureDate?: string;
+  departureTime?: string;
 }
 
 export interface PriceModifierResolution {
@@ -39,13 +43,13 @@ export interface PriceRulesResolution {
   basePrice?: number;
   surcharge: SurchargeResolution;
   modifiers: PriceModifierResolution[];
+  condition: PriceConditionResolution;
   modifierAmount?: number;
   estimatedTotal?: number;
-  reason: "fixed" | "base_contact" | "base_disabled" | "base_missing" | "surcharge_contact" | "modifier_contact";
+  reason: "fixed" | "base_contact" | "base_disabled" | "base_missing" | "direction_disabled" | "surcharge_contact" | "modifier_contact" | "condition_contact";
 }
 
 type ModifierRule = NonNullable<WPRoute["meta"]["price_modifier_rules_v2"]>[number];
-
 function nonNegative(value: unknown): number | undefined {
   const parsed = typeof value === "number" ? value : Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
@@ -122,7 +126,7 @@ export function resolvePriceRulesV2(context: PriceRuleContext): PriceRulesResolu
   const requestedPackageKey = context.packageKey?.trim();
   const packageKey = requestedPackageKey ? normalizePricingPackageKey(requestedPackageKey) : undefined;
   const base = context.route && context.vehicleId && packageKey
-    ? getPackageV2(mapWPRouteToPricingPackagesV2(context.route), {
+    ? getPackageV2(mapWPRouteToPricingPackagesV2(context.route).filter((row) => row.source === "v2"), {
         routeId: String(context.route.id),
         routeSlug: context.route.slug,
         direction: context.direction,
@@ -142,25 +146,35 @@ export function resolvePriceRulesV2(context: PriceRuleContext): PriceRulesResolu
   const modifiers = PRICE_MODIFIER_TYPES.map((type) =>
     resolveModifier(type, normalizedQuantity(context.quantities?.[type]), { ...context, packageKey }),
   );
+  const condition = resolveCondition(context, packageKey);
 
-  if (!base) return { mode: "contact", currency, surcharge, modifiers, reason: "base_missing" };
-  if (base.mode === "disabled") return { mode: "disabled", currency, surcharge, modifiers, reason: "base_disabled" };
-  if (base.mode !== "fixed" || !base.price) return { mode: "contact", currency, surcharge, modifiers, reason: "base_contact" };
-  if (surcharge.mode === "contact") return { mode: "contact", currency, basePrice: base.price, surcharge, modifiers, reason: "surcharge_contact" };
-  if (modifiers.some((item) => item.mode === "contact")) {
-    return { mode: "contact", currency, basePrice: base.price, surcharge, modifiers, reason: "modifier_contact" };
+  if (context.route && !mapWPRouteToRoutePairV2(context.route)[context.direction].enabled) {
+    return { mode: "disabled", currency, surcharge, modifiers, condition, reason: "direction_disabled" };
   }
+  if (!base) return { mode: "contact", currency, surcharge, modifiers, condition, reason: "base_missing" };
+  if (base.mode === "disabled") return { mode: "disabled", currency, surcharge, modifiers, condition, reason: "base_disabled" };
+  if (base.mode !== "fixed" || !base.price) return { mode: "contact", currency, surcharge, modifiers, condition, reason: "base_contact" };
+  if (surcharge.mode === "contact") return { mode: "contact", currency, basePrice: base.price, surcharge, modifiers, condition, reason: "surcharge_contact" };
+  if (modifiers.some((item) => item.mode === "contact")) {
+    return { mode: "contact", currency, basePrice: base.price, surcharge, modifiers, condition, reason: "modifier_contact" };
+  }
+  if (condition.mode === "contact") return { mode: "contact", currency, basePrice: base.price, surcharge, modifiers, condition, reason: "condition_contact" };
 
   const modifierAmount = modifiers.reduce((sum, item) => sum + (item.amount ?? 0), 0);
   const surchargeAmount = surcharge.mode === "fixed" ? surcharge.amount ?? 0 : 0;
+  const conditionAmount = condition.mode === "fixed" ? condition.amount ?? 0 : 0;
+  if (!Number.isFinite(base.price + surchargeAmount + modifierAmount + conditionAmount) || base.price + surchargeAmount + modifierAmount + conditionAmount > Number.MAX_SAFE_INTEGER) {
+    return { mode: "contact", currency, basePrice: base.price, surcharge, modifiers, condition, reason: "condition_contact" };
+  }
   return {
     mode: "fixed",
     currency,
     basePrice: base.price,
     surcharge,
     modifiers,
+    condition,
     modifierAmount,
-    estimatedTotal: base.price + surchargeAmount + modifierAmount,
+    estimatedTotal: base.price + surchargeAmount + modifierAmount + conditionAmount,
     reason: "fixed",
   };
 }

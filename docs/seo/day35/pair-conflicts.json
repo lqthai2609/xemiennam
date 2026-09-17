@@ -1,0 +1,188 @@
+[
+  {
+    "endpoint_ids": [
+      9118,
+      9119
+    ],
+    "routes": [
+      {
+        "route_id": 9095,
+        "slug": "tp-hcm-di-moc-bai",
+        "canonical_path": "/tuyen-duong/tay-ninh/tp-hcm-di-moc-bai"
+      },
+      {
+        "route_id": 9026,
+        "slug": "tp-hcm-cua-khau-moc-bai",
+        "canonical_path": "/tuyen-duong/tay-ninh/tp-hcm-cua-khau-moc-bai"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  },
+  {
+    "endpoint_ids": [
+      9118,
+      9120
+    ],
+    "routes": [
+      {
+        "route_id": 9079,
+        "slug": "tp-hcm-da-lat-lam-dong-3n2d",
+        "canonical_path": "/tuyen-duong/da-lat/tp-hcm-da-lat-lam-dong-3n2d"
+      },
+      {
+        "route_id": 48,
+        "slug": "tp-hcm-da-lat",
+        "canonical_path": "/tuyen-duong/da-lat/tp-hcm-da-lat"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  },
+  {
+    "endpoint_ids": [
+      9118,
+      9123
+    ],
+    "routes": [
+      {
+        "route_id": 9076,
+        "slug": "tp-hcm-can-tho-2-ngay-1-dem",
+        "canonical_path": "/tuyen-duong/can-tho/tp-hcm-can-tho-2-ngay-1-dem"
+      },
+      {
+        "route_id": 9075,
+        "slug": "tp-hcm-can-tho-1-ngay",
+        "canonical_path": "/tuyen-duong/can-tho/tp-hcm-can-tho-1-ngay"
+      },
+      {
+        "route_id": 44,
+        "slug": "tp-hcm-can-tho",
+        "canonical_path": "/tuyen-duong/can-tho/tp-hcm-can-tho"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  },
+  {
+    "endpoint_ids": [
+      9118,
+      9138
+    ],
+    "routes": [
+      {
+        "route_id": 9059,
+        "slug": "tp-hcm-ho-coc-2-ngay-1-dem",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-ho-coc-2-ngay-1-dem"
+      },
+      {
+        "route_id": 9058,
+        "slug": "tp-hcm-ho-coc-1-ngay",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-ho-coc-1-ngay"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  },
+  {
+    "endpoint_ids": [
+      9118,
+      9139
+    ],
+    "routes": [
+      {
+        "route_id": 9057,
+        "slug": "tp-hcm-ho-tram-2-ngay-1-dem",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-ho-tram-2-ngay-1-dem"
+      },
+      {
+        "route_id": 9056,
+        "slug": "tp-hcm-ho-tram-1-ngay",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-ho-tram-1-ngay"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  },
+  {
+    "endpoint_ids": [
+      9115,
+      9118
+    ],
+    "routes": [
+      {
+        "route_id": 9055,
+        "slug": "tp-hcm-tp-vung-tau-2-ngay-1-dem",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-tp-vung-tau-2-ngay-1-dem"
+      },
+      {
+        "route_id": 9054,
+        "slug": "tp-hcm-tp-vung-tau-1-ngay",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-tp-vung-tau-1-ngay"
+      },
+      {
+        "route_id": 41,
+        "slug": "tp-hcm-vung-tau",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-vung-tau"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  },
+  {
+    "endpoint_ids": [
+      9118,
+      9140
+    ],
+    "routes": [
+      {
+        "route_id": 9053,
+        "slug": "tp-hcm-long-hai-2-ngay-1-dem",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-long-hai-2-ngay-1-dem"
+      },
+      {
+        "route_id": 9052,
+        "slug": "tp-hcm-long-hai-1-ngay",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-long-hai-1-ngay"
+      },
+      {
+        "route_id": 42,
+        "slug": "tp-hcm-long-hai",
+        "canonical_path": "/tuyen-duong/ba-ria-vung-tau/tp-hcm-long-hai"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  },
+  {
+    "endpoint_ids": [
+      9118,
+      9144
+    ],
+    "routes": [
+      {
+        "route_id": 9048,
+        "slug": "tp-hcm-nam-cat-tien-2-ngay",
+        "canonical_path": "/tuyen-duong/dong-nai/tp-hcm-nam-cat-tien-2-ngay"
+      },
+      {
+        "route_id": 9047,
+        "slug": "tp-hcm-nam-cat-tien-1-ngay",
+        "canonical_path": "/tuyen-duong/dong-nai/tp-hcm-nam-cat-tien-1-ngay"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  },
+  {
+    "endpoint_ids": [
+      9118,
+      9184
+    ],
+    "routes": [
+      {
+        "route_id": 9006,
+        "slug": "tp-hcm-can-gio-2-ngay-1-dem",
+        "canonical_path": "/tuyen-duong/tphcm-noi-thanh/tp-hcm-can-gio-2-ngay-1-dem"
+      },
+      {
+        "route_id": 9005,
+        "slug": "tp-hcm-can-gio-1-ngay",
+        "canonical_path": "/tuyen-duong/tphcm-noi-thanh/tp-hcm-can-gio-1-ngay"
+      }
+    ],
+    "disposition": "REVIEW_REQUIRED; do not choose, redirect, merge or approve new reverse mapping"
+  }
+]

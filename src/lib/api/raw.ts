@@ -61,6 +61,27 @@ export type WPRoute = {
       increment_units?: number | string;
       contact_text?: string;
     }[];
+    /** Day 35: operator-approved date/time/package conditions; inactive until version >= 1. */
+    price_condition_policy_version?: number | string;
+    price_condition_timezone?: string;
+    price_condition_rules_v2?: {
+      rule_key?: string;
+      priority?: number | string;
+      direction?: "outbound" | "inbound";
+      vehicle_id?: number | string;
+      package_key?: string;
+      days_of_week?: (number | string)[];
+      weekend_only?: boolean;
+      weekend_days?: (number | string)[];
+      holiday_dates?: string[];
+      start_date?: string;
+      end_date?: string;
+      start_time?: string;
+      end_time?: string;
+      charge_mode?: "none" | "fixed" | "contact";
+      amount?: number | string;
+      contact_text?: string;
+    }[];
     // Bổ sung Ngày 12 (snippet ID 20) — cần kích hoạt snippet trong wp-admin trước khi có dữ liệu thật.
     tom_tat_ngan?: string;
     diem_nhan_hero?: string;

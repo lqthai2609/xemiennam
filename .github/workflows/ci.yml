@@ -97,6 +97,15 @@ jobs:
       - name: Multi-stop booking regression guard
         run: npm run test:multi-stop
 
+      - name: Price rules regression guard
+        run: npm run test:price-rules
+
+      - name: Price conditions regression guard
+        run: npm run test:price-conditions
+
+      - name: SEO URL map behavioral fixtures
+        run: npm run test:seo-url-map
+
       - name: Booking search regression guard
         run: npm run test:booking-search
 

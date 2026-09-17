@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - "wordpress/gocar-core/**"
+      - "scripts/gocar-price-conditions-php.test.php"
       - ".github/workflows/gocar-core-package.yml"
   push:
     branches:
       - main
     paths:
       - "wordpress/gocar-core/**"
+      - "scripts/gocar-price-conditions-php.test.php"
       - ".github/workflows/gocar-core-package.yml"
   workflow_dispatch:
 
@@ -37,6 +39,9 @@ jobs:
         run: |
           set -euo pipefail
           find wordpress/gocar-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Condition sanitizer behavioral tests
+        run: php scripts/gocar-price-conditions-php.test.php
 
       - name: Build plugin ZIP
         shell: bash

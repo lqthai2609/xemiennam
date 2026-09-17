@@ -101,6 +101,16 @@ the Day 32 surcharge result and applicable Day 34 modifier rules. Missing, inval
 rules resolve to `contact`; `contact` and `disabled` never become a zero price. `estimated_total` is
 stored only when every component resolves numerically and is not recognized revenue or quoted price.
 
+## Day 35 scope — v0.8.0
+
+The existing Price Rules Engine now supports a separate version-gated condition policy for approved
+local date/time, weekday/weekend, holiday and package rules. The evaluator uses priority and specificity,
+requires an explicit `none` rule for zero adjustment, and returns `contact` for inactive, missing,
+invalid or ambiguous states. No rate, factor, holiday date or effective window ships with the plugin.
+Temporal rules require an Operations-approved IANA timezone. Weekend rules require explicit
+weekend membership; the plugin does not infer Saturday/Sunday. Booking V2 stores the server-derived
+condition trace, policy version and timezone separately from the Pricing V2 base snapshot.
+
 ## Content rule
 
 Each Route × Vehicle description must be materially specific to that combination. Editors should describe useful trip context such as group profile, luggage/capacity fit, pickup/dropoff reality or use case. Do not create near-duplicate text by only swapping destination or vehicle names. If no editorial content exists, the frontend may render a safe fallback for UX, but that fallback does not qualify as unique SEO content; indexability is handled separately by the thin-content guard.
