@@ -4,6 +4,8 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, LoaderCircle, MapPin, Plane, Repeat2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { MultiStopFields } from "@/components/multi-stop-fields";
+import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
 import { routeHref, type Route, type RoutePricingDirectionKey } from "@/types/route";
 
 type BookingSearchVariant = "default" | "hero" | "compact";
@@ -333,6 +335,8 @@ function JourneyQuoteDialog({
   const [pickupAddress, setPickupAddress] = useState("");
   const [dropoffAddress, setDropoffAddress] = useState("");
   const [pickupNote, setPickupNote] = useState("");
+  const [intermediateStops, setIntermediateStops] = useState<IntermediateStopInput[]>([]);
+  const [intermediateStopErrors, setIntermediateStopErrors] = useState<MultiStopFieldsError[]>([]);
   const [pickupAddressError, setPickupAddressError] = useState("");
   const [dropoffAddressError, setDropoffAddressError] = useState("");
   const [pickupNoteError, setPickupNoteError] = useState("");
@@ -357,6 +361,7 @@ function JourneyQuoteDialog({
     setPickupAddressError("");
     setDropoffAddressError("");
     setPickupNoteError("");
+    setIntermediateStopErrors([]);
 
     const normalizedPickupAddress = pickupAddress.trim();
     const normalizedDropoffAddress = dropoffAddress.trim();
@@ -389,7 +394,20 @@ function JourneyQuoteDialog({
       setPickupNoteError("Lưu ý điểm đón tối đa 300 ký tự.");
       hasAddressError = true;
     }
-    if (hasAddressError) return;
+    const parsedStops = intermediateStopsInputSchema.safeParse(intermediateStops);
+    if (!parsedStops.success) {
+      const nextErrors: MultiStopFieldsError[] = [];
+      for (const issue of parsedStops.error.issues) {
+        const index = typeof issue.path[0] === "number" ? issue.path[0] : -1;
+        const field = issue.path[1];
+        if (index < 0 || (field !== "address" && field !== "waitingMinutes")) continue;
+        nextErrors[index] ??= {};
+        nextErrors[index][field] = { message: issue.message };
+      }
+      setIntermediateStopErrors(nextErrors);
+      hasAddressError = true;
+    }
+    if (hasAddressError || !parsedStops.success) return;
 
     setIsSubmitting(true);
     try {
@@ -416,6 +434,7 @@ function JourneyQuoteDialog({
           pickupAddress: normalizedPickupAddress,
           dropoffAddress: normalizedDropoffAddress,
           pickupNote: normalizedPickupNote,
+          intermediateStops: parsedStops.data,
           direction: journey?.direction,
           pricingMode: "contact",
           note: noteParts.join(" "),
@@ -538,6 +557,14 @@ function JourneyQuoteDialog({
                 />
                 {pickupNoteError && <p className="m-0 text-sm text-destructive" role="alert">{pickupNoteError}</p>}
               </label>
+              <MultiStopFields
+                stops={intermediateStops}
+                onChange={(stops) => {
+                  setIntermediateStops(stops);
+                  if (intermediateStopErrors.length) setIntermediateStopErrors([]);
+                }}
+                errors={intermediateStopErrors}
+              />
               {error && <p className="m-0 text-sm text-destructive" role="alert">{error}</p>}
               <Button type="submit" disabled={isSubmitting} className="w-full">
                 {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
@@ -550,6 +577,11 @@ function JourneyQuoteDialog({
     </div>
   );
 }
+
+type MultiStopFieldsError = {
+  address?: { message?: string };
+  waitingMinutes?: { message?: string };
+};
 
 /**
  * Entry point chung cho booking funnel.

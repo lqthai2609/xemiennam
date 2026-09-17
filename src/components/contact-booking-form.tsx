@@ -2,12 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { MultiStopFields } from "@/components/multi-stop-fields";
 import { trackBookingLead } from "@/lib/analytics";
+import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
 import { SITE_NAME } from "@/lib/site-config";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
@@ -32,6 +34,7 @@ const bookingSchema = z.object({
     .min(1, "Vui lòng nhập điểm trả cụ thể.")
     .max(240, "Điểm trả tối đa 240 ký tự."),
   pickupNote: z.string().trim().max(300, "Lưu ý điểm đón tối đa 300 ký tự.").optional(),
+  intermediateStops: intermediateStopsInputSchema,
   note: z.string().trim().max(500, "Ghi chú tối đa 500 ký tự.").optional(),
 });
 
@@ -71,6 +74,8 @@ export function ContactBookingForm({
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
+    control,
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -80,9 +85,11 @@ export function ContactBookingForm({
       pickupAddress: "",
       dropoffAddress: "",
       pickupNote: "",
+      intermediateStops: [],
       note: "",
     },
   });
+  const intermediateStops = useWatch({ control, name: "intermediateStops" }) ?? [];
 
   const submitForm = async (data: BookingFormData) => {
     try {
@@ -93,7 +100,7 @@ export function ContactBookingForm({
       toast.success("Đã nhận thông tin đặt xe", {
         description: `${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
       });
-      reset({ ...data, fullName: "", phone: "", pickupAddress: "", dropoffAddress: "", pickupNote: "", note: "" });
+      reset({ ...data, fullName: "", phone: "", pickupAddress: "", dropoffAddress: "", pickupNote: "", intermediateStops: [], note: "" });
     } catch {
       toast.error("Gửi thông tin chưa thành công", {
         description: `Vui lòng thử lại hoặc gọi trực tiếp cho ${SITE_NAME}.`,
@@ -144,6 +151,11 @@ export function ContactBookingForm({
           <input {...register("dropoffAddress")} maxLength={240} aria-invalid={!!errors.dropoffAddress} placeholder="Số nhà, tên đường, phường/xã..." className="form-control" />
           <FieldError message={errors.dropoffAddress?.message} />
         </label>
+        <MultiStopFields
+          stops={intermediateStops as IntermediateStopInput[]}
+          onChange={(stops) => setValue("intermediateStops", stops, { shouldDirty: true, shouldValidate: true })}
+          errors={errors.intermediateStops as MultiStopFieldsError[] | undefined}
+        />
         <label className="flex flex-col gap-2 text-sm font-semibold text-foreground sm:col-span-2">
           Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
           <textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." className="form-control min-h-24 resize-y" />
@@ -164,5 +176,10 @@ export function ContactBookingForm({
 }
 
 export { bookingSchema };
+
+type MultiStopFieldsError = {
+  address?: { message?: string };
+  waitingMinutes?: { message?: string };
+};
 
 export default ContactBookingForm;

@@ -12,6 +12,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Gocar_Booking_Request {
+    private const MAX_INTERMEDIATE_STOPS = 3;
+    private const MAX_STOP_ADDRESS_LENGTH = 240;
+    private const MAX_WAITING_MINUTES = 1440;
+
     /** @var array<string, array<string, mixed>> */
     private const META_FIELDS = array(
         'pickup_location_id' => array(
@@ -67,6 +71,69 @@ final class Gocar_Booking_Request {
                 )
             );
         }
+
+        if ( ! registered_meta_key_exists( 'post', 'intermediate_stops_v1', 'booking_request' ) ) {
+            register_post_meta(
+                'booking_request',
+                'intermediate_stops_v1',
+                array(
+                    'single'            => true,
+                    'type'              => 'array',
+                    'default'           => array(),
+                    'show_in_rest'      => array(
+                        'schema' => array(
+                            'type'  => 'array',
+                            'items' => array(
+                                'type'                 => 'object',
+                                'additionalProperties' => false,
+                                'properties'           => array(
+                                    'order'           => array( 'type' => 'integer' ),
+                                    'address'         => array( 'type' => 'string' ),
+                                    'waiting_minutes' => array( 'type' => 'integer' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                    'sanitize_callback' => array( self::class, 'sanitize_intermediate_stops' ),
+                    'auth_callback'     => static function ( bool $allowed, string $meta_key, int $post_id ): bool {
+                        unset( $allowed, $meta_key );
+                        return current_user_can( 'edit_post', $post_id );
+                    },
+                )
+            );
+        }
+    }
+
+    public static function sanitize_intermediate_stops( $rows ): array {
+        if ( ! is_array( $rows ) ) {
+            return array();
+        }
+
+        $sanitized = array();
+        foreach ( array_slice( array_values( $rows ), 0, self::MAX_INTERMEDIATE_STOPS ) as $row ) {
+            if ( ! is_array( $row ) ) {
+                continue;
+            }
+
+            $address = sanitize_text_field( (string) ( $row['address'] ?? '' ) );
+            $address = mb_substr( trim( $address ), 0, self::MAX_STOP_ADDRESS_LENGTH );
+            if ( '' === $address ) {
+                continue;
+            }
+
+            $waiting_minutes = min(
+                self::MAX_WAITING_MINUTES,
+                max( 0, absint( $row['waiting_minutes'] ?? 0 ) )
+            );
+
+            $sanitized[] = array(
+                'order'           => count( $sanitized ) + 1,
+                'address'         => $address,
+                'waiting_minutes' => $waiting_minutes,
+            );
+        }
+
+        return $sanitized;
     }
 }
 

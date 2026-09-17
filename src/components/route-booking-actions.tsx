@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, MessageCircle, Phone, X } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { MultiStopFields } from "@/components/multi-stop-fields";
 import { getZaloChatLink } from "@/lib/zalo";
 import { trackBookingLead } from "@/lib/analytics";
+import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
 import { SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import type { RoutePricingDirectionKey, RoutePricingMode } from "@/types/route";
 
@@ -33,6 +35,7 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
         .min(1, "Vui lòng nhập điểm trả cụ thể.")
         .max(240, "Điểm trả tối đa 240 ký tự."),
       pickupNote: z.string().trim().max(300, "Lưu ý điểm đón tối đa 300 ký tự.").optional(),
+      intermediateStops: intermediateStopsInputSchema,
       departureAt: z.string().optional(),
       flightNumber: z.string().trim().max(40, "Số hiệu chuyến bay tối đa 40 ký tự.").optional(),
       landingAt: z.string().optional(),
@@ -140,7 +143,8 @@ function QuickBookingDialog({
   const {
     register,
     handleSubmit,
-    watch,
+    setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<QuickBookingData>({
     resolver: zodResolver(schema),
@@ -148,13 +152,15 @@ function QuickBookingDialog({
       passengerCount: airportContext ? "1" : "",
       luggageCount: airportContext ? "0" : "",
       requestNameplate: false,
+      intermediateStops: [],
     },
   });
 
   const visibleRoute = displayRoute || route;
   const isQuote = pricingMode === "contact";
   const visiblePrice = isQuote ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
-  const requestNameplate = watch("requestNameplate");
+  const requestNameplate = useWatch({ control, name: "requestNameplate" });
+  const intermediateStops = useWatch({ control, name: "intermediateStops" }) ?? [];
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -209,6 +215,7 @@ function QuickBookingDialog({
           pickupAddress: data.pickupAddress,
           dropoffAddress: data.dropoffAddress,
           pickupNote: data.pickupNote || "",
+          intermediateStops: data.intermediateStops,
           departureDate,
           direction,
           packageKey,
@@ -312,6 +319,11 @@ function QuickBookingDialog({
               <textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />
               <FieldError message={errors.pickupNote?.message} />
             </label>
+            <MultiStopFields
+              stops={intermediateStops as IntermediateStopInput[]}
+              onChange={(stops) => setValue("intermediateStops", stops, { shouldDirty: true, shouldValidate: true })}
+              errors={errors.intermediateStops as MultiStopFieldsError[] | undefined}
+            />
           </fieldset>
 
           {!airportContext && (
@@ -473,6 +485,11 @@ function QuickBookingDialog({
     </div>
   );
 }
+
+type MultiStopFieldsError = {
+  address?: { message?: string };
+  waitingMinutes?: { message?: string };
+};
 
 export function RouteBookingActions({
   route,

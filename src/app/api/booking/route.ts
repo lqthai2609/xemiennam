@@ -7,6 +7,7 @@ import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
 import { resolveSurchargeV2 } from "@/lib/api/service-zones";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
+import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
@@ -25,6 +26,7 @@ const bookingRequestSchema = z.object({
   pickupAddress: z.string().trim().max(240, "Địa chỉ đón tối đa 240 ký tự.").optional().default(""),
   dropoffAddress: z.string().trim().max(240, "Địa chỉ trả tối đa 240 ký tự.").optional().default(""),
   pickupNote: z.string().trim().max(300, "Ghi chú điểm đón tối đa 300 ký tự.").optional().default(""),
+  intermediateStops: intermediateStopsInputSchema.optional().default([]),
   note: z.string().trim().max(500).optional().default(""),
 });
 
@@ -161,6 +163,9 @@ export async function POST(request: Request) {
   if (data.pickupAddress) noteParts.push(`Điểm đón: ${data.pickupAddress}.`);
   if (data.dropoffAddress) noteParts.push(`Điểm trả: ${data.dropoffAddress}.`);
   if (data.pickupNote) noteParts.push(`Ghi chú điểm đón: ${data.pickupNote}.`);
+  if (data.intermediateStops.length) {
+    noteParts.push(`Điểm dừng trung gian: ${formatIntermediateStops(data.intermediateStops)}.`);
+  }
   if (data.note) noteParts.push(data.note);
 
   const result = await wpAuthedFetch<{ id: number }>("/booking_request", {
@@ -178,6 +183,11 @@ export async function POST(request: Request) {
         pickup_address: data.pickupAddress,
         dropoff_address: data.dropoffAddress,
         pickup_note: data.pickupNote,
+        intermediate_stops_v1: data.intermediateStops.map((stop, index) => ({
+          order: index + 1,
+          address: stop.address,
+          waiting_minutes: stop.waitingMinutes,
+        })),
         pickup_service_zone_id: routeContext.locationsById.get(pickupLocationId)?.serviceZoneId ?? "",
         dropoff_service_zone_id: routeContext.locationsById.get(dropoffLocationId)?.serviceZoneId ?? "",
         surcharge_mode: surcharge.mode,
@@ -203,6 +213,7 @@ export async function POST(request: Request) {
     pickupAddress: data.pickupAddress,
     dropoffAddress: data.dropoffAddress,
     pickupNote: data.pickupNote,
+    intermediateStops: data.intermediateStops,
     note: data.note,
   });
 
