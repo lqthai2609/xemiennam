@@ -4,8 +4,10 @@ import { z } from "zod";
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
 import { fetchLocationsV2, locationById } from "@/lib/api/locations";
 import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
+import { resolveSurchargeV2 } from "@/lib/api/service-zones";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
+import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
@@ -24,6 +26,7 @@ const bookingRequestSchema = z.object({
   pickupAddress: z.string().trim().max(240, "Địa chỉ đón tối đa 240 ký tự.").optional().default(""),
   dropoffAddress: z.string().trim().max(240, "Địa chỉ trả tối đa 240 ký tự.").optional().default(""),
   pickupNote: z.string().trim().max(300, "Ghi chú điểm đón tối đa 300 ký tự.").optional().default(""),
+  intermediateStops: intermediateStopsInputSchema.optional().default([]),
   note: z.string().trim().max(500).optional().default(""),
 });
 
@@ -34,6 +37,8 @@ type ResolvedRouteContext = {
   originLocationId: number;
   destinationLocationId: number;
   validLocationIds: Set<number>;
+  route: Awaited<ReturnType<typeof fetchRawRoutes>>[number] | undefined;
+  locationsById: ReturnType<typeof locationById>;
 };
 
 async function resolveRouteContext(
@@ -65,6 +70,8 @@ async function resolveRouteContext(
       originLocationId: 0,
       destinationLocationId: 0,
       validLocationIds,
+      route: undefined,
+      locationsById,
     };
   }
 
@@ -74,6 +81,8 @@ async function resolveRouteContext(
     originLocationId: pair.originLocationId,
     destinationLocationId: pair.destinationLocationId,
     validLocationIds,
+    route: match,
+    locationsById,
   };
 }
 
@@ -132,6 +141,14 @@ export async function POST(request: Request) {
     routeContext.validLocationIds,
   );
 
+  const surcharge = resolveSurchargeV2(routeContext.route, {
+    direction,
+    vehicleId,
+    packageKey: data.packageKey,
+    pickup: routeContext.locationsById.get(pickupLocationId),
+    dropoff: routeContext.locationsById.get(dropoffLocationId),
+  });
+
   const noteParts: string[] = [];
   if (routeContext.routeId === null) noteParts.push(`Tuyến quan tâm (chưa khớp CMS): ${data.route}`);
   if (vehicleId === null) noteParts.push(`Loại xe (chưa khớp CMS): ${data.vehicleType}`);
@@ -142,9 +159,13 @@ export async function POST(request: Request) {
     data.pricingMode ? `mode=${data.pricingMode}` : "",
   ].filter(Boolean);
   if (pricingContext.length) noteParts.push(`Pricing context: ${pricingContext.join("; ")}.`);
+  noteParts.push(`Surcharge: mode=${surcharge.mode}; reason=${surcharge.reason}.`);
   if (data.pickupAddress) noteParts.push(`Điểm đón: ${data.pickupAddress}.`);
   if (data.dropoffAddress) noteParts.push(`Điểm trả: ${data.dropoffAddress}.`);
   if (data.pickupNote) noteParts.push(`Ghi chú điểm đón: ${data.pickupNote}.`);
+  if (data.intermediateStops.length) {
+    noteParts.push(`Điểm dừng trung gian: ${formatIntermediateStops(data.intermediateStops)}.`);
+  }
   if (data.note) noteParts.push(data.note);
 
   const result = await wpAuthedFetch<{ id: number }>("/booking_request", {
@@ -162,6 +183,16 @@ export async function POST(request: Request) {
         pickup_address: data.pickupAddress,
         dropoff_address: data.dropoffAddress,
         pickup_note: data.pickupNote,
+        intermediate_stops_v1: data.intermediateStops.map((stop, index) => ({
+          order: index + 1,
+          address: stop.address,
+          waiting_minutes: stop.waitingMinutes,
+        })),
+        pickup_service_zone_id: routeContext.locationsById.get(pickupLocationId)?.serviceZoneId ?? "",
+        dropoff_service_zone_id: routeContext.locationsById.get(dropoffLocationId)?.serviceZoneId ?? "",
+        surcharge_mode: surcharge.mode,
+        ...(surcharge.mode === "fixed" && surcharge.amount ? { surcharge_amount: surcharge.amount } : {}),
+        surcharge_rule_keys: surcharge.matchedRuleKeys,
         ghi_chu: noteParts.join(" | "),
         trang_thai_booking: "moi",
       },
@@ -182,6 +213,7 @@ export async function POST(request: Request) {
     pickupAddress: data.pickupAddress,
     dropoffAddress: data.dropoffAddress,
     pickupNote: data.pickupNote,
+    intermediateStops: data.intermediateStops,
     note: data.note,
   });
 

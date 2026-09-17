@@ -91,6 +91,12 @@ jobs:
       - name: Booking pickup/dropoff regression guard
         run: npm run test:booking-pickup-dropoff
 
+      - name: Service zone and surcharge regression guard
+        run: npm run test:service-zones
+
+      - name: Multi-stop booking regression guard
+        run: npm run test:multi-stop
+
       - name: Booking search regression guard
         run: npm run test:booking-search
 

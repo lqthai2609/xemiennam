@@ -35,6 +35,18 @@ export type WPRoute = {
       /** Giá trị select CMS: mot_chieu, hai_chieu_trong_ngay hoặc 2_ngay_1_dem. */
       loai_gia?: string;
     }[];
+    /** Day 32: policy only becomes authoritative when version >= 1. */
+    surcharge_policy_version?: number | string;
+    zone_surcharge_rules_v2?: {
+      zone_id?: string;
+      applies_to?: "pickup" | "dropoff" | "either";
+      direction?: "outbound" | "inbound";
+      vehicle_id?: number | string;
+      package_key?: string;
+      surcharge_mode?: "none" | "fixed" | "contact";
+      amount?: number | string;
+      contact_text?: string;
+    }[];
     // Bổ sung Ngày 12 (snippet ID 20) — cần kích hoạt snippet trong wp-admin trước khi có dữ liệu thật.
     tom_tat_ngan?: string;
     diem_nhan_hero?: string;
