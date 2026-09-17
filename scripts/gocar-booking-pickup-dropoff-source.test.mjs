@@ -67,8 +67,8 @@ test("Gocar Core exposes and sanitizes the Day 31 booking meta contract", () => 
   assert.match(bookingContract, /absint/);
 });
 
-test("Day 31 contract remains isolated while Day 32 delegates zone logic", () => {
-  assert.match(bookingApi, /resolveSurchargeV2/);
+test("Day 31 contract remains isolated while later resolvers delegate pricing logic", () => {
+  assert.match(bookingApi, /resolvePriceRulesV2/);
   assert.doesNotMatch(bookingApi, /center|suburb|outskirt/i);
   assert.doesNotMatch(bookingContract, /center|suburb|outskirt|surcharge/i);
 });
