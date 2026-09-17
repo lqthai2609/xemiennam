@@ -1,6 +1,6 @@
 # Day 35 — Pricing V2 Condition Rules
 
-Trạng thái: IMPLEMENTED LOCAL — chờ Pull Request, CI/PHP gate và production verification.
+Trạng thái: SOURCE MERGED — PR #111; production activation/verification pending.
 Ngày: 17/09/2026. Owner: Core. Gocar Core source: 0.8.0.
 
 ## Nguồn dữ liệu và ranh giới

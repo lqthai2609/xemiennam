@@ -3,7 +3,7 @@
 **Trạng thái:** CORE ACCEPTED — đặc tả và chính sách URL; chưa kích hoạt mapping production.
 **Ngày:** 17/09/2026. **Owner:** Core; Organic Growth xác nhận tiếp nhận receipt.
 **Liên kết:** DEP-001, D34-06, D35-01…09. DEP-001 tổng thể tiếp tục IN PROGRESS.
-**Nguồn source đã đối chiếu:** main `a295bacd1149c14fa0afd26753dedb249b069349` và nhánh local Day 35. Chưa có Pull Request/merge Day 35.
+**Nguồn source đã đối chiếu:** base main `a295bacd1149c14fa0afd26753dedb249b069349`; PR #111 đã squash-merge tại `46ce668bf642a1f803634d93099296b9f6e35ee1`. CI/PHP/package gates đạt.
 
 ## 1. Quyết định nghiệm thu
 
@@ -91,4 +91,4 @@ Tám behavioral fixtures URL Map đã chạy đạt trên source thực: hai chi
 - D35-10: đối soát 9 nhóm endpoint trước khi mở mapping bị ảnh hưởng.
 - D34-02/03/04 và production Day 32–34: còn approval/deploy/REST smoke/mobile QA; giữ contact fallback.
 
-SEO-003B/DEP-005 Day 34 spec slice vẫn CORE ACCEPTED/CLOSED; display/schema và production còn mở. SEO-004 đặc tả đã CORE ACCEPTED; Organic Growth xác nhận receipt trước khi đóng slice đặc tả. Day 35 tổng thể chưa đóng vì mã nguồn chưa được xuất bản, CI/PHP gate và production verification còn thiếu.
+SEO-003B/DEP-005 Day 34 spec slice vẫn CORE ACCEPTED/CLOSED; display/schema và production còn mở. SEO-004 đặc tả đã CORE ACCEPTED; Organic Growth xác nhận receipt trước khi đóng slice đặc tả. Source Day 35 đã merge và CI/PHP đạt; production verification vẫn là carry-over, không được diễn giải thành production verified.

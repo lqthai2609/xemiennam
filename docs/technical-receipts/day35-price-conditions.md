@@ -1,7 +1,7 @@
 # Technical Receipt — Day 35 Pricing Conditions
 
-Trạng thái: IMPLEMENTED LOCAL / SEO-004 SPEC CORE ACCEPTED / PR, CI, PHP, PRODUCTION PENDING.
-Ngày: 17/09/2026. Owner: Core. Branch: `codex/day35-pricing-conditions`.
+Trạng thái: SOURCE MERGED / SEO-004 SPEC CORE ACCEPTED / PRODUCTION PENDING.
+Ngày: 17/09/2026. Owner: Core. PR #111; merge SHA `46ce668bf642a1f803634d93099296b9f6e35ee1`.
 
 ## Kết quả
 
@@ -17,7 +17,7 @@ Booking lưu snapshot server có policy version và timezone. Client gửi giờ
 - ESLint PASS: 0 lỗi; 5 cảnh báo cũ.
 - TypeScript PASS.
 - Next.js build exit 0; hoàn tất 581/581 trang. Có HTTP 500 từ một số request WordPress trong lúc build; không dùng kết quả build này để chứng nhận toàn bộ nội dung production.
-- PHP CLI chưa có trong môi trường. Đã thêm sanitizer behavioral fixtures vào workflow Gocar Core Package; chưa chạy PHP gate và GitHub CI cho nhánh Day 35.
+- GitHub Actions PASS: CI #206, Gocar Core Package #28 gồm PHP syntax/sanitizer fixtures, và Location Migration Preview #41.
 - `git diff --check` PASS.
 
 ## SEO-004
@@ -26,10 +26,9 @@ Booking lưu snapshot server có policy version và timezone. Client gửi giờ
 
 ## Chưa hoàn tất
 
-1. Automatic approval review từ chối push/tạo Pull Request ở lượt trước do chưa chấp nhận quyền xuất bản tới đích GitHub. Chưa retry external write sau rejection; cần user xác nhận đích `lqthai2609/xemiennam`.
-2. Chưa có PR/merge SHA Day 35; không gắn trạng thái merged hoặc complete.
-3. Chưa deploy plugin 0.8.0, chưa nhập/kích hoạt dữ liệu Operations, chưa REST/booking production fixtures hoặc mobile QA.
-4. UI giờ cấu trúc thống nhất tiếp tục Day 36; thiếu giờ vẫn contact.
-5. Runtime SEO mapping/attribution, readiness/schema, xung đột endpoint và các dependency khác còn mở theo pre-flight ledger.
+1. Chưa deploy plugin 0.8.0, chưa nhập/kích hoạt dữ liệu Operations, chưa REST/booking production fixtures hoặc mobile QA.
+2. UI giờ cấu trúc thống nhất tiếp tục Day 36; thiếu giờ vẫn contact.
+3. Runtime SEO mapping/attribution, readiness/schema, xung đột endpoint và các dependency khác còn mở theo pre-flight ledger.
+4. Organic Growth cần xác nhận receipt SEO-004 trước final reconciliation Day 35.
 
-Day 35 vẫn mở. Điều kiện auto-merge trong Quy ước v1.10 chỉ được áp dụng sau khi external publication được phép và mọi quality gate đạt.
+Source slice Day 35 đã merge sau khi mọi quality gate đạt. Day 35 vẫn mở đến khi Organic Growth xác nhận receipt SEO-004 và Core phát hành bộ Project Files chốt ngày. Merge không đồng nghĩa deploy hoặc kích hoạt policy.
