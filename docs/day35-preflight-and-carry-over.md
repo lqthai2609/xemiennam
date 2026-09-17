@@ -1,6 +1,6 @@
 # Day 35 — Pre-flight và carry-over
 
-Ngày 17/09/2026. Trạng thái: SOURCE LOCAL / SEO-004 SPEC CORE ACCEPTED / DAY OPEN.
+Ngày 17/09/2026. Trạng thái: SOURCE MERGED / SEO-004 SPEC CORE ACCEPTED / chờ SEO closure và final reconciliation.
 
 ## Đối chiếu đầu vào
 
@@ -12,8 +12,8 @@ Commit source bắt đầu: `a295bacd1149c14fa0afd26753dedb249b069349`. Commit D
 
 | Nhóm | Trạng thái hiện tại | Owner / mốc |
 |---|---|---|
-| Xuất bản source Day 35 | BLOCKED: automatic approval review từ chối push/tạo Pull Request ở lượt trước; cần user xác nhận đích repository | Core / trước merge |
-| CI / PHP package | Chưa chạy trên GitHub cho Day 35; PHP CLI chưa có ở local | Core / trước merge |
+| Xuất bản source Day 35 | RESOLVED: PR #111 đã squash-merge; SHA `46ce668bf642a1f803634d93099296b9f6e35ee1` | Core / hoàn tất |
+| CI / PHP package | PASS: CI #206, Gocar Core Package #28 và Location Migration Preview #41 | Core / hoàn tất source gate |
 | Plugin Day 32–35 | Chưa xác minh deployment; 0.8.0 mới là version source | Core / production gate |
 | Zone, surcharge, modifiers, conditions | Chưa có dữ liệu Operations được phê duyệt; policy bất hoạt/contact | Core + Operations / trước activation |
 | REST read-back / safe booking | Chưa chạy production fixture không gửi thông báo; chưa có dữ liệu đủ cho fixed/contact/ambiguous | Core / sau deploy và approval |
@@ -36,4 +36,4 @@ Commit source bắt đầu: `a295bacd1149c14fa0afd26753dedb249b069349`. Commit D
 
 Ngày lễ, weekend_days, timezone, khoảng áp dụng, priority và amount đều do Operations cấu hình. Không có seed hoặc giá mặc định. Không có hệ số nhân trong phiên này; thay đổi theo hệ số cần contract Operations riêng.
 
-Chưa phát lệnh đóng toàn bộ SEO Day 35 hoặc bắt đầu Day 36. Sau push/CI/merge và reconciliation, Core mới xuất bộ chốt ngày cùng hai lệnh bắt buộc.
+Chưa phát lệnh bắt đầu Day 36. Core gửi receipt SEO-004 cho Organic Growth xác nhận đóng slice; sau phản hồi và final reconciliation, Core mới xuất bộ chốt ngày cùng lệnh Day 36.
