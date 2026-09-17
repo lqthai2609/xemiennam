@@ -41,7 +41,9 @@ export default async function RoutePricingAdminPage() {
     .sort((a, b) => a.name.localeCompare(b.name, "vi"));
 
   const adminRoutes = routes.map((route) => {
-    const rows = [...route.pricingV2.outbound.packages, ...route.pricingV2.inbound.packages];
+    const rows = route.pricingV2
+      ? [...route.pricingV2.outbound.packages, ...route.pricingV2.inbound.packages]
+      : [];
     return {
       id: route.id,
       slug: route.slug,
@@ -49,8 +51,8 @@ export default async function RoutePricingAdminPage() {
       to: route.to,
       originLocationId: route.originLocation?.id,
       destinationLocationId: route.destinationLocation?.id,
-      outboundEnabled: route.pricingV2.outbound.enabled,
-      inboundEnabled: route.pricingV2.inbound.enabled,
+      outboundEnabled: route.pricingV2?.outbound.enabled ?? false,
+      inboundEnabled: route.pricingV2?.inbound.enabled ?? false,
       fixedCount: rows.filter((row) => row.mode === "fixed").length,
       contactCount: rows.filter((row) => row.mode === "contact").length,
       priceLabel: route.price,
