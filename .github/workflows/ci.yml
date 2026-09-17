@@ -109,5 +109,8 @@ jobs:
       - name: Booking search regression guard
         run: npm run test:booking-search
 
+      - name: Admin wizard source guard
+        run: npm run test:admin-wizard
+
       - name: Production build
         run: npm run build
