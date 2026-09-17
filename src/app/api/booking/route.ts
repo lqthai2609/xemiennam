@@ -4,7 +4,7 @@ import { z } from "zod";
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
 import { fetchLocationsV2, locationById } from "@/lib/api/locations";
 import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
-import { resolveSurchargeV2 } from "@/lib/api/service-zones";
+import { resolvePriceRulesV2 } from "@/lib/api/price-rules";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
 import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
@@ -141,13 +141,19 @@ export async function POST(request: Request) {
     routeContext.validLocationIds,
   );
 
-  const surcharge = resolveSurchargeV2(routeContext.route, {
+  const priceRules = resolvePriceRulesV2({
+    route: routeContext.route,
     direction,
     vehicleId,
     packageKey: data.packageKey,
     pickup: routeContext.locationsById.get(pickupLocationId),
     dropoff: routeContext.locationsById.get(dropoffLocationId),
+    quantities: {
+      extra_stop: data.intermediateStops.length,
+      waiting_minute: data.intermediateStops.reduce((sum, stop) => sum + stop.waitingMinutes, 0),
+    },
   });
+  const surcharge = priceRules.surcharge;
 
   const noteParts: string[] = [];
   if (routeContext.routeId === null) noteParts.push(`Tuyến quan tâm (chưa khớp CMS): ${data.route}`);
@@ -160,6 +166,7 @@ export async function POST(request: Request) {
   ].filter(Boolean);
   if (pricingContext.length) noteParts.push(`Pricing context: ${pricingContext.join("; ")}.`);
   noteParts.push(`Surcharge: mode=${surcharge.mode}; reason=${surcharge.reason}.`);
+  noteParts.push(`Price rules: mode=${priceRules.mode}; reason=${priceRules.reason}.`);
   if (data.pickupAddress) noteParts.push(`Điểm đón: ${data.pickupAddress}.`);
   if (data.dropoffAddress) noteParts.push(`Điểm trả: ${data.dropoffAddress}.`);
   if (data.pickupNote) noteParts.push(`Ghi chú điểm đón: ${data.pickupNote}.`);
@@ -193,6 +200,20 @@ export async function POST(request: Request) {
         surcharge_mode: surcharge.mode,
         ...(surcharge.mode === "fixed" && surcharge.amount ? { surcharge_amount: surcharge.amount } : {}),
         surcharge_rule_keys: surcharge.matchedRuleKeys,
+        pricing_resolution_mode: priceRules.mode,
+        pricing_resolution_reason: priceRules.reason,
+        ...(priceRules.basePrice ? { base_price_snapshot: priceRules.basePrice } : {}),
+        ...(priceRules.modifierAmount ? { price_modifier_amount: priceRules.modifierAmount } : {}),
+        ...(priceRules.estimatedTotal ? { estimated_total: priceRules.estimatedTotal } : {}),
+        price_modifier_resolution_v1: priceRules.modifiers.map((modifier) => ({
+          type: modifier.type,
+          quantity: modifier.quantity,
+          billable_units: modifier.billableUnits,
+          mode: modifier.mode,
+          ...(modifier.amount ? { amount: modifier.amount } : {}),
+          ...(modifier.ruleKey ? { rule_key: modifier.ruleKey } : {}),
+          reason: modifier.reason,
+        })),
         ghi_chu: noteParts.join(" | "),
         trang_thai_booking: "moi",
       },
