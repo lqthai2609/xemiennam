@@ -1,6 +1,6 @@
 # Technical Receipt — Day 33 Multi-stop Booking V2
 
-Status: CODE COMPLETE — deployment verification pending  
+Status: MERGED — deployment verification pending  
 Owner: Core  
 Date: 2026-09-17  
 SEO handoff: SEO-003A CORE ACCEPTED
@@ -16,6 +16,9 @@ SEO handoff: SEO-003A CORE ACCEPTED
 - Added the required v0 implementation prompt and source-controlled contract.
 
 ## Verification
+
+- Pull request #108 was squash-merged to `main` at `d753363ade7abc870a073365d7c1b5576e6c5396`.
+- GitHub CI, Location Migration Preview and Gocar Core Package workflows: PASS.
 
 - Day 33 Multi-stop source suite: 4/4 PASS.
 - Day 31 Booking V2 regression suite: 7/7 PASS.
@@ -48,11 +51,10 @@ Ambiguities A-01, A-03, A-04, A-05, A-07, A-09 and A-10 are inputs for Day 35. A
 
 ## Pending production acceptance
 
-1. Merge the Day 33 implementation PR.
-2. Package and deploy Gocar Core 0.6.0.
-3. Confirm WordPress activates the plugin without PHP errors.
-4. Submit safe non-notifying fixtures with zero, one and three stops.
-5. Verify REST read-back preserves order, addresses and waiting minutes, then remove the fixtures.
-6. Run mobile real-device QA for all three booking entry points.
+1. Package and deploy Gocar Core 0.6.0.
+2. Confirm WordPress activates the plugin without PHP errors.
+3. Submit safe non-notifying fixtures with zero, one and three stops.
+4. Verify REST read-back preserves order, addresses and waiting minutes, then remove the fixtures.
+5. Run mobile real-device QA for all three booking entry points.
 
 Until these steps pass, Day 33 is not `PRODUCTION VERIFIED`.

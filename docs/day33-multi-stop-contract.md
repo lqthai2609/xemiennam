@@ -1,6 +1,6 @@
 # Day 33 — Multi-stop Booking V2 Contract
 
-Status: IMPLEMENTATION IN PROGRESS  
+Status: IMPLEMENTED — merged, production verification pending  
 Owner: Core  
 Date: 2026-09-17
 
