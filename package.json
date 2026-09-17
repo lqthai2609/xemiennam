@@ -18,7 +18,8 @@
     "test:footer": "node --test scripts/gocar-footer-source.test.mjs",
     "test:booking-pickup-dropoff": "node --test scripts/gocar-booking-pickup-dropoff-source.test.mjs",
     "test:service-zones": "node --test scripts/gocar-service-zone-source.test.mjs",
-    "test:multi-stop": "node --test scripts/gocar-multi-stop-source.test.mjs"
+    "test:multi-stop": "node --test scripts/gocar-multi-stop-source.test.mjs",
+    "test:booking-search": "node --test scripts/gocar-booking-search-source.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

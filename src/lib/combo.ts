@@ -3,6 +3,7 @@ import { formatPriceShort } from "@/lib/wp";
 import {
   vehicleTypeSlug,
   type Route,
+  type RoutePricingDirectionKey,
   type RoutePricingPackage,
   type VehiclePrice,
 } from "@/types/route";
@@ -39,8 +40,12 @@ function isRenderablePricingPackage(row: RoutePricingPackage): boolean {
   return row.mode === "fixed" && typeof row.price === "number" && row.price > 0;
 }
 
-function pickComboPricingPackage(route: Route, vehicleSlug: string): RoutePricingPackage | undefined {
-  const pricing = route.pricingV2?.outbound;
+function pickComboPricingPackage(
+  route: Route,
+  vehicleSlug: string,
+  direction: RoutePricingDirectionKey,
+): RoutePricingPackage | undefined {
+  const pricing = route.pricingV2?.[direction];
   if (!pricing?.enabled) return undefined;
 
   const rows = pricing.packages.filter(
@@ -81,11 +86,24 @@ function pricingPackageToVehiclePrice(row: RoutePricingPackage): VehiclePrice {
  * - Route không có Pricing V2: mới fallback `pricingByVehicle` để giữ compatibility render.
  */
 export function findComboVehiclePrice(route: Route, vehicleSlug: string): VehiclePrice | undefined {
+  return findComboVehiclePriceForDirection(route, vehicleSlug, "outbound");
+}
+
+/**
+ * Giá đại diện cho đúng một tổ hợp route × direction × vehicle.
+ * Trang combo canonical vẫn là outbound; direction khác chỉ là trạng thái UI từ booking search.
+ */
+export function findComboVehiclePriceForDirection(
+  route: Route,
+  vehicleSlug: string,
+  direction: RoutePricingDirectionKey,
+): VehiclePrice | undefined {
   if (route.pricingV2) {
-    const selected = pickComboPricingPackage(route, vehicleSlug);
+    const selected = pickComboPricingPackage(route, vehicleSlug, direction);
     return selected ? pricingPackageToVehiclePrice(selected) : undefined;
   }
 
+  if (direction === "inbound") return undefined;
   return route.pricingByVehicle.find((vp) => vehicleTypeSlug(vp.vehicleType) === vehicleSlug);
 }
 

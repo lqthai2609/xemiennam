@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CarFront, Clock3, MessageCircle, Phone, ShieldCheck, Users } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -5,9 +8,19 @@ import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { BlogCard } from "@/components/blog-card";
 import { MediaPhoto } from "@/components/media-photo";
-import { RouteBookingActions } from "@/components/route-booking-actions";
-import { comboDescriptionOrDefault, findComboVehiclePrice } from "@/lib/combo";
-import { routeHref, routeComboHref, type Route, type VehiclePrice } from "@/types/route";
+import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
+import {
+  comboDescriptionOrDefault,
+  findComboVehiclePrice,
+  findComboVehiclePriceForDirection,
+} from "@/lib/combo";
+import {
+  routeHref,
+  routeComboHref,
+  type Route,
+  type RoutePricingDirectionKey,
+  type VehiclePrice,
+} from "@/types/route";
 import type { VehicleCategory } from "@/types/vehicle-category";
 import type { Vehicle } from "@/types/vehicle";
 import type { BlogPost } from "@/types/blog";
@@ -41,15 +54,49 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   relatedPosts: BlogPost[];
   vehicle?: Vehicle;
 }) {
-  const description = comboDescriptionOrDefault(route, vehiclePrice);
+  const [direction, setDirection] = useState<RoutePricingDirectionKey>("outbound");
+
+  useEffect(() => {
+    const requestedDirection = new URLSearchParams(window.location.search).get("direction");
+    if (requestedDirection !== "inbound") return;
+    if (!findComboVehiclePriceForDirection(route, category.slug, "inbound")) return;
+
+    // Giữ page/metadata canonical outbound và chỉ đồng bộ chiều tìm kiếm sau hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDirection("inbound");
+  }, [category.slug, route]);
+
+  const activeVehiclePrice = useMemo(
+    () => findComboVehiclePriceForDirection(route, category.slug, direction) ?? vehiclePrice,
+    [category.slug, direction, route, vehiclePrice],
+  );
+  const isInbound = direction === "inbound";
+  const displayFrom = isInbound ? route.to : route.from;
+  const displayTo = isInbound ? route.from : route.to;
+  const description = comboDescriptionOrDefault(route, activeVehiclePrice);
   const routeLabel = `${route.from} – ${route.to}`;
-  const isContact = vehiclePrice.pricingMode === "contact";
+  const displayRoute = `${displayFrom} – ${displayTo}`;
+  const isContact = activeVehiclePrice.pricingMode === "contact";
   const hasValidFixedPrice =
-    vehiclePrice.pricingMode === "fixed" &&
-    typeof vehiclePrice.numericPrice === "number" &&
-    vehiclePrice.numericPrice > 0;
+    activeVehiclePrice.pricingMode === "fixed" &&
+    typeof activeVehiclePrice.numericPrice === "number" &&
+    activeVehiclePrice.numericPrice > 0;
   const image = vehicle?.images[0] || category.imageUrl;
   const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
+  const pickupLocation = isInbound ? route.destinationLocation : route.originLocation;
+  const dropoffLocation = isInbound ? route.originLocation : route.destinationLocation;
+  const airportContext: AirportBookingContext | undefined =
+    pickupLocation?.type === "airport"
+      ? "pickup_from_airport"
+      : dropoffLocation?.type === "airport"
+        ? "dropoff_at_airport"
+        : undefined;
+  const airportName = airportContext === "pickup_from_airport"
+    ? pickupLocation?.name
+    : airportContext === "dropoff_at_airport"
+      ? dropoffLocation?.name
+      : undefined;
+  const backHref = isInbound ? `${routeHref(route)}?direction=inbound` : routeHref(route);
 
   return (
     <main className="site-shell combo-page">
@@ -62,11 +109,11 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
       />
       <UnifiedHero
         eyebrow={`${route.region} · ${category.label}`}
-        title={<>Thuê xe {category.label.toLowerCase()}<br /><em>{route.from} → {route.to}</em></>}
+        title={<>Thuê xe {category.label.toLowerCase()}<br /><em>{displayFrom} → {displayTo}</em></>}
         description={description}
         backgroundImage={heroImage}
-        backHref={routeHref(route)}
-        backLabel={`Tuyến ${routeLabel}`}
+        backHref={backHref}
+        backLabel={`Tuyến ${displayRoute}`}
       />
       <section className="section-wrap combo-booking-section" id="booking">
         <div className="section-heading">
@@ -79,14 +126,14 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
         <article className="combo-vehicle-card">
           <div className="combo-vehicle-media">
             {image ? <MediaPhoto src={image} alt={vehicle?.name || category.label} /> : <CarFront size={76} strokeWidth={1.2} />}
-            <strong>Xe {vehiclePrice.vehicleType}</strong>
+            <strong>Xe {activeVehiclePrice.vehicleType}</strong>
           </div>
           <div className="combo-vehicle-info">
             <div className="combo-vehicle-top">
-              <div><h2>{vehicle?.name || `Xe ${vehiclePrice.vehicleType}`}</h2></div>
+              <div><h2>{vehicle?.name || `Xe ${activeVehiclePrice.vehicleType}`}</h2></div>
               <div className="combo-price">
-                <strong>{isContact ? "Liên hệ báo giá" : hasValidFixedPrice ? vehiclePrice.price : "Liên hệ báo giá"}</strong>
-                {vehiclePrice.packageLabel && <small>{vehiclePrice.packageLabel}</small>}
+                <strong>{isContact ? "Liên hệ báo giá" : hasValidFixedPrice ? activeVehiclePrice.price : "Liên hệ báo giá"}</strong>
+                {activeVehiclePrice.packageLabel && <small>{activeVehiclePrice.packageLabel}</small>}
               </div>
             </div>
             <div className="combo-vehicle-divider" />
@@ -106,12 +153,15 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
               <RouteBookingActions
                 route={routeLabel}
                 routeId={route.id}
-                vehicleType={vehiclePrice.vehicleType}
-                price={hasValidFixedPrice ? vehiclePrice.price : undefined}
-                direction="outbound"
-                packageKey={vehiclePrice.packageKey}
-                packageLabel={vehiclePrice.packageLabel}
+                displayRoute={displayRoute}
+                vehicleType={activeVehiclePrice.vehicleType}
+                price={hasValidFixedPrice ? activeVehiclePrice.price : undefined}
+                direction={direction}
+                packageKey={activeVehiclePrice.packageKey}
+                packageLabel={activeVehiclePrice.packageLabel}
                 pricingMode={isContact || !hasValidFixedPrice ? "contact" : "fixed"}
+                airportContext={airportContext}
+                airportName={airportName}
               />
             </div>
           </div>
@@ -127,7 +177,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
         </div>
         <div className="combo-benefit-grid">
           <div><ShieldCheck size={22} /><strong>Thông tin rõ ràng</strong><p>Nhân viên xác nhận giá và điều kiện chuyến trước khi khởi hành.</p></div>
-          <div><Clock3 size={22} /><strong>Đón tận nơi</strong><p>Linh hoạt điểm đón tại {route.from} và trả khách tại {route.to}.</p></div>
+          <div><Clock3 size={22} /><strong>Đón tận nơi</strong><p>Linh hoạt điểm đón tại {displayFrom} và trả khách tại {displayTo}.</p></div>
           <div><MessageCircle size={22} /><strong>Hỗ trợ nhanh</strong><p>Luôn có đội ngũ hỗ trợ qua điện thoại và Zalo.</p></div>
         </div>
       </section>
@@ -157,7 +207,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
       <section className="vehicle-type-cta combo-final-cta">
         <div>
           <p className="section-label">SẴN SÀNG LÊN ĐƯỜNG?</p>
-          <h2>Đặt xe {category.label.toLowerCase()} đi {route.to}.</h2>
+          <h2>Đặt xe {category.label.toLowerCase()} đi {displayTo}.</h2>
           <p>Nhân viên {SITE_NAME} sẽ xác nhận giá và điều kiện chuyến trước khi hoàn tất đặt xe.</p>
         </div>
         <a className="button button-primary" href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi ${SITE_HOTLINE}`}>

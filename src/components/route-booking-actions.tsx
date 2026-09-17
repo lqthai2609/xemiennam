@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle, MessageCircle, Phone, X } from "lucide-react";
+import { LoaderCircle, MessageCircle, Phone, Plane, X } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -27,12 +27,10 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
       pickupAddress: z
         .string()
         .trim()
-        .min(1, "Vui lòng nhập điểm đón cụ thể.")
         .max(240, "Điểm đón tối đa 240 ký tự."),
       dropoffAddress: z
         .string()
         .trim()
-        .min(1, "Vui lòng nhập điểm trả cụ thể.")
         .max(240, "Điểm trả tối đa 240 ký tự."),
       pickupNote: z.string().trim().max(300, "Lưu ý điểm đón tối đa 300 ký tự.").optional(),
       intermediateStops: intermediateStopsInputSchema,
@@ -48,6 +46,12 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
       nameplateName: z.string().trim().max(80, "Tên trên bảng tối đa 80 ký tự.").optional(),
     })
     .superRefine((data, context) => {
+      if (airportContext !== "pickup_from_airport" && !data.pickupAddress) {
+        context.addIssue({ code: "custom", path: ["pickupAddress"], message: "Vui lòng nhập điểm đón cụ thể." });
+      }
+      if (airportContext !== "dropoff_at_airport" && !data.dropoffAddress) {
+        context.addIssue({ code: "custom", path: ["dropoffAddress"], message: "Vui lòng nhập điểm trả cụ thể." });
+      }
       if (!airportContext) return;
 
       const passengerCount = Number(data.passengerCount);
@@ -149,6 +153,8 @@ function QuickBookingDialog({
   } = useForm<QuickBookingData>({
     resolver: zodResolver(schema),
     defaultValues: {
+      pickupAddress: "",
+      dropoffAddress: "",
       passengerCount: airportContext ? "1" : "",
       luggageCount: airportContext ? "0" : "",
       requestNameplate: false,
@@ -161,6 +167,7 @@ function QuickBookingDialog({
   const visiblePrice = isQuote ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
   const requestNameplate = useWatch({ control, name: "requestNameplate" });
   const intermediateStops = useWatch({ control, name: "intermediateStops" }) ?? [];
+  const fixedAirportName = airportName || "Sân bay theo tuyến đã chọn";
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -304,16 +311,36 @@ function QuickBookingDialog({
               />
               <FieldError message={errors.phone?.message} />
             </label>
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
-              <input {...register("pickupAddress")} maxLength={240} aria-invalid={!!errors.pickupAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
-              <FieldError message={errors.pickupAddress?.message} />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
-              <input {...register("dropoffAddress")} maxLength={240} aria-invalid={!!errors.dropoffAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
-              <FieldError message={errors.dropoffAddress?.message} />
-            </label>
+            {airportContext === "pickup_from_airport" ? (
+              <div className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                <span>Điểm đón</span>
+                <div className="flex items-start gap-3 rounded-xl border border-border bg-secondary/60 px-3.5 py-3" role="status">
+                  <Plane aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-primary" />
+                  <span><span className="block">{fixedAirportName}</span><span className="block text-xs font-normal text-muted-foreground">Đã xác định theo tuyến đã chọn</span></span>
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+                <input {...register("pickupAddress")} maxLength={240} aria-invalid={!!errors.pickupAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
+                <FieldError message={errors.pickupAddress?.message} />
+              </label>
+            )}
+            {airportContext === "dropoff_at_airport" ? (
+              <div className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                <span>Điểm trả</span>
+                <div className="flex items-start gap-3 rounded-xl border border-border bg-secondary/60 px-3.5 py-3" role="status">
+                  <Plane aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-primary" />
+                  <span><span className="block">{fixedAirportName}</span><span className="block text-xs font-normal text-muted-foreground">Đã xác định theo tuyến đã chọn</span></span>
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+                <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+                <input {...register("dropoffAddress")} maxLength={240} aria-invalid={!!errors.dropoffAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
+                <FieldError message={errors.dropoffAddress?.message} />
+              </label>
+            )}
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
               <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
               <textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />

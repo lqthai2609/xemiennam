@@ -1,18 +1,31 @@
 "use client";
 
 import { useEffect, useId, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, LoaderCircle, MapPin, Plane, Repeat2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { MultiStopFields } from "@/components/multi-stop-fields";
 import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
-import { routeHref, type Route, type RoutePricingDirectionKey } from "@/types/route";
+import {
+  canonicalLocationKey,
+  canonicalLocationLabel,
+  locationMatchesQuery,
+  normalizeSearch,
+  resolveLocationAlias,
+} from "@/lib/location-search";
+import {
+  routeComboHref,
+  routeHref,
+  vehicleTypeSlug,
+  type Route,
+  type RoutePricingDirectionKey,
+} from "@/types/route";
 
 type BookingSearchVariant = "default" | "hero" | "compact";
 export type BookingSearchMode = "standard" | "airport";
 type AirportTransferDirection = "pickup" | "dropoff";
 type BookingTripType = "one_way" | "round_trip";
-type SearchPricingMode = "fixed" | "contact";
 
 type BookingJourney = {
   route: Route;
@@ -33,15 +46,6 @@ export type BookingSearchFormProps = {
   initialMode?: BookingSearchMode;
   source?: string;
 };
-
-function normalizeSearch(value: string) {
-  return value
-    .trim()
-    .toLocaleLowerCase("vi")
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/đ/g, "d");
-}
 
 function localDateIso(value: Date) {
   const year = value.getFullYear();
@@ -69,13 +73,13 @@ function supportsDirection(route: Route, direction: RoutePricingDirectionKey) {
 }
 
 function findJourney(routes: Route[], pickup: string, destination: string): BookingJourney | undefined {
-  const normalizedPickup = normalizeSearch(pickup);
-  const normalizedDestination = normalizeSearch(destination);
+  const normalizedPickup = canonicalLocationKey(pickup);
+  const normalizedDestination = canonicalLocationKey(destination);
   if (!normalizedPickup || !normalizedDestination || normalizedPickup === normalizedDestination) return undefined;
 
   for (const route of routes) {
-    const routeFrom = normalizeSearch(route.from);
-    const routeTo = normalizeSearch(route.to);
+    const routeFrom = canonicalLocationKey(route.from);
+    const routeTo = canonicalLocationKey(route.to);
 
     if (
       routeFrom === normalizedPickup &&
@@ -101,8 +105,10 @@ function uniqueLocations(routes: Route[]) {
   const values = new Map<string, string>();
 
   for (const route of routes) {
-    values.set(normalizeSearch(route.from), route.from);
-    values.set(normalizeSearch(route.to), route.to);
+    for (const rawLocation of [route.from, route.to]) {
+      const label = canonicalLocationLabel(rawLocation);
+      values.set(canonicalLocationKey(label), label);
+    }
   }
 
   return Array.from(values.values()).sort((a, b) => a.localeCompare(b, "vi"));
@@ -113,10 +119,12 @@ function uniqueAirportLocations(routes: Route[]) {
 
   for (const route of routes) {
     if (route.originLocation?.type === "airport") {
-      values.set(normalizeSearch(route.from), route.from);
+      const label = canonicalLocationLabel(route.from);
+      values.set(canonicalLocationKey(label), label);
     }
     if (route.destinationLocation?.type === "airport") {
-      values.set(normalizeSearch(route.to), route.to);
+      const label = canonicalLocationLabel(route.to);
+      values.set(canonicalLocationKey(label), label);
     }
   }
 
@@ -168,20 +176,6 @@ function vehicleTypesForJourney(journey: BookingJourney) {
   );
 }
 
-function pricingModeForVehicle(journey: BookingJourney | undefined, vehicleType: string): SearchPricingMode {
-  if (!journey || vehicleType === CONSULT_VEHICLE) return "contact";
-  if (!journey.route.pricingV2) return "fixed";
-
-  const rows = journey.route.pricingV2[journey.direction].packages.filter(
-    (item) => item.vehicleType === vehicleType && item.mode !== "disabled",
-  );
-
-  if (rows.some((item) => item.mode === "fixed" && typeof item.price === "number" && item.price > 0)) {
-    return "fixed";
-  }
-  return "contact";
-}
-
 function LocationField({
   label,
   value,
@@ -201,17 +195,22 @@ function LocationField({
   const suggestionsId = `${listId}-suggestions`;
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const aliasResolution = useMemo(() => resolveLocationAlias(value), [value]);
 
   const suggestions = useMemo(() => {
     const query = normalizeSearch(value);
     const filtered = query
-      ? options.filter((option) => normalizeSearch(option).includes(query))
+      ? options.filter((option) => locationMatchesQuery(option, value))
       : options;
     return filtered.slice(0, 8);
   }, [options, value]);
 
   function selectSuggestion(option: string) {
-    onChange(option);
+    onChange(
+      aliasResolution && canonicalLocationKey(option) === aliasResolution.canonicalKey
+        ? value.trim()
+        : option,
+    );
     setSuggestionsOpen(false);
     setActiveIndex(-1);
   }
@@ -297,12 +296,25 @@ function LocationField({
                 className={`flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition ${index === activeIndex ? "bg-secondary text-foreground" : "hover:bg-muted"}`}
               >
                 <MapPin aria-hidden="true" size={15} className="shrink-0 text-primary" />
-                <span>{option}</span>
+                {aliasResolution && canonicalLocationKey(option) === aliasResolution.canonicalKey ? (
+                  <span className="min-w-0">
+                    <span className="block font-semibold">{aliasResolution.displayLabel}</span>
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {aliasResolution.canonical} · Áp dụng giá tuyến TP.HCM
+                    </span>
+                  </span>
+                ) : <span>{option}</span>}
               </button>
             ))}
           </div>
         )}
       </div>
+      {aliasResolution && (
+        <p className="m-0 flex items-start gap-1.5 text-xs font-medium leading-5 text-primary" role="status">
+          <span aria-hidden="true">✓</span>
+          <span>Đã quy đổi về {aliasResolution.canonical} · Áp dụng giá tuyến TP.HCM</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -343,9 +355,17 @@ function JourneyQuoteDialog({
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const visibleVehicle = vehicleType === CONSULT_VEHICLE ? CONSULT_VEHICLE_LABEL : vehicleType;
-  const bookingVehicle = vehicleType === CONSULT_VEHICLE ? BOOKING_VEHICLE_FALLBACK : vehicleType;
+  const visibleVehicle = !vehicleType || vehicleType === CONSULT_VEHICLE
+    ? CONSULT_VEHICLE_LABEL
+    : vehicleType;
+  const bookingVehicle = !vehicleType || vehicleType === CONSULT_VEHICLE
+    ? BOOKING_VEHICLE_FALLBACK
+    : vehicleType;
+  const visibleDepartureDate = departureDate ? formatDateLabel(departureDate) : "Chưa chọn";
   const routeLabel = `${pickup.trim()} – ${destination.trim()}`;
+  const isPickupFromAirport = searchMode === "airport" && airportDirection === "pickup";
+  const isDropoffAtAirport = searchMode === "airport" && airportDirection === "dropoff";
+  const fixedAirportName = isPickupFromAirport ? pickup.trim() : isDropoffAtAirport ? destination.trim() : "";
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -376,14 +396,14 @@ function JourneyQuoteDialog({
       return;
     }
     let hasAddressError = false;
-    if (!normalizedPickupAddress) {
+    if (!isPickupFromAirport && !normalizedPickupAddress) {
       setPickupAddressError("Vui lòng nhập điểm đón cụ thể.");
       hasAddressError = true;
     } else if (normalizedPickupAddress.length > 240) {
       setPickupAddressError("Điểm đón tối đa 240 ký tự.");
       hasAddressError = true;
     }
-    if (!normalizedDropoffAddress) {
+    if (!isDropoffAtAirport && !normalizedDropoffAddress) {
       setDropoffAddressError("Vui lòng nhập điểm trả cụ thể.");
       hasAddressError = true;
     } else if (normalizedDropoffAddress.length > 240) {
@@ -419,7 +439,7 @@ function JourneyQuoteDialog({
       if (searchMode === "airport" && airportDirection) {
         noteParts.push(`Dịch vụ sân bay: ${airportDirectionLabel(airportDirection)}.`);
       }
-      if (vehicleType === CONSULT_VEHICLE) noteParts.push("Khách cần tư vấn loại xe phù hợp.");
+      if (!vehicleType || vehicleType === CONSULT_VEHICLE) noteParts.push("Khách cần tư vấn loại xe phù hợp.");
 
       const response = await fetch("/api/booking", {
         method: "POST",
@@ -472,7 +492,7 @@ function JourneyQuoteDialog({
             <p className="section-label">ĐÃ NHẬN YÊU CẦU</p>
             <h3>Cảm ơn bạn. Gocar VN sẽ liên hệ để báo giá.</h3>
             <p className="m-0 text-sm leading-6 text-muted-foreground">
-              Hành trình {pickup} → {destination}, {formatDateLabel(departureDate)}, {visibleVehicle} đã được ghi nhận.
+              Hành trình {pickup} → {destination}, {visibleDepartureDate}, {visibleVehicle} đã được ghi nhận.
             </p>
             <Button type="button" onClick={onClose}>Đóng</Button>
           </div>
@@ -485,7 +505,7 @@ function JourneyQuoteDialog({
               {searchMode === "airport" && airportDirection && (
                 <div>Dịch vụ: <strong>{airportDirectionLabel(airportDirection)}</strong></div>
               )}
-              <div>Ngày đi: <strong>{formatDateLabel(departureDate)}</strong></div>
+              <div>Ngày đi: <strong>{visibleDepartureDate}</strong></div>
               <div>Loại chuyến: <strong>{tripTypeLabel(tripType)}</strong></div>
               <div>Loại xe: <strong>{visibleVehicle}</strong></div>
               <div>Giá: <strong>Gocar VN xác nhận theo hành trình thực tế</strong></div>
@@ -512,36 +532,62 @@ function JourneyQuoteDialog({
                   placeholder="0901 234 567"
                 />
               </label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
-                <input
-                  value={pickupAddress}
-                  onChange={(event) => {
-                    setPickupAddress(event.target.value);
-                    if (pickupAddressError) setPickupAddressError("");
-                  }}
-                  maxLength={240}
-                  className="form-control"
-                  placeholder="Số nhà, tên đường, phường/xã..."
-                  aria-invalid={!!pickupAddressError}
-                />
-                {pickupAddressError && <p className="m-0 text-sm text-destructive" role="alert">{pickupAddressError}</p>}
-              </label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
-                <input
-                  value={dropoffAddress}
-                  onChange={(event) => {
-                    setDropoffAddress(event.target.value);
-                    if (dropoffAddressError) setDropoffAddressError("");
-                  }}
-                  maxLength={240}
-                  className="form-control"
-                  placeholder="Số nhà, tên đường, phường/xã..."
-                  aria-invalid={!!dropoffAddressError}
-                />
-                {dropoffAddressError && <p className="m-0 text-sm text-destructive" role="alert">{dropoffAddressError}</p>}
-              </label>
+              {isPickupFromAirport ? (
+                <div className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>Điểm đón</span>
+                  <div className="flex items-start gap-3 rounded-xl border border-border bg-secondary/60 px-3.5 py-3" role="status">
+                    <Plane aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-primary" />
+                    <span>
+                      <span className="block">{fixedAirportName}</span>
+                      <span className="block text-xs font-normal text-muted-foreground">Đã xác định theo tuyến đã chọn</span>
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+                  <input
+                    value={pickupAddress}
+                    onChange={(event) => {
+                      setPickupAddress(event.target.value);
+                      if (pickupAddressError) setPickupAddressError("");
+                    }}
+                    maxLength={240}
+                    className="form-control"
+                    placeholder="Số nhà, tên đường, phường/xã..."
+                    aria-invalid={!!pickupAddressError}
+                  />
+                  {pickupAddressError && <p className="m-0 text-sm text-destructive" role="alert">{pickupAddressError}</p>}
+                </label>
+              )}
+              {isDropoffAtAirport ? (
+                <div className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>Điểm trả</span>
+                  <div className="flex items-start gap-3 rounded-xl border border-border bg-secondary/60 px-3.5 py-3" role="status">
+                    <Plane aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-primary" />
+                    <span>
+                      <span className="block">{fixedAirportName}</span>
+                      <span className="block text-xs font-normal text-muted-foreground">Đã xác định theo tuyến đã chọn</span>
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+                  <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+                  <input
+                    value={dropoffAddress}
+                    onChange={(event) => {
+                      setDropoffAddress(event.target.value);
+                      if (dropoffAddressError) setDropoffAddressError("");
+                    }}
+                    maxLength={240}
+                    className="form-control"
+                    placeholder="Số nhà, tên đường, phường/xã..."
+                    aria-invalid={!!dropoffAddressError}
+                  />
+                  {dropoffAddressError && <p className="m-0 text-sm text-destructive" role="alert">{dropoffAddressError}</p>}
+                </label>
+              )}
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                 <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
                 <textarea
@@ -597,6 +643,7 @@ export function BookingSearchForm({
   initialMode = "standard",
   source,
 }: BookingSearchFormProps) {
+  const router = useRouter();
   const instanceId = useId();
   const pickupListId = `${instanceId}-pickup`;
   const destinationListId = `${instanceId}-destination`;
@@ -607,17 +654,17 @@ export function BookingSearchForm({
   const locations = useMemo(() => uniqueLocations(routes), [routes]);
   const airportLocations = useMemo(() => uniqueAirportLocations(routes), [routes]);
   const airportLocationKeys = useMemo(
-    () => new Set(airportLocations.map((location) => normalizeSearch(location))),
+    () => new Set(airportLocations.map((location) => canonicalLocationKey(location))),
     [airportLocations],
   );
   const nonAirportLocations = useMemo(
-    () => locations.filter((location) => !airportLocationKeys.has(normalizeSearch(location))),
+    () => locations.filter((location) => !airportLocationKeys.has(canonicalLocationKey(location))),
     [airportLocationKeys, locations],
   );
   const globalVehicleTypes = useMemo(() => uniqueVehicleTypes(routes), [routes]);
 
-  const initialPickupIsAirport = airportLocationKeys.has(normalizeSearch(initialPickup));
-  const initialDestinationIsAirport = airportLocationKeys.has(normalizeSearch(initialDestination));
+  const initialPickupIsAirport = airportLocationKeys.has(canonicalLocationKey(initialPickup));
+  const initialDestinationIsAirport = airportLocationKeys.has(canonicalLocationKey(initialDestination));
   const inferredInitialMode = initialMode === "airport" || initialPickupIsAirport || initialDestinationIsAirport
     ? "airport"
     : "standard";
@@ -648,6 +695,7 @@ export function BookingSearchForm({
   const [vehicleType, setVehicleType] = useState("");
   const [error, setError] = useState("");
   const [quoteOpen, setQuoteOpen] = useState(false);
+  const [swapRotation, setSwapRotation] = useState(0);
 
   const pickup = searchMode === "airport"
     ? airportDirection === "pickup" ? selectedAirport : airportPlace
@@ -664,8 +712,7 @@ export function BookingSearchForm({
   const sourceBase = source || (variant === "hero" ? "homepage_hero" : `booking_search_${variant}`);
   const resolvedSource = `${sourceBase}_${searchMode}`;
   const isCompact = variant === "compact";
-  const selectedPricingMode = vehicleType ? pricingModeForVehicle(journey, vehicleType) : undefined;
-  const needsQuote = Boolean(vehicleType && (!journey || selectedPricingMode === "contact"));
+  const needsQuote = Boolean(pickup.trim() && destination.trim() && !journey);
 
   function resetJourneyDependentFields() {
     setVehicleType("");
@@ -684,6 +731,7 @@ export function BookingSearchForm({
       setStandardPickup(standardDestination);
       setStandardDestination(standardPickup);
     }
+    setSwapRotation((current) => current + 180);
     resetJourneyDependentFields();
   }
 
@@ -699,39 +747,44 @@ export function BookingSearchForm({
       setError(searchMode === "airport" ? "Vui lòng nhập địa điểm còn lại của chuyến sân bay." : "Vui lòng chọn đầy đủ điểm đón và điểm đến.");
       return;
     }
-    if (normalizeSearch(pickup) === normalizeSearch(destination)) {
-      setError("Điểm đón và điểm đến phải khác nhau.");
+    if (canonicalLocationKey(pickup) === canonicalLocationKey(destination)) {
+      const canonicalKey = canonicalLocationKey(pickup);
+      if (canonicalKey === canonicalLocationKey("TP. Hồ Chí Minh")) {
+        setError("Hai điểm này đều thuộc nhóm giá TP.HCM. Vui lòng chọn điểm đến ngoài TP.HCM hoặc liên hệ để được tư vấn chuyến nội thành.");
+      } else {
+        setError("Điểm đón và điểm đến phải khác nhau.");
+      }
       return;
     }
-    if (!departureDate) {
-      setError("Vui lòng chọn ngày đi.");
-      return;
-    }
-    if (departureDate < localDateIso(new Date())) {
+    if (departureDate && departureDate < localDateIso(new Date())) {
       setError("Ngày đi không thể nằm trong quá khứ.");
       return;
     }
-    if (!vehicleType) {
-      setError("Vui lòng chọn loại xe hoặc chọn phương án cần tư vấn.");
-      return;
-    }
 
-    if (!journey || selectedPricingMode === "contact") {
+    if (!journey) {
       setQuoteOpen(true);
       return;
     }
 
     const params = new URLSearchParams({
       direction: journey.direction,
-      ngay_di: departureDate,
       trip_type: tripType,
       source: resolvedSource,
       search_mode: searchMode,
     });
+    if (departureDate) params.set("ngay_di", departureDate);
     if (searchMode === "airport") params.set("airport_direction", airportDirection);
-    if (vehicleType !== CONSULT_VEHICLE) params.set("vehicle_type", vehicleType);
+    if (vehicleType && vehicleType !== CONSULT_VEHICLE) params.set("vehicle_type", vehicleType);
 
-    window.location.assign(`${routeHref(journey.route)}?${params.toString()}#pricing`);
+    const selectedVehicleSlug = vehicleType && vehicleType !== CONSULT_VEHICLE
+      ? vehicleTypeSlug(vehicleType)
+      : "";
+    const targetPath = selectedVehicleSlug
+      ? routeComboHref(journey.route, selectedVehicleSlug)
+      : routeHref(journey.route);
+    const targetHash = selectedVehicleSlug ? "#booking" : "#pricing";
+
+    router.push(`${targetPath}?${params.toString()}${targetHash}`);
   }
 
   const outerClass = variant === "hero" || isCompact ? "w-full" : "section-wrap";
@@ -847,9 +900,20 @@ export function BookingSearchForm({
                     onClick={swapJourneyEndpoints}
                     aria-label="Đổi chiều điểm đón và điểm đến"
                     title="Đổi chiều điểm đón và điểm đến"
-                    className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:left-1/2 sm:right-auto sm:top-[2.45rem] sm:-translate-x-1/2"
+                    className="absolute right-3 top-[calc(50%+15px)] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center bg-transparent text-primary transition hover:text-primary/75 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:left-1/2 sm:right-auto sm:top-[3.4rem] sm:-translate-x-1/2"
                   >
-                    <ArrowRightLeft aria-hidden="true" size={17} className="rotate-90 sm:rotate-0" />
+                    <ArrowRightLeft
+                      aria-hidden="true"
+                      size={20}
+                      className="transition-transform duration-300 ease-out sm:hidden"
+                      style={{ transform: `rotate(${90 + swapRotation}deg)` }}
+                    />
+                    <ArrowRightLeft
+                      aria-hidden="true"
+                      size={20}
+                      className="hidden transition-transform duration-300 ease-out sm:block"
+                      style={{ transform: `rotate(${swapRotation}deg)` }}
+                    />
                   </button>
 
                   <LocationField
@@ -896,9 +960,20 @@ export function BookingSearchForm({
                     onClick={swapJourneyEndpoints}
                     aria-label="Đổi chiều điểm đón và điểm đến"
                     title="Đổi chiều điểm đón và điểm đến"
-                    className="absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:border-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:left-1/2 sm:right-auto sm:top-[2.45rem] sm:-translate-x-1/2"
+                    className="absolute right-3 top-[calc(50%+15px)] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center bg-transparent text-primary transition hover:text-primary/75 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:left-1/2 sm:right-auto sm:top-[3.4rem] sm:-translate-x-1/2"
                   >
-                    <ArrowRightLeft aria-hidden="true" size={17} className="rotate-90 sm:rotate-0" />
+                    <ArrowRightLeft
+                      aria-hidden="true"
+                      size={20}
+                      className="transition-transform duration-300 ease-out sm:hidden"
+                      style={{ transform: `rotate(${90 + swapRotation}deg)` }}
+                    />
+                    <ArrowRightLeft
+                      aria-hidden="true"
+                      size={20}
+                      className="hidden transition-transform duration-300 ease-out sm:block"
+                      style={{ transform: `rotate(${swapRotation}deg)` }}
+                    />
                   </button>
 
                   <LocationField
@@ -917,7 +992,7 @@ export function BookingSearchForm({
             </div>
 
             <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span>Ngày đi</span>
+              <span>Ngày đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
               <span className="relative block">
                 <CalendarDays
                   aria-hidden="true"
@@ -933,7 +1008,6 @@ export function BookingSearchForm({
                     setError("");
                   }}
                   className="h-12 w-full rounded-xl border border-border bg-background pl-10 pr-3 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-                  required
                 />
               </span>
             </label>
@@ -961,7 +1035,7 @@ export function BookingSearchForm({
             </label>
 
             <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2 xl:col-span-1">
-              <span>Loại xe</span>
+              <span>Loại xe <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
               <span className="relative block">
                 <BusFront
                   aria-hidden="true"
@@ -975,9 +1049,8 @@ export function BookingSearchForm({
                     setError("");
                   }}
                   className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-                  required
                 >
-                  <option value="">Chọn loại xe</option>
+                  <option value="">Chưa chọn loại xe</option>
                   {availableVehicleTypes.map((type) => (
                     <option key={type} value={type}>{type}</option>
                   ))}
