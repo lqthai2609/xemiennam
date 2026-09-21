@@ -92,6 +92,16 @@ export type WPRoute = {
       vehicle_id: number | string;
       description?: string;
     }[];
+    /** Day 36B / SEO-005: versioned readiness fields. Version 0 means inactive. */
+    content_readiness_version?: number | string;
+    content_editorial_state?: "missing" | "draft" | "review" | "ready";
+    content_service_state?: "unknown" | "prelaunch" | "live" | "paused";
+    content_canonical_state?: "missing" | "candidate" | "verified";
+    content_mapping_state?: "clear" | "d35_10_blocked";
+    content_indexability_state?: "noindex" | "index";
+    content_schema_state?: "none" | "service" | "offer";
+    content_readiness_reason?: string;
+    content_source_ref?: string;
   };
   _embedded?: { "wp:term"?: WPTerm[][] };
 };

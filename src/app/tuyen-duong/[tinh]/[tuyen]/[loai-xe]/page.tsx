@@ -15,6 +15,8 @@ import { buildPageMetadata } from "@/lib/metadata";
 import { routeComboHref, routeHref } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
+import { resolveRouteContentReadiness } from "@/lib/content-readiness";
+import { SITE_NAME } from "@/lib/site-config";
 
 type Props = { params: Promise<{ tinh: string; tuyen: string; "loai-xe": string }> };
 
@@ -42,12 +44,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const guard = getComboIndexability(route, loaiXe);
+  const readiness = resolveRouteContentReadiness(route);
   const priceText = vp.pricingMode === "contact" ? "liên hệ báo giá" : `giá từ ${vp.price}`;
   return buildPageMetadata({
-    title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, ${priceText} | Gocar VN`,
+    title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, ${priceText} | ${SITE_NAME}`,
     description: comboDescriptionOrDefault(route, vp),
     path: routeComboHref(route, loaiXe),
-    noIndex: !guard.indexable,
+    noIndex: !guard.indexable || !readiness.indexable,
   });
 }
 
@@ -83,6 +86,8 @@ export default async function Page({ params }: Props) {
     })
     .slice(0, 3);
   const description = comboDescriptionOrDefault(route, vp);
+  const guard = getComboIndexability(route, loaiXe);
+  const readiness = resolveRouteContentReadiness(route);
   const serviceOffers = buildFixedServiceOffers([
     {
       name: `${vp.vehicleType} · ${vp.packageLabel || "Gói hành trình"} · ${route.from} → ${route.to}`,
@@ -90,13 +95,13 @@ export default async function Page({ params }: Props) {
       price: vp.numericPrice,
     },
   ]);
-  const serviceSchema = buildServiceSchema({
+  const serviceSchema = guard.indexable && readiness.serviceSchemaEligible ? buildServiceSchema({
     name: `Thuê xe ${vp.vehicleType.toLowerCase()} đi ${route.from} – ${route.to}`,
     description,
     url: routeComboHref(route, loaiXe),
     areaServed: [route.from, route.to],
-    offers: serviceOffers,
-  });
+    offers: readiness.offerSchemaEligible ? serviceOffers : undefined,
+  }) : undefined;
   const breadcrumbSchema = buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
     { name: route.region, url: `/tuyen-duong/${route.regionSlug || "khac"}` },
@@ -107,7 +112,7 @@ export default async function Page({ params }: Props) {
   return (
     <>
       <JsonLd data={breadcrumbSchema} />
-      <JsonLd data={serviceSchema} />
+      {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <ComboLandingPage
         route={route}
         vehiclePrice={vp}

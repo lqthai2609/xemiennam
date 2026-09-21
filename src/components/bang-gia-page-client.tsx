@@ -9,6 +9,7 @@ import { VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
 import { routeHref, routeComboHref, vehicleTypeSlug, type Route, type VehiclePrice } from "@/types/route";
 import { formatVNDate } from "@/lib/wp";
 import { UnifiedHero } from "@/components/unified-hero";
+import { PriceExplanation } from "@/components/price-explanation";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const footerLinkGroups = [
@@ -62,6 +63,9 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
       <UnifiedHero eyebrow="BẢNG GIÁ" title={<>Giá rõ ràng.<br /><em>chuyến đi nhẹ tênh.</em></>} description="Tham khảo nhanh mức giá thuê xe nguyên chiếc theo tuyến và loại xe." />
 
       <section className="section-wrap bang-gia-content">
+        <div className="mb-6">
+          <PriceExplanation compact />
+        </div>
         <div className="bang-gia-toolbar">
           <input
             type="text"
@@ -150,8 +154,8 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
         )}
 
         <p className="bang-gia-note">
-          Giá tham khảo, có thể thay đổi theo mùa hoặc dịp lễ. Liên hệ hotline hoặc Zalo để
-          được báo giá chính xác cho chuyến đi của bạn.
+          Mỗi ô thể hiện gói đại diện của đúng tuyến và loại xe. Liên hệ hotline hoặc Zalo để
+          xác nhận giá theo lịch và thông tin chuyến thực tế.
           {lastModified && <> Cập nhật lần cuối {formatVNDate(lastModified)}.</>}
         </p>
       </section>

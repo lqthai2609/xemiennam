@@ -10,21 +10,24 @@ type PageMetadataOptions = {
   openGraphType?: "website" | "article";
 };
 
-const LEGACY_BRAND_PATTERN = new RegExp(["Xe", "Miền", "Nam"].join("\\s+"), "gi");
+const LEGACY_BRAND_PATTERN = new RegExp(
+  [["Xe", "Miền", "Nam"].join("\\s+"), ["Gocar", "VN"].join("\\s+"), ["GOCAR", "VN"].join("")].join("|"),
+  "gi",
+);
 const escapedSiteName = SITE_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const leadingBrandPattern = new RegExp(`^${escapedSiteName}\\s*(?:[|:·\\-–—])\\s*`, "i");
 const trailingBrandPattern = new RegExp(`\\s*(?:[|:·\\-–—])\\s*${escapedSiteName}$`, "i");
 
 /**
  * Metadata is allowed to consume CMS / Rank Math content, but the public brand
- * must remain Gocar VN even while legacy CMS copy is being cleaned separately.
+ * must remain Alo Đặt Xe even while legacy CMS copy is being cleaned separately.
  */
 export function sanitizeMetadataText(value: string): string {
   return value.replace(LEGACY_BRAND_PATTERN, SITE_NAME).trim();
 }
 
 /**
- * Normalizes page titles before the root `%s | Gocar VN` template is applied.
+ * Normalizes page titles before the root title template is applied.
  * CMS / Rank Math titles are allowed to contain the brand; this removes only a
  * leading or trailing brand token so metadata never renders the brand twice.
  */

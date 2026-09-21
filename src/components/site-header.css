@@ -2,6 +2,13 @@
   display: none;
 }
 
+.site-header .brand-wordmark {
+  color: #102b3f;
+  font: 900 clamp(20px, 2.2vw, 28px) / 1 var(--font-archivo);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
 @media (max-width: 800px) {
   .site-header {
     width: 100%;
@@ -39,6 +46,10 @@
     max-height: 60px;
     object-fit: contain;
     object-position: left center;
+  }
+
+  .site-header .brand-wordmark {
+    font-size: 23px;
   }
 
   .site-header .header-search-toggle {

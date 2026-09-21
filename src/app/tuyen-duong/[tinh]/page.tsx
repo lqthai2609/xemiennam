@@ -7,6 +7,7 @@ import { DiemDenDetailPage } from "@/components/diem-den-detail";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
+import { SITE_NAME } from "@/lib/site-config";
 import { stripHtml } from "@/lib/wp";
 
 type Props = { params: Promise<{ tinh: string }> };
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const regionName = routes[0]?.region || hub?.title || tinh;
   return buildPageMetadata({
-    title: hub?.rankMathTitle || `Thuê xe nguyên chiếc đi ${regionName} | Gocar VN`,
+    title: hub?.rankMathTitle || `Thuê xe nguyên chiếc đi ${regionName} | ${SITE_NAME}`,
     description:
       hub?.rankMathDescription ||
       (hub ? stripHtml(hub.contentHtml).slice(0, 155) : `Thuê xe nguyên chiếc đi khắp khu vực ${regionName}, ${routes.length} tuyến đang chạy, giá theo từng loại xe.`),
@@ -57,7 +58,7 @@ export default async function Page({ params }: Props) {
     description,
     url: canonicalPath,
     areaServed: regionName,
-    providerName: "Gocar VN",
+    providerName: SITE_NAME,
   });
   const breadcrumbSchema = buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },

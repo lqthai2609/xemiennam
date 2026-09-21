@@ -44,7 +44,7 @@ export function SiteFooter({
   copyright,
   madeFor,
   brandMark = "G",
-  brandName = "GOCARVN",
+  brandName = "ALO ĐẶT XE",
 }: SiteFooterProps) {
   const resolvedPhoneHref = phoneHref || `tel:${phone.replace(/\s/g, "")}`;
   const safeLinkGroups = sanitizeFooterLinkGroups(linkGroups);
@@ -53,7 +53,7 @@ export function SiteFooter({
   return (
     <footer className="site-footer">
       <div className="footer-main">
-        <Link href="/" className="brand" aria-label="Gocar VN trang chủ">
+        <Link href="/" className="brand" aria-label={`${brandName} trang chủ`}>
           <span className="brand-mark">{brandMark}</span>
           <span>{brandName}</span>
         </Link>

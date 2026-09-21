@@ -4,8 +4,8 @@ import { PromotionsPage } from "@/components/promotions-page";
 import { buildPageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Khuyến mãi thuê xe | Gocar VN",
-  description: "Các chương trình ưu đãi giá thuê xe theo tuyến và loại xe tại Gocar VN — cập nhật thường xuyên.",
+  title: "Khuyến mãi thuê xe | Alo Đặt Xe",
+  description: "Các chương trình ưu đãi giá thuê xe theo tuyến và loại xe tại Alo Đặt Xe — cập nhật thường xuyên.",
   path: "/khuyen-mai",
 });
 

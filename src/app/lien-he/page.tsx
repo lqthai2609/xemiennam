@@ -4,8 +4,8 @@ import { LienHePageClient } from "@/components/lien-he-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Liên hệ đặt xe | Gocar VN",
-  description: "Gửi yêu cầu đặt xe hoặc liên hệ tư vấn — Gocar VN phản hồi trong ít phút, hotline hỗ trợ 24/7.",
+  title: "Liên hệ đặt xe | Alo Đặt Xe",
+  description: "Gửi yêu cầu đặt xe hoặc liên hệ tư vấn — Alo Đặt Xe phản hồi trong ít phút, hotline hỗ trợ 24/7.",
   path: "/lien-he",
 });
 

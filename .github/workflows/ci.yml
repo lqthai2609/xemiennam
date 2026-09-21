@@ -52,6 +52,8 @@ jobs:
           }
 
           check_forbidden "Legacy brand found in src" "Xe Miền Nam"
+          check_forbidden "Retired public brand found in src" "Gocar VN"
+          check_forbidden "Retired compact brand found in src" "GOCARVN"
           check_forbidden "Legacy hotline found in src" "1900 6789"
           check_forbidden "Legacy hotline URI found in src" "19006789"
 
@@ -108,6 +110,9 @@ jobs:
 
       - name: Booking search regression guard
         run: npm run test:booking-search
+
+      - name: Day 36B brand, pricing UI and Content Readiness guard
+        run: npm run test:day36b
 
       - name: Production build
         run: npm run build

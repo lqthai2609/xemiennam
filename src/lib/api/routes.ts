@@ -6,6 +6,7 @@ import type {
   RouteDirectionPricing,
   RoutePricingPackage,
   RoutePricingV2,
+  RouteContentReadiness,
   VehiclePrice,
 } from "@/types/route";
 import { routes as mockRoutes } from "@/data/routes";
@@ -201,6 +202,23 @@ function resolveRouteEndpoints(wp: WPRoute, locations: Map<number, LocationV2>) 
   return { pair, origin, destination, from, to };
 }
 
+function buildContentReadiness(wp: WPRoute): RouteContentReadiness | undefined {
+  const version = Number(wp.meta.content_readiness_version ?? 0);
+  if (!Number.isInteger(version) || version < 1) return undefined;
+
+  return {
+    version,
+    editorialState: wp.meta.content_editorial_state ?? "missing",
+    serviceState: wp.meta.content_service_state ?? "unknown",
+    canonicalState: wp.meta.content_canonical_state ?? "missing",
+    mappingState: wp.meta.content_mapping_state ?? "clear",
+    requestedIndexability: wp.meta.content_indexability_state ?? "noindex",
+    schemaState: wp.meta.content_schema_state ?? "none",
+    reasonCode: wp.meta.content_readiness_reason?.trim() || undefined,
+    sourceRef: wp.meta.content_source_ref?.trim() || undefined,
+  };
+}
+
 function mapWPRouteToRoute(
   wp: WPRoute,
   rawVehicles: WPVehicle[],
@@ -239,6 +257,7 @@ function mapWPRouteToRoute(
     pricingV2,
     originLocation: toLocationRef(origin),
     destinationLocation: toLocationRef(destination),
+    contentReadiness: buildContentReadiness(wp),
     comboDescriptions: buildComboDescriptions(wp, rawVehicles),
     pickupPoints: splitCommaList(wp.meta.diem_don),
     dropoffPoints: splitCommaList(wp.meta.diem_tra),

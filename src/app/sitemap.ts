@@ -5,9 +5,9 @@ import { fetchServices } from "@/lib/api/services";
 import { fetchPosts } from "@/lib/api/blog";
 import { fetchDiemDenBySlug } from "@/lib/api/diem-den";
 import { getIndexableComboVehicleSlugs } from "@/lib/combo";
-import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { vehicleCategories } from "@/data/vehicle-categories";
 import { routeHref, routeComboHref } from "@/types/route";
+import { resolveRouteContentReadiness } from "@/lib/content-readiness";
 
 /**
  * Sitemap động (Ngày 23, mục 5 kiến trúc kỹ thuật) — tự sinh từ dữ liệu WP REST thật
@@ -79,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Route detail Long Thành vẫn render để QA/ghi nhận nhu cầu, nhưng Day 21 giữ noindex
   // cho tới khi trạng thái khai thác thương mại được xác minh. Do đó không đưa chúng vào sitemap.
-  const indexableRoutes = routes.filter((route) => !isPrelaunchAirportRoute(route));
+  const indexableRoutes = routes.filter((route) => resolveRouteContentReadiness(route).sitemapEligible);
   const routeEntries: MetadataRoute.Sitemap = indexableRoutes.map((route) => ({
     url: `${SITE_URL}${routeHref(route)}`,
     lastModified: route.modifiedDate,

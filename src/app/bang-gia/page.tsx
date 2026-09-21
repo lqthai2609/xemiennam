@@ -4,7 +4,7 @@ import { BangGiaPageClient } from "@/components/bang-gia-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Bảng giá thuê xe nguyên chiếc theo tuyến | Gocar VN",
+  title: "Bảng giá thuê xe nguyên chiếc theo tuyến | Alo Đặt Xe",
   description: "Bảng giá tham khảo cho thuê xe nguyên chiếc theo từng tuyến và loại xe (4–7/16–29/45 chỗ/Limousine), cập nhật theo dữ liệu mới nhất.",
   path: "/bang-gia",
 });
