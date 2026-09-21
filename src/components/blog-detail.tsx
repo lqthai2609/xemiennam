@@ -7,6 +7,7 @@ import { navItems } from "@/data/nav";
 import type { BlogPost } from "@/types/blog";
 import { routeHref, routePriceKicker, type Route } from "@/types/route";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   {
@@ -50,9 +51,9 @@ function RelatedRouteCard({ route }: { route: Route }) {
       </div>
       <div className="rt-body">
         <div className="rt-route">
-          <span>{route.from}</span>
+          <span>{getPublicLocationLabel(route.from)}</span>
           <ArrowRight size={16} />
-          <span>{route.to}</span>
+          <span>{getPublicLocationLabel(route.to)}</span>
         </div>
         <div className="rt-meta">
           <span>
@@ -92,7 +93,7 @@ export function BlogDetailPage({ post, relatedPosts, relatedRoutes }: { post: Bl
             <span className="eyebrow-line" /> {post.category}
           </p>
         )}
-        <h1>{post.title}</h1>
+        <h1>{formatPublicLocationText(post.title)}</h1>
         <div className="post-meta">
           <span>
             <Calendar size={15} /> Đăng ngày {formatVNDate(post.publishedDate)}
@@ -108,13 +109,13 @@ export function BlogDetailPage({ post, relatedPosts, relatedRoutes }: { post: Bl
       <section className="section-wrap post-content-wrap">
         {post.featuredImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- ảnh đến từ WordPress (domain động), chưa cấu hình next/image remotePatterns
-          <img className="post-featured-image" src={post.featuredImageUrl} alt={post.title} />
+          <img className="post-featured-image" src={post.featuredImageUrl} alt={formatPublicLocationText(post.title)} />
         ) : (
           <div className="post-featured-placeholder">
             <CategoryIcon category={post.category} size={32} />
           </div>
         )}
-        <article className="post-content" dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+        <article className="post-content" dangerouslySetInnerHTML={{ __html: formatPublicLocationText(post.contentHtml) }} />
       </section>
 
       {relatedRoutes.length > 0 && (

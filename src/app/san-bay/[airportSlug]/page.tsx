@@ -9,6 +9,7 @@ import { airportDisplayName, airportHubHref } from "@/lib/airport-seo";
 import { buildPageMetadata } from "@/lib/metadata";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
 import { SITE_NAME } from "@/lib/site-config";
+import { getPublicLocationLabel } from "@/lib/public-location-label";
 
 type Props = { params: Promise<{ airportSlug: string }> };
 
@@ -57,13 +58,13 @@ export default async function Page({ params }: Props) {
       const pricing = item.route.pricingV2?.[item.pricingDirection];
       if (!pricing?.enabled) return [];
       return pricing.packages.map((pkg) => ({
-        name: `${pkg.vehicleType} · ${pkg.packageLabel} · ${item.from} → ${item.to}`,
+        name: `${pkg.vehicleType} · ${pkg.packageLabel} · ${getPublicLocationLabel(item.from)} → ${getPublicLocationLabel(item.to)}`,
         mode: pkg.mode,
         price: pkg.price,
       }));
     }),
   );
-  const areaServed = Array.from(new Set(hub.routes.map((item) => item.counterpart.name))).sort((a, b) =>
+  const areaServed = Array.from(new Set(hub.routes.map((item) => getPublicLocationLabel(item.counterpart)))).sort((a, b) =>
     a.localeCompare(b, "vi"),
   );
   const serviceSchema =

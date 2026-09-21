@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "typecheck": "tsc --noEmit",
     "start": "next start",
     "lint": "eslint",
     "locations:preview": "node scripts/gocar-location-migration.mjs",
@@ -23,7 +24,10 @@
     "test:price-conditions": "node --test scripts/gocar-price-conditions-source.test.mjs",
     "test:booking-search": "node --test scripts/gocar-booking-search-source.test.mjs",
     "test:seo-url-map": "node --test scripts/gocar-seo-url-map.test.mjs",
-    "test:day36b": "node --test scripts/gocar-day36b-source.test.mjs"
+    "test:day36b": "node --test scripts/gocar-day36b-source.test.mjs",
+    "test:location-display": "node --test scripts/gocar-location-display.test.mjs",
+    "test:location-display-output": "node --test scripts/gocar-location-display-output.test.mjs",
+    "audit:location-display": "node scripts/gocar-location-display-audit.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

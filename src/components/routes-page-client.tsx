@@ -12,6 +12,7 @@ import { emptyFilters, type FilterState, type Route } from "@/types/route";
 import { navItems } from "@/data/nav";
 import { locationMatchesQuery } from "@/lib/location-search";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { getPublicLocationLabel } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   {
@@ -121,16 +122,20 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
 
         <div className="route-groups">
           {groupedRoutes.length > 0 ? (
-            groupedRoutes.map(([region, regionRoutes]) => (
-              <section className="route-region" key={region} aria-labelledby={`region-${region}`}>
+            groupedRoutes.map(([region, regionRoutes]) => {
+              const publicRegion = getPublicLocationLabel(region);
+              const regionHeadingId = `region-${regionRoutes[0]?.regionSlug || "khac"}`;
+              return (
+              <section className="route-region" key={region} aria-labelledby={regionHeadingId}>
                 <div className="route-region-heading">
                   <div><span className="route-region-dot" /><p className="section-label">ĐIỂM ĐẾN</p></div>
-                  <h2 id={`region-${region}`}>{region}</h2>
+                  <h2 id={regionHeadingId}>{publicRegion}</h2>
                   <span>{regionRoutes.length} tuyến</span>
                 </div>
                 <RouteResults routes={regionRoutes} onClearFilters={() => setFilters(emptyFilters)} />
               </section>
-            ))
+              );
+            })
           ) : (
             <div className="rounded-2xl border border-border bg-card px-5 py-8 text-center md:px-8 md:py-10" role="status">
               <p className="m-0 text-lg font-bold text-foreground">

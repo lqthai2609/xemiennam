@@ -12,6 +12,7 @@ import { SITE_NAME } from "@/lib/site-config";
 import { buildPageMetadata } from "@/lib/metadata";
 import { routeHref, type Route } from "@/types/route";
 import { resolveRouteContentReadiness } from "@/lib/content-readiness";
+import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
 async function buildVehicleImageByType(): Promise<Record<string, string>> {
@@ -32,7 +33,7 @@ function metadataPriceSuffix(route: Route): string {
 }
 
 function fallbackRouteDescription(route: Route): string {
-  const base = `Thuê xe nguyên chiếc tuyến ${route.from} – ${route.to}`;
+  const base = `Thuê xe nguyên chiếc tuyến ${getPublicRouteLabel(route, " – ")}`;
   if (!route.pricingV2) return route.price && route.price !== "—" ? `${base}, giá từ ${route.price}.` : `${base}.`;
   const featured = route.pricingV2.outbound.featured;
   if (featured?.mode === "fixed" && featured.price) return `${base}, giá từ ${route.price}.`;
@@ -46,7 +47,7 @@ function buildRouteSchemaOffers(route: Route) {
     [route.pricingV2.outbound, route.pricingV2.inbound].flatMap((direction) => {
       if (!direction.enabled) return [];
       return direction.packages.map((item) => ({
-        name: `${item.vehicleType} · ${item.packageLabel} · ${item.direction === "outbound" ? `${route.from} → ${route.to}` : `${route.to} → ${route.from}`}`,
+        name: `${item.vehicleType} · ${item.packageLabel} · ${item.direction === "outbound" ? getPublicRouteLabel(route) : `${getPublicLocationLabel(route.to)} → ${getPublicLocationLabel(route.from)}`}`,
         mode: item.mode,
         price: item.price,
       }));
@@ -74,18 +75,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const canonicalPath = routeHref(route);
   const readiness = resolveRouteContentReadiness(route);
+  const publicFrom = getPublicLocationLabel(route.from);
+  const publicTo = getPublicLocationLabel(route.to);
   if (isPrelaunchAirportRoute(route)) {
     return buildPageMetadata({
-      title: `Chuẩn bị tuyến xe ${route.from} ↔ ${route.to} | ${SITE_NAME}`,
-      description: `Thông tin chuẩn bị tuyến ${route.from} ↔ ${route.to}. Liên hệ ${SITE_NAME} để ghi nhận nhu cầu; lịch khai thác sân bay thực tế cần đối chiếu thông báo chính thức.`,
+      title: `Chuẩn bị tuyến xe ${publicFrom} ↔ ${publicTo} | ${SITE_NAME}`,
+      description: `Thông tin chuẩn bị tuyến ${publicFrom} ↔ ${publicTo}. Liên hệ ${SITE_NAME} để ghi nhận nhu cầu; lịch khai thác sân bay thực tế cần đối chiếu thông báo chính thức.`,
       path: canonicalPath,
       noIndex: !readiness.indexable,
     });
   }
 
   return buildPageMetadata({
-    title: route.rankMathTitle || `Thuê xe ${route.from} đi ${route.to}${metadataPriceSuffix(route)} | ${SITE_NAME}`,
-    description: route.rankMathDescription || route.summary || fallbackRouteDescription(route),
+    title: formatPublicLocationText(route.rankMathTitle || `Thuê xe ${publicFrom} đi ${publicTo}${metadataPriceSuffix(route)} | ${SITE_NAME}`),
+    description: formatPublicLocationText(route.rankMathDescription || route.summary || fallbackRouteDescription(route)),
     path: canonicalPath,
     noIndex: !readiness.indexable,
   });
@@ -96,6 +99,8 @@ export default async function Page({ params }: Props) {
   const route = await fetchRouteBySlug(tuyen);
   if (!route || route.regionSlug !== tinh) notFound();
   const readiness = resolveRouteContentReadiness(route);
+  const publicFrom = getPublicLocationLabel(route.from);
+  const publicTo = getPublicLocationLabel(route.to);
 
   const [regionRoutes, vehicleImageByType, allTestimonials, relatedPosts] = await Promise.all([
     fetchRoutesByRegion(route.regionSlug),
@@ -109,16 +114,16 @@ export default async function Page({ params }: Props) {
   const serviceSchema = !readiness.serviceSchemaEligible
     ? undefined
     : buildServiceSchema({
-        name: `Thuê xe nguyên chiếc ${route.from} đi ${route.to}`,
-        description: route.summary || fallbackRouteDescription(route),
+        name: `Thuê xe nguyên chiếc ${publicFrom} đi ${publicTo}`,
+        description: formatPublicLocationText(route.summary || fallbackRouteDescription(route)),
         url: routeHref(route),
-        areaServed: [route.from, route.to],
+        areaServed: [publicFrom, publicTo],
         offers: readiness.offerSchemaEligible ? buildRouteSchemaOffers(route) : undefined,
       });
   const breadcrumbSchema = buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
-    { name: route.region, url: `/tuyen-duong/${route.regionSlug || "khac"}` },
-    { name: `${route.from} → ${route.to}`, url: routeHref(route) },
+    { name: getPublicLocationLabel(route.region), url: `/tuyen-duong/${route.regionSlug || "khac"}` },
+    { name: getPublicRouteLabel(route), url: routeHref(route) },
   ]);
 
   return (

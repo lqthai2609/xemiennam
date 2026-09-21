@@ -9,6 +9,7 @@ import { navItems } from "@/data/nav";
 import { getZaloChatLink } from "@/lib/zalo";
 import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   {
@@ -101,7 +102,7 @@ export function LienHePageClient({
             <Phone /> {SITE_HOTLINE} (24/7)
           </a>
           <span className="lien-he-info-row">
-            <MapPin /> TP. Hồ Chí Minh
+            <MapPin /> {HO_CHI_MINH_PUBLIC_LABEL}
           </span>
           {zaloLink ? (
             <a className="lien-he-info-row" href={zaloLink} target="_blank" rel="noopener noreferrer">

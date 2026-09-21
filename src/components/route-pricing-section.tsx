@@ -9,6 +9,7 @@ import { MediaPhoto } from "@/components/media-photo";
 import { PriceExplanation } from "@/components/price-explanation";
 import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
+import { getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 import {
   priceTypeLabel,
   routeComboHref,
@@ -31,7 +32,7 @@ function LegacyPricingGrid({
   route: Route;
   vehicleImageByType: Record<string, string>;
 }) {
-  const routeLabel = `${route.from} – ${route.to}`;
+  const routeLabel = getPublicRouteLabel(route, " – ");
   return (
     <div className="detail-price-grid">
       {route.pricingByVehicle.map((vp) => (
@@ -54,7 +55,7 @@ function LegacyPricingGrid({
           <small>{priceTypeLabel(vp.priceType)} · Giá tham khảo</small>
           <Button size="sm" variant="outline" asChild>
             <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))}>
-              Thuê xe {vp.vehicleType} đi {route.to} <ArrowRight size={15} />
+              Thuê xe {vp.vehicleType} đi {getPublicLocationLabel(route.to)} <ArrowRight size={15} />
             </Link>
           </Button>
           <RouteBookingActions route={routeLabel} routeId={route.id} vehicleType={vp.vehicleType} price={vp.price} />
@@ -105,9 +106,9 @@ export function RoutePricingSection({
     return <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
   }
 
-  const canonicalRoute = `${route.from} – ${route.to}`;
-  const displayRoute = activeDirection === "outbound" ? canonicalRoute : `${route.to} – ${route.from}`;
-  const destination = activeDirection === "outbound" ? route.to : route.from;
+  const canonicalRoute = getPublicRouteLabel(route, " – ");
+  const displayRoute = activeDirection === "outbound" ? canonicalRoute : `${getPublicLocationLabel(route.to)} – ${getPublicLocationLabel(route.from)}`;
+  const destination = getPublicLocationLabel(activeDirection === "outbound" ? route.to : route.from);
   const pickupLocation =
     activeDirection === "outbound"
       ? route.originLocation
@@ -128,9 +129,9 @@ export function RoutePricingSection({
         : undefined;
   const airportName =
     airportContext === "pickup_from_airport"
-      ? pickupLocation?.name
+      ? getPublicLocationLabel(pickupLocation)
       : airportContext === "dropoff_at_airport"
-        ? dropoffLocation?.name
+        ? getPublicLocationLabel(dropoffLocation)
         : undefined;
 
   return (
@@ -142,7 +143,7 @@ export function RoutePricingSection({
         <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Chọn chiều di chuyển">
           {availableDirections.map((key) => {
             const selected = key === direction;
-            const label = key === "outbound" ? `${route.from} → ${route.to}` : `${route.to} → ${route.from}`;
+            const label = key === "outbound" ? getPublicRouteLabel(route) : `${getPublicLocationLabel(route.to)} → ${getPublicLocationLabel(route.from)}`;
             return (
               <Button
                 key={key}

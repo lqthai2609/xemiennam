@@ -11,6 +11,7 @@ import type { Testimonial } from "@/types/testimonial";
 import type { Route } from "@/types/route";
 import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { getPublicRouteLabel } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   {
@@ -32,7 +33,7 @@ const footerLinkGroups = [
 function routeLabel(routes: Route[], slug?: string): string | undefined {
   if (!slug) return undefined;
   const route = routes.find((r) => r.slug === slug);
-  return route ? `${route.from} – ${route.to}` : undefined;
+  return route ? getPublicRouteLabel(route, " – ") : undefined;
 }
 
 /**

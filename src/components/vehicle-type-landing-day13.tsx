@@ -12,6 +12,7 @@ import { VehicleTypeHero } from "@/components/vehicle-type-hero";
 import type { BlogPost } from "@/types/blog";
 import type { VehicleCategory } from "@/types/vehicle-category";
 import { SITE_CONTACT_PHONE_DISPLAY, SITE_HOTLINE, SITE_NAME } from "@/lib/site-config";
+import { formatPublicLocationText } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Loại xe", href: "/loai-xe" }] },
@@ -102,7 +103,7 @@ export function VehicleTypeLanding({
           <div className="vehicle-price-table">
             {routePrices.map((item, index) => (
               <div className="vehicle-type-price-row" key={`${item.route}-${index}`}>
-                <span>{item.route}</span>
+                <span>{formatPublicLocationText(item.route)}</span>
                 <strong>{item.price}</strong>
                 <small>{item.note}</small>
               </div>
@@ -120,7 +121,7 @@ export function VehicleTypeLanding({
             </div>
           </div>
           <div className="departure-list">
-            {relatedRoutes.map((route) => <Link key={route.href} href={route.href} className="vehicle-chip">{route.label}</Link>)}
+            {relatedRoutes.map((route) => <Link key={route.href} href={route.href} className="vehicle-chip">{formatPublicLocationText(route.label)}</Link>)}
           </div>
         </section>
       )}

@@ -1,5 +1,6 @@
 import { getVehicleCategory } from "@/data/vehicle-categories";
 import { formatPriceShort } from "@/lib/wp";
+import { formatPublicLocationText, getPublicRouteLabel } from "@/lib/public-location-label";
 import {
   vehicleTypeSlug,
   type Route,
@@ -235,10 +236,11 @@ export function comboDescriptionOrDefault(route: Route, vp: VehiclePrice): strin
   const editorialDescription = findComboDescription(route, vp);
   if (editorialDescription) return editorialDescription;
 
-  const prefix = route.summary ? `${route.summary} ` : "";
+  const prefix = route.summary ? `${formatPublicLocationText(route.summary)} ` : "";
+  const routeLabel = getPublicRouteLabel(route, " – ");
   if (vp.pricingMode === "contact") {
-    return `${prefix}Thuê xe ${vp.vehicleType} tuyến ${route.from} – ${route.to}; liên hệ để nhận báo giá theo lịch thực tế.`;
+    return `${prefix}Thuê xe ${vp.vehicleType} tuyến ${routeLabel}; liên hệ để nhận báo giá theo lịch thực tế.`;
   }
 
-  return `${prefix}Giá thuê xe ${vp.vehicleType} tham khảo ${vp.price} cho tuyến ${route.from} – ${route.to}.`;
+  return `${prefix}Giá thuê xe ${vp.vehicleType} tham khảo ${vp.price} cho tuyến ${routeLabel}.`;
 }

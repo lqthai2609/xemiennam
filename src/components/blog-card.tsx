@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import type { BlogPost } from "@/types/blog";
 import { formatVNDate } from "@/lib/wp";
+import { formatPublicLocationText } from "@/lib/public-location-label";
 
 export function BlogCard({ post }: { post: BlogPost }) {
   return (
@@ -24,7 +25,7 @@ export function BlogCard({ post }: { post: BlogPost }) {
       </div>
       <div className="blog-body">
         <span className="blog-cat">{post.category}</span>
-        <h3>{post.title}</h3>
+        <h3>{formatPublicLocationText(post.title)}</h3>
         <time className="blog-date" dateTime={post.publishedDate}>
           {formatVNDate(post.publishedDate)}
         </time>

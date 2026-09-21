@@ -9,6 +9,7 @@ import { buildBreadcrumbListSchema, buildServiceSchema, buildFaqPageSchema } fro
 import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 import { stripHtml } from "@/lib/wp";
+import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
 
 type Props = { params: Promise<{ tinh: string }> };
 
@@ -29,11 +30,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const regionName = routes[0]?.region || hub?.title || tinh;
+  const publicRegionName = getPublicLocationLabel(regionName);
   return buildPageMetadata({
-    title: hub?.rankMathTitle || `Thuê xe nguyên chiếc đi ${regionName} | ${SITE_NAME}`,
+    title: formatPublicLocationText(hub?.rankMathTitle || `Thuê xe nguyên chiếc đi ${publicRegionName} | ${SITE_NAME}`),
     description:
-      hub?.rankMathDescription ||
-      (hub ? stripHtml(hub.contentHtml).slice(0, 155) : `Thuê xe nguyên chiếc đi khắp khu vực ${regionName}, ${routes.length} tuyến đang chạy, giá theo từng loại xe.`),
+      formatPublicLocationText(hub?.rankMathDescription ||
+      (hub ? stripHtml(hub.contentHtml).slice(0, 155) : `Thuê xe nguyên chiếc đi khắp khu vực ${publicRegionName}, ${routes.length} tuyến đang chạy, giá theo từng loại xe.`)),
     path: `/tuyen-duong/${tinh}`,
   });
 }
@@ -48,30 +50,34 @@ export default async function Page({ params }: Props) {
   if (routes.length === 0 && !hub) notFound();
 
   const regionName = routes[0]?.region || hub?.title || tinh;
+  const publicRegionName = getPublicLocationLabel(regionName);
   const canonicalPath = `/tuyen-duong/${tinh}`;
   const description = hub
-    ? stripHtml(hub.contentHtml).slice(0, 200)
-    : `Thuê xe nguyên chiếc đi khắp khu vực ${regionName}, ${routes.length} tuyến đang chạy.`;
+    ? formatPublicLocationText(stripHtml(hub.contentHtml).slice(0, 200))
+    : `Thuê xe nguyên chiếc đi khắp khu vực ${publicRegionName}, ${routes.length} tuyến đang chạy.`;
 
   const serviceSchema = buildServiceSchema({
-    name: `Thuê xe nguyên chiếc đi ${regionName}`,
+    name: `Thuê xe nguyên chiếc đi ${publicRegionName}`,
     description,
     url: canonicalPath,
-    areaServed: regionName,
+    areaServed: publicRegionName,
     providerName: SITE_NAME,
   });
   const breadcrumbSchema = buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
-    { name: regionName, url: canonicalPath },
+    { name: publicRegionName, url: canonicalPath },
   ]);
 
   return (
     <>
       <JsonLd data={breadcrumbSchema} />
       <JsonLd data={serviceSchema} />
-      {hub && hub.faqItems.length > 0 && <JsonLd data={buildFaqPageSchema(hub.faqItems)} />}
+      {hub && hub.faqItems.length > 0 && <JsonLd data={buildFaqPageSchema(hub.faqItems.map((item) => ({
+        question: formatPublicLocationText(item.question),
+        answer: formatPublicLocationText(item.answer),
+      })))} />}
       <DiemDenDetailPage
-        regionName={regionName}
+        regionName={publicRegionName}
         hub={hub}
         routes={routes}
         airportConnections={airportConnections}

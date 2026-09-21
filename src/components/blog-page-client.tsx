@@ -9,6 +9,7 @@ import { formatVNDate } from "@/lib/wp";
 import { navItems } from "@/data/nav";
 import type { BlogPost } from "@/types/blog";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { formatPublicLocationText } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   {
@@ -50,15 +51,15 @@ function BlogCard({ post }: { post: BlogPost }) {
       <div className="blog-thumb">
         {post.featuredImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- ảnh đến từ WordPress (domain động), chưa cấu hình next/image remotePatterns; nhập ảnh thật dời tới Ngày 25–26
-          <img src={post.featuredImageUrl} alt={post.title} />
+          <img src={post.featuredImageUrl} alt={formatPublicLocationText(post.title)} />
         ) : (
           <CategoryIcon category={post.category} />
         )}
       </div>
       <div className="blog-body">
         {post.category && <span className="blog-cat">{post.category}</span>}
-        <h3>{post.title}</h3>
-        <p className="blog-excerpt">{post.excerpt}</p>
+        <h3>{formatPublicLocationText(post.title)}</h3>
+        <p className="blog-excerpt">{formatPublicLocationText(post.excerpt)}</p>
         <span className="blog-date">{formatVNDate(post.publishedDate)}</span>
       </div>
     </Link>

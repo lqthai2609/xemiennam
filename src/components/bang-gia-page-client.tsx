@@ -11,6 +11,7 @@ import { formatVNDate } from "@/lib/wp";
 import { UnifiedHero } from "@/components/unified-hero";
 import { PriceExplanation } from "@/components/price-explanation";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { getPublicRouteLabel } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   {
@@ -96,7 +97,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
                 <tr key={route.slug}>
                   <td>
                     <Link href={routeHref(route)} className="bang-gia-route-link">
-                      {route.from} → {route.to}
+                      {getPublicRouteLabel(route)}
                     </Link>
                   </td>
                   {columns.map((type) => {
@@ -126,7 +127,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
           {filteredRoutes.map((route) => (
             <article className="bang-gia-mobile-card" key={route.slug}>
               <Link href={routeHref(route)} className="bang-gia-mobile-route">
-                {route.from} → {route.to}
+                {getPublicRouteLabel(route)}
               </Link>
               <div className="bang-gia-mobile-prices">
                 {columns.map((type) => {

@@ -11,6 +11,7 @@ import { MultiStopFields } from "@/components/multi-stop-fields";
 import { trackBookingLead } from "@/lib/analytics";
 import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
 import { SITE_NAME } from "@/lib/site-config";
+import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
@@ -53,7 +54,9 @@ interface ContactBookingFormProps {
   onSubmit: (data: BookingFormData) => void | Promise<void>;
 }
 
-const FALLBACK_ROUTES = ["TP.HCM – Vũng Tàu", "TP.HCM – Cần Thơ", "TP.HCM – Đà Lạt"];
+const FALLBACK_ROUTES = ["Vũng Tàu", "Cần Thơ", "Đà Lạt"].map(
+  (destination) => `${HO_CHI_MINH_PUBLIC_LABEL} – ${destination}`,
+);
 const FALLBACK_VEHICLE_TYPES = ["4–7 chỗ", "16–29 chỗ", "45 chỗ", "Limousine"];
 const OTHER_ROUTE_LABEL = "Tuyến khác";
 

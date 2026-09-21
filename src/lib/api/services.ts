@@ -9,6 +9,7 @@ import { fetchRoutes } from "./routes";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { splitCommaList, stripHtml } from "@/lib/wp";
 import { SITE_HOTLINE } from "@/lib/site-config";
+import { formatPublicLocationText, getPublicRouteLabel } from "@/lib/public-location-label";
 
 const useMockFallback = shouldUseMockFallback();
 
@@ -79,9 +80,9 @@ function relatedRoutesForService(service: Service, routes: Route[], count = 4): 
       const matchingTypes = route.vehicleTypes.filter((type) => accepted.has(vehicleTypeSlug(type)));
       if (matchingTypes.length === 0) return undefined;
       return {
-        name: `${route.from} → ${route.to}`,
+        name: getPublicRouteLabel(route),
         href: routeHref(route),
-        summary: route.summary || [route.distance, route.time].filter(Boolean).join(" · "),
+        summary: formatPublicLocationText(route.summary || [route.distance, route.time].filter(Boolean).join(" · ")),
         combos: matchingTypes.map((vehicleType) => ({
           vehicleType,
           href: routeComboHref(route, vehicleTypeSlug(vehicleType)),
@@ -96,8 +97,28 @@ function enrichServiceCluster(service: Service, routes: Route[]): Service {
   const editorial = SERVICE_CLUSTER_BY_SLUG[service.slug];
   return {
     ...service,
-    searchIntent: editorial?.searchIntent,
-    useCases: editorial?.useCases,
+    name: formatPublicLocationText(service.name),
+    shortDescription: formatPublicLocationText(service.shortDescription),
+    detailDescription: formatPublicLocationText(service.detailDescription),
+    iconLabel: formatPublicLocationText(service.iconLabel),
+    vehicleTypes: service.vehicleTypes.map((item) => ({
+      ...item,
+      name: formatPublicLocationText(item.name),
+      description: formatPublicLocationText(item.description),
+    })),
+    suggestedVehicles: service.suggestedVehicles.map((item) => ({
+      ...item,
+      name: formatPublicLocationText(item.name),
+      detail: formatPublicLocationText(item.detail),
+    })),
+    notes: service.notes.map(formatPublicLocationText),
+    rankMathTitle: service.rankMathTitle ? formatPublicLocationText(service.rankMathTitle) : undefined,
+    rankMathDescription: service.rankMathDescription ? formatPublicLocationText(service.rankMathDescription) : undefined,
+    searchIntent: editorial?.searchIntent ? formatPublicLocationText(editorial.searchIntent) : undefined,
+    useCases: editorial?.useCases.map((item) => ({
+      title: formatPublicLocationText(item.title),
+      description: formatPublicLocationText(item.description),
+    })),
     relatedRoutes: relatedRoutesForService(service, routes),
   };
 }
@@ -106,7 +127,7 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
   const vehicleTypes: ServiceVehicleType[] = embeddedTerms(wp._embedded, "vehicle_type").map((t) => ({
     name: t.name,
     slug: vehicleTypeSlug(t.name) || t.slug,
-    description: stripHtml(t.description ?? ""),
+    description: formatPublicLocationText(stripHtml(t.description ?? "")),
   }));
 
   const suggestedIds = (wp.meta.loai_xe_phu_hop ?? []).map(String);
@@ -115,7 +136,7 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
     .map((v) => ({
       name: v.name,
       slug: vehicleTypeSlug(v.type),
-      detail: v.description,
+      detail: formatPublicLocationText(v.description),
     }));
 
   const need = wp.meta.mo_ta_nhu_cau ?? "";
@@ -123,19 +144,19 @@ async function mapWPServiceToService(wp: WPService, allVehicles: Vehicle[]): Pro
 
   return {
     slug: wp.slug,
-    name: wp.title.rendered,
-    shortDescription: (need || body).slice(0, 140),
-    detailDescription: body,
+    name: formatPublicLocationText(wp.title.rendered),
+    shortDescription: formatPublicLocationText((need || body).slice(0, 140)),
+    detailDescription: formatPublicLocationText(body),
     icon: ICON_BY_SLUG[wp.slug] ?? "city-tour",
-    iconLabel: wp.title.rendered,
+    iconLabel: formatPublicLocationText(wp.title.rendered),
     image: embeddedFeaturedImage(wp._embedded),
     vehicleTypes,
     suggestedVehicles,
-    notes: splitCommaList(wp.meta.luu_y_dich_vu),
+    notes: splitCommaList(wp.meta.luu_y_dich_vu).map(formatPublicLocationText),
     hotline: SITE_HOTLINE,
     modifiedDate: wp.modified,
-    rankMathTitle: wp.rank_math_title || undefined,
-    rankMathDescription: wp.rank_math_description || undefined,
+    rankMathTitle: wp.rank_math_title ? formatPublicLocationText(wp.rank_math_title) : undefined,
+    rankMathDescription: wp.rank_math_description ? formatPublicLocationText(wp.rank_math_description) : undefined,
   };
 }
 

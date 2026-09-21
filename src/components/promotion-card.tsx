@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BusFront, CalendarClock, MapPin, Percent, Tag } from "lucide-react";
 import type { Promotion } from "@/types/promotion";
 import { formatVNDate } from "@/lib/wp";
+import { formatPublicLocationText } from "@/lib/public-location-label";
 
 /**
  * Thẻ khuyến mãi (Ngày 18) — đúng bố cục mục 9 xemiennam-v0-prompts.md: badge giảm giá,
@@ -20,15 +21,15 @@ export function PromotionCard({ promotion }: { promotion: Promotion }) {
         {promotion.isExpired && <span className="promo-status">Đã kết thúc</span>}
       </div>
 
-      <h3>{promotion.name}</h3>
-      {promotion.description && <p className="promo-description">{promotion.description}</p>}
+      <h3>{formatPublicLocationText(promotion.name)}</h3>
+      {promotion.description && <p className="promo-description">{formatPublicLocationText(promotion.description)}</p>}
 
       <div className="promo-meta">
         <span>
           <CalendarClock size={14} /> {formatVNDate(promotion.startDate)} – {formatVNDate(promotion.endDate)}
         </span>
         <span>
-          <MapPin size={14} /> {promotion.routeLabels.length ? promotion.routeLabels.join(", ") : "Tất cả tuyến"}
+          <MapPin size={14} /> {promotion.routeLabels.length ? promotion.routeLabels.map(formatPublicLocationText).join(", ") : "Tất cả tuyến"}
         </span>
         <span>
           <BusFront size={14} /> {promotion.vehicleTypeLabels.length ? promotion.vehicleTypeLabels.join(", ") : "Mọi loại xe"}
