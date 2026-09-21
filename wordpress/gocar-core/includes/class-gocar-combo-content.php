@@ -65,7 +65,7 @@ final class Gocar_Combo_Content {
     public static function register_meta_box(): void {
         add_meta_box(
             'gocar-route-vehicle-content',
-            'Gocar VN — Nội dung Route × Vehicle',
+            'Alo Đặt Xe — Nội dung Route × Vehicle',
             array( __CLASS__, 'render_meta_box' ),
             'route',
             'normal',

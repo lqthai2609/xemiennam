@@ -7,8 +7,8 @@ import { buildAggregateRatingSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Đánh giá khách hàng | Gocar VN",
-  description: "Đánh giá thật từ khách hàng đã thuê xe cùng Gocar VN, lọc theo số sao và theo tuyến.",
+  title: "Đánh giá khách hàng | Alo Đặt Xe",
+  description: "Đánh giá thật từ khách hàng đã thuê xe cùng Alo Đặt Xe, lọc theo số sao và theo tuyến.",
   path: "/danh-gia",
 });
 

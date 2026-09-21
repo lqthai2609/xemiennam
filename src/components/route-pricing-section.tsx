@@ -6,6 +6,7 @@ import { ArrowRight, BusFront } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { MediaPhoto } from "@/components/media-photo";
+import { PriceExplanation } from "@/components/price-explanation";
 import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import {
@@ -95,7 +96,7 @@ export function RoutePricingSection({
   if (isPrelaunch && !pricing) {
     return (
       <div className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">
-        Chưa có mức giá sân bay được xác minh. Vui lòng liên hệ để Gocar VN ghi nhận nhu cầu và báo giá khi đủ dữ liệu vận hành.
+        Chưa có mức giá sân bay được xác minh. Vui lòng liên hệ để Alo Đặt Xe ghi nhận nhu cầu và báo giá khi đủ dữ liệu vận hành.
       </div>
     );
   }
@@ -134,6 +135,9 @@ export function RoutePricingSection({
 
   return (
     <>
+      <div className="mb-5">
+        <PriceExplanation compact />
+      </div>
       {availableDirections.length > 1 && (
         <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Chọn chiều di chuyển">
           {availableDirections.map((key) => {

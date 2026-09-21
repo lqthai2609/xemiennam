@@ -17,7 +17,7 @@ function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "l
   if (phase === "prelaunch") {
     return [
       {
-        question: `Gocar VN đã mở dịch vụ tại ${airportName} chưa?`,
+        question: `Alo Đặt Xe đã mở dịch vụ tại ${airportName} chưa?`,
         answer: `${SITE_NAME} đang chuẩn bị các tuyến đón và trả khách cho giai đoạn sân bay đi vào khai thác. Lịch khai thác thực tế cần đối chiếu thông báo chính thức trước khi chốt hành trình.`,
       },
       {
@@ -26,11 +26,11 @@ function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "l
       },
       {
         question: "Vì sao một số tuyến chưa có giá cố định?",
-        answer: "Các tuyến chưa có mức giá sân bay được xác minh sẽ hiển thị “Liên hệ báo giá”. Gocar VN không sao chép giá từ TP.HCM, Tân Sơn Nhất hoặc tuyến khác để làm giá Long Thành.",
+        answer: "Các tuyến chưa có mức giá sân bay được xác minh sẽ hiển thị “Liên hệ báo giá”. Alo Đặt Xe không sao chép giá từ TP.HCM, Tân Sơn Nhất hoặc tuyến khác để làm giá Long Thành.",
       },
       {
         question: "Thông tin vận hành sân bay trên trang có phải lịch bay chính thức không?",
-        answer: "Không. Trang này mô tả mức độ sẵn sàng dịch vụ xe của Gocar VN. Lịch khai thác sân bay và chuyến bay cần được kiểm tra từ cơ quan, hãng hàng không hoặc đơn vị khai thác có thẩm quyền.",
+        answer: "Không. Trang này mô tả mức độ sẵn sàng dịch vụ xe của Alo Đặt Xe. Lịch khai thác sân bay và chuyến bay cần được kiểm tra từ cơ quan, hãng hàng không hoặc đơn vị khai thác có thẩm quyền.",
       },
     ];
   }
@@ -287,7 +287,7 @@ export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubDa
           { title: "HỖ TRỢ", links: [{ label: "Liên hệ", href: "/lien-he" }] },
         ]}
         socialLinks={defaultSocialLinks}
-        copyright="© Gocar VN"
+        copyright="© Alo Đặt Xe"
         madeFor="Đồng hành mọi hành trình"
       />
     </main>

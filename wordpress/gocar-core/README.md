@@ -1,6 +1,6 @@
 # Gocar Core
 
-WordPress-side foundation for Gocar VN contracts and controlled migrations.
+WordPress-side foundation for Alo Đặt Xe contracts and controlled migrations.
 
 ## Day 6 scope
 
@@ -141,7 +141,7 @@ The apply command creates missing `location` posts with `location_type=locality`
 2. Verify Province Hub REST still exposes `rank_math_title` + `rank_math_description`.
 3. Verify route edit screens still expose the Route × Vehicle meta box and existing `combo_descriptions` data.
 4. Open a normal blog post and confirm Province/Vehicle taxonomies remain available where registered.
-5. Confirm the `Gocar VN — Quan hệ nội dung` meta box lists only Location posts with `location_type=airport`.
+5. Confirm the `Alo Đặt Xe — Quan hệ nội dung` meta box lists only Location posts with `location_type=airport`.
 6. Save one airport relation and verify `/wp-json/wp/v2/posts/<id>?_embed=1` returns `meta.related_airport_location_ids` together with embedded Province/Vehicle terms.
 7. Smoke Province/Vehicle blog-related sections and verify they return only exact taxonomy matches.
 8. Verify an Airport relation can be resolved by Location ID and that posts with no structured relation are not injected into Province/Vehicle/Airport sections.

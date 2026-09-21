@@ -11,6 +11,7 @@ import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { buildPageMetadata } from "@/lib/metadata";
 import { routeHref, type Route } from "@/types/route";
+import { resolveRouteContentReadiness } from "@/lib/content-readiness";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
 async function buildVehicleImageByType(): Promise<Record<string, string>> {
@@ -72,12 +73,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const canonicalPath = routeHref(route);
+  const readiness = resolveRouteContentReadiness(route);
   if (isPrelaunchAirportRoute(route)) {
     return buildPageMetadata({
       title: `Chuẩn bị tuyến xe ${route.from} ↔ ${route.to} | ${SITE_NAME}`,
       description: `Thông tin chuẩn bị tuyến ${route.from} ↔ ${route.to}. Liên hệ ${SITE_NAME} để ghi nhận nhu cầu; lịch khai thác sân bay thực tế cần đối chiếu thông báo chính thức.`,
       path: canonicalPath,
-      noIndex: true,
+      noIndex: !readiness.indexable,
     });
   }
 
@@ -85,6 +87,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: route.rankMathTitle || `Thuê xe ${route.from} đi ${route.to}${metadataPriceSuffix(route)} | ${SITE_NAME}`,
     description: route.rankMathDescription || route.summary || fallbackRouteDescription(route),
     path: canonicalPath,
+    noIndex: !readiness.indexable,
   });
 }
 
@@ -92,7 +95,7 @@ export default async function Page({ params }: Props) {
   const { tinh, tuyen } = await params;
   const route = await fetchRouteBySlug(tuyen);
   if (!route || route.regionSlug !== tinh) notFound();
-  const isPrelaunch = isPrelaunchAirportRoute(route);
+  const readiness = resolveRouteContentReadiness(route);
 
   const [regionRoutes, vehicleImageByType, allTestimonials, relatedPosts] = await Promise.all([
     fetchRoutesByRegion(route.regionSlug),
@@ -103,14 +106,14 @@ export default async function Page({ params }: Props) {
   const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug).slice(0, 6);
   const matchingTestimonials = allTestimonials.filter((item) => item.routeSlug === route.slug);
   const routeTestimonials = (matchingTestimonials.length > 0 ? matchingTestimonials : allTestimonials).slice(0, 6);
-  const serviceSchema = isPrelaunch
+  const serviceSchema = !readiness.serviceSchemaEligible
     ? undefined
     : buildServiceSchema({
         name: `Thuê xe nguyên chiếc ${route.from} đi ${route.to}`,
         description: route.summary || fallbackRouteDescription(route),
         url: routeHref(route),
         areaServed: [route.from, route.to],
-        offers: buildRouteSchemaOffers(route),
+        offers: readiness.offerSchemaEligible ? buildRouteSchemaOffers(route) : undefined,
       });
   const breadcrumbSchema = buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },

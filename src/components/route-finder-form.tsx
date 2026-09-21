@@ -490,7 +490,7 @@ function JourneyQuoteDialog({
         {submitted ? (
           <div className="flex flex-col gap-4">
             <p className="section-label">ĐÃ NHẬN YÊU CẦU</p>
-            <h3>Cảm ơn bạn. Gocar VN sẽ liên hệ để báo giá.</h3>
+            <h3>Cảm ơn bạn. Alo Đặt Xe sẽ liên hệ để báo giá.</h3>
             <p className="m-0 text-sm leading-6 text-muted-foreground">
               Hành trình {pickup} → {destination}, {visibleDepartureDate}, {visibleVehicle} đã được ghi nhận.
             </p>
@@ -508,7 +508,7 @@ function JourneyQuoteDialog({
               <div>Ngày đi: <strong>{visibleDepartureDate}</strong></div>
               <div>Loại chuyến: <strong>{tripTypeLabel(tripType)}</strong></div>
               <div>Loại xe: <strong>{visibleVehicle}</strong></div>
-              <div>Giá: <strong>Gocar VN xác nhận theo hành trình thực tế</strong></div>
+              <div>Giá: <strong>Alo Đặt Xe xác nhận theo hành trình thực tế</strong></div>
             </div>
 
             <form className="quick-booking-form" onSubmit={submitQuote} noValidate>
@@ -818,7 +818,7 @@ export function BookingSearchForm({
               Bạn muốn đi đâu?
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-              Chọn chuyến đi tỉnh hoặc chế độ đưa đón sân bay. Cả hai đều dùng chung hệ thống giá và yêu cầu báo giá của Gocar VN.
+              Chọn chuyến đi tỉnh hoặc chế độ đưa đón sân bay. Cả hai đều dùng chung hệ thống giá và yêu cầu báo giá của Alo Đặt Xe.
             </p>
           </div>
         )}

@@ -71,7 +71,7 @@ final class Gocar_Blog_Relations {
     public static function register_meta_box(): void {
         add_meta_box(
             'gocar-blog-relations',
-            'Gocar VN — Quan hệ nội dung',
+            'Alo Đặt Xe — Quan hệ nội dung',
             array( __CLASS__, 'render_meta_box' ),
             'post',
             'side',
