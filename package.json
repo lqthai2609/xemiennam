@@ -22,7 +22,8 @@
     "test:price-rules": "node --test scripts/gocar-price-rules-source.test.mjs",
     "test:price-conditions": "node --test scripts/gocar-price-conditions-source.test.mjs",
     "test:booking-search": "node --test scripts/gocar-booking-search-source.test.mjs",
-    "test:seo-url-map": "node --test scripts/gocar-seo-url-map.test.mjs"
+    "test:seo-url-map": "node --test scripts/gocar-seo-url-map.test.mjs",
+    "test:day36b": "node --test scripts/gocar-day36b-source.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

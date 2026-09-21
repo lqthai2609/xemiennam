@@ -53,6 +53,7 @@ test("shared metadata builder normalizes brand titles and emits canonical, Open 
 test("shared metadata builder sanitizes legacy CMS brand before public metadata is emitted", () => {
   assert.match(metadataHelper, /LEGACY_BRAND_PATTERN\s*=\s*new RegExp/);
   assert.match(metadataHelper, /\["Xe", "Miền", "Nam"\]\.join\("\\\\s\+"\)/);
+  assert.match(metadataHelper, /\["Gocar", "VN"\]\.join\("\\\\s\+"\)/);
   assert.match(metadataHelper, /sanitizeMetadataText\(title\)/);
   assert.match(metadataHelper, /sanitizeMetadataText\(description\)/);
   assert.match(metadataHelper, /description:\s*sanitizedDescription/);
@@ -70,8 +71,8 @@ test("canonical paths are attached to all valid page metadata families", () => {
 });
 
 test("Day 26 preserves Long Thanh and thin combo indexability guards", () => {
-  assert.match(routeDetailPage, /isPrelaunchAirportRoute\(route\)/);
-  assert.match(routeDetailPage, /noIndex:\s*true/);
+  assert.match(routeDetailPage, /resolveRouteContentReadiness\(route\)/);
+  assert.match(routeDetailPage, /noIndex:\s*!readiness\.indexable/);
   assert.match(comboPage, /getComboIndexability\(route, loaiXe\)/);
   assert.match(comboPage, /noIndex:\s*!guard\.indexable/);
   assert.match(airportHubPage, /readiness\.phase === "live"/);

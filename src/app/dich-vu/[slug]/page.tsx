@@ -14,7 +14,7 @@ export async function generateStaticParams() {
   return services.map(({ slug }) => ({ slug }));
 }
 
-/** Ngày 23 — ưu tiên Rank Math trước fallback metadata của Gocar VN. */
+/** Ngày 23 — ưu tiên Rank Math trước fallback metadata của thương hiệu công khai. */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const service = await fetchServiceBySlug(slug);

@@ -95,6 +95,18 @@ export interface RouteLocationRef {
   type: string;
 }
 
+export interface RouteContentReadiness {
+  version: number;
+  editorialState: "missing" | "draft" | "review" | "ready";
+  serviceState: "unknown" | "prelaunch" | "live" | "paused";
+  canonicalState: "missing" | "candidate" | "verified";
+  mappingState: "clear" | "d35_10_blocked";
+  requestedIndexability: "noindex" | "index";
+  schemaState: "none" | "service" | "offer";
+  reasonCode?: string;
+  sourceRef?: string;
+}
+
 export interface Route {
   id: string;
   /** URL slug — chữ thường, không dấu, nối gạch ngang. Khớp với slug field của WordPress khi nối API thật (Ngày 12). */
@@ -119,6 +131,8 @@ export interface Route {
   /** Location Model V2 endpoints, when the route is backed by Location IDs. */
   originLocation?: RouteLocationRef;
   destinationLocation?: RouteLocationRef;
+  /** SEO-005: versioned public-safe readiness contract. Missing/version 0 keeps rollout inactive. */
+  contentReadiness?: RouteContentReadiness;
   /** Điểm đón — mô tả ngắn, có thể nhiều điểm. */
   pickupPoints: string[];
   /** Điểm trả — mô tả ngắn, có thể nhiều điểm. */

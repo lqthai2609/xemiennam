@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, Home, Phone, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SITE_NAME } from "@/lib/site-config";
 import "./site-header.css";
 
 export type NavItem = { label: string; href: string };
@@ -41,11 +42,11 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref 
 
   return (
     <header className="site-header">
-      <Link href="/" className="brand" aria-label="Alo Đặt Xe trang chủ">
+      <Link href="/" className="brand" aria-label={`${SITE_NAME} trang chủ`}>
         <img
           className="brand-logo"
           src="/logo-alo-dat-xe.webp"
-          alt="Alo Đặt Xe - Đồng hành mọi hành trình"
+          alt={`${SITE_NAME} - Đồng hành mọi hành trình`}
         />
       </Link>
       <nav className="main-nav" aria-label="Điều hướng chính">

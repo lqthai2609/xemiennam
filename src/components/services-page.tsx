@@ -38,7 +38,7 @@ export function ServicesPage({ services, routes }: { services: Service[]; routes
         ) : (
           <div className="route-empty" role="status">
             <h2>Hiện chưa có dịch vụ được công bố</h2>
-            <p>Gocar VN vẫn nhận tư vấn hành trình và nhu cầu thuê xe trực tiếp.</p>
+            <p>Alo Đặt Xe vẫn nhận tư vấn hành trình và nhu cầu thuê xe trực tiếp.</p>
             <Link className="button button-primary" href="/lien-he">Liên hệ tư vấn</Link>
           </div>
         )}

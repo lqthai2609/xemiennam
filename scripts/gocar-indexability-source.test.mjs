@@ -31,11 +31,11 @@ test("sitemap uses the canonical site URL and canonical short airport URLs", () 
   assert.match(sitemap, /location\.slug\.replace\(\/\^san-bay-\//);
 });
 
-test("sitemap and metadata share the same Long Thanh and thin-combo indexability guards", () => {
-  assert.match(sitemap, /routes\.filter\(\(route\) => !isPrelaunchAirportRoute\(route\)\)/);
+test("sitemap and metadata share the same SEO-005 and thin-combo indexability guards", () => {
+  assert.match(sitemap, /routes\.filter\(\(route\) => resolveRouteContentReadiness\(route\)\.sitemapEligible\)/);
   assert.match(sitemap, /getIndexableComboVehicleSlugs\(route\)/);
   assert.match(routeDetailPage, /isPrelaunchAirportRoute\(route\)/);
-  assert.match(routeDetailPage, /noIndex:\s*true/);
+  assert.match(routeDetailPage, /noIndex:\s*!readiness\.indexable/);
   assert.match(comboPage, /getComboIndexability\(route, loaiXe\)/);
   assert.match(comboPage, /noIndex:\s*!guard\.indexable/);
 });

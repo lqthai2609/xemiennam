@@ -5,8 +5,8 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { buildPageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Điểm đến | Gocar VN",
-  description: "Khám phá các khu vực và tuyến xe đang chạy cùng Gocar VN.",
+  title: "Điểm đến | Alo Đặt Xe",
+  description: "Khám phá các khu vực và tuyến xe đang chạy cùng Alo Đặt Xe.",
   path: "/diem-den",
 });
 
