@@ -3,7 +3,7 @@
 Ngày: 21/09/2026  
 Project gửi: Core  
 Project nhận: Organic Growth/SEO  
-Trạng thái: **CORE SOURCE MERGED / READY FOR SEO REVIEW**  
+Trạng thái: **SEO-005 ACCEPTED FOR SOURCE / DAY 36B COMPLETE / PRODUCTION INACTIVE**  
 Production migration: **INACTIVE**
 
 ## 1. Kết quả Core bàn giao
@@ -89,19 +89,18 @@ Quy tắc triển khai hiện tại:
 | Production migration | INACTIVE | Không được suy diễn từ source hoặc Pull Request |
 | Giá/phụ phí chưa được Operations duyệt | Chưa có thẩm quyền | Tiếp tục `contact` fallback |
 
-## 7. Acceptance đề nghị cho SEO
+## 7. Kết quả acceptance từ Organic Growth/SEO
 
-SEO có thể trả **SEO-005 ACCEPTED FOR SOURCE / PRODUCTION INACTIVE** khi xác nhận:
+Organic Growth/SEO đã xác nhận **SEO-005 ACCEPTED FOR SOURCE / PRODUCTION INACTIVE** ngày 21/09/2026:
 
-- Contract không làm thay đổi canonical ownership đã khóa.
-- Version `0` không kích hoạt policy mới hàng loạt.
-- D35-10 và Long Thành luôn override yêu cầu index.
-- Sitemap, robots và schema dùng cùng một readiness decision.
-- `contact` không phát Offer và không bị chuyển thành giá hard-code.
-- Không có URL, redirect, domain hoặc production activation mới trong Day 36B.
-- Các field không chứa PII hoặc dữ liệu booking riêng tư.
-
-Nếu có sai lệch, SEO trả theo cấu trúc: `field/rule → URL hoặc cluster bị ảnh hưởng → expected → actual → source_ref → priority`.
+- Semantics/readiness phù hợp với SEO-004, SEO-003B và Keyword Universe v0.6.
+- Canonical ownership không thay đổi.
+- Version `0` không kích hoạt policy hàng loạt.
+- D35-10 và Long Thành tiếp tục override index, sitemap và schema.
+- `contact` không phát Offer.
+- DEP-011 và D35-10 vẫn mở ở mức P0.
+- KU-068–KU-072 giữ PRELAUNCH.
+- Production migration chưa được kích hoạt.
 
 ## 8. Nguồn đối chiếu
 
@@ -119,4 +118,4 @@ Nếu có sai lệch, SEO trả theo cấu trúc: `field/rule → URL hoặc clu
 
 ## 9. Kết luận bàn giao
 
-Core đã hoàn tất và merge source Day 36B, đồng thời chuyển SEO-005 sang trạng thái **READY FOR SEO REVIEW**. Bàn giao này không đóng DEP-011, không đóng D35-10, không mở Long Thành và không kích hoạt production. Organic Growth/SEO là bên xác nhận acceptance cho semantics/readiness; mọi activation sau đó vẫn cần receipt và các gate được phê duyệt theo roadmap.
+Core đã hoàn tất và merge source Day 36B; Organic Growth/SEO đã nghiệm thu semantics/readiness. Day 36B được đóng ở phạm vi **source/specification**, với trạng thái **SEO-005 ACCEPTED FOR SOURCE / PRODUCTION INACTIVE**. Kết quả này không đóng DEP-011, không đóng D35-10, không mở Long Thành và không kích hoạt production. Mọi activation sau đó vẫn cần receipt và các gate được phê duyệt theo roadmap.
