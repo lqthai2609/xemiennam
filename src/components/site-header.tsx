@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Home, Phone, Search, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Home, Phone, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SITE_NAME } from "@/lib/site-config";
 import "./site-header.css";
@@ -26,7 +26,15 @@ function isActive(pathname: string, href: string) {
 
 export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref }: SiteHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const mobileNavRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
+
+  function scrollMobileNav(direction: "left" | "right") {
+    mobileNavRef.current?.scrollBy({
+      left: direction === "left" ? -180 : 180,
+      behavior: "smooth",
+    });
+  }
   const resolvedHotlineHref = hotlineHref || `tel:${hotline.replace(/\s/g, "")}`;
 
   function handleRouteSearch(event: React.FormEvent<HTMLFormElement>) {
@@ -77,7 +85,16 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref 
         <Search />
       </button>
 
-      <nav className="mobile-nav-strip" aria-label="Điều hướng nhanh">
+      <div className="mobile-nav-scroller" role="group" aria-label="Điều hướng nhanh">
+        <button
+          className="mobile-nav-arrow mobile-nav-arrow-left"
+          type="button"
+          onClick={() => scrollMobileNav("left")}
+          aria-label="Trượt navigation sang trái"
+        >
+          <ChevronLeft />
+        </button>
+        <nav ref={mobileNavRef} className="mobile-nav-strip" aria-label="Điều hướng nhanh">
         <Link
           href="/"
           className={`mobile-nav-home ${pathname === "/" ? "is-active" : ""}`}
@@ -96,7 +113,16 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref 
             {item.label}
           </Link>
         ))}
-      </nav>
+        </nav>
+        <button
+          className="mobile-nav-arrow mobile-nav-arrow-right"
+          type="button"
+          onClick={() => scrollMobileNav("right")}
+          aria-label="Trượt navigation sang phải"
+        >
+          <ChevronRight />
+        </button>
+      </div>
 
       {searchOpen && (
         <div className="header-search-overlay" role="presentation" onMouseDown={() => setSearchOpen(false)}>
