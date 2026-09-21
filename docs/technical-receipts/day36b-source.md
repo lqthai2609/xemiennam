@@ -1,6 +1,6 @@
 # Technical Receipt — Day 36B source
 
-Trạng thái: SOURCE IMPLEMENTED / PRODUCTION INACTIVE. Ngày: 21/09/2026.
+Trạng thái: SOURCE MERGED / SEO-005 ACCEPTED FOR SOURCE / PRODUCTION INACTIVE. Ngày: 21/09/2026.
 
 ## Implemented
 
@@ -9,6 +9,14 @@ Trạng thái: SOURCE IMPLEMENTED / PRODUCTION INACTIVE. Ngày: 21/09/2026.
 - SEO-005: field contract versioned, resolver indexability/sitemap/schema, WordPress REST meta và regression tests.
 - D35-10: audit chín nhóm giữ OPEN/P0; thêm trạng thái block vào SEO-005, không đưa ra quyết định duplicate.
 - Long Thành/KU-068–KU-072 tiếp tục PRELAUNCH; Route commercial surface không index và không phát Service/Offer schema.
+
+## Organic Growth/SEO acceptance
+
+- Organic Growth/SEO xác nhận semantics/readiness phù hợp với SEO-004, SEO-003B và Keyword Universe v0.6.
+- Canonical ownership không thay đổi; version `0` không kích hoạt policy hàng loạt.
+- D35-10 và Long Thành tiếp tục override index, sitemap và schema; `contact` không phát Offer.
+- DEP-011 và D35-10 vẫn OPEN/P0; KU-068–KU-072 giữ PRELAUNCH.
+- Kết luận: **SEO-005 ACCEPTED FOR SOURCE / PRODUCTION INACTIVE**.
 
 ## Không thực hiện
 
@@ -22,4 +30,3 @@ Trạng thái: SOURCE IMPLEMENTED / PRODUCTION INACTIVE. Ngày: 21/09/2026.
 - Revert commit Day 36B để hoàn nguyên source.
 - SEO-005 version `0` giữ policy chưa active; `noindex` là trạng thái explicit an toàn khi rollout version từ `1`.
 - Domain/runtime migration tiếp tục theo DEP-011 receipts riêng.
-
