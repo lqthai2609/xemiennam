@@ -100,7 +100,7 @@ export function BlogPageClient({ posts }: { posts: BlogPost[] }) {
           <p>Kinh nghiệm đi đường, cẩm nang thuê xe và vài điểm dừng chân đáng ghé — góp nhặt từ những chuyến đi thật.</p>
         </div>
         <div className="routes-hero-sign">
-          <span>GOCAR VN</span>
+          <span>{SITE_NAME.toLocaleUpperCase("vi")}</span>
           <strong>{posts.length}</strong>
           <small>BÀI VIẾT</small>
         </div>

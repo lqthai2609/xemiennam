@@ -10,7 +10,6 @@ Trạng thái: PHASE 1 SOURCE COMPLETE / PRODUCTION INACTIVE. Baseline: `60d54d4
 | CMS API hostname `xemiennam.datxesaigon.com` và preview fallback `xemiennam.vercel.app` | `MIGRATE_SEPARATELY` | Giữ nguyên trong source; không đổi hostname |
 | `NEXT_PUBLIC_SITE_URL`, DNS, Vercel domain, canonical host, robots/sitemap host và redirect | `MIGRATE_SEPARATELY` | Không kích hoạt; chờ domain/deployment receipts |
 | Day 31–35 receipts và historical URLs | `HISTORICAL_EVIDENCE` | Không sửa |
-| Logo, favicon, ảnh và design tokens | `MIGRATE_SEPARATELY` | Không thay trong Day 36B |
+| Logo, favicon, ảnh và design tokens | `MIGRATE_SEPARATELY` | Gỡ logo GOCARVN khỏi header và dùng wordmark chữ tạm thời; không tạo logo/hệ nhận diện mới |
 
 Public source guard trong CI chặn `Gocar VN`, `GOCARVN` và `Xe Miền Nam` dưới `src/`. Metadata sanitizer vẫn nhận diện chuỗi legacy bằng token ghép để nội dung CMS cũ không phát ra public metadata.
-

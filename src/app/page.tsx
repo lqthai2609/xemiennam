@@ -164,7 +164,7 @@ export default function Home() {
             <Ticket size={29} />
             <span>THUÊ TRỌN CHUYẾN</span>
             <strong>ĐI TỬ TẾ</strong>
-            <small>GOCAR VN</small>
+            <small>ALO ĐẶT XE</small>
           </div>
         </div>
         <div className="promise-copy">
