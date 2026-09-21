@@ -2,6 +2,27 @@
   display: none;
 }
 
+.site-header .main-nav > a:not(.nav-hotline):not(.nav-cta) {
+  position: relative;
+  padding-block: 8px;
+}
+
+.site-header .main-nav > a:not(.nav-hotline):not(.nav-cta)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  left: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.site-header .main-nav > a:not(.nav-hotline):not(.nav-cta).is-active::after,
+.site-header .main-nav > a:not(.nav-hotline):not(.nav-cta):hover::after {
+  background: var(--primary);
+}
+
 @media (max-width: 800px) {
   .site-header {
     width: 100%;
@@ -110,7 +131,7 @@
     right: 0;
     bottom: 0;
     height: 3px;
-    background: transparent;
+    background: color-mix(in srgb, #e9a23b 42%, transparent);
   }
 
   .site-header .mobile-nav-strip a.is-active {

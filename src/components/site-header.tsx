@@ -41,11 +41,11 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref 
 
   return (
     <header className="site-header">
-      <Link href="/" className="brand" aria-label="GoCarVN trang chủ">
+      <Link href="/" className="brand" aria-label="Alo Đặt Xe trang chủ">
         <img
           className="brand-logo"
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-gocarvn-cNmS8uO5sRp2ZzMP73kde8SXuUE6Wo.png"
-          alt="GoCarVN - Đồng hành mọi hành trình"
+          src="/logo-alo-dat-xe.webp"
+          alt="Alo Đặt Xe - Đồng hành mọi hành trình"
         />
       </Link>
       <nav className="main-nav" aria-label="Điều hướng chính">
