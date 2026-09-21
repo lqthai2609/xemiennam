@@ -15,6 +15,11 @@ import {
   resolveLocationAlias,
 } from "@/lib/location-search";
 import {
+  HO_CHI_MINH_CANONICAL_NAME,
+  HO_CHI_MINH_PUBLIC_LABEL,
+  getPublicLocationLabel,
+} from "@/lib/public-location-label";
+import {
   routeComboHref,
   routeHref,
   vehicleTypeSlug,
@@ -107,7 +112,7 @@ function uniqueLocations(routes: Route[]) {
   for (const route of routes) {
     for (const rawLocation of [route.from, route.to]) {
       const label = canonicalLocationLabel(rawLocation);
-      values.set(canonicalLocationKey(label), label);
+      values.set(canonicalLocationKey(label), getPublicLocationLabel(label));
     }
   }
 
@@ -120,11 +125,11 @@ function uniqueAirportLocations(routes: Route[]) {
   for (const route of routes) {
     if (route.originLocation?.type === "airport") {
       const label = canonicalLocationLabel(route.from);
-      values.set(canonicalLocationKey(label), label);
+      values.set(canonicalLocationKey(label), getPublicLocationLabel(label));
     }
     if (route.destinationLocation?.type === "airport") {
       const label = canonicalLocationLabel(route.to);
-      values.set(canonicalLocationKey(label), label);
+      values.set(canonicalLocationKey(label), getPublicLocationLabel(label));
     }
   }
 
@@ -300,7 +305,7 @@ function LocationField({
                   <span className="min-w-0">
                     <span className="block font-semibold">{aliasResolution.displayLabel}</span>
                     <span className="block text-xs font-normal text-muted-foreground">
-                      {aliasResolution.canonical} · Áp dụng giá tuyến TP.HCM
+                      {getPublicLocationLabel(aliasResolution.canonical)} · Áp dụng giá tuyến {HO_CHI_MINH_PUBLIC_LABEL}
                     </span>
                   </span>
                 ) : <span>{option}</span>}
@@ -312,7 +317,7 @@ function LocationField({
       {aliasResolution && (
         <p className="m-0 flex items-start gap-1.5 text-xs font-medium leading-5 text-primary" role="status">
           <span aria-hidden="true">✓</span>
-          <span>Đã quy đổi về {aliasResolution.canonical} · Áp dụng giá tuyến TP.HCM</span>
+          <span>Đã quy đổi về {getPublicLocationLabel(aliasResolution.canonical)} · Áp dụng giá tuyến {HO_CHI_MINH_PUBLIC_LABEL}</span>
         </p>
       )}
     </div>
@@ -749,8 +754,8 @@ export function BookingSearchForm({
     }
     if (canonicalLocationKey(pickup) === canonicalLocationKey(destination)) {
       const canonicalKey = canonicalLocationKey(pickup);
-      if (canonicalKey === canonicalLocationKey("TP. Hồ Chí Minh")) {
-        setError("Hai điểm này đều thuộc nhóm giá TP.HCM. Vui lòng chọn điểm đến ngoài TP.HCM hoặc liên hệ để được tư vấn chuyến nội thành.");
+      if (canonicalKey === canonicalLocationKey(HO_CHI_MINH_CANONICAL_NAME)) {
+        setError(`Hai điểm này đều thuộc nhóm giá ${HO_CHI_MINH_PUBLIC_LABEL}. Vui lòng chọn điểm đến ngoài ${HO_CHI_MINH_PUBLIC_LABEL} hoặc liên hệ để được tư vấn chuyến nội thành.`);
       } else {
         setError("Điểm đón và điểm đến phải khác nhau.");
       }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Archivo, Be_Vietnam_Pro } from "next/font/google";
 import { Toaster } from "sonner";
 import { FloatingContactActions } from "@/components/floating-contact-actions";
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="vi"

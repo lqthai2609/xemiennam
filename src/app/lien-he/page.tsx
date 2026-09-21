@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { fetchRoutes, VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
 import { LienHePageClient } from "@/components/lien-he-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
+import { getPublicRouteLabel } from "@/lib/public-location-label";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Liên hệ đặt xe | Alo Đặt Xe",
@@ -17,6 +18,6 @@ export const metadata: Metadata = buildPageMetadata({
  */
 export default async function Page() {
   const routes = await fetchRoutes();
-  const routeOptions = [...new Set(routes.map((r) => `${r.from} – ${r.to}`))];
+  const routeOptions = [...new Set(routes.map((route) => getPublicRouteLabel(route, " – ")))];
   return <LienHePageClient routeOptions={routeOptions} vehicleTypeOptions={VEHICLE_TYPE_ORDER} />;
 }

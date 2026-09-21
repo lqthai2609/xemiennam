@@ -8,6 +8,7 @@ import { fetchRoutes } from "./routes";
 import { fetchVehicles } from "./vehicles";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { stripHtml } from "@/lib/wp";
+import { formatPublicLocationText, getPublicRouteLabel } from "@/lib/public-location-label";
 
 const useMockFallback = shouldUseMockFallback();
 
@@ -18,7 +19,7 @@ function mapWPPromotionToPromotion(wp: WPPromotion, routes: Route[], vehicles: V
 
   const routeIds = (wp.meta.ap_dung_route ?? []).map(String);
   const routeLabels = routeIds.length
-    ? routes.filter((r) => routeIds.includes(r.id)).map((r) => `${r.from} – ${r.to}`)
+    ? routes.filter((route) => routeIds.includes(route.id)).map((route) => getPublicRouteLabel(route, " – "))
     : [];
 
   const vehicleIds = (wp.meta.ap_dung_vehicle ?? []).map(String);
@@ -29,8 +30,8 @@ function mapWPPromotionToPromotion(wp: WPPromotion, routes: Route[], vehicles: V
   return {
     id: String(wp.id),
     slug: wp.slug,
-    name: wp.title.rendered,
-    description: stripHtml(wp.content?.rendered),
+    name: formatPublicLocationText(wp.title.rendered),
+    description: formatPublicLocationText(stripHtml(wp.content?.rendered)),
     discountType,
     discountValue,
     discountLabel: formatDiscountLabel(discountType, discountValue),

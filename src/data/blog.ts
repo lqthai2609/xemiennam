@@ -13,7 +13,7 @@ export const blogPosts: BlogPost[] = [
     title: "Đi Vũng Tàu 2 ngày 1 đêm cho gia đình có trẻ nhỏ",
     excerpt: "Gợi ý lịch trình thong thả, chọn xe rộng rãi và vài lưu ý khi đi cùng trẻ nhỏ để chuyến biển cuối tuần thoải mái từ lúc lên xe.",
     contentHtml:
-      "<p>Đi Vũng Tàu cùng trẻ nhỏ thoải mái hơn nhiều nếu bạn chủ động được giờ xuất phát và điểm đón. Thuê nguyên xe theo gia đình giúp bạn không phải canh giờ theo người khác, có thể dừng nghỉ bất cứ khi nào bé cần.</p><p>Gợi ý lịch trình 2 ngày 1 đêm: sáng ngày đầu khởi hành sớm để tránh nắng, ghé Bãi Sau nghỉ ngơi, chiều nhận phòng khách sạn gần biển. Ngày thứ hai dạo Bãi Trước hoặc tham quan Tượng Chúa Kitô Vua trước khi về lại thành phố.</p><p>Xem thêm <a href=\"/tuyen-duong/hcm-vung-tau\">tuyến TP.HCM – Vũng Tàu</a> để chọn loại xe phù hợp với số lượng người trong gia đình.</p>",
+      "<p>Đi Vũng Tàu cùng trẻ nhỏ thoải mái hơn nhiều nếu bạn chủ động được giờ xuất phát và điểm đón. Thuê nguyên xe theo gia đình giúp bạn không phải canh giờ theo người khác, có thể dừng nghỉ bất cứ khi nào bé cần.</p><p>Gợi ý lịch trình 2 ngày 1 đêm: sáng ngày đầu khởi hành sớm để tránh nắng, ghé Bãi Sau nghỉ ngơi, chiều nhận phòng khách sạn gần biển. Ngày thứ hai dạo Bãi Trước hoặc tham quan Tượng Chúa Kitô Vua trước khi về lại thành phố.</p><p>Xem thêm <a href=\"/tuyen-duong/hcm-vung-tau\">tuyến Sài Gòn – Vũng Tàu</a> để chọn loại xe phù hợp với số lượng người trong gia đình.</p>",
     category: "Kinh nghiệm",
     provinceSlugs: [],
     vehicleTypeSlugs: [],
@@ -38,10 +38,10 @@ export const blogPosts: BlogPost[] = [
   {
     id: "tram-dung-chan-cao-toc-long-thanh-dau-giay",
     slug: "cac-tram-dung-chan-tren-cao-toc-hcm-long-thanh-dau-giay",
-    title: "Các trạm dừng chân trên cao tốc TP.HCM – Long Thành – Dầu Giây",
+    title: "Các trạm dừng chân trên cao tốc Sài Gòn – Long Thành – Dầu Giây",
     excerpt: "Điểm qua vài trạm dừng chân quen thuộc trên cung đường ra hướng Đà Lạt, Phan Thiết — tiện ghé khi thuê xe tự chủ động giờ giấc.",
     contentHtml:
-      "<p>Cao tốc TP.HCM – Long Thành – Dầu Giây là đoạn đường hầu hết các chuyến đi hướng Đà Lạt, Phan Thiết đều đi qua. Vì thuê nguyên xe không có lịch trình cố định, bạn có thể chủ động ghé bất kỳ trạm dừng chân nào phù hợp với thời gian của cả đoàn.</p><p>Một vài điểm quen thuộc: trạm dừng gần nút giao Dầu Giây có khu vệ sinh sạch và quán ăn nhẹ, phù hợp để nghỉ ngơi giữa chặng trước khi tiếp tục lên Đà Lạt hoặc rẽ hướng Phan Thiết.</p>",
+      "<p>Cao tốc Sài Gòn – Long Thành – Dầu Giây là đoạn đường hầu hết các chuyến đi hướng Đà Lạt, Phan Thiết đều đi qua. Vì thuê nguyên xe không có lịch trình cố định, bạn có thể chủ động ghé bất kỳ trạm dừng chân nào phù hợp với thời gian của cả đoàn.</p><p>Một vài điểm quen thuộc: trạm dừng gần nút giao Dầu Giây có khu vệ sinh sạch và quán ăn nhẹ, phù hợp để nghỉ ngơi giữa chặng trước khi tiếp tục lên Đà Lạt hoặc rẽ hướng Phan Thiết.</p>",
     category: "Review",
     provinceSlugs: [],
     vehicleTypeSlugs: [],
@@ -69,7 +69,7 @@ export const blogPosts: BlogPost[] = [
     title: "Review một ngày khám phá chợ nổi Cần Thơ",
     excerpt: "Giờ nào chợ nổi đông nhất, di chuyển từ trung tâm Cần Thơ ra bến tàu mất bao lâu — ghi chép nhanh từ chuyến đi thực tế.",
     contentHtml:
-      "<p>Chợ nổi Cái Răng đông nhất vào khoảng 5–7 giờ sáng, nên nếu muốn thấy trọn vẹn không khí mua bán trên sông, nên sắp xếp có mặt ở bến tàu trước 6 giờ. Từ trung tâm Cần Thơ ra bến tàu Cái Răng chỉ mất khoảng 15–20 phút di chuyển.</p><p>Vì chủ động được giờ giấc khi thuê nguyên xe, bạn có thể xuất phát từ TP.HCM từ tối hôm trước hoặc sáng thật sớm để kịp giờ chợ nổi đông vui nhất.</p>",
+      "<p>Chợ nổi Cái Răng đông nhất vào khoảng 5–7 giờ sáng, nên nếu muốn thấy trọn vẹn không khí mua bán trên sông, nên sắp xếp có mặt ở bến tàu trước 6 giờ. Từ trung tâm Cần Thơ ra bến tàu Cái Răng chỉ mất khoảng 15–20 phút di chuyển.</p><p>Vì chủ động được giờ giấc khi thuê nguyên xe, bạn có thể xuất phát từ Sài Gòn từ tối hôm trước hoặc sáng thật sớm để kịp giờ chợ nổi đông vui nhất.</p>",
     category: "Review",
     provinceSlugs: [],
     vehicleTypeSlugs: [],

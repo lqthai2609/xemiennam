@@ -15,13 +15,13 @@ const raw: Omit<Promotion, "discountLabel" | "isExpired">[] = [
   {
     id: "p1",
     slug: "giam-15-vung-tau",
-    name: "Giảm 15% tuyến TP.HCM – Vũng Tàu",
+    name: "Giảm 15% tuyến Sài Gòn – Vũng Tàu",
     description: "Áp dụng cho mọi lượt thuê nguyên chuyến đi Vũng Tàu, không giới hạn số lần đặt trong tháng.",
     discountType: "phan_tram",
     discountValue: 15,
     startDate: "2026-08-01",
     endDate: "2026-09-30",
-    routeLabels: ["TP. Hồ Chí Minh – Vũng Tàu"],
+    routeLabels: ["Sài Gòn – Vũng Tàu"],
     vehicleTypeLabels: [],
   },
   {
@@ -33,7 +33,7 @@ const raw: Omit<Promotion, "discountLabel" | "isExpired">[] = [
     discountValue: 300000,
     startDate: "2026-07-15",
     endDate: "2026-09-15",
-    routeLabels: ["TP. Hồ Chí Minh – Đà Lạt"],
+    routeLabels: ["Sài Gòn – Đà Lạt"],
     vehicleTypeLabels: ["Limousine"],
   },
   {
@@ -57,7 +57,7 @@ const raw: Omit<Promotion, "discountLabel" | "isExpired">[] = [
     discountValue: 500000,
     startDate: "2026-09-01",
     endDate: "2026-11-30",
-    routeLabels: ["TP. Hồ Chí Minh – Cần Thơ"],
+    routeLabels: ["Sài Gòn – Cần Thơ"],
     vehicleTypeLabels: ["45 chỗ"],
   },
   {

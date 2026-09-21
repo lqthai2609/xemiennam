@@ -19,6 +19,7 @@ import { decodeHtmlEntities } from "@/lib/wp";
 import type { BlogPost } from "@/types/blog";
 import type { Route } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
+import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
 
 export type Props = { params: Promise<{ slug: string }> };
 
@@ -49,7 +50,7 @@ function buildRelatedHubLinks(post: BlogPost, routes: Route[], locations: Locati
     if (!rawLabel) continue;
     links.push({
       href: `/tuyen-duong/${provinceSlug}`,
-      label: decodeHtmlEntities(rawLabel),
+      label: getPublicLocationLabel(decodeHtmlEntities(rawLabel)),
       relation: "Điểm đến",
     });
   }
@@ -78,8 +79,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await fetchPostBySlug(slug);
   return post
     ? buildPageMetadata({
-        title: post.rankMathTitle || `${post.title} | Blog`,
-        description: post.rankMathDescription || post.excerpt,
+        title: formatPublicLocationText(post.rankMathTitle || `${post.title} | Blog`),
+        description: formatPublicLocationText(post.rankMathDescription || post.excerpt),
         path: `/blog/${post.slug}`,
         openGraphType: "article",
       })
@@ -128,7 +129,7 @@ export default async function BlogDetailPage({ params }: Props) {
   return (
     <main className="site-shell">
       {faqItems.length > 0 && (
-        <JsonLd data={buildFaqPageSchema(faqItems.map((f) => ({ question: f.question, answer: f.answer })))} />
+        <JsonLd data={buildFaqPageSchema(faqItems.map((f) => ({ question: formatPublicLocationText(f.question), answer: formatPublicLocationText(f.answer) })))} />
       )}
       <SiteHeader
         menuItems={navItems}
@@ -138,10 +139,10 @@ export default async function BlogDetailPage({ params }: Props) {
         ctaHref="/#booking"
       />
 
-      <UnifiedHero eyebrow={post.category} title={post.title} description={post.excerpt} backgroundImage={post.featuredImageUrl || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
+      <UnifiedHero eyebrow={post.category} title={formatPublicLocationText(post.title)} description={formatPublicLocationText(post.excerpt)} backgroundImage={post.featuredImageUrl || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
 
       <section className="section-wrap blog-detail-content">
-        <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+        <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: formatPublicLocationText(post.contentHtml) }} />
 
         {faqItems.length > 0 && (
           <section className="blog-detail-faq">
@@ -149,8 +150,8 @@ export default async function BlogDetailPage({ params }: Props) {
             <div className="blog-faq-list">
               {faqItems.map((item, index) => (
                 <details className="blog-faq-item" key={`${item.question}-${index}`}>
-                  <summary>{item.question}</summary>
-                  <p>{item.answer}</p>
+                  <summary>{formatPublicLocationText(item.question)}</summary>
+                  <p>{formatPublicLocationText(item.answer)}</p>
                 </details>
               ))}
             </div>

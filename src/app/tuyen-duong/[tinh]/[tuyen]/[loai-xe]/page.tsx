@@ -17,6 +17,7 @@ import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
 import { resolveRouteContentReadiness } from "@/lib/content-readiness";
 import { SITE_NAME } from "@/lib/site-config";
+import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
 type Props = { params: Promise<{ tinh: string; tuyen: string; "loai-xe": string }> };
 
@@ -47,8 +48,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const readiness = resolveRouteContentReadiness(route);
   const priceText = vp.pricingMode === "contact" ? "liên hệ báo giá" : `giá từ ${vp.price}`;
   return buildPageMetadata({
-    title: `Thuê xe ${vp.vehicleType} đi ${route.from} – ${route.to}, ${priceText} | ${SITE_NAME}`,
-    description: comboDescriptionOrDefault(route, vp),
+    title: `Thuê xe ${vp.vehicleType} đi ${getPublicRouteLabel(route, " – ")}, ${priceText} | ${SITE_NAME}`,
+    description: formatPublicLocationText(comboDescriptionOrDefault(route, vp)),
     path: routeComboHref(route, loaiXe),
     noIndex: !guard.indexable || !readiness.indexable,
   });
@@ -90,22 +91,22 @@ export default async function Page({ params }: Props) {
   const readiness = resolveRouteContentReadiness(route);
   const serviceOffers = buildFixedServiceOffers([
     {
-      name: `${vp.vehicleType} · ${vp.packageLabel || "Gói hành trình"} · ${route.from} → ${route.to}`,
+      name: `${vp.vehicleType} · ${vp.packageLabel || "Gói hành trình"} · ${getPublicRouteLabel(route)}`,
       mode: vp.pricingMode ?? "contact",
       price: vp.numericPrice,
     },
   ]);
   const serviceSchema = guard.indexable && readiness.serviceSchemaEligible ? buildServiceSchema({
-    name: `Thuê xe ${vp.vehicleType.toLowerCase()} đi ${route.from} – ${route.to}`,
-    description,
+    name: `Thuê xe ${vp.vehicleType.toLowerCase()} đi ${getPublicRouteLabel(route, " – ")}`,
+    description: formatPublicLocationText(description),
     url: routeComboHref(route, loaiXe),
-    areaServed: [route.from, route.to],
+    areaServed: [getPublicLocationLabel(route.from), getPublicLocationLabel(route.to)],
     offers: readiness.offerSchemaEligible ? serviceOffers : undefined,
   }) : undefined;
   const breadcrumbSchema = buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
-    { name: route.region, url: `/tuyen-duong/${route.regionSlug || "khac"}` },
-    { name: `${route.from} → ${route.to}`, url: routeHref(route) },
+    { name: getPublicLocationLabel(route.region), url: `/tuyen-duong/${route.regionSlug || "khac"}` },
+    { name: getPublicRouteLabel(route), url: routeHref(route) },
     { name: vp.vehicleType, url: routeComboHref(route, loaiXe) },
   ]);
 

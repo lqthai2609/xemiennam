@@ -3,6 +3,7 @@ import { fetchRoutePairsV2, type RouteDirectionKey, type RoutePairV2 } from "./r
 import { fetchRoutes } from "./routes";
 import { airportDisplayName, airportHubHref, airportPublicSlug } from "@/lib/airport-seo";
 import { routeHref, type Route, type RoutePricingPackage } from "@/types/route";
+import { getPublicRouteLabel } from "@/lib/public-location-label";
 
 export type AirportTravelDirection = "from_airport" | "to_airport";
 
@@ -286,7 +287,7 @@ export async function fetchAirportRouteLinksForVehicleType(
     if (!route || !routeSupportsVehicleType(route, vehicleType)) continue;
 
     output.set(route.slug, {
-      label: `${route.from} → ${route.to}`,
+      label: getPublicRouteLabel(route),
       href: routeHref(route),
     });
   }

@@ -10,6 +10,7 @@ import {
   normalizeSearch,
 } from "@/lib/location-search";
 import type { Route } from "@/types/route";
+import { getPublicLocationLabel } from "@/lib/public-location-label";
 
 type RouteDestinationSearchProps = {
   routes: Route[];
@@ -26,7 +27,7 @@ function uniqueLocationOptions(routes: Route[]) {
       const label = canonicalLocationLabel(rawValue);
       const key = canonicalLocationKey(label);
       if (!key || values.has(key)) continue;
-      values.set(key, label);
+      values.set(key, getPublicLocationLabel(label));
     }
   }
 
@@ -165,7 +166,7 @@ export function RouteDestinationSearch({ routes, value, onChange }: RouteDestina
               }`}
             >
               <MapPin aria-hidden="true" size={16} className="shrink-0 text-primary" />
-              <span>{option}</span>
+              <span>{getPublicLocationLabel(option)}</span>
             </button>
           ))}
         </div>

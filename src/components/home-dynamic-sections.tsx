@@ -9,6 +9,7 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { fetchServices } from "@/lib/api/services";
 import { fetchTestimonials } from "@/lib/api/testimonials";
 import { routeHref, routePriceKicker, type Route } from "@/types/route";
+import { getPublicLocationLabel } from "@/lib/public-location-label";
 
 const featuredDestinationNames = ["Vũng Tàu", "Hồ Tràm", "Cần Thơ", "Mũi Né", "Phan Thiết", "Đà Lạt"];
 
@@ -29,7 +30,7 @@ function Heading({ label, title, href, link }: { label: string; title: string; h
 }
 
 function RouteCard({ route }: { route: Route }) {
-  return <article className="route-ticket"><div className="rt-price"><span>{routePriceKicker(route)}</span><b>{route.price}</b></div><div className="rt-body"><div className="rt-route"><span>{route.from}</span><ArrowRight size={16} /><span>{route.to}</span></div><div className="rt-meta"><span><Clock3 size={13} /> {route.time}</span><span><Milestone size={13} /> {route.distance}</span><span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span></div></div><div className="rt-cta"><Link href={routeHref(route)}>Xem chi tiết <ArrowRight size={14} /></Link></div></article>;
+  return <article className="route-ticket"><div className="rt-price"><span>{routePriceKicker(route)}</span><b>{route.price}</b></div><div className="rt-body"><div className="rt-route"><span>{getPublicLocationLabel(route.from)}</span><ArrowRight size={16} /><span>{getPublicLocationLabel(route.to)}</span></div><div className="rt-meta"><span><Clock3 size={13} /> {route.time}</span><span><Milestone size={13} /> {route.distance}</span><span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span></div></div><div className="rt-cta"><Link href={routeHref(route)}>Xem chi tiết <ArrowRight size={14} /></Link></div></article>;
 }
 
 /** CMS-backed, below-the-fold content is streamed independently so it cannot delay the LCP hero. */

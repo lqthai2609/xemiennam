@@ -26,6 +26,7 @@ import type { Vehicle } from "@/types/vehicle";
 import type { BlogPost } from "@/types/blog";
 import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
@@ -38,7 +39,7 @@ function SimilarRouteCard({ route, vehicleSlug }: { route: Route; vehicleSlug: s
 
   return (
     <Link className="combo-similar-card" href={routeComboHref(route, vehicleSlug)}>
-      <span>{route.from} → {route.to}</span>
+      <span>{getPublicRouteLabel(route)}</span>
       <strong>{priceLabel}</strong>
       <small><Clock3 size={13} /> {route.time}</small>
       <ArrowRight size={17} />
@@ -71,10 +72,10 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
     [category.slug, direction, route, vehiclePrice],
   );
   const isInbound = direction === "inbound";
-  const displayFrom = isInbound ? route.to : route.from;
-  const displayTo = isInbound ? route.from : route.to;
-  const description = comboDescriptionOrDefault(route, activeVehiclePrice);
-  const routeLabel = `${route.from} – ${route.to}`;
+  const displayFrom = getPublicLocationLabel(isInbound ? route.to : route.from);
+  const displayTo = getPublicLocationLabel(isInbound ? route.from : route.to);
+  const description = formatPublicLocationText(comboDescriptionOrDefault(route, activeVehiclePrice));
+  const routeLabel = getPublicRouteLabel(route, " – ");
   const displayRoute = `${displayFrom} – ${displayTo}`;
   const isContact = activeVehiclePrice.pricingMode === "contact";
   const hasValidFixedPrice =
@@ -92,9 +93,9 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
         ? "dropoff_at_airport"
         : undefined;
   const airportName = airportContext === "pickup_from_airport"
-    ? pickupLocation?.name
+    ? getPublicLocationLabel(pickupLocation)
     : airportContext === "dropoff_at_airport"
-      ? dropoffLocation?.name
+      ? getPublicLocationLabel(dropoffLocation)
       : undefined;
   const backHref = isInbound ? `${routeHref(route)}?direction=inbound` : routeHref(route);
 
@@ -108,7 +109,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
         ctaHref="#booking"
       />
       <UnifiedHero
-        eyebrow={`${route.region} · ${category.label}`}
+        eyebrow={`${getPublicLocationLabel(route.region)} · ${category.label}`}
         title={<>Thuê xe {category.label.toLowerCase()}<br /><em>{displayFrom} → {displayTo}</em></>}
         description={description}
         backgroundImage={heroImage}
@@ -185,7 +186,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
       {similarRoutes.length > 0 && (
         <section className="section-wrap combo-similar-section">
           <div className="section-heading">
-            <div><p className="section-label">CÙNG TỈNH {route.region.toUpperCase()}</p><h2>Các tuyến tương tự.</h2></div>
+            <div><p className="section-label">CÙNG TỈNH {getPublicLocationLabel(route.region).toUpperCase()}</p><h2>Các tuyến tương tự.</h2></div>
             <Link className="text-link" href={`/tuyen-duong/${route.regionSlug}`}>Xem tất cả tuyến <ArrowRight size={16} /></Link>
           </div>
           <div className="combo-similar-grid">

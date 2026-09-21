@@ -40,7 +40,7 @@ test("district and area aliases resolve to the canonical Ho Chi Minh route", () 
 
   assert.match(locationSearch, /resolveLocationAlias/);
   assert.match(routeFinderForm, /Đã quy đổi về/);
-  assert.match(routeFinderForm, /Hai điểm này đều thuộc nhóm giá TP\.HCM/);
+  assert.match(routeFinderForm, /Hai điểm này đều thuộc nhóm giá \$\{HO_CHI_MINH_PUBLIC_LABEL\}/);
 });
 
 test("date and vehicle are optional and select the correct destination page", () => {

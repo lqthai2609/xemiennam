@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildServiceSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
+import { formatPublicLocationText } from "@/lib/public-location-label";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -20,8 +21,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = await fetchServiceBySlug(slug);
   return service
     ? buildPageMetadata({
-        title: service.rankMathTitle || `${service.name} | ${SITE_NAME}`,
-        description: service.rankMathDescription || service.shortDescription,
+        title: formatPublicLocationText(service.rankMathTitle || `${service.name} | ${SITE_NAME}`),
+        description: formatPublicLocationText(service.rankMathDescription || service.shortDescription),
         path: `/dich-vu/${service.slug}`,
       })
     : buildPageMetadata({

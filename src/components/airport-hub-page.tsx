@@ -12,6 +12,7 @@ import { getAirportHubReadiness, type AirportReadinessPhase } from "@/lib/airpor
 import { airportDisplayName } from "@/lib/airport-seo";
 import type { AirportHubData, AirportHubRoute } from "@/lib/api/airport-routes";
 import type { BlogPost } from "@/types/blog";
+import { HO_CHI_MINH_PUBLIC_LABEL, getPublicLocationLabel } from "@/lib/public-location-label";
 
 function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "live") {
   if (phase === "prelaunch") {
@@ -26,7 +27,7 @@ function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "l
       },
       {
         question: "Vì sao một số tuyến chưa có giá cố định?",
-        answer: "Các tuyến chưa có mức giá sân bay được xác minh sẽ hiển thị “Liên hệ báo giá”. Alo Đặt Xe không sao chép giá từ TP.HCM, Tân Sơn Nhất hoặc tuyến khác để làm giá Long Thành.",
+        answer: `Các tuyến chưa có mức giá sân bay được xác minh sẽ hiển thị “Liên hệ báo giá”. Alo Đặt Xe không sao chép giá từ ${HO_CHI_MINH_PUBLIC_LABEL}, Tân Sơn Nhất hoặc tuyến khác để làm giá Long Thành.`,
       },
       {
         question: "Thông tin vận hành sân bay trên trang có phải lịch bay chính thức không?",
@@ -65,12 +66,12 @@ function RouteCard({ item }: { item: AirportHubRoute }) {
       <div className="airport-route-path">
         <div>
           <span className="airport-route-label">Điểm đi</span>
-          <strong>{item.from}</strong>
+          <strong>{getPublicLocationLabel(item.from)}</strong>
         </div>
         <ArrowDown aria-hidden="true" className="airport-route-arrow" />
         <div>
           <span className="airport-route-label">Điểm đến</span>
-          <strong>{item.to}</strong>
+          <strong>{getPublicLocationLabel(item.to)}</strong>
         </div>
       </div>
       <div className="airport-route-meta">
@@ -224,7 +225,7 @@ export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubDa
             <div>
               {allProvinceLinks.map((location) => (
                 <Link key={location.provinceSlug} href={`/tuyen-duong/${location.provinceSlug}`}>
-                  {location.name}<ArrowRight aria-hidden="true" />
+                  {getPublicLocationLabel(location.name)}<ArrowRight aria-hidden="true" />
                 </Link>
               ))}
             </div>

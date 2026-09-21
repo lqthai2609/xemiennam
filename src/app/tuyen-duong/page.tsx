@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { fetchRoutes } from "@/lib/api/routes";
 import { RoutesPageClient } from "@/components/routes-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
+import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Các tuyến cho thuê xe nguyên chiếc | Alo Đặt Xe",
-  description: "Toàn bộ tuyến cho thuê xe nguyên chiếc TP.HCM đi Vũng Tàu, Cần Thơ, Đà Lạt... lọc theo khu vực, loại xe và số chỗ.",
+  description: `Toàn bộ tuyến cho thuê xe nguyên chiếc ${HO_CHI_MINH_PUBLIC_LABEL} đi Vũng Tàu, Cần Thơ, Đà Lạt... lọc theo khu vực, loại xe và số chỗ.`,
   path: "/tuyen-duong",
 });
 

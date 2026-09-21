@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ArrowRight, ChevronLeft, ChevronRight, Home, Phone, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SITE_NAME } from "@/lib/site-config";
+import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
 import "./site-header.css";
 
 export type NavItem = { label: string; href: string };
@@ -134,7 +135,7 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref 
             <h2 id="header-search-title">Bạn muốn đi đâu?</h2>
             <p className="header-search-description">Nhập điểm đi và điểm đến để xem các tuyến phù hợp.</p>
             <form className="header-search-form" onSubmit={handleRouteSearch}>
-              <label><span>Điểm đi</span><input name="from" placeholder="Ví dụ: TP. Hồ Chí Minh" autoFocus /></label>
+              <label><span>Điểm đi</span><input name="from" placeholder={`Ví dụ: ${HO_CHI_MINH_PUBLIC_LABEL}`} autoFocus /></label>
               <label><span>Điểm đến</span><input name="to" placeholder="Ví dụ: Vũng Tàu" required /></label>
               <Button type="submit">Tìm tuyến <ArrowRight data-icon="inline-end" /></Button>
             </form>

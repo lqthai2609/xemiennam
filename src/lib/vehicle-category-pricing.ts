@@ -1,5 +1,6 @@
 import { formatPriceShort } from "@/lib/wp";
 import { routeComboHref, type Route, type RoutePricingPackage } from "@/types/route";
+import { getPublicRouteLabel } from "@/lib/public-location-label";
 
 export type VehicleCategoryRoutePrice = {
   route: string;
@@ -56,7 +57,7 @@ export function buildVehicleCategoryRoutePrices(
 
     return [
       {
-        route: `${route.from} → ${route.to}`,
+        route: getPublicRouteLabel(route),
         price,
         note: `${packageRow.packageLabel} · Giá tham khảo, thay đổi theo mùa/lễ`,
         href: routeComboHref(route, vehicleSlug),

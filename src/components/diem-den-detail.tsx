@@ -8,6 +8,7 @@ import type { DiemDen } from "@/types/diem-den";
 import type { AirportConnectionLink } from "@/lib/api/airport-routes";
 import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
 
 const footerLinkGroups = [
   {
@@ -35,9 +36,9 @@ function RegionRouteCard({ route }: { route: Route }) {
       </div>
       <div className="rt-body">
         <div className="rt-route">
-          <span>{route.from}</span>
+          <span>{getPublicLocationLabel(route.from)}</span>
           <ArrowRight size={16} />
-          <span>{route.to}</span>
+          <span>{getPublicLocationLabel(route.to)}</span>
         </div>
         <div className="rt-meta">
           {route.time && <span><Clock3 size={13} /> {route.time}</span>}
@@ -91,10 +92,11 @@ export function DiemDenDetailPage({
   airportConnections?: AirportConnectionLink[];
   heroImageUrl?: string;
 }) {
+  const publicRegionName = getPublicLocationLabel(regionName);
   const routeCount = routes.length;
   const heroDescription = routeCount > 0
-    ? `Thuê xe nguyên chuyến đi ${regionName} với ${routeCount} tuyến đang phục vụ. Chủ động giờ khởi hành, loại xe và hành trình.`
-    : `Thuê xe nguyên chuyến đi ${regionName}, chủ động giờ khởi hành, loại xe và hành trình.`;
+    ? `Thuê xe nguyên chuyến đi ${publicRegionName} với ${routeCount} tuyến đang phục vụ. Chủ động giờ khởi hành, loại xe và hành trình.`
+    : `Thuê xe nguyên chuyến đi ${publicRegionName}, chủ động giờ khởi hành, loại xe và hành trình.`;
 
   return (
     <main className="site-shell">
@@ -108,7 +110,7 @@ export function DiemDenDetailPage({
 
       <UnifiedHero
         eyebrow="THUÊ XE LIÊN TỈNH"
-        title={`Thuê xe đi ${regionName}`}
+        title={`Thuê xe đi ${publicRegionName}`}
         description={heroDescription}
         backgroundImage={heroImageUrl}
         backHref="/diem-den"
@@ -119,15 +121,15 @@ export function DiemDenDetailPage({
         <div className="section-heading">
           <div>
             <p className="section-label">THÔNG TIN ĐIỂM ĐẾN</p>
-            <h2>Chủ động hành trình đi {regionName}.</h2>
+            <h2>Chủ động hành trình đi {publicRegionName}.</h2>
           </div>
         </div>
         {hub ? (
-          <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: hub.contentHtml }} />
+          <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: formatPublicLocationText(hub.contentHtml) }} />
         ) : (
           <article className="blog-detail-body">
             <p>
-              {SITE_NAME} nhận thuê xe nguyên chuyến đi {regionName} cho gia đình, nhóm khách và doanh nghiệp.
+              {SITE_NAME} nhận thuê xe nguyên chuyến đi {publicRegionName} cho gia đình, nhóm khách và doanh nghiệp.
               Khách chủ động chọn giờ khởi hành, điểm đón trả và loại xe phù hợp, không phụ thuộc lịch trình cố định.
             </p>
             <p>
@@ -141,7 +143,7 @@ export function DiemDenDetailPage({
       <section className="related-section section-wrap" id="routes">
         <div className="section-heading">
           <div>
-            <p className="section-label">TUYẾN XE ĐI {regionName.toUpperCase()}</p>
+            <p className="section-label">TUYẾN XE ĐI {publicRegionName.toUpperCase()}</p>
             <h2>{routeCount > 0 ? `${routeCount} tuyến đang phục vụ.` : "Tư vấn tuyến theo nhu cầu."}</h2>
           </div>
           <Link className="text-link" href="/bang-gia">
@@ -162,7 +164,7 @@ export function DiemDenDetailPage({
           <div className="section-heading-row">
             <div>
               <p className="section-label">KẾT NỐI SÂN BAY</p>
-              <h2>Tuyến sân bay liên quan đến {regionName}.</h2>
+              <h2>Tuyến sân bay liên quan đến {publicRegionName}.</h2>
             </div>
           </div>
           <div className="departure-list">
@@ -179,12 +181,12 @@ export function DiemDenDetailPage({
         <section className="section-wrap blog-detail-content" id="faq">
           <div className="blog-detail-faq">
             <p className="section-label">CÂU HỎI THƯỜNG GẶP</p>
-            <h2>Thông tin cần biết khi thuê xe đi {regionName}.</h2>
+            <h2>Thông tin cần biết khi thuê xe đi {publicRegionName}.</h2>
             <div className="blog-faq-list">
               {hub.faqItems.map((item, index) => (
                 <details className="blog-faq-item" key={`${item.question}-${index}`}>
-                  <summary>{item.question}</summary>
-                  <p>{item.answer}</p>
+                  <summary>{formatPublicLocationText(item.question)}</summary>
+                  <p>{formatPublicLocationText(item.answer)}</p>
                 </details>
               ))}
             </div>
@@ -209,7 +211,7 @@ export function DiemDenDetailPage({
       <section className="vehicle-type-cta combo-final-cta section-wrap">
         <div>
           <p className="section-label">CẦN TƯ VẤN HÀNH TRÌNH?</p>
-          <h2>Đặt xe đi {regionName}.</h2>
+          <h2>Đặt xe đi {publicRegionName}.</h2>
           <p>Gọi {SITE_NAME} để được tư vấn tuyến, loại xe và phương án phù hợp trước khi xác nhận chuyến.</p>
         </div>
         <a className="button button-primary" href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi ${SITE_HOTLINE}`}>
