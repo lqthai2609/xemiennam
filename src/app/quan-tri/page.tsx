@@ -4,6 +4,8 @@ import { fetchLocationsV2 } from "@/lib/api/locations";
 import { fetchRoutes } from "@/lib/api/routes";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { getPublicLocationLabel } from "@/lib/public-location-label";
+import { getAdminSession } from "@/lib/admin-session";
+import { AdminLogin } from "./admin-login";
 import { RoutePricingAdminWizard } from "./route-pricing-admin-wizard";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +34,9 @@ function isAdminPreviewEnabled() {
 
 export default async function RoutePricingAdminPage() {
   if (!isAdminPreviewEnabled()) notFound();
+
+  const auth = await getAdminSession();
+  if (!auth) return <AdminLogin />;
 
   const [locations, routes, vehicles] = await Promise.all([
     fetchLocationsV2(),
@@ -66,6 +71,17 @@ export default async function RoutePricingAdminPage() {
       fixedCount: rows.filter((row) => row.mode === "fixed").length,
       contactCount: rows.filter((row) => row.mode === "contact").length,
       priceLabel: route.price,
+      locked:
+        isPrelaunchLocation(route.originLocation?.name ?? route.from, route.originLocation?.slug ?? "") ||
+        isPrelaunchLocation(route.destinationLocation?.name ?? route.to, route.destinationLocation?.slug ?? "") ||
+        route.contentReadiness?.mappingState === "d35_10_blocked",
+      pricingRows: rows.map((row) => ({
+        direction: row.direction,
+        vehicleId: row.vehicleId,
+        packageKey: row.packageKey,
+        mode: row.mode,
+        price: row.price,
+      })),
     };
   });
 
@@ -78,6 +94,8 @@ export default async function RoutePricingAdminPage() {
       locations={adminLocations}
       routes={adminRoutes}
       vehicles={adminVehicles}
+      actor={auth.session}
+      csrf={auth.csrf}
     />
   );
 }

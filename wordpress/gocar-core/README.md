@@ -115,6 +115,23 @@ condition trace, policy version and timezone separately from the Pricing V2 base
 
 Each Route × Vehicle description must be materially specific to that combination. Editors should describe useful trip context such as group profile, luggage/capacity fit, pickup/dropoff reality or use case. Do not create near-duplicate text by only swapping destination or vehicle names. If no editorial content exists, the frontend may render a safe fallback for UX, but that fallback does not qualify as unique SEO content; indexability is handled separately by the thin-content guard.
 
+## CORE-ADMIN-002 scope — v0.10.0
+
+`class-gocar-admin-api.php` adds the private mutation boundary used by `/quan-tri`:
+
+- WordPress/JWT authentication with `edit_posts` for drafts and `publish_posts` for approval;
+- private server-side drafts with validate → submit → publish workflow;
+- route creation remains WordPress `draft`, so it does not create a new public URL;
+- existing Pricing V2 tuples may be updated only after server validation and approval;
+- route removal is soft archive (`draft` + both directions disabled), never hard delete;
+- every applied change stores actor, timestamp, reason and complete before/after snapshots;
+- rollback is optimistic and refuses to overwrite a route changed after the selected audit record;
+- D35-10 endpoint groups/route IDs and Long Thành PRELAUNCH are blocked in the backend, not only in the UI;
+- `fixed` requires a positive integer; `contact` and `disabled` never carry a numeric price.
+
+The browser must use the Next.js authenticated proxy. It must not call these endpoints or the
+WordPress core post endpoints directly.
+
 For blog relations, editors must assign the relevant Province/Vehicle taxonomy or Airport Location explicitly. Do not infer semantic relations from words in a title or article body when structured relation data exists.
 
 ## Safety
