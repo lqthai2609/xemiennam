@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "name": "CORE-ADMIN-003 production evidence",
+  "status": "PRODUCTION_VERIFIED",
+  "generatedAt": "2026-09-22",
+  "source": {
+    "repository": "lqthai2609/xemiennam",
+    "pullRequest": 125,
+    "acceptedHead": "107805edf31918ecb421ce701be06baf0db65190",
+    "mergeCommit": "1e1519ac8a646e2131d6cfb4911f3f4963502401",
+    "pluginVersion": "0.11.0",
+    "pluginArtifactId": 10681274752,
+    "pluginArtifactSha256": "8f2701f1652facbf721eca4fa1c18fc0b429636a2f21a8802ef27618ea0ae406",
+    "pluginZipSha256": "40bbe1783f8f41299775be439ecde04e4269d3b8b1913544be10962538a03449",
+    "productionDeployment": "dpl_FJzoJHCYXuyAgMMeqTcVxsLdt1xR"
+  },
+  "fileCount": 10,
+  "files": [
+    {
+      "path": "docs/core-admin-003-direct-write-search-delete.md",
+      "role": "CURRENT_CONTRACT",
+      "sha256": "2f38c4182db26e5b8cdd1f02d750281cdd1de8801144f9837a5c88da3ed09cbe"
+    },
+    {
+      "path": "docs/technical-receipts/core-admin-003-production.md",
+      "role": "CURRENT_PRODUCTION_RECEIPT",
+      "sha256": "49517ee40f1dd213def2d5b14159ee07a4e5e690a1673513b33644754ff3624e"
+    },
+    {
+      "path": "src/app/quan-tri/route-pricing-admin-wizard.tsx",
+      "role": "CURRENT_UI",
+      "sha256": "4018695a3aff9a4c2fc01ab24a0024b100ab3db9f601a784aef57985c2b42191"
+    },
+    {
+      "path": "src/app/quan-tri/route-pricing-admin-wizard.module.css",
+      "role": "CURRENT_UI_STYLES",
+      "sha256": "3629b073d93cd2f70f3d1404be044f2de94adc43e618ea6e8b9d9d63db548621"
+    },
+    {
+      "path": "src/app/api/admin/[...path]/route.ts",
+      "role": "CURRENT_SAME_ORIGIN_PROXY",
+      "sha256": "183fc8a8c99e7272c9322978a6b15ecd8e7dec4eea7c1864c2d754a9f57df569"
+    },
+    {
+      "path": "wordpress/gocar-core/gocar-core.php",
+      "role": "CURRENT_PLUGIN_ENTRYPOINT",
+      "sha256": "3f7738631f8847fae7fcfa68e545b1fc38cf356933cc01ee7bc723f599cb39b8"
+    },
+    {
+      "path": "wordpress/gocar-core/includes/class-gocar-admin-api.php",
+      "role": "CURRENT_WORDPRESS_WRITE_API",
+      "sha256": "f97e3c96ecdb786cded3a67400e0b05bfe705a4b964762ec7d9ac05800710670"
+    },
+    {
+      "path": "scripts/gocar-admin-api-php.test.php",
+      "role": "CURRENT_BACKEND_REGRESSION_GUARD",
+      "sha256": "113bd4bc6b3c0f2c170bb444f3a5a7ea978010c929a3f0bb39cb70e229f2fc87"
+    },
+    {
+      "path": "scripts/gocar-admin-wizard-source.test.mjs",
+      "role": "CURRENT_FRONTEND_REGRESSION_GUARD",
+      "sha256": "9c509b5f3dc646ef919269e48329deb5db8ea246a40fa4380948a5c92bdf0b34"
+    },
+    {
+      "path": "wordpress/gocar-core/README.md",
+      "role": "CURRENT_PLUGIN_CONTRACT",
+      "sha256": "a1e92e03de263ae5447f8a805edbcb9b2f5dc71a7229b9e9672d00eeb2da5141"
+    }
+  ],
+  "openGates": [
+    "D35-10_OPEN_P0",
+    "LONG_THANH_PRELAUNCH",
+    "DEP-011_DOMAIN_MIGRATION_OPEN"
+  ]
+}
