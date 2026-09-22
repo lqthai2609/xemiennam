@@ -38,6 +38,21 @@ test("workflow includes server draft, approval, audit and rollback", () => {
   assert.match(adminApi, /post_status'\s*=>\s*'draft'/);
 });
 
+test("publisher can apply directly, search existing routes and trash a route with audit", () => {
+  assert.match(wizard, /Ghi thẳng backend/);
+  assert.match(wizard, /RouteCombobox/);
+  assert.match(wizard, /role="combobox"/);
+  assert.match(wizard, /adminFetch<AdminRoute\[]>\("routes"/);
+  assert.match(wizard, /Xóa tuyến trực tiếp/);
+  assert.match(wizard, /operation: "delete_route"/);
+  assert.match(proxyRoute, /\^apply\$/);
+  assert.match(adminApi, /\/admin\/apply/);
+  assert.match(adminApi, /\/admin\/routes/);
+  assert.match(adminApi, /direct_apply/);
+  assert.match(adminApi, /wp_trash_post\( \$route_id \)/);
+  assert.match(adminApi, /create_audit\( 0, \$payload\['operation'\]/);
+});
+
 test("production guardrails are enforced in backend source", () => {
   assert.match(adminApi, /D35_10_ENDPOINT_PAIRS/);
   assert.match(adminApi, /PRELAUNCH_LOCATION_IDS/);

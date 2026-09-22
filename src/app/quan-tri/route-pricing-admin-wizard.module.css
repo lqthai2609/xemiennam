@@ -153,6 +153,33 @@
 .panelPrimary:disabled, .dangerButton:disabled { cursor: not-allowed; color: #859194; background: #dfe4e2; }
 .panelPrimary svg, .dangerButton svg { width: 19px; }
 .dangerButton { background: #9d4236; }
+.actionPair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.actionPair > button { width: 100%; }
+.directButton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 18px; border: 1px solid #08716f; border-radius: 14px; color: #075f5d; background: #e4f1ef; font-weight: 800; cursor: pointer; }
+.directButton:disabled { cursor: not-allowed; opacity: .55; }
+.directButton svg { width: 19px; }
+
+.routeSearch { position: relative; display: grid; gap: 8px; color: var(--admin-navy); font-weight: 750; }
+.routeSearchInput { position: relative; }
+.routeSearchInput svg { position: absolute; top: 50%; left: 14px; width: 19px; color: var(--admin-muted); transform: translateY(-50%); pointer-events: none; }
+.routeSearchInput input { width: 100%; min-height: 52px; padding: 0 14px 0 44px; border: 1px solid #bfcac8; border-radius: 14px; color: var(--admin-navy); background: white; font-size: 1rem; }
+.routeSearchInput input:focus { outline: 3px solid rgba(11,123,120,.18); border-color: var(--admin-teal); }
+.routeSuggestions { position: absolute; z-index: 20; top: calc(100% + 5px); right: 0; left: 0; max-height: 330px; overflow-y: auto; padding: 6px; border: 1px solid #bfcac8; border-radius: 15px; background: white; box-shadow: 0 18px 38px rgba(8,43,58,.16); }
+.routeSuggestions button { display: block; width: 100%; padding: 11px 12px; border: 0; border-radius: 11px; color: var(--admin-navy); background: transparent; text-align: left; cursor: pointer; }
+.routeSuggestions button:hover, .routeSuggestions button[aria-selected="true"] { background: #eaf6f4; }
+.routeSuggestions button:disabled { opacity: .55; cursor: not-allowed; }
+.routeSuggestions strong, .routeSuggestions small { display: block; }
+.routeSuggestions small { margin-top: 3px; color: var(--admin-muted); font-weight: 600; }
+.routeSuggestions p { margin: 0; padding: 14px; color: var(--admin-muted); font-weight: 600; text-align: center; }
+
+.directConfirm { display: grid; gap: 14px; padding: 16px; border: 1px solid #78b8b2; border-radius: 16px; background: #eff8f6; }
+.directConfirm p { margin: 5px 0 0; color: var(--admin-muted); font-size: .9rem; line-height: 1.5; }
+.directConfirm > div:last-child { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.directConfirm button { min-height: 46px; padding: 0 12px; border: 1px solid var(--admin-line); border-radius: 12px; color: var(--admin-navy); background: white; font-weight: 800; cursor: pointer; }
+.directConfirm button:last-child { border-color: var(--admin-teal); color: white; background: var(--admin-teal); }
+.directConfirm button:disabled { opacity: .55; cursor: wait; }
+.directConfirmDanger { border-color: #d99088; background: #fff4f2; }
+.directConfirmDanger button:last-child { border-color: #9d4236; background: #9d4236; }
 
 .workflowStatus { display: grid; gap: 10px; margin-top: 18px; padding: 15px; border: 1px solid #a9ccc8; border-radius: 16px; background: #eff8f6; }
 .workflowStatus strong, .workflowStatus span { display: block; }
@@ -218,6 +245,7 @@
 .readOnlyBanner p { margin: 0; line-height: 1.5; }
 
 .stickyFooter { position: sticky; bottom: 0; z-index: 8; display: grid; grid-template-columns: auto auto 1fr; gap: 10px; margin-top: 18px; padding: 12px; border: 1px solid var(--admin-line); border-radius: 20px; background: rgba(255,253,248,.95); backdrop-filter: blur(12px); box-shadow: 0 -8px 28px rgba(8,43,58,.09); }
+.stickyFooterFinal { grid-template-columns: auto auto 1fr 1fr; }
 .stickyFooter button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border-radius: 13px; font-weight: 800; cursor: pointer; }
 .stickyFooter svg { width: 18px; }
 .backButton { border: 1px solid var(--admin-line); color: var(--admin-navy); background: white; }
@@ -237,6 +265,7 @@
   .summaryCard strong { margin-top: 13px; font-size: 1.6rem; }
   .summaryCard span { font-size: .75rem; }
   .sectionHeading { align-items: start; flex-direction: column; gap: 7px; }
+  .actionPair { grid-template-columns: 1fr; }
   .progress li small { display: none; }
   .stepCard { min-height: 460px; padding: 20px 16px; border-radius: 21px; }
   .fieldGrid, .radioGrid { grid-template-columns: 1fr; }
@@ -244,6 +273,8 @@
   .reviewList > div { grid-template-columns: 1fr; gap: 4px; }
   .stickyFooter { grid-template-columns: 1fr 1fr; border-radius: 18px 18px 0 0; margin-left: -12px; margin-right: -12px; margin-bottom: -120px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
   .nextButton { grid-column: 1 / -1; grid-row: 1; }
+  .stickyFooterFinal .directButton { grid-column: 1; grid-row: 2; }
+  .stickyFooterFinal .nextButton { grid-column: 2; grid-row: 2; }
   .panel { width: min(100% - 24px, 760px); padding-top: 16px; }
   .auditList article { align-items: stretch; flex-direction: column; }
   .auditList button { justify-content: center; }
