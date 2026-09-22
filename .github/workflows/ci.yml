@@ -120,6 +120,9 @@ jobs:
       - name: Day 36B public location display regression guard
         run: npm run test:location-display
 
+      - name: Admin wizard source guard
+        run: npm run test:admin-wizard
+
       - name: Production build
         run: npm run build
 
