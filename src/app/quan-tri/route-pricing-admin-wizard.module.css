@@ -100,10 +100,15 @@
 .serverDrafts { margin-top: 28px; }
 .serverDrafts .sectionHeading button { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 12px; border: 1px solid var(--admin-line); border-radius: 12px; color: var(--admin-teal-dark); background: var(--admin-paper); cursor: pointer; }
 .serverDrafts .sectionHeading svg { width: 17px; }
-.draftRow { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 70px; margin-top: 9px; padding: 13px 16px; border: 1px solid var(--admin-line); border-radius: 16px; color: var(--admin-navy); background: var(--admin-paper); text-align: left; cursor: pointer; }
+.draftRowShell { display: grid; grid-template-columns: 1fr 52px; gap: 8px; margin-top: 9px; }
+.draftRow { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 70px; padding: 13px 16px; border: 1px solid var(--admin-line); border-radius: 16px; color: var(--admin-navy); background: var(--admin-paper); text-align: left; cursor: pointer; }
 .draftRow strong, .draftRow small { display: block; }
 .draftRow small { margin-top: 4px; color: var(--admin-muted); }
 .draftRow svg { width: 18px; color: var(--admin-teal); }
+.draftDelete { display: grid; place-items: center; min-height: 70px; border: 1px solid #e2b9b4; border-radius: 16px; color: #9b2c24; background: #fff7f6; cursor: pointer; }
+.draftDelete:hover { background: #fee9e7; }
+.draftDelete:disabled { opacity: .55; cursor: wait; }
+.draftDelete svg { width: 19px; }
 
 .progress { position: relative; margin: 2px 0 22px; }
 .progress ol { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(6, 1fr); margin: 0; padding: 0; list-style: none; }

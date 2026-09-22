@@ -28,6 +28,8 @@ test("browser mutations use the authenticated same-origin proxy", () => {
 test("workflow includes server draft, approval, audit and rollback", () => {
   assert.match(wizard, /Lưu và gửi duyệt/);
   assert.match(wizard, /Duyệt và áp dụng/);
+  assert.match(wizard, /deleteServerDraft/);
+  assert.match(wizard, /method: "DELETE"/);
   assert.match(wizard, /Lịch sử và rollback/);
   assert.match(adminApi, /\/admin\/drafts/);
   assert.match(adminApi, /create_audit/);

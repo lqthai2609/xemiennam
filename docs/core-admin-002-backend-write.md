@@ -28,6 +28,8 @@ tiếp WordPress REST từ trình duyệt.
   đang bật và không thuộc vùng khóa. Apply thay đúng row và đặt `pricing_model_version=2`.
 - `archive_route`: bắt buộc reason; apply tắt outbound/inbound rồi chuyển Route về `draft`.
 - `rollback`: chỉ chạy khi snapshot hiện tại khớp `after` của audit được chọn.
+- Draft hoặc yêu cầu chờ duyệt chưa áp dụng có thể chuyển vào thùng rác từ màn hình
+  “Bản nháp máy chủ”; thao tác có xác nhận và không ảnh hưởng Route/Pricing production.
 
 ## Guardrail bắt buộc
 

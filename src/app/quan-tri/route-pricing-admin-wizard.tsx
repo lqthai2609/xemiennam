@@ -408,6 +408,22 @@ export function RoutePricingAdminWizard({
     }
   }
 
+  async function deleteServerDraft(item: ServerDraft) {
+    if (item.status === "publish") return;
+    if (!window.confirm(`Xóa bản nháp máy chủ #${item.id}? Thao tác này không ảnh hưởng tuyến hoặc giá production.`)) return;
+    setBusy(true);
+    try {
+      await adminFetch<{ deleted: boolean; id: number }>(`drafts/${item.id}`, csrf, { method: "DELETE" });
+      if (activeServerDraft?.id === item.id) setActiveServerDraft(null);
+      await loadActivity();
+      toast.success(`Đã xóa bản nháp máy chủ #${item.id}.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể xóa bản nháp máy chủ.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function archiveRoute() {
     if (!selectedManageRoute || manageReason.trim().length < 3) return;
     const payload: DraftPayload = {
@@ -506,7 +522,10 @@ export function RoutePricingAdminWizard({
             <section className={styles.serverDrafts}>
               <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Bản nháp máy chủ</p><h2>Việc đang xử lý</h2></div><button type="button" onClick={loadActivity}><RefreshCcw aria-hidden="true" /> Làm mới</button></div>
               {serverDrafts.filter((item) => item.status !== "publish" && item.status !== "trash").slice(0, 5).map((item) => (
-                <button type="button" className={styles.draftRow} key={item.id} onClick={() => resumeServerDraft(item)}><span><strong>#{item.id} · {operationLabel(item.payload.operation)}</strong><small>{item.status === "pending" ? "Chờ duyệt" : "Bản nháp"} · {formatTime(item.modified)}</small></span><ChevronRight aria-hidden="true" /></button>
+                <div className={styles.draftRowShell} key={item.id}>
+                  <button type="button" className={styles.draftRow} onClick={() => resumeServerDraft(item)}><span><strong>#{item.id} · {operationLabel(item.payload.operation)}</strong><small>{item.status === "pending" ? "Chờ duyệt" : "Bản nháp"} · {formatTime(item.modified)}</small></span><ChevronRight aria-hidden="true" /></button>
+                  <button type="button" className={styles.draftDelete} disabled={busy} aria-label={`Xóa bản nháp máy chủ #${item.id}`} onClick={() => void deleteServerDraft(item)}><Trash2 aria-hidden="true" /></button>
+                </div>
               ))}
             </section>
           )}
