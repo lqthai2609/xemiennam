@@ -15,6 +15,8 @@ const ALLOWED_PATHS = [
   /^drafts$/,
   /^drafts\/\d+$/,
   /^drafts\/\d+\/(?:validate|submit|publish)$/,
+  /^apply$/,
+  /^routes$/,
   /^routes\/\d+\/archive$/,
   /^audit$/,
   /^audit\/\d+\/rollback$/,
@@ -60,7 +62,7 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
   });
   const data = await upstream.json().catch(() => ({ message: `WordPress HTTP ${upstream.status}` }));
 
-  if (upstream.ok && mutating && /(?:publish|archive|rollback)$/.test(path)) {
+  if (upstream.ok && mutating && /(?:apply|publish|archive|rollback)$/.test(path)) {
     revalidatePath("/", "layout");
   }
 

@@ -15,11 +15,12 @@ import {
   RefreshCcw,
   Route as RouteIcon,
   Save,
+  Search,
   Send,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { toast } from "sonner";
 import styles from "./route-pricing-admin-wizard.module.css";
 
@@ -34,7 +35,7 @@ type AdminLocation = {
 
 type Direction = "outbound" | "inbound";
 type PriceMode = "fixed" | "contact" | "disabled";
-type Operation = "create_route" | "update_pricing" | "archive_route";
+type Operation = "create_route" | "update_pricing" | "archive_route" | "delete_route";
 type Screen = "home" | "create" | "pricing" | "manage" | "audit";
 
 type PricingRow = {
@@ -57,6 +58,8 @@ type AdminRoute = {
   fixedCount: number;
   contactCount: number;
   priceLabel: string;
+  postStatus?: string;
+  backendVersion?: string;
   locked: boolean;
   pricingRows: PricingRow[];
 };
@@ -122,6 +125,9 @@ type PriceDraft = {
   priceAmount: string;
   reason: string;
 };
+
+type DirectAction = "create" | "pricing" | "delete";
+type DirectResult = { routeId: number; auditId: number; deleted: boolean; public: boolean; message: string };
 
 const STORAGE_KEY = "alo-dat-xe-admin-route-draft-v3";
 const EMPTY_CREATE: CreateDraft = {
@@ -216,8 +222,10 @@ export function RoutePricingAdminWizard({
   const [auditRows, setAuditRows] = useState<AuditRow[]>([]);
   const [activeServerDraft, setActiveServerDraft] = useState<ServerDraft | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [directConfirm, setDirectConfirm] = useState<DirectAction | null>(null);
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [routeRows, setRouteRows] = useState(routes);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -250,7 +258,7 @@ export function RoutePricingAdminWizard({
   const origin = locationById.get(draft.originId);
   const destination = locationById.get(draft.destinationId);
   const selectedVehicle = vehicleById.get(draft.vehicleId);
-  const existingRoute = routes.find((route) => {
+  const existingRoute = routeRows.find((route) => {
     const a = Number(draft.originId);
     const b = Number(draft.destinationId);
     return (
@@ -258,8 +266,8 @@ export function RoutePricingAdminWizard({
       (route.originLocationId === b && route.destinationLocationId === a)
     );
   });
-  const selectedPriceRoute = routes.find((route) => route.id === priceDraft.routeId);
-  const selectedManageRoute = routes.find((route) => route.id === manageRouteId);
+  const selectedPriceRoute = routeRows.find((route) => route.id === priceDraft.routeId);
+  const selectedManageRoute = routeRows.find((route) => route.id === manageRouteId);
   const currentPrice = selectedPriceRoute?.pricingRows.find(
     (row) =>
       row.direction === priceDraft.direction &&
@@ -267,8 +275,8 @@ export function RoutePricingAdminWizard({
       row.packageKey === priceDraft.packageKey,
   );
 
-  const incompleteRoutes = routes.filter((route) => route.contactCount > 0).length;
-  const enabledDirections = routes.reduce(
+  const incompleteRoutes = routeRows.filter((route) => route.contactCount > 0).length;
+  const enabledDirections = routeRows.reduce(
     (total, route) => total + Number(route.outboundEnabled) + Number(route.inboundEnabled),
     0,
   );
@@ -276,12 +284,14 @@ export function RoutePricingAdminWizard({
 
   async function loadActivity() {
     try {
-      const [draftRows, audits] = await Promise.all([
+      const [draftRows, audits, latestRoutes] = await Promise.all([
         adminFetch<ServerDraft[]>("drafts", csrf),
         adminFetch<AuditRow[]>("audit", csrf),
+        adminFetch<AdminRoute[]>("routes", csrf),
       ]);
       setServerDrafts(draftRows);
       setAuditRows(audits);
+      setRouteRows(latestRoutes);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không tải được dữ liệu quản trị.");
     }
@@ -290,11 +300,13 @@ export function RoutePricingAdminWizard({
   function updateDraft(patch: Partial<CreateDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
     setActiveServerDraft(null);
+    setDirectConfirm(null);
   }
 
   function updatePriceDraft(patch: Partial<PriceDraft>) {
     setPriceDraft((current) => ({ ...current, ...patch }));
     setActiveServerDraft(null);
+    setDirectConfirm(null);
   }
 
   function saveDeviceDraft() {
@@ -353,6 +365,7 @@ export function RoutePricingAdminWizard({
       packageKey: priceDraft.packageKey,
       priceMode: priceDraft.priceMode,
       priceAmount: priceDraft.priceMode === "fixed" ? Number(priceDraft.priceAmount) : 0,
+      baseVersion: selectedPriceRoute?.backendVersion,
       reason: priceDraft.reason.trim(),
     };
   }
@@ -409,6 +422,31 @@ export function RoutePricingAdminWizard({
     }
   }
 
+  async function applyDirect(payload: DraftPayload) {
+    if (!actor.canPublish) return;
+    setBusy(true);
+    try {
+      const result = await adminFetch<DirectResult>("apply", csrf, {
+        method: "POST",
+        body: payload,
+      });
+      toast.success(result.message);
+      window.localStorage.removeItem(STORAGE_KEY);
+      setDraft(EMPTY_CREATE);
+      setPriceDraft(EMPTY_PRICE);
+      setManageRouteId("");
+      setManageReason("");
+      setActiveServerDraft(null);
+      setDirectConfirm(null);
+      await loadActivity();
+      window.setTimeout(() => window.location.reload(), 700);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể ghi trực tiếp vào backend.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function deleteServerDraft(item: ServerDraft) {
     if (item.status === "publish") return;
     setBusy(true);
@@ -433,6 +471,16 @@ export function RoutePricingAdminWizard({
       reason: manageReason.trim(),
     };
     await saveAndSubmit(payload, activeServerDraft?.id);
+  }
+
+  function deleteRoutePayload(): DraftPayload | null {
+    if (!selectedManageRoute || manageReason.trim().length < 3) return null;
+    return {
+      operation: "delete_route",
+      routeId: Number(selectedManageRoute.id),
+      baseVersion: selectedManageRoute.backendVersion,
+      reason: manageReason.trim(),
+    };
   }
 
   function resumeServerDraft(item: ServerDraft) {
@@ -494,6 +542,7 @@ export function RoutePricingAdminWizard({
 
   function openScreen(next: Screen) {
     setActiveServerDraft(null);
+    setDirectConfirm(null);
     setScreen(next);
   }
 
@@ -508,15 +557,15 @@ export function RoutePricingAdminWizard({
       {screen === "home" && (
         <div className={styles.home}>
           <section className={styles.summaryGrid} aria-label="Tổng quan dữ liệu">
-            <SummaryCard icon={<RouteIcon />} value={routes.length} label="Tuyến từ backend" />
+            <SummaryCard icon={<RouteIcon />} value={routeRows.length} label="Tuyến từ backend" />
             <SummaryCard icon={<ArrowRight />} value={enabledDirections} label="Chiều đang bật" />
             <SummaryCard icon={<FileClock />} value={pendingDrafts} label="Bản chờ duyệt" />
           </section>
           <section className={styles.actionSection}>
             <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Thao tác</p><h2>Anh muốn làm gì?</h2></div>{hydrated && draft.updatedAt && <span className={styles.savedAt}>Nháp thiết bị {formatTime(draft.updatedAt)}</span>}</div>
-            <ActionButton primary icon={<Plus />} title="Tạo tuyến mới" note="Ghi vào backend dưới trạng thái nháp" onClick={() => openScreen("create")} />
-            <ActionButton icon={<BadgeDollarSign />} title="Cập nhật giá" note="Thay đổi một tuple Pricing V2 có kiểm soát" onClick={() => openScreen("pricing")} />
-            <ActionButton icon={<RouteIcon />} title="Quản lý tuyến" note="Tạm ngừng thay vì xóa cứng" onClick={() => openScreen("manage")} />
+            <ActionButton primary icon={<Plus />} title="Tạo tuyến mới" note="Lưu nháp hoặc ghi thẳng vào backend" onClick={() => openScreen("create")} />
+            <ActionButton icon={<BadgeDollarSign />} title="Cập nhật giá" note="Tìm tuyến và lưu nháp hoặc áp dụng ngay" onClick={() => openScreen("pricing")} />
+            <ActionButton icon={<RouteIcon />} title="Quản lý tuyến" note="Tìm, tạm ngừng hoặc xóa tuyến trực tiếp" onClick={() => openScreen("manage")} />
             <ActionButton icon={<History />} title="Lịch sử và rollback" note={`${auditRows.length} thay đổi gần nhất`} onClick={() => openScreen("audit")} />
           </section>
           {serverDrafts.filter((item) => item.status !== "publish" && item.status !== "trash").length > 0 && (
@@ -551,9 +600,9 @@ export function RoutePricingAdminWizard({
             {step === 2 && <><StepTitle icon={<ArrowRight />} kicker="Bước 3/6" title="Chọn chiều và loại xe cho giá đầu tiên" /><div className={styles.fieldGrid}><DirectionSelect value={draft.pricingDirection} outbound={draft.outboundEnabled} inbound={draft.inboundEnabled} from={origin?.name} to={destination?.name} onChange={(pricingDirection) => updateDraft({ pricingDirection })} /><VehicleSelect value={draft.vehicleId} vehicles={vehicles} onChange={(vehicleId) => updateDraft({ vehicleId })} /></div><p className={styles.helper}>Mỗi giá thuộc đúng một chiều và một xe; hệ thống không sao chép sang chiều còn lại.</p></>}
             {step === 3 && <PackageStep value={draft.packageKey} onChange={(packageKey) => updateDraft({ packageKey })} />}
             {step === 4 && <PriceStep mode={draft.priceMode} amount={draft.priceAmount} onMode={(priceMode) => updateDraft({ priceMode, priceAmount: priceMode === "fixed" ? draft.priceAmount : "" })} onAmount={(priceAmount) => updateDraft({ priceAmount })} />}
-            {step === 5 && <><StepTitle icon={<ShieldCheck />} kicker="Bước 6/6" title="Kiểm tra và gửi duyệt" /><dl className={styles.reviewList}><ReviewRow label="Tuyến" value={`${origin?.name} ↔ ${destination?.name}`} /><ReviewRow label="Chiều bật" value={[draft.outboundEnabled && "Đi", draft.inboundEnabled && "Về"].filter(Boolean).join(" và ")} /><ReviewRow label="Xe" value={`${selectedVehicle?.type} · ${selectedVehicle?.name}`} /><ReviewRow label="Gói" value={PACKAGE_LABELS[draft.packageKey]} /><ReviewRow label="Trạng thái" value={draft.priceMode === "fixed" ? money(draft.priceAmount) : modeLabel(draft.priceMode)} /></dl><ReasonField value={draft.reason} onChange={(reason) => updateDraft({ reason })} /><div className={styles.readOnlyBanner}><ShieldCheck aria-hidden="true" /><p>Tuyến mới được ghi dưới trạng thái <strong>nháp trong WordPress</strong>; chưa tạo URL công khai, canonical, sitemap hay schema.</p></div><WorkflowStatus draft={activeServerDraft} canPublish={actor.canPublish} busy={busy} onPublish={publishDraft} /></>}
+            {step === 5 && <><StepTitle icon={<ShieldCheck />} kicker="Bước 6/6" title="Kiểm tra và lưu" /><dl className={styles.reviewList}><ReviewRow label="Tuyến" value={`${origin?.name} ↔ ${destination?.name}`} /><ReviewRow label="Chiều bật" value={[draft.outboundEnabled && "Đi", draft.inboundEnabled && "Về"].filter(Boolean).join(" và ")} /><ReviewRow label="Xe" value={`${selectedVehicle?.type} · ${selectedVehicle?.name}`} /><ReviewRow label="Gói" value={PACKAGE_LABELS[draft.packageKey]} /><ReviewRow label="Trạng thái" value={draft.priceMode === "fixed" ? money(draft.priceAmount) : modeLabel(draft.priceMode)} /></dl><ReasonField value={draft.reason} onChange={(reason) => updateDraft({ reason })} /><div className={styles.readOnlyBanner}><ShieldCheck aria-hidden="true" /><p><strong>Gửi duyệt</strong> sẽ tạo bản nháp thao tác. <strong>Ghi thẳng backend</strong> sẽ bỏ qua hàng chờ nhưng tuyến mới vẫn ở trạng thái nháp WordPress, chưa tạo URL công khai.</p></div><WorkflowStatus draft={activeServerDraft} canPublish={actor.canPublish} busy={busy} onPublish={publishDraft} />{directConfirm === "create" && <DirectConfirmation busy={busy} title="Ghi tuyến thẳng vào backend?" detail="Tuyến được tạo ngay trong WordPress và audit được lưu. Tuyến chưa được công khai." onCancel={() => setDirectConfirm(null)} onConfirm={() => void applyDirect(createPayload())} />}</>}
           </section>
-          <footer className={styles.stickyFooter}><button type="button" className={styles.backButton} onClick={() => step === 0 ? setScreen("home") : setStep((current) => current - 1)}><ArrowLeft aria-hidden="true" /> {step === 0 ? "Trang chính" : "Quay lại"}</button><button type="button" className={styles.saveButton} onClick={saveDeviceDraft}><Save aria-hidden="true" /> Lưu tạm</button><button type="button" className={styles.nextButton} disabled={!createCanContinue() || busy || activeServerDraft?.status === "pending"} onClick={() => step === 5 ? void saveAndSubmit(createPayload(), activeServerDraft?.id) : setStep((current) => current + 1)}>{step === 5 ? <><Send aria-hidden="true" /> Lưu và gửi duyệt</> : <>Tiếp tục <ArrowRight aria-hidden="true" /></>}</button></footer>
+          <footer className={`${styles.stickyFooter} ${step === 5 && actor.canPublish ? styles.stickyFooterFinal : ""}`}><button type="button" className={styles.backButton} onClick={() => step === 0 ? setScreen("home") : setStep((current) => current - 1)}><ArrowLeft aria-hidden="true" /> {step === 0 ? "Trang chính" : "Quay lại"}</button><button type="button" className={styles.saveButton} onClick={saveDeviceDraft}><Save aria-hidden="true" /> Lưu tạm</button>{step === 5 && actor.canPublish && <button type="button" className={styles.directButton} disabled={!createCanContinue() || busy} onClick={() => setDirectConfirm("create")}><ShieldCheck aria-hidden="true" /> Ghi thẳng backend</button>}<button type="button" className={styles.nextButton} disabled={!createCanContinue() || busy || activeServerDraft?.status === "pending"} onClick={() => step === 5 ? void saveAndSubmit(createPayload(), activeServerDraft?.id) : setStep((current) => current + 1)}>{step === 5 ? <><Send aria-hidden="true" /> Lưu và gửi duyệt</> : <>Tiếp tục <ArrowRight aria-hidden="true" /></>}</button></footer>
           {draft.updatedAt && <button type="button" className={styles.clearDraft} onClick={clearDeviceDraft}><Trash2 aria-hidden="true" /> Xóa nháp trên thiết bị</button>}
         </div>
       )}
@@ -561,27 +610,29 @@ export function RoutePricingAdminWizard({
       {screen === "pricing" && (
         <AdminPanel onBack={() => setScreen("home")} kicker="Pricing V2" title="Cập nhật giá một tổ hợp">
           <div className={styles.fieldStack}>
-            <label><span>Tuyến</span><select value={priceDraft.routeId} onChange={(event) => updatePriceDraft({ routeId: event.target.value })}><option value="">Chọn tuyến</option>{routes.map((route) => <option key={route.id} value={route.id} disabled={route.locked}>#{route.id} · {route.from} ↔ {route.to}{route.locked ? " · Tạm khóa" : ""}</option>)}</select></label>
+            <RouteCombobox label="Tìm tuyến" value={priceDraft.routeId} routes={routeRows} onChange={(routeId) => updatePriceDraft({ routeId })} />
             {selectedPriceRoute?.locked && <InlineWarning>Tuyến này thuộc phạm vi đang khóa và không thể cập nhật.</InlineWarning>}
             {selectedPriceRoute && <div className={styles.fieldGrid}><DirectionSelect value={priceDraft.direction} outbound={selectedPriceRoute.outboundEnabled} inbound={selectedPriceRoute.inboundEnabled} from={selectedPriceRoute.from} to={selectedPriceRoute.to} onChange={(direction) => updatePriceDraft({ direction })} /><VehicleSelect value={priceDraft.vehicleId} vehicles={vehicles} onChange={(vehicleId) => updatePriceDraft({ vehicleId })} /></div>}
             <PackageSelect value={priceDraft.packageKey} onChange={(packageKey) => updatePriceDraft({ packageKey })} />
             {currentPrice && <div className={styles.currentValue}><span>Giá hiện tại</span><strong>{currentPrice.mode === "fixed" ? money(currentPrice.price) : modeLabel(currentPrice.mode)}</strong></div>}
             <PriceStep mode={priceDraft.priceMode} amount={priceDraft.priceAmount} onMode={(priceMode) => updatePriceDraft({ priceMode, priceAmount: priceMode === "fixed" ? priceDraft.priceAmount : "" })} onAmount={(priceAmount) => updatePriceDraft({ priceAmount })} compact />
             <ReasonField value={priceDraft.reason} onChange={(reason) => updatePriceDraft({ reason })} />
-            <button type="button" className={styles.panelPrimary} disabled={busy || !selectedPriceRoute || selectedPriceRoute.locked || !priceDraft.vehicleId || !priceDraft.reason.trim() || (priceDraft.priceMode === "fixed" && Number(priceDraft.priceAmount) <= 0) || activeServerDraft?.status === "pending"} onClick={() => void saveAndSubmit(pricingPayload(), activeServerDraft?.id)}><Send aria-hidden="true" /> Lưu và gửi duyệt</button>
+            <div className={styles.actionPair}><button type="button" className={styles.panelPrimary} disabled={busy || !selectedPriceRoute || selectedPriceRoute.locked || !priceDraft.vehicleId || !priceDraft.reason.trim() || (priceDraft.priceMode === "fixed" && Number(priceDraft.priceAmount) <= 0) || activeServerDraft?.status === "pending"} onClick={() => void saveAndSubmit(pricingPayload(), activeServerDraft?.id)}><Send aria-hidden="true" /> Lưu và gửi duyệt</button>{actor.canPublish && <button type="button" className={styles.directButton} disabled={busy || !selectedPriceRoute?.backendVersion || selectedPriceRoute.locked || !priceDraft.vehicleId || !priceDraft.reason.trim() || (priceDraft.priceMode === "fixed" && Number(priceDraft.priceAmount) <= 0)} onClick={() => setDirectConfirm("pricing")}><ShieldCheck aria-hidden="true" /> Ghi thẳng backend</button>}</div>
+            {directConfirm === "pricing" && <DirectConfirmation busy={busy} title="Áp dụng giá ngay trên production?" detail="Giá của đúng tổ hợp tuyến, chiều, xe và gói này sẽ thay đổi ngay; hệ thống đồng thời lưu audit." onCancel={() => setDirectConfirm(null)} onConfirm={() => void applyDirect(pricingPayload())} />}
             <WorkflowStatus draft={activeServerDraft} canPublish={actor.canPublish} busy={busy} onPublish={publishDraft} />
           </div>
         </AdminPanel>
       )}
 
       {screen === "manage" && (
-        <AdminPanel onBack={() => setScreen("home")} kicker="Soft archive" title="Tạm ngừng tuyến">
+        <AdminPanel onBack={() => setScreen("home")} kicker="Quản lý tuyến" title="Tạm ngừng hoặc xóa tuyến">
           <div className={styles.fieldStack}>
-            <label><span>Tuyến</span><select value={manageRouteId} onChange={(event) => { setManageRouteId(event.target.value); setActiveServerDraft(null); }}><option value="">Chọn tuyến</option>{routes.map((route) => <option key={route.id} value={route.id} disabled={route.locked}>#{route.id} · {route.from} ↔ {route.to}{route.locked ? " · Tạm khóa" : ""}</option>)}</select></label>
+            <RouteCombobox label="Tìm tuyến" value={manageRouteId} routes={routeRows} onChange={(routeId) => { setManageRouteId(routeId); setActiveServerDraft(null); setDirectConfirm(null); }} />
             {selectedManageRoute && <div className={styles.currentValue}><span>Trạng thái hiện tại</span><strong>{selectedManageRoute.outboundEnabled ? "Chiều đi đang bật" : "Chiều đi đang tắt"} · {selectedManageRoute.inboundEnabled ? "Chiều về đang bật" : "Chiều về đang tắt"}</strong></div>}
             <ReasonField value={manageReason} onChange={setManageReason} />
             <InlineWarning>Tạm ngừng sẽ đưa Route về draft và tắt cả hai chiều. Không xóa cứng dữ liệu, giá hoặc lịch sử.</InlineWarning>
-            <button type="button" className={styles.dangerButton} disabled={busy || !selectedManageRoute || selectedManageRoute.locked || manageReason.trim().length < 3 || activeServerDraft?.status === "pending"} onClick={() => void archiveRoute()}><Trash2 aria-hidden="true" /> Gửi yêu cầu tạm ngừng</button>
+            <div className={styles.actionPair}><button type="button" className={styles.panelPrimary} disabled={busy || !selectedManageRoute || selectedManageRoute.locked || manageReason.trim().length < 3 || activeServerDraft?.status === "pending"} onClick={() => void archiveRoute()}><Send aria-hidden="true" /> Lưu nháp tạm ngừng</button>{actor.canPublish && <button type="button" className={styles.dangerButton} disabled={busy || !selectedManageRoute?.backendVersion || selectedManageRoute.locked || manageReason.trim().length < 3} onClick={() => setDirectConfirm("delete")}><Trash2 aria-hidden="true" /> Xóa tuyến trực tiếp</button>}</div>
+            {directConfirm === "delete" && selectedManageRoute && <DirectConfirmation danger busy={busy} title={`Xóa tuyến #${selectedManageRoute.id}?`} detail={`${selectedManageRoute.from} ↔ ${selectedManageRoute.to} sẽ biến mất khỏi website ngay. Dữ liệu được chuyển vào Thùng rác WordPress và có thể rollback từ lịch sử.`} onCancel={() => setDirectConfirm(null)} onConfirm={() => { const payload = deleteRoutePayload(); if (payload) void applyDirect(payload); }} />}
             <WorkflowStatus draft={activeServerDraft} canPublish={actor.canPublish} busy={busy} onPublish={publishDraft} />
           </div>
         </AdminPanel>
@@ -631,6 +682,38 @@ function LocationSelect({ label, value, locations, onChange }: { label: string; 
   return <label><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value)}><option value="">Chọn Location</option>{locations.map((location) => <option key={location.id} value={location.id} disabled={location.locked}>{location.name} · {location.type}{location.locked ? " · Tạm khóa" : ""}</option>)}</select></label>;
 }
 
+function normalizeSearch(value: string) {
+  return value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+}
+
+function routeLabel(route: AdminRoute) {
+  return `#${route.id} · ${route.from} ↔ ${route.to}`;
+}
+
+function RouteCombobox({ label, value, routes, onChange }: { label: string; value: string; routes: AdminRoute[]; onChange: (value: string) => void }) {
+  const listId = useId();
+  const selected = routes.find((route) => route.id === value);
+  const [query, setQuery] = useState(selected ? routeLabel(selected) : "");
+  const [open, setOpen] = useState(false);
+
+  const matches = useMemo(() => {
+    const needle = normalizeSearch(query);
+    return routes.filter((route) => {
+      if (!needle || selected?.id === route.id) return true;
+      return normalizeSearch(`${route.id} ${route.slug} ${route.from} ${route.to}`).includes(needle);
+    }).slice(0, 8);
+  }, [query, routes, selected?.id]);
+
+  function choose(route: AdminRoute) {
+    if (route.locked) return;
+    setQuery(routeLabel(route));
+    setOpen(false);
+    onChange(route.id);
+  }
+
+  return <label className={styles.routeSearch}><span>{label}</span><div className={styles.routeSearchInput}><Search aria-hidden="true" /><input type="search" role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={listId} placeholder="Nhập tên điểm đi, điểm đến hoặc mã tuyến" value={query} onFocus={() => setOpen(true)} onBlur={() => window.setTimeout(() => setOpen(false), 120)} onChange={(event) => { setQuery(event.target.value); setOpen(true); if (value) onChange(""); }} onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); if (event.key === "Enter" && open && matches[0] && !matches[0].locked) { event.preventDefault(); choose(matches[0]); } }} /></div>{open && <div id={listId} className={styles.routeSuggestions} role="listbox">{matches.length === 0 && <p>Không tìm thấy tuyến phù hợp.</p>}{matches.map((route) => <button key={route.id} type="button" role="option" aria-selected={route.id === value} disabled={route.locked} onMouseDown={(event) => event.preventDefault()} onClick={() => choose(route)}><strong>{route.from} ↔ {route.to}</strong><small>Route #{route.id} · {route.postStatus === "publish" ? "Đang công khai" : "Nháp WordPress"}{route.locked ? " · Tạm khóa" : ""}</small></button>)}</div>}</label>;
+}
+
 function VehicleSelect({ value, vehicles, onChange }: { value: string; vehicles: AdminVehicle[]; onChange: (value: string) => void }) {
   return <label><span>Xe</span><select value={value} onChange={(event) => onChange(event.target.value)}><option value="">Chọn xe</option>{vehicles.map((vehicle) => <option key={vehicle.id} value={vehicle.id}>{vehicle.type} · {vehicle.name}</option>)}</select></label>;
 }
@@ -655,6 +738,10 @@ function ReasonField({ value, onChange }: { value: string; onChange: (value: str
   return <label className={styles.reasonField}><span>Lý do thay đổi</span><textarea value={value} maxLength={500} rows={3} placeholder="Ví dụ: Cập nhật theo bảng giá vận hành đã duyệt ngày…" onChange={(event) => onChange(event.target.value)} /><small>Tối thiểu 3 ký tự; nội dung được lưu trong audit log.</small></label>;
 }
 
+function DirectConfirmation({ title, detail, busy, danger, onCancel, onConfirm }: { title: string; detail: string; busy: boolean; danger?: boolean; onCancel: () => void; onConfirm: () => void }) {
+  return <div className={`${styles.directConfirm} ${danger ? styles.directConfirmDanger : ""}`} role="alert"><div><strong>{title}</strong><p>{detail}</p></div><div><button type="button" disabled={busy} onClick={onCancel}>Hủy</button><button type="button" disabled={busy} onClick={onConfirm}>{danger ? "Xác nhận xóa tuyến" : "Xác nhận ghi ngay"}</button></div></div>;
+}
+
 function WorkflowStatus({ draft, canPublish, busy, onPublish }: { draft: ServerDraft | null; canPublish: boolean; busy: boolean; onPublish: (id: number) => void }) {
   if (!draft) return null;
   return <div className={styles.workflowStatus}><div><strong>Bản nháp máy chủ #{draft.id}</strong><span>{draft.status === "pending" ? "Đang chờ phê duyệt" : draft.status === "publish" ? "Đã áp dụng" : "Đã lưu"}</span></div>{draft.validation?.warnings?.map((warning) => <p key={warning}>{warning}</p>)}{draft.status === "pending" && canPublish && <button type="button" disabled={busy} onClick={() => onPublish(draft.id)}><ShieldCheck aria-hidden="true" /> Duyệt và áp dụng</button>}</div>;
@@ -668,6 +755,7 @@ function operationLabel(operation: string) {
   if (operation === "create_route") return "Tạo tuyến";
   if (operation === "update_pricing") return "Cập nhật giá";
   if (operation === "archive_route") return "Tạm ngừng tuyến";
+  if (operation === "delete_route") return "Xóa tuyến";
   if (operation === "rollback") return "Rollback";
   return operation;
 }

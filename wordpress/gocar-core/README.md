@@ -132,6 +132,18 @@ Each Route × Vehicle description must be materially specific to that combinatio
 The browser must use the Next.js authenticated proxy. It must not call these endpoints or the
 WordPress core post endpoints directly.
 
+## CORE-ADMIN-003 scope — v0.11.0
+
+The private `/quan-tri` boundary now also supports the owner-operated fast path:
+
+- authenticated publishers may validate and apply route creation or one Pricing V2 tuple directly, without creating an approval draft;
+- direct route creation still creates a WordPress `draft`, so it does not silently open a new public URL;
+- the route picker searches the authenticated backend catalog and suggests published plus draft/private routes;
+- a publisher may remove a route immediately by moving it to WordPress Trash;
+- route removal is recoverable: it stores the same before/after audit snapshot and can be rolled back;
+- every direct mutation still requires a reason and passes the D35-10, Long Thành PRELAUNCH, direction and positive-price guards;
+- the two-step draft/approval path remains available alongside the direct path.
+
 For blog relations, editors must assign the relevant Province/Vehicle taxonomy or Airport Location explicitly. Do not infer semantic relations from words in a title or article body when structured relation data exists.
 
 ## Safety

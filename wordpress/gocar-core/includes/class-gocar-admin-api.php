@@ -1,10 +1,10 @@
 <?php
 /**
- * CORE-ADMIN-002 — authenticated draft, approval, audit and rollback API.
+ * CORE-ADMIN-003 — authenticated draft/direct apply, audit, delete and rollback API.
  *
  * The browser never writes to the WordPress core post endpoints directly. Every mutation is
- * validated here, recorded as a private draft, approved by a user with publish_posts, and
- * written together with a before/after audit snapshot.
+ * validated here and written with a before/after audit snapshot. Editors use private drafts;
+ * authenticated publishers may approve those drafts or use the explicit direct-write path.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -128,6 +128,26 @@ final class Gocar_Admin_API {
 
         register_rest_route(
             self::REST_NAMESPACE,
+            '/admin/routes',
+            array(
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => array( self::class, 'list_routes' ),
+                'permission_callback' => array( self::class, 'can_edit' ),
+            )
+        );
+
+        register_rest_route(
+            self::REST_NAMESPACE,
+            '/admin/apply',
+            array(
+                'methods'             => WP_REST_Server::CREATABLE,
+                'callback'            => array( self::class, 'direct_apply' ),
+                'permission_callback' => array( self::class, 'can_publish' ),
+            )
+        );
+
+        register_rest_route(
+            self::REST_NAMESPACE,
             '/admin/routes/(?P<id>\d+)/archive',
             array(
                 'methods'             => WP_REST_Server::CREATABLE,
@@ -193,6 +213,19 @@ final class Gocar_Admin_API {
 
         $posts = get_posts( $args );
         return rest_ensure_response( array_map( array( self::class, 'draft_response' ), $posts ) );
+    }
+
+    public static function list_routes(): WP_REST_Response {
+        $posts = get_posts(
+            array(
+                'post_type'      => 'route',
+                'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+                'posts_per_page' => 500,
+                'orderby'        => 'title',
+                'order'          => 'ASC',
+            )
+        );
+        return rest_ensure_response( array_map( array( self::class, 'route_response' ), $posts ) );
     }
 
     public static function save_draft( WP_REST_Request $request ) {
@@ -344,6 +377,49 @@ final class Gocar_Admin_API {
         return rest_ensure_response( array( 'deleted' => true, 'id' => (int) $draft->ID ) );
     }
 
+    /** Apply a validated mutation immediately for the authenticated publisher. */
+    public static function direct_apply( WP_REST_Request $request ) {
+        $payload = self::sanitize_payload( $request->get_json_params() );
+        if ( ! in_array( $payload['operation'] ?? '', array( 'create_route', 'update_pricing', 'delete_route' ), true ) ) {
+            return self::error( 'operation_invalid', 'Thao tác ghi trực tiếp không hợp lệ.', 422 );
+        }
+        if ( 'create_route' !== $payload['operation'] && empty( $payload['baseVersion'] ) ) {
+            return self::error( 'base_version_required', 'Thiếu phiên bản tuyến; hãy tải lại trước khi ghi trực tiếp.', 409 );
+        }
+
+        $validation = self::validate_payload( $payload );
+        if ( ! empty( $validation['errors'] ) ) {
+            return self::error( 'direct_apply_invalid', 'Dữ liệu chưa đạt kiểm tra để ghi trực tiếp.', 422, $validation );
+        }
+
+        $result = self::apply_payload( $payload );
+        if ( is_wp_error( $result ) ) return $result;
+
+        $audit_id = self::create_audit( 0, $payload['operation'], $result['routeId'], $payload['reason'], $result['before'], $result['after'] );
+        if ( is_wp_error( $audit_id ) ) {
+            if ( empty( $result['before'] ) ) wp_delete_post( $result['routeId'], true );
+            else self::restore_snapshot( $result['routeId'], $result['before'] );
+            return $audit_id;
+        }
+
+        $message = 'Đã ghi thay đổi trực tiếp vào backend và tạo audit.';
+        if ( 'create_route' === $payload['operation'] ) {
+            $message = 'Đã tạo tuyến trực tiếp trong backend dưới trạng thái nháp WordPress.';
+        } elseif ( 'delete_route' === $payload['operation'] ) {
+            $message = 'Đã đưa tuyến vào Thùng rác WordPress và tạo audit để có thể rollback.';
+        }
+
+        return rest_ensure_response(
+            array(
+                'routeId' => $result['routeId'],
+                'auditId' => $audit_id,
+                'deleted' => 'delete_route' === $payload['operation'],
+                'public'  => 'publish' === ( $result['after']['postStatus'] ?? '' ),
+                'message' => $message,
+            )
+        );
+    }
+
     public static function archive_route( WP_REST_Request $request ) {
         $route_id = absint( $request['id'] );
         $reason = self::sanitize_reason( $request->get_param( 'reason' ) );
@@ -482,9 +558,11 @@ final class Gocar_Admin_API {
                 $errors[] = 'Phải bật ít nhất một chiều.';
             }
             $warnings[] = 'Tuyến mới chỉ được ghi dưới trạng thái nháp; không tạo URL công khai.';
-        } elseif ( in_array( $operation, array( 'update_pricing', 'archive_route' ), true ) ) {
+        } elseif ( in_array( $operation, array( 'update_pricing', 'archive_route', 'delete_route' ), true ) ) {
             if ( ! self::valid_post( $route_id, 'route', false ) ) {
                 $errors[] = 'Tuyến không tồn tại.';
+            } elseif ( 'trash' === get_post( $route_id )->post_status ) {
+                $errors[] = 'Tuyến đã ở trong Thùng rác.';
             } elseif ( ! current_user_can( 'edit_post', $route_id ) ) {
                 $errors[] = 'Tài khoản không có quyền sửa tuyến này.';
             }
@@ -579,6 +657,9 @@ final class Gocar_Admin_API {
             update_post_meta( $route_id, 'outbound_enabled', false );
             update_post_meta( $route_id, 'inbound_enabled', false );
             wp_update_post( array( 'ID' => $route_id, 'post_status' => 'draft' ) );
+        } elseif ( 'delete_route' === $operation ) {
+            $trashed = wp_trash_post( $route_id );
+            if ( ! $trashed ) return self::error( 'route_delete_failed', 'Không thể đưa tuyến vào Thùng rác.', 500 );
         }
 
         return array( 'routeId' => $route_id, 'before' => $before, 'after' => self::snapshot_route( $route_id ) );
@@ -740,6 +821,58 @@ final class Gocar_Admin_API {
             'payload'    => self::decode_post_json( $post ),
             'auditId'    => absint( get_post_meta( $post->ID, '_gocar_audit_id', true ) ),
         );
+    }
+
+    private static function route_response( WP_Post $post ): array {
+        $route_id = (int) $post->ID;
+        $origin_id = absint( get_post_meta( $route_id, 'origin_location_id', true ) );
+        $destination_id = absint( get_post_meta( $route_id, 'destination_location_id', true ) );
+        $origin = get_post( $origin_id );
+        $destination = get_post( $destination_id );
+        $origin_title = $origin ? $origin->post_title : (string) get_post_meta( $route_id, 'diem_di', true );
+        $destination_title = $destination ? $destination->post_title : (string) get_post_meta( $route_id, 'diem_den', true );
+        $rows = get_post_meta( $route_id, 'pricing_packages_v2', true );
+        $rows = is_array( $rows ) ? $rows : array();
+        $pricing_rows = array();
+        $fixed_count = 0;
+        $contact_count = 0;
+        foreach ( $rows as $row ) {
+            if ( ! is_array( $row ) ) continue;
+            $mode = sanitize_key( (string) ( $row['pricing_mode'] ?? 'contact' ) );
+            if ( 'fixed' === $mode ) $fixed_count++;
+            if ( 'contact' === $mode ) $contact_count++;
+            $pricing_rows[] = array(
+                'direction'  => 'inbound' === ( $row['direction'] ?? '' ) ? 'inbound' : 'outbound',
+                'vehicleId'  => (string) absint( $row['vehicle_id'] ?? 0 ),
+                'packageKey' => sanitize_key( (string) ( $row['package_key'] ?? '' ) ),
+                'mode'       => in_array( $mode, array( 'fixed', 'contact', 'disabled' ), true ) ? $mode : 'contact',
+                'price'      => 'fixed' === $mode ? self::positive_price( $row['price'] ?? 0 ) : null,
+            );
+        }
+
+        return array(
+            'id'                    => (string) $route_id,
+            'slug'                  => sanitize_title( $post->post_name ),
+            'from'                  => self::public_location_title( $origin_title ),
+            'to'                    => self::public_location_title( $destination_title ),
+            'originLocationId'      => $origin_id,
+            'destinationLocationId' => $destination_id,
+            'outboundEnabled'       => rest_sanitize_boolean( get_post_meta( $route_id, 'outbound_enabled', true ) ),
+            'inboundEnabled'        => rest_sanitize_boolean( get_post_meta( $route_id, 'inbound_enabled', true ) ),
+            'fixedCount'            => $fixed_count,
+            'contactCount'          => $contact_count,
+            'priceLabel'            => '',
+            'postStatus'            => sanitize_key( $post->post_status ),
+            'backendVersion'        => self::snapshot_version( self::snapshot_route( $route_id ) ),
+            'locked'                => self::is_blocked_route( $route_id ),
+            'pricingRows'           => $pricing_rows,
+        );
+    }
+
+    private static function public_location_title( string $title ): string {
+        $key = remove_accents( strtolower( $title ) );
+        if ( false !== strpos( $key, 'ho chi minh' ) || false !== strpos( $key, 'sai gon' ) ) return 'Sài Gòn';
+        return sanitize_text_field( $title );
     }
 
     private static function decode_post_json( WP_Post $post ): array {

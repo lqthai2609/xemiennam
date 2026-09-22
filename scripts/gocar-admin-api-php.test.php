@@ -47,6 +47,13 @@ function assert_true( bool $condition, string $message ): void {
 $GLOBALS['gocar_test_posts'][100] = fixture_post( 100, 'location', 'Sài Gòn' );
 $GLOBALS['gocar_test_posts'][200] = fixture_post( 200, 'location', 'Vũng Tàu' );
 $GLOBALS['gocar_test_posts'][300] = fixture_post( 300, 'vehicle', 'Xe 4 chỗ' );
+$GLOBALS['gocar_test_posts'][400] = fixture_post( 400, 'route', 'Sài Gòn đi Vũng Tàu' );
+$GLOBALS['gocar_test_meta'][400] = array(
+    'origin_location_id' => 100,
+    'destination_location_id' => 200,
+    'outbound_enabled' => true,
+    'inbound_enabled' => true,
+);
 $GLOBALS['gocar_test_posts'][9102] = fixture_post( 9102, 'location', 'Sân bay Long Thành' );
 $GLOBALS['gocar_test_posts'][9118] = fixture_post( 9118, 'location', 'TP. Hồ Chí Minh' );
 $GLOBALS['gocar_test_posts'][9123] = fixture_post( 9123, 'location', 'Cần Thơ' );
@@ -78,5 +85,15 @@ assert_true( in_array( 'Long Thành đang PRELAUNCH và chưa được phép tha
 
 $d35 = Gocar_Admin_API::validate_payload( array_merge( $fixed, array( 'originLocationId' => 9118, 'destinationLocationId' => 9123 ) ) );
 assert_true( in_array( 'Cặp endpoint thuộc D35-10 OPEN/P0.', $d35['errors'], true ), 'D35-10 endpoint pair remains locked' );
+
+$delete = Gocar_Admin_API::sanitize_payload(
+    array(
+        'operation' => 'delete_route',
+        'routeId' => 400,
+        'reason' => 'Xóa tuyến thử nghiệm đã ngừng khai thác',
+    )
+);
+$delete_validation = Gocar_Admin_API::validate_payload( $delete );
+assert_true( true === $delete_validation['valid'], 'ordinary route can pass recoverable delete validation' );
 
 echo "Gocar Admin API behavioral tests passed.\n";
