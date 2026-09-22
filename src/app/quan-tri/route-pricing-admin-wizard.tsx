@@ -215,6 +215,7 @@ export function RoutePricingAdminWizard({
   const [serverDrafts, setServerDrafts] = useState<ServerDraft[]>([]);
   const [auditRows, setAuditRows] = useState<AuditRow[]>([]);
   const [activeServerDraft, setActiveServerDraft] = useState<ServerDraft | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
@@ -410,11 +411,11 @@ export function RoutePricingAdminWizard({
 
   async function deleteServerDraft(item: ServerDraft) {
     if (item.status === "publish") return;
-    if (!window.confirm(`Xóa bản nháp máy chủ #${item.id}? Thao tác này không ảnh hưởng tuyến hoặc giá production.`)) return;
     setBusy(true);
     try {
       await adminFetch<{ deleted: boolean; id: number }>(`drafts/${item.id}`, csrf, { method: "DELETE" });
       if (activeServerDraft?.id === item.id) setActiveServerDraft(null);
+      setDeleteConfirmId(null);
       await loadActivity();
       toast.success(`Đã xóa bản nháp máy chủ #${item.id}.`);
     } catch (error) {
@@ -524,7 +525,14 @@ export function RoutePricingAdminWizard({
               {serverDrafts.filter((item) => item.status !== "publish" && item.status !== "trash").slice(0, 5).map((item) => (
                 <div className={styles.draftRowShell} key={item.id}>
                   <button type="button" className={styles.draftRow} onClick={() => resumeServerDraft(item)}><span><strong>#{item.id} · {operationLabel(item.payload.operation)}</strong><small>{item.status === "pending" ? "Chờ duyệt" : "Bản nháp"} · {formatTime(item.modified)}</small></span><ChevronRight aria-hidden="true" /></button>
-                  <button type="button" className={styles.draftDelete} disabled={busy} aria-label={`Xóa bản nháp máy chủ #${item.id}`} onClick={() => void deleteServerDraft(item)}><Trash2 aria-hidden="true" /></button>
+                  {deleteConfirmId === item.id ? (
+                    <div className={styles.draftDeleteConfirm}>
+                      <button type="button" disabled={busy} onClick={() => setDeleteConfirmId(null)}>Hủy</button>
+                      <button type="button" disabled={busy} onClick={() => void deleteServerDraft(item)}>Xác nhận xóa</button>
+                    </div>
+                  ) : (
+                    <button type="button" className={styles.draftDelete} disabled={busy} aria-label={`Xóa bản nháp máy chủ #${item.id}`} onClick={() => setDeleteConfirmId(item.id)}><Trash2 aria-hidden="true" /></button>
+                  )}
                 </div>
               ))}
             </section>

@@ -109,6 +109,10 @@
 .draftDelete:hover { background: #fee9e7; }
 .draftDelete:disabled { opacity: .55; cursor: wait; }
 .draftDelete svg { width: 19px; }
+.draftDeleteConfirm { display: flex; align-items: stretch; gap: 6px; }
+.draftDeleteConfirm button { min-height: 70px; padding: 0 12px; border: 1px solid var(--admin-line); border-radius: 14px; color: var(--admin-navy); background: var(--admin-paper); cursor: pointer; font-weight: 750; }
+.draftDeleteConfirm button:last-child { border-color: #d99088; color: white; background: #a7352c; }
+.draftDeleteConfirm button:disabled { opacity: .55; cursor: wait; }
 
 .progress { position: relative; margin: 2px 0 22px; }
 .progress ol { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(6, 1fr); margin: 0; padding: 0; list-style: none; }
