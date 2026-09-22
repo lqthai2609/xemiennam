@@ -1,7 +1,7 @@
 # CORE-ADMIN-002 — Backend Write & Approval
 
-Trạng thái: SOURCE IMPLEMENTED / PRODUCTION ACCEPTANCE PENDING  
-Owner: Core  
+Trạng thái: PRODUCTION VERIFIED
+Owner: Core
 Phụ thuộc: CORE-ADMIN-001, Pricing V2, Route/Direction V2, Location V2, Day 35 guardrails, Day 36B SEO-005.
 
 ## Mục tiêu
@@ -59,3 +59,12 @@ tiếp WordPress REST từ trình duyệt.
   có endpoint công khai để thao tác.
 - Dữ liệu: dùng audit rollback khi snapshot không có conflict; nếu có conflict, dừng và review
   thủ công, không ghi đè.
+
+## Production acceptance
+
+- PR `#123` merge vào `main` tại `972eac11d819404590ad510ff271f6302ca3d252`.
+- Gocar Core `0.10.0` active trên WordPress production.
+- Vercel production deployment `dpl_7i2VaxXHDFuqk6gtRLSZBFfaQMAm` ở trạng thái `READY`.
+- Đăng nhập production, session HttpOnly, read-back draft, validate/submit và dọn fixture QA đạt.
+- Không publish fixture, không đổi Route/Pricing, audit vẫn `0`, `/quan-tri` không nằm trong sitemap.
+- Receipt chi tiết: `docs/technical-receipts/core-admin-002-production.md`.
