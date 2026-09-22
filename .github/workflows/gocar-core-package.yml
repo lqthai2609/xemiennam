@@ -5,6 +5,7 @@ on:
     paths:
       - "wordpress/gocar-core/**"
       - "scripts/gocar-price-conditions-php.test.php"
+      - "scripts/gocar-admin-api-php.test.php"
       - ".github/workflows/gocar-core-package.yml"
   push:
     branches:
@@ -12,6 +13,7 @@ on:
     paths:
       - "wordpress/gocar-core/**"
       - "scripts/gocar-price-conditions-php.test.php"
+      - "scripts/gocar-admin-api-php.test.php"
       - ".github/workflows/gocar-core-package.yml"
   workflow_dispatch:
 
@@ -42,6 +44,9 @@ jobs:
 
       - name: Condition sanitizer behavioral tests
         run: php scripts/gocar-price-conditions-php.test.php
+
+      - name: Admin write API behavioral tests
+        run: php scripts/gocar-admin-api-php.test.php
 
       - name: Build plugin ZIP
         shell: bash

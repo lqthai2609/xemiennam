@@ -1,6 +1,6 @@
 # CORE-ADMIN-001 — Mobile Route & Pricing Wizard
 
-Trạng thái: MVP PREVIEW SLICE. Owner: Core. Bắt đầu sau khi Day 35 đóng source/specification.
+Trạng thái: CORE-ADMIN-001 PRODUCTION READ-ONLY COMPLETE; CORE-ADMIN-002 SOURCE IMPLEMENTED / PRODUCTION PENDING. Owner: Core.
 
 ## Phạm vi lát cắt đầu tiên
 
@@ -44,6 +44,22 @@ Trạng thái: MVP PREVIEW SLICE. Owner: Core. Bắt đầu sau khi Day 35 đón
 - `GET /gocar/v1/admin/audit`: lịch sử theo route/tuple.
 
 Phase write không dùng WordPress core post endpoint trực tiếp từ browser. Next.js/WordPress boundary phải giữ credential ở server và log mọi mutation.
+
+## CORE-ADMIN-002 — source implementation
+
+- `/quan-tri` yêu cầu đăng nhập bằng tài khoản WordPress có `edit_posts`.
+- JWT chỉ tồn tại trong cookie `HttpOnly`, `Secure` ở production và `SameSite=Strict`; browser gọi proxy cùng origin thay vì gọi WordPress trực tiếp.
+- Mutation yêu cầu CSRF token khớp cookie và chỉ đi qua danh sách endpoint cho phép.
+- Draft được lưu bằng private post type, sau đó validate → submit → publish.
+- `publish_posts` là capability phê duyệt; mọi vai trò khác chỉ tạo và gửi draft.
+- Tạo Route mới chỉ tạo WordPress `draft`, giữ `content_readiness_version=0`, `noindex` và không cấp schema.
+- Cập nhật giá chỉ thay đúng tuple `direction × vehicle × package`; không sao chép chéo direction.
+- Tạm ngừng là soft archive: tắt hai direction và đưa Route về `draft`.
+- Mỗi apply lưu actor, UTC timestamp, reason và before/after snapshot. Rollback từ chối khi snapshot hiện tại đã thay đổi.
+- Backend hard-block Long Thành PRELAUNCH, chín nhóm endpoint cùng các Route ID thuộc D35-10.
+
+Production write chỉ được mở sau khi Gocar Core 0.10.0 được deploy, REST session probe đạt,
+frontend preview đạt CI và smoke test dùng draft QA an toàn được dọn sạch.
 
 
 ## Đồng bộ sau Day 36B
