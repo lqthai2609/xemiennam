@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BusFront } from "lucide-react";
 
@@ -11,6 +11,7 @@ import { RouteBookingActions, type AirportBookingContext } from "@/components/ro
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 import {
+  normalizePriceType,
   priceTypeLabel,
   routeComboHref,
   vehicleTypeSlug,
@@ -78,21 +79,29 @@ export function RoutePricingSection({
 }) {
   const pricing = route.pricingV2;
   const isPrelaunch = isPrelaunchAirportRoute(route);
+  const [selectedPriceType, setSelectedPriceType] = useState<ReturnType<typeof normalizePriceType>>("one_way");
   const availableDirections = pricing ? (["outbound", "inbound"] as const).filter((key) => pricing[key].enabled) : [];
   const activeDirection = pricing && availableDirections.includes(direction) ? direction : availableDirections[0];
   const active = activeDirection ? pricing?.[activeDirection] : undefined;
-  const grouped = useMemo(() => {
+  const availablePriceTypes = useMemo(() => {
     if (!active?.enabled) return [];
+    return Array.from(new Set(active.packages
+      .filter((row) => row.mode === "contact" || (row.mode === "fixed" && typeof row.price === "number" && row.price > 0))
+      .map((row) => normalizePriceType(row.packageLabel || row.packageKey))));
+  }, [active]);
+  const activePriceType = availablePriceTypes.includes(selectedPriceType) ? selectedPriceType : availablePriceTypes[0];
+  const grouped = useMemo(() => {
+    if (!active?.enabled || !activePriceType) return [];
     const groups = new Map<string, RoutePricingPackage[]>();
     for (const row of active.packages) {
       const renderable = row.mode === "contact" || (row.mode === "fixed" && typeof row.price === "number" && row.price > 0);
-      if (!renderable) continue;
+      if (!renderable || normalizePriceType(row.packageLabel || row.packageKey) !== activePriceType) continue;
       const current = groups.get(row.vehicleType) ?? [];
       current.push(row);
       groups.set(row.vehicleType, current);
     }
     return Array.from(groups.entries());
-  }, [active]);
+  }, [active, activePriceType]);
 
   if (isPrelaunch && !pricing) {
     return (
@@ -157,6 +166,25 @@ export function RoutePricingSection({
               </Button>
             );
           })}
+        </div>
+      )}
+
+      {availablePriceTypes.length > 1 && (
+        <div className="mb-6 border-b border-border" role="tablist" aria-label="Chọn loại hình phục vụ">
+          <div className="flex gap-1 overflow-x-auto">
+            {availablePriceTypes.map((priceType) => (
+              <button
+                key={priceType}
+                type="button"
+                role="tab"
+                aria-selected={activePriceType === priceType}
+                onClick={() => setSelectedPriceType(priceType)}
+                className={`shrink-0 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${activePriceType === priceType ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              >
+                {priceTypeLabel(priceType)}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
