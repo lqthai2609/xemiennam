@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./route-vehicle-picker.css";
 
 :root {
   --radius: 0.75rem;
