@@ -4,6 +4,7 @@ import { fetchRoutes } from "./routes";
 import { airportDisplayName, airportHubHref, airportPublicSlug } from "@/lib/airport-seo";
 import { routeHref, type Route, type RoutePricingPackage } from "@/types/route";
 import { getPublicRouteLabel } from "@/lib/public-location-label";
+import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
 export type AirportTravelDirection = "from_airport" | "to_airport";
 
@@ -284,7 +285,7 @@ export async function fetchAirportRouteLinksForVehicleType(
     if (!origin || !destination || (origin.type !== "airport" && destination.type !== "airport")) continue;
 
     const route = routesBySlug.get(pair.routeSlug);
-    if (!route || !routeSupportsVehicleType(route, vehicleType)) continue;
+    if (!route || !canSuggestRelatedRoute(route) || !routeSupportsVehicleType(route, vehicleType)) continue;
 
     output.set(route.slug, {
       label: getPublicRouteLabel(route),

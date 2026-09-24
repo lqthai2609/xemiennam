@@ -29,7 +29,7 @@ import {
 import { mapWPRouteToRoutePairV2, type RouteDirectionKey } from "./route-directions";
 import { fetchLocationsV2, locationById, type LocationV2 } from "./locations";
 import { shouldUseMockFallback } from "./mock-fallback";
-import { publicRouteWithoutApprovedPrices } from "@/lib/public-pricing";
+import { publicRouteWithCmsPricing } from "@/lib/public-pricing";
 import { formatPriceShort, splitCommaList } from "@/lib/wp";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
@@ -283,26 +283,26 @@ export async function fetchRoutes(options: { adminPricing?: boolean } = {}): Pro
   if (rawRoutes.length === 0) {
     if (useMockFallback) {
       console.warn("[fetchRoutes] WP chưa có route nào — dùng dữ liệu mock theo policy môi trường.");
-      return options.adminPricing ? mockRoutes : mockRoutes.map(publicRouteWithoutApprovedPrices);
+      return options.adminPricing ? mockRoutes : mockRoutes.map(publicRouteWithCmsPricing);
     }
     return [];
   }
   const locationsById = locationById(locations);
   const routes = rawRoutes.map((wp) => mapWPRouteToRoute(wp, rawVehicles, locationsById));
-  return options.adminPricing ? routes : routes.map(publicRouteWithoutApprovedPrices);
+  return options.adminPricing ? routes : routes.map(publicRouteWithCmsPricing);
 }
 
 export async function fetchRouteBySlug(slug: string): Promise<Route | undefined> {
   const wp = await fetchRawRouteBySlug(slug);
   if (wp) {
     const [rawVehicles, locations] = await Promise.all([fetchRawVehicles(), fetchLocationsV2()]);
-    return publicRouteWithoutApprovedPrices(mapWPRouteToRoute(wp, rawVehicles, locationById(locations)));
+    return publicRouteWithCmsPricing(mapWPRouteToRoute(wp, rawVehicles, locationById(locations)));
   }
   if (useMockFallback) {
     const rawRoutes = await fetchRawRoutes();
     if (rawRoutes.length === 0) {
       const route = mockRoutes.find((item) => item.slug === slug);
-      return route ? publicRouteWithoutApprovedPrices(route) : undefined;
+      return route ? publicRouteWithCmsPricing(route) : undefined;
     }
   }
   return undefined;

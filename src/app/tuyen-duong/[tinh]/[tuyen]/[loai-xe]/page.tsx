@@ -15,7 +15,7 @@ import { buildPageMetadata } from "@/lib/metadata";
 import { routeComboHref, routeHref } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
-import { resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
+import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
@@ -69,6 +69,7 @@ export default async function Page({ params }: Props) {
       (item) =>
         item.regionSlug === route.regionSlug &&
         item.slug !== route.slug &&
+        canSuggestRelatedRoute(item) &&
         Boolean(findComboVehiclePrice(item, loaiXe)),
     )
     .slice(0, 3);

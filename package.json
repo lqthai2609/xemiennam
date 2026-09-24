@@ -31,8 +31,7 @@
     "test:admin-wizard": "node --test scripts/gocar-admin-wizard-source.test.mjs",
     "test:lead-idempotency": "node --test scripts/gocar-lead-idempotency.test.mjs",
     "test:seo006a-core": "node --test scripts/gocar-seo006a-core.test.mjs",
-    "test:public-price-approval": "node --test scripts/gocar-public-price-approval.test.mjs",
-    "test:public-price-html": "node --test scripts/gocar-public-price-html.test.mjs"
+    "test:public-pricing": "node --test scripts/public-cms-pricing.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

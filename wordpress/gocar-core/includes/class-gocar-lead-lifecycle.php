@@ -17,6 +17,8 @@ final class Gocar_Lead_Lifecycle {
     private const LEGACY_BY_STATE = array( 'new' => 'moi', 'quote' => 'bao_gia', 'sent' => 'da_gui_gia', 'agreed' => 'dong_y', 'deposit' => 'dat_coc', 'assigned' => 'xep_xe', 'complete' => 'hoan_thanh', 'lost' => 'mat_khach' );
     private static bool $syncing_legacy = false;
     private const CONTEXT_KEYS = array( 'source' => 100, 'medium' => 50, 'campaign' => 150, 'utm_source' => 100, 'utm_medium' => 50, 'utm_campaign' => 150, 'utm_id' => 100, 'utm_term' => 150, 'utm_content' => 150, 'landing_page_id' => 100, 'landing_path' => 500, 'landing_family' => 100 );
+    private const SEARCH_HOSTS = array( 'google.com', 'google.com.vn', 'bing.com', 'search.yahoo.com', 'duckduckgo.com', 'coccoc.com' );
+    private const FIRST_PARTY_HOSTS = array( 'xemiennam.vercel.app', 'alodatxe.com', 'www.alodatxe.com' );
 
     public static function boot(): void {
         add_action( 'rest_api_init', array( self::class, 'routes' ) );
@@ -56,7 +58,7 @@ final class Gocar_Lead_Lifecycle {
 
     public static function guard_legacy_meta( $check, int $id, string $key, $value, $previous ) {
         if ( self::$syncing_legacy || 'booking_request' !== get_post_type( $id ) ) { return $check; }
-        if ( '_gocar_lead_state_v1' === $key || '_gocar_lead_context_v1' === $key || '_gocar_lead_history_v1' === $key ) { return false; }
+        if ( '_gocar_lead_state_v1' === $key || '_gocar_lead_context_v1' === $key || '_gocar_lead_attribution_v1' === $key || '_gocar_lead_history_v1' === $key ) { return false; }
         if ( 'trang_thai_booking' === $key && get_post_meta( $id, '_gocar_lead_state_v1', true ) && ( self::LEGACY[ $value ] ?? '' ) !== self::state( $id ) ) { return false; }
         return $check;
     }
@@ -76,13 +78,85 @@ final class Gocar_Lead_Lifecycle {
         return $output;
     }
 
+    /** No raw referrer path/query, click ID or person-entered text is persisted. */
+    private static function referrer( $value ): array {
+        if ( ! is_string( $value ) || strlen( $value ) > 2048 ) { return array( 'origin' => null, 'host' => null, 'type' => 'unknown' ); }
+        $parts = wp_parse_url( $value );
+        if ( ! is_array( $parts ) || ! in_array( $parts['scheme'] ?? '', array( 'http', 'https' ), true ) || empty( $parts['host'] ) ) {
+            return array( 'origin' => null, 'host' => null, 'type' => 'unknown' );
+        }
+        $host = strtolower( $parts['host'] );
+        if ( ! preg_match( '/^[a-z0-9.-]+$/', $host ) || isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+            return array( 'origin' => null, 'host' => null, 'type' => 'unknown' );
+        }
+        $origin = $parts['scheme'] . '://' . $host . ( isset( $parts['port'] ) ? ':' . $parts['port'] : '' );
+        foreach ( self::SEARCH_HOSTS as $search ) {
+            if ( $host === $search || str_ends_with( $host, '.' . $search ) ) {
+                return array( 'origin' => $origin, 'host' => $host, 'type' => 'search_engine' );
+            }
+        }
+        foreach ( self::FIRST_PARTY_HOSTS as $site ) {
+            if ( $host === $site ) { return array( 'origin' => $origin, 'host' => $host, 'type' => 'internal' ); }
+        }
+        return array( 'origin' => $origin, 'host' => $host, 'type' => 'external_referral' );
+    }
+
+    /** Called only after WordPress has created the lead; no standalone CRM or client conversion. */
+    public static function attribution( $input ): array {
+        $input = is_array( $input ) ? $input : array();
+        $context = self::context( $input );
+        $consent = in_array( $input['consent_state'] ?? null, array( 'granted', 'denied' ), true ) ? $input['consent_state'] : 'unknown';
+        $referrer = self::referrer( $input['referrer_origin'] ?? null );
+        $medium = strtolower( $context['utm_medium'] ?? '' );
+        $source = strtolower( $context['utm_source'] ?? '' );
+        $channel = 'unknown';
+        if ( 'denied' === $consent ) {
+            $context = self::context( array() );
+            $referrer = self::referrer( null );
+        } elseif ( in_array( $medium, array( 'cpc', 'ppc', 'paid_search', 'paid_social' ), true ) ) {
+            $channel = 'paid_search' === $medium || in_array( $medium, array( 'cpc', 'ppc' ), true ) ? 'paid_search' : 'paid_social';
+        } elseif ( 'search_engine' === $referrer['type'] && ( '' === $medium || 'organic' === $medium ) ) {
+            $channel = 'organic_search';
+        } elseif ( 'external_referral' === $referrer['type'] && '' === $medium ) {
+            $channel = 'referral';
+        } elseif ( 'internal' === $referrer['type'] && '' === $medium && '' === $source ) {
+            $channel = 'direct';
+        }
+        if ( 'denied' === $consent ) { $channel = 'unknown'; }
+        $touch = array(
+            'occurred_at_utc' => gmdate( 'c' ),
+            'source' => 'organic_search' === $channel ? $referrer['host'] : ( $context['utm_source'] ?? null ),
+            'medium' => 'organic_search' === $channel ? 'organic' : ( $context['utm_medium'] ?? null ),
+            'campaign' => $context['utm_campaign'],
+            'channel_group' => $channel,
+            'referrer_origin' => $referrer['origin'], 'referrer_host' => $referrer['host'], 'referrer_type' => $referrer['type'],
+            'landing_path' => $context['landing_path'], 'landing_page_id' => $context['landing_page_id'],
+            'landing_family' => $context['landing_family'], 'landing_cluster_id' => null,
+            'landing_mapping_status' => $context['landing_path'] ? 'unmapped' : 'unknown',
+        );
+        // A single request gives one verified lead touch. Earlier visits require an approved
+        // consent-aware capture mechanism and cannot be reconstructed from booking PII.
+        $status = 'denied' === $consent ? 'privacy_rejected' : ( 'unknown' === $channel ? 'unknown' : ( $context['landing_path'] ? 'attributed' : 'missing_context' ) );
+        return array(
+            'attribution_schema_version' => 1, 'channel_rule_version' => 'channel_v1',
+            'search_allowlist_version' => 'search_v1', 'attribution_model' => 'first_eligible_organic_30d_v1',
+            'lookback_days' => 30, 'consent_state' => $consent,
+            'attribution_status' => $status,
+            'initial_touch' => $touch, 'lead_touch' => $touch,
+            'first_eligible_organic_touch' => 'organic_search' === $channel && 'granted' === $consent ? $touch : null,
+            'attributed_touch' => $touch,
+        );
+    }
+
     public static function legacy_create( WP_Post $post, WP_REST_Request $request, bool $creating ): void {
         if ( ! $creating || 'booking_request' !== $post->post_type ) { return; }
         self::initialize( $post->ID, $request->get_param( 'acquisition' ) );
     }
 
     private static function initialize( int $id, $context ): void {
-        add_post_meta( $id, '_gocar_lead_context_v1', self::context( $context ), true );
+        $operational_context = is_array( $context ) && 'denied' === ( $context['consent_state'] ?? null ) ? array() : $context;
+        add_post_meta( $id, '_gocar_lead_context_v1', self::context( $operational_context ), true );
+        add_post_meta( $id, '_gocar_lead_attribution_v1', self::attribution( $context ), true );
         add_post_meta( $id, '_gocar_lead_state_v1', 'new', true );
         add_post_meta( $id, '_gocar_lead_history_v1', array( 'from' => null, 'to' => 'new', 'at' => gmdate( 'c' ), 'actor' => get_current_user_id(), 'source' => 'booking_request_create', 'reason' => null ), false );
     }
@@ -100,21 +174,25 @@ final class Gocar_Lead_Lifecycle {
             if ( ! empty( $existing['id'] ) && 'booking_request' === get_post_type( (int) $existing['id'] ) ) { return rest_ensure_response( array( 'id' => (int) $existing['id'], 'lead_id' => (int) $existing['id'], 'replayed' => true ) ); }
             return new WP_Error( 'lead_in_progress', 'Lead creation is in progress; retry with the same key.', array( 'status' => 409 ) );
         }
-        if ( ! add_option( $option, array( 'fingerprint' => $fingerprint, 'id' => null ), '', false ) ) { return new WP_Error( 'lead_in_progress', 'Lead creation is in progress; retry with the same key.', array( 'status' => 409 ) ); }
+        if ( ! add_option( $option, array( 'fingerprint' => $fingerprint, 'id' => null, 'reserved_at' => gmdate( 'c' ) ), '', false ) ) { return new WP_Error( 'lead_in_progress', 'Lead creation is in progress; retry with the same key.', array( 'status' => 409 ) ); }
         $inner = new WP_REST_Request( 'POST', '/wp/v2/booking_request' );
         $inner->set_body_params( $booking );
         $inner->set_param( 'acquisition', $request->get_param( 'acquisition' ) );
         $response = rest_do_request( $inner );
         if ( $response->is_error() ) { delete_option( $option ); return $response->as_error(); }
         $record = $response->get_data();
-        if ( empty( $record['id'] ) ) { delete_option( $option ); return new WP_Error( 'lead_create_failed', 'Booking was not created.', array( 'status' => 502 ) ); }
+        // The REST response may be malformed after a post was inserted. Keep the pending
+        // reservation for reconciliation; releasing it could create a duplicate on retry.
+        if ( empty( $record['id'] ) || ! is_numeric( $record['id'] ) || 'booking_request' !== get_post_type( (int) $record['id'] ) ) {
+            return new WP_Error( 'lead_create_unconfirmed', 'Lead creation needs reconciliation; retry with the same key.', array( 'status' => 502 ) );
+        }
         update_option( $option, array( 'fingerprint' => $fingerprint, 'id' => (int) $record['id'] ), false );
         return rest_ensure_response( array( 'id' => (int) $record['id'], 'lead_id' => (int) $record['id'], 'replayed' => false ) );
     }
 
     public static function read( WP_REST_Request $request ) {
         $id = absint( $request['id'] );
-        return rest_ensure_response( array( 'lead_id' => $id, 'state' => self::state( $id ), 'history' => get_post_meta( $id, '_gocar_lead_history_v1', false ), 'acquisition' => get_post_meta( $id, '_gocar_lead_context_v1', true ) ?: null ) );
+        return rest_ensure_response( array( 'lead_id' => $id, 'state' => self::state( $id ), 'history' => get_post_meta( $id, '_gocar_lead_history_v1', false ), 'acquisition' => get_post_meta( $id, '_gocar_lead_context_v1', true ) ?: null, 'attribution' => get_post_meta( $id, '_gocar_lead_attribution_v1', true ) ?: null ) );
     }
 
     public static function transition( WP_REST_Request $request ) {

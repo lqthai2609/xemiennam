@@ -181,12 +181,16 @@ export async function POST(request: Request) {
   if (data.note) noteParts.push(data.note);
 
   // Only the backend's successful creation of a booking_request yields a lead_id.
-  // The referrer is the form's own page; persist only allowlisted campaign fields.
+  // The referrer is the form's own page, not an external acquisition referrer.
+  // Until consent-aware landing capture is approved, do not invent a prior touch.
   let acquisition: Record<string, string> = {};
   try {
     const page = new URL(request.headers.get("referer") ?? "");
     if (page.origin === new URL(request.url).origin) {
-      acquisition = { landing_path: page.pathname };
+      acquisition = { landing_path: page.pathname, consent_state: "unknown" };
+      if (page.pathname === "/") acquisition.landing_family = "homepage";
+      else if (/^\/tuyen-duong\/[^/]+\/[^/]+\/?$/.test(page.pathname)) acquisition.landing_family = "route_detail";
+      else if (/^\/san-bay\/[^/]+\/?$/.test(page.pathname)) acquisition.landing_family = "airport_hub";
       for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_id", "utm_term", "utm_content"] as const) {
         const value = page.searchParams.get(key);
         if (value) acquisition[key] = value;
@@ -258,6 +262,10 @@ export async function POST(request: Request) {
 
   if (!result.ok) {
     return NextResponse.json({ ok: false, error: result.message }, { status: result.status || 502 });
+  }
+
+  if (!Number.isSafeInteger(result.data?.lead_id) || result.data.lead_id <= 0 || result.data.id !== result.data.lead_id) {
+    return NextResponse.json({ ok: false, error: "Không xác nhận được mã yêu cầu từ hệ thống." }, { status: 502 });
   }
 
   if (result.data.replayed) {

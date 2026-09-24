@@ -1,6 +1,7 @@
 import { formatPriceShort } from "@/lib/wp";
 import { routeComboHref, type Route, type RoutePricingPackage } from "@/types/route";
 import { getPublicRouteLabel } from "@/lib/public-location-label";
+import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
 export type VehicleCategoryRoutePrice = {
   route: string;
@@ -41,6 +42,7 @@ export function buildVehicleCategoryRoutePrices(
   vehicleSlug: string,
 ): VehicleCategoryRoutePrice[] {
   return routes.flatMap((route) => {
+    if (!canSuggestRelatedRoute(route)) return [];
     const outbound = route.pricingV2?.outbound;
     if (!outbound?.enabled) return [];
 
@@ -69,6 +71,7 @@ export function buildVehicleCategoryRoutePrices(
 /** Giá khởi điểm cho card loại xe, lấy từ fixed outbound Pricing V2 thay vì hard-code. */
 export function getVehicleCategoryStartingPrice(routes: Route[], vehicleType: string): string | undefined {
   const rows = routes.flatMap((route) => {
+    if (!canSuggestRelatedRoute(route)) return [];
     const outbound = route.pricingV2?.outbound;
     if (!outbound?.enabled) return [];
     return outbound.packages.filter((row) => row.vehicleType === vehicleType && row.mode !== "disabled");
