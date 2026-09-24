@@ -87,6 +87,14 @@ export function resolveRouteContentReadiness(route: Route): ContentReadinessDeci
   });
 }
 
+/** Legacy routes may still be recommended, but known prelaunch or blocked routes must not be promoted as alternatives. */
+export function canSuggestRelatedRoute(route: Route): boolean {
+  return !isPrelaunchAirportRoute(route)
+    && route.contentReadiness?.serviceState !== "prelaunch"
+    && route.contentReadiness?.mappingState !== "d35_10_blocked"
+    && resolveRouteContentReadiness(route).sitemapEligible;
+}
+
 
 /** SEO-005: prelaunch and D35-10 block every JSON-LD type on commercial Route pages. */
 export function routeStructuredDataAllowed(route: Route, decision: ContentReadinessDecision = resolveRouteContentReadiness(route)): boolean {

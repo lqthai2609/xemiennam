@@ -11,7 +11,7 @@ import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { buildPageMetadata } from "@/lib/metadata";
 import { routeHref, type Route } from "@/types/route";
-import { resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
+import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
@@ -108,7 +108,7 @@ export default async function Page({ params }: Props) {
     fetchTestimonials(),
     fetchPostsByRegion(route.regionSlug, 3),
   ]);
-  const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug).slice(0, 6);
+  const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug && canSuggestRelatedRoute(item)).slice(0, 6);
   const matchingTestimonials = allTestimonials.filter((item) => item.routeSlug === route.slug);
   const routeTestimonials = (matchingTestimonials.length > 0 ? matchingTestimonials : allTestimonials).slice(0, 6);
   const serviceSchema = !readiness.serviceSchemaEligible

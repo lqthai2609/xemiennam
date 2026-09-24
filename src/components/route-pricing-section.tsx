@@ -59,9 +59,9 @@ function LegacyPricingGrid({
 }
 
 const vehicleCards = [
-  { type: "Xe 4 chỗ", models: "Toyota Vios / Hyundai Accent hoặc tương đương", capacity: "1–3 hành khách", benefits: ["Xe riêng có tài xế", "Đón tại sân bay", "Đưa tận nơi"], popular: true, fallback: "/images/hero-dat-xe-sai-gon.webp" },
-  { type: "Xe 7 chỗ", models: "Toyota Innova / Fortuner hoặc tương đương", capacity: "3–6 hành khách", benefits: ["Xe riêng có tài xế", "Hành lý thoải mái", "Đón tận nơi"], popular: false, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
-  { type: "Xe 16 chỗ", models: "Ford Transit hoặc tương đương", capacity: "7–14 hành khách", benefits: ["Phù hợp nhóm đông", "Có tài xế", "Đón trả tận nơi"], popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
+  { type: "Xe 4 chỗ", models: "Toyota Vios / Hyundai Accent hoặc tương đương", capacity: "1–3 hành khách", benefits: ["Xe riêng có tài xế", "Xác nhận điểm đón khi báo giá", "Xác nhận điểm trả khi báo giá"], popular: true, fallback: "/images/hero-dat-xe-sai-gon.webp" },
+  { type: "Xe 7 chỗ", models: "Toyota Innova / Fortuner hoặc tương đương", capacity: "3–6 hành khách", benefits: ["Xe riêng có tài xế", "Hành lý thoải mái", "Xác nhận điểm đón khi báo giá"], popular: false, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
+  { type: "Xe 16 chỗ", models: "Ford Transit hoặc tương đương", capacity: "7–14 hành khách", benefits: ["Phù hợp nhóm đông", "Có tài xế", "Xác nhận điểm đón/trả khi báo giá"], popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
   { type: "Xe 29 chỗ", models: "Thaco / Hyundai hoặc tương đương", capacity: "Nhóm / đoàn", benefits: ["Phù hợp đoàn đông", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/long-an.webp" },
   { type: "Xe 45 chỗ", models: "Universe / Samco hoặc tương đương", capacity: "Đoàn lớn", benefits: ["Không gian rộng", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/ben-tre.webp" },
   { type: "Limousine", models: "Dòng limousine cao cấp", capacity: "Không gian cao cấp", benefits: ["Nội thất cao cấp", "Tiện nghi", "Phù hợp khách VIP / doanh nghiệp"], popular: false, fallback: "/images/services/city-tour.png" },

@@ -4,7 +4,7 @@ import test from "node:test";
 import { typescriptLoader } from "./lib/load-typescript.mjs";
 
 const load = typescriptLoader();
-const { resolveContentReadiness } = load("src/lib/content-readiness.ts");
+const { canSuggestRelatedRoute, resolveContentReadiness } = load("src/lib/content-readiness.ts");
 
 const readyRecord = {
   version: 1,
@@ -45,6 +45,16 @@ test("D35-10, prelaunch and unverified canonical states block activation indepen
     assert.ok(decision.reasons.includes(reason));
     assert.equal(decision.offerSchemaEligible, false);
   }
+});
+
+test("related Route suggestions exclude prelaunch and D35-10 without suppressing legacy live links", () => {
+  const live = { slug: "legacy-route" };
+  assert.equal(canSuggestRelatedRoute(live), true);
+  assert.equal(canSuggestRelatedRoute({ ...live, originLocation: { slug: "san-bay-long-thanh" } }), false);
+  assert.equal(canSuggestRelatedRoute({ ...live, destinationLocation: { slug: "san-bay-long-thanh" } }), false);
+  assert.equal(canSuggestRelatedRoute({ ...live, contentReadiness: { ...readyRecord, mappingState: "d35_10_blocked" } }), false);
+  assert.equal(canSuggestRelatedRoute({ ...live, contentReadiness: { ...readyRecord, serviceState: "paused" } }), false);
+  assert.equal(canSuggestRelatedRoute({ ...live, contentReadiness: readyRecord }), true);
 });
 
 test("contact pricing may keep Service schema but never creates an Offer", () => {
