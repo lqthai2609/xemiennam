@@ -31,6 +31,8 @@ require_once GOCAR_CORE_PATH . 'includes/class-gocar-blog-relations.php';
 
 // Day 31: Booking V2 exact pickup/dropoff persistence contract.
 require_once GOCAR_CORE_PATH . 'includes/class-gocar-booking-request.php';
+// Day 37: booking_request owns the lead lifecycle and immutable acquisition snapshot.
+require_once GOCAR_CORE_PATH . 'includes/class-gocar-lead-lifecycle.php';
 
 // Day 32: authoritative Location service zones + Booking surcharge result persistence.
 require_once GOCAR_CORE_PATH . 'includes/class-gocar-service-area.php';

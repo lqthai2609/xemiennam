@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchLocationsV2 } from "@/lib/api/locations";
 import { fetchRoutes } from "@/lib/api/routes";
@@ -90,6 +91,8 @@ export default async function RoutePricingAdminPage() {
     .sort((a, b) => a.type.localeCompare(b.type, "vi") || a.name.localeCompare(b.name, "vi"));
 
   return (
+    <>
+    <div style={{ padding: "1rem", textAlign: "right" }}><Link href="/quan-tri/lead">Quản lý yêu cầu đặt xe →</Link></div>
     <RoutePricingAdminWizard
       locations={adminLocations}
       routes={adminRoutes}
@@ -97,5 +100,6 @@ export default async function RoutePricingAdminPage() {
       actor={auth.session}
       csrf={auth.csrf}
     />
+    </>
   );
 }

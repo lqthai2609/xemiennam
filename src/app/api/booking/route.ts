@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
@@ -179,12 +180,32 @@ export async function POST(request: Request) {
   }
   if (data.note) noteParts.push(data.note);
 
-  const result = await wpAuthedFetch<{ id: number }>("/booking_request", {
+  // Only the backend's successful creation of a booking_request yields a lead_id.
+  // The referrer is the form's own page; persist only allowlisted campaign fields.
+  let acquisition: Record<string, string> = {};
+  try {
+    const page = new URL(request.headers.get("referer") ?? "");
+    if (page.origin === new URL(request.url).origin) {
+      acquisition = { landing_path: page.pathname };
+      for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_id", "utm_term", "utm_content"] as const) {
+        const value = page.searchParams.get(key);
+        if (value) acquisition[key] = value;
+      }
+      if (acquisition.utm_source) acquisition.source = acquisition.utm_source;
+      if (acquisition.utm_medium) acquisition.medium = acquisition.utm_medium;
+      if (acquisition.utm_campaign) acquisition.campaign = acquisition.utm_campaign;
+    }
+  } catch { /* Missing or invalid referrer remains unknown. */ }
+
+  const result = await wpAuthedFetch<{ id: number; lead_id: number; replayed: boolean }>("/gocar/v1/leads", {
     method: "POST",
     body: {
-      title: data.fullName,
-      status: "publish",
-      meta: {
+      idempotency_key: request.headers.get("x-lead-idempotency-key") || randomUUID(),
+      acquisition,
+      booking: {
+        title: data.fullName,
+        status: "publish",
+        meta: {
         so_dien_thoai: data.phone,
         tuyen_quan_tam: routeContext.routeId ?? 0,
         loai_xe_dat: vehicleId ?? 0,
@@ -230,6 +251,7 @@ export async function POST(request: Request) {
         },
         ghi_chu: noteParts.join(" | "),
         trang_thai_booking: "moi",
+        },
       },
     },
   });
@@ -238,6 +260,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: result.message }, { status: result.status || 502 });
   }
 
+  if (result.data.replayed) {
+    return NextResponse.json({ ok: true, id: result.data.lead_id, leadId: result.data.lead_id, notificationSent: false, replayed: true });
+  }
   const notification = await sendBookingNotification({
     bookingId: result.data.id,
     fullName: data.fullName,
@@ -259,5 +284,5 @@ export async function POST(request: Request) {
     });
   }
 
-  return NextResponse.json({ ok: true, id: result.data.id, notificationSent: notification.sent });
+  return NextResponse.json({ ok: true, id: result.data.lead_id, leadId: result.data.lead_id, notificationSent: notification.sent });
 }

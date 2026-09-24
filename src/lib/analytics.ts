@@ -63,7 +63,8 @@ export type ContactChannel = "phone" | "zalo";
 export function trackContactClick(channel: ContactChannel) {
   if (typeof window === "undefined") return;
 
-  const pagePath = `${window.location.pathname}${window.location.search}`;
+  // Query strings may contain addresses, phone numbers or tokens.
+  const pagePath = window.location.pathname;
 
   if (GA_MEASUREMENT_ID && typeof window.gtag === "function") {
     window.gtag("event", "contact_click", {

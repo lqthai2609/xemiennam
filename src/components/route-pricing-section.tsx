@@ -6,6 +6,7 @@ import { ArrowRight, BusFront } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { MediaPhoto } from "@/components/media-photo";
+import { PriceExplanation } from "@/components/price-explanation";
 import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
 import { getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 import {
@@ -97,6 +98,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
     </div>
     {journey === "twoDays" && <div className="route-day-tabs" role="group" aria-label="Chọn gói theo ngày">{(["twoDays", "threeDays"] as const).map((key) => <button key={key} type="button" aria-pressed={days === key} className={days === key ? "is-selected" : ""} onClick={() => setDays(key)}>{packageLabels[key]}</button>)}</div>}
     {pricing.inbound.enabled && pricing.outbound.enabled && <div className="route-direction-switch"><span>Chiều</span>{(["outbound", "inbound"] as const).map((key) => <button key={key} type="button" aria-pressed={activeDirection === key} className={activeDirection === key ? "is-selected" : ""} onClick={() => onDirectionChange(key)}>{key === "outbound" ? getPublicLocationLabel(route.from) : getPublicLocationLabel(route.to)} → {key === "outbound" ? getPublicLocationLabel(route.to) : getPublicLocationLabel(route.from)}</button>)}</div>}
+    <PriceExplanation compact />
     <div className="route-vehicle-grid">{vehicleCards.map((vehicle) => { const pkg = findPackage(rows, vehicle.type, selectedPackage); const fixed = pkg?.mode === "fixed" && typeof pkg.price === "number" && pkg.price > 0; const image = vehicleImageByType[vehicle.type] || vehicle.fallback; return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
       <div className="route-vehicle-image"><img src={image} alt={vehicle.type} loading="lazy" /><span>{vehicle.popular ? "Phổ biến" : ""}</span></div>
       <div className="route-vehicle-body"><h3>{vehicle.type}</h3><p className="route-vehicle-model">{vehicle.models}</p><p className="route-vehicle-capacity">{vehicle.capacity}</p><ul>{vehicle.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul><div className="route-vehicle-bottom"><div className="route-vehicle-price">{fixed ? <><small>Từ</small><strong>{pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ`}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : pkg?.mode === "disabled" || !pkg ? <strong>Chưa có giá</strong> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>{pkg?.mode !== "disabled" && pkg ? <RouteBookingActions route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={vehicle.type} price={fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} /> : <Button disabled size="lg">Chưa mở bán</Button>}</div></div>
