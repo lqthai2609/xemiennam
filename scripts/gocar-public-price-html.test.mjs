@@ -11,13 +11,24 @@ async function htmlFiles(directory) {
   return nested.flat();
 }
 
-test("built route and vehicle pages never emit a structured price Offer before approval", async () => {
+test("built route and vehicle pages emit only positive numeric structured Offers", async () => {
   const app = new URL("../.next/server/app", import.meta.url).pathname;
   const files = [...await htmlFiles(`${app}/tuyen-duong`), ...await htmlFiles(`${app}/loai-xe`)];
   assert.ok(files.length > 0, "production build must generate representative public pages");
   for (const file of files) {
     const html = await readFile(file, "utf8");
-    assert.doesNotMatch(html, /"@type":"(?:AggregateOffer|Offer)"/, `Unapproved Offer in ${file}`);
+    for (const [, json] of html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>(.*?)<\/script>/gis)) {
+      const visit = (node) => {
+        if (Array.isArray(node)) return node.forEach(visit);
+        if (!node || typeof node !== "object") return;
+        if (node["@type"] === "Offer") {
+          assert.ok(Number.isFinite(Number(node.price)) && Number(node.price) > 0, `Invalid Offer in ${file}`);
+          assert.equal(node.priceCurrency, "VND", file);
+        }
+        for (const value of Object.values(node)) visit(value);
+      };
+      visit(JSON.parse(json));
+    }
   }
 });
 
@@ -61,7 +72,7 @@ test("SEO-006A representative built Route HTML has explicit AC15 evidence", asyn
     const observed = { routeId: route.id, routePath: file.split("/app/")[1]?.replace(/\.html$/, "") ?? route.slug, jsonLdCount, robots, canonical };
     console.log("SEO006A_AC15 " + JSON.stringify(observed));
     assert.ok(canonical?.endsWith("/" + route.slug), "Missing/changed canonical path for " + route.id);
-    assert.doesNotMatch(html, /"@type":"(?:AggregateOffer|Offer)"/, "Unapproved Offer in " + route.id);
+    // PR #129/#130 authorize valid fixed CMS tuples; contact and prelaunch still omit Offers.
     if (route.kind === "prelaunch") {
       assert.equal(jsonLdCount, 0, "Prelaunch Route must have zero JSON-LD");
       assert.match(robots ?? "", /noindex/i, "Prelaunch Route must be noindex");

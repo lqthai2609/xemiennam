@@ -234,7 +234,7 @@ export async function fetchAirportConnectionsByProvinceSlug(
     fetchRoutes(),
   ]);
   const locationsById = new Map(locations.map((location) => [location.id, location]));
-  const routeSlugs = new Set(routes.map((route) => route.slug));
+  const routeSlugs = new Set(routes.filter(canSuggestRelatedRoute).map((route) => route.slug));
   const connections = new Map<number, { airport: LocationV2; routeSlugs: Set<string> }>();
 
   for (const pair of pairs) {

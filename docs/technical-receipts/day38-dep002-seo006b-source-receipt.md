@@ -28,6 +28,14 @@ Date: 2026-09-24. Status: **SOURCE PARTIAL; WORDPRESS INTEGRATION PENDING; SEO V
 - PHP 8.1 behavior tests now cover organic/referral privacy normalization, UTM spoof, replay, malformed response and definite failure. PHP CLI is unavailable in the local workspace; Gocar Core Package CI must validate syntax/behavior. No isolated WordPress POST was performed; no test booking was sent to production.
 - Joint Day 37, SEO-006A VERIFY and Day 38 remain OPEN. DEP-011 BLOCKER/P0, D35-10 OPEN/P0, Long Thành and KU-068–KU-072 PRELAUNCH; Paid Growth PRELAUNCH with Budget/Campaign/Production Ads INACTIVE. Production migration INACTIVE.
 
+## Preview follow-up — 2026-09-25
+
+- Vercel Preview `dpl_7haYfjfxUubjBTdRMEbqw6XXyzhY` was READY for `66cd835` on `day37-lead-lifecycle`; production remained on `main` at `5b6ed3f`. Route 9190 rendered `noindex, follow` with no JSON-LD. No custom domain was assigned.
+- Route 9117's “giá từ 1.500K” is supported by the existing CMS tuple: outbound, vehicle `40` (Limousine), `one_way`, fixed `1,500,000` VND. The other five vehicle cards were contact, so the earlier apparent title/card mismatch was a false alarm. No CMS price was edited.
+- A full scan of generated commercial listing HTML found Long Thành prelaunch links in `/tuyen-duong`, `/bang-gia` and five province listings. The source now excludes prelaunch and readiness-blocked routes from those lists and from province airport connection counts. The prelaunch guard also recognizes the existing route slug if a separate Location API read fails. Route detail remains directly available for information with `noindex`; no canonical or sitemap configuration changed.
+- Until explicit consent capture and retention policy are approved, the booking handler sends `consent_state=unknown` without same-origin URL or UTM. WordPress ignores marketing fields and leaves attributed touch null for unknown/denied consent. This is a conservative source guard, not implementation of cross-visit attribution.
+- Read-only CMS review: Route 9117 and 9190 both have `content_readiness_version=0`; a query for actual `d35_10_blocked` records returned none. No authentic version ≥1 blocked instance is available to close D35-10. The connected WordPress site is production; no synthetic POST was sent. An isolated WordPress environment is still required.
+
 ## Required gates before release
 
 1. Approve privacy/retention and consent capture; implement first/lead touch and approved versioned landing cluster mapping without storing PII. Test 30-day organic→direct and paid→organic fixtures.

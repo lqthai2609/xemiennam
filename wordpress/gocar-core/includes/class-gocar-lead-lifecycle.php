@@ -110,7 +110,7 @@ final class Gocar_Lead_Lifecycle {
         $medium = strtolower( $context['utm_medium'] ?? '' );
         $source = strtolower( $context['utm_source'] ?? '' );
         $channel = 'unknown';
-        if ( 'denied' === $consent ) {
+        if ( 'granted' !== $consent ) {
             $context = self::context( array() );
             $referrer = self::referrer( null );
         } elseif ( in_array( $medium, array( 'cpc', 'ppc', 'paid_search', 'paid_social' ), true ) ) {
@@ -122,7 +122,7 @@ final class Gocar_Lead_Lifecycle {
         } elseif ( 'internal' === $referrer['type'] && '' === $medium && '' === $source ) {
             $channel = 'direct';
         }
-        if ( 'denied' === $consent ) { $channel = 'unknown'; }
+        if ( 'granted' !== $consent ) { $channel = 'unknown'; }
         $touch = array(
             'occurred_at_utc' => gmdate( 'c' ),
             'source' => 'organic_search' === $channel ? $referrer['host'] : ( $context['utm_source'] ?? null ),
@@ -143,8 +143,8 @@ final class Gocar_Lead_Lifecycle {
             'lookback_days' => 30, 'consent_state' => $consent,
             'attribution_status' => $status,
             'initial_touch' => $touch, 'lead_touch' => $touch,
-            'first_eligible_organic_touch' => 'organic_search' === $channel && 'granted' === $consent ? $touch : null,
-            'attributed_touch' => $touch,
+            'first_eligible_organic_touch' => 'organic_search' === $channel ? $touch : null,
+            'attributed_touch' => 'granted' === $consent ? $touch : null,
         );
     }
 
@@ -154,7 +154,7 @@ final class Gocar_Lead_Lifecycle {
     }
 
     private static function initialize( int $id, $context ): void {
-        $operational_context = is_array( $context ) && 'denied' === ( $context['consent_state'] ?? null ) ? array() : $context;
+        $operational_context = is_array( $context ) && 'granted' === ( $context['consent_state'] ?? null ) ? $context : array();
         add_post_meta( $id, '_gocar_lead_context_v1', self::context( $operational_context ), true );
         add_post_meta( $id, '_gocar_lead_attribution_v1', self::attribution( $context ), true );
         add_post_meta( $id, '_gocar_lead_state_v1', 'new', true );
