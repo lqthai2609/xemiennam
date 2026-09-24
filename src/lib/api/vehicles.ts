@@ -1,7 +1,6 @@
 import type { Vehicle } from "@/types/vehicle";
 import { vehicles as mockVehicles } from "@/data/vehicles";
 import { fetchRawVehicles, fetchRawVehicleBySlug, embeddedTermName, type WPVehicle } from "./raw";
-import { getPricingTable, pricingForVehicle } from "./pricing";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { stripHtml, wpFetch } from "@/lib/wp";
 
@@ -35,13 +34,8 @@ async function resolveGalleryImages(mediaIds: number[] | undefined): Promise<str
 }
 
 async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
-  const [pricingTable, images] = await Promise.all([getPricingTable(), resolveGalleryImages(wp.meta.gallery_anh)]);
+  const images = await resolveGalleryImages(wp.meta.gallery_anh);
   const type = embeddedTermName(wp._embedded, "vehicle_type") ?? "4 chỗ";
-  const routePrices = pricingForVehicle(pricingTable, String(wp.id)).map((row) => ({
-    route: row.routeLabel,
-    price: row.priceLabel,
-    note: "Giá tham khảo, có thể thay đổi theo mùa/lễ",
-  }));
 
   return {
     id: String(wp.id),
@@ -56,7 +50,7 @@ async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
     images,
     features: wp.meta.tien_ich ?? [],
     driverIncluded: mapDriverOption(wp.meta.hinh_thuc_lai),
-    routePrices,
+    routePrices: [], // No exact tuple has a public Operations approval receipt yet.
     modifiedDate: wp.modified,
     rankMathTitle: wp.rank_math_title || undefined,
     rankMathDescription: wp.rank_math_description || undefined,
@@ -68,7 +62,7 @@ export async function fetchVehicles(): Promise<Vehicle[]> {
   if (rawVehicles.length === 0) {
     if (useMockFallback) {
       console.warn("[fetchVehicles] WP chưa có vehicle nào — dùng dữ liệu mock theo policy môi trường.");
-      return mockVehicles;
+      return mockVehicles.map((vehicle) => ({ ...vehicle, routePrices: [] }));
     }
     return [];
   }
@@ -81,7 +75,8 @@ export async function fetchVehicleBySlug(slug: string): Promise<Vehicle | undefi
   if (useMockFallback) {
     const rawVehicles = await fetchRawVehicles();
     if (rawVehicles.length === 0) {
-      return mockVehicles.find((vehicle) => vehicle.slug === slug);
+      const vehicle = mockVehicles.find((item) => item.slug === slug);
+      return vehicle ? { ...vehicle, routePrices: [] } : undefined;
     }
   }
   return undefined;

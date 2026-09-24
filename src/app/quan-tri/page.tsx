@@ -41,7 +41,7 @@ export default async function RoutePricingAdminPage() {
 
   const [locations, routes, vehicles] = await Promise.all([
     fetchLocationsV2(),
-    fetchRoutes(),
+    fetchRoutes({ adminPricing: true }),
     fetchVehicles(),
   ]);
 

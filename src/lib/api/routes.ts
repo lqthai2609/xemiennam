@@ -29,6 +29,7 @@ import {
 import { mapWPRouteToRoutePairV2, type RouteDirectionKey } from "./route-directions";
 import { fetchLocationsV2, locationById, type LocationV2 } from "./locations";
 import { shouldUseMockFallback } from "./mock-fallback";
+import { publicRouteWithoutApprovedPrices } from "@/lib/public-pricing";
 import { formatPriceShort, splitCommaList } from "@/lib/wp";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
@@ -273,7 +274,7 @@ function mapWPRouteToRoute(
   };
 }
 
-export async function fetchRoutes(): Promise<Route[]> {
+export async function fetchRoutes(options: { adminPricing?: boolean } = {}): Promise<Route[]> {
   const [rawRoutes, rawVehicles, locations] = await Promise.all([
     fetchRawRoutes(),
     fetchRawVehicles(),
@@ -282,24 +283,26 @@ export async function fetchRoutes(): Promise<Route[]> {
   if (rawRoutes.length === 0) {
     if (useMockFallback) {
       console.warn("[fetchRoutes] WP chưa có route nào — dùng dữ liệu mock theo policy môi trường.");
-      return mockRoutes;
+      return options.adminPricing ? mockRoutes : mockRoutes.map(publicRouteWithoutApprovedPrices);
     }
     return [];
   }
   const locationsById = locationById(locations);
-  return rawRoutes.map((wp) => mapWPRouteToRoute(wp, rawVehicles, locationsById));
+  const routes = rawRoutes.map((wp) => mapWPRouteToRoute(wp, rawVehicles, locationsById));
+  return options.adminPricing ? routes : routes.map(publicRouteWithoutApprovedPrices);
 }
 
 export async function fetchRouteBySlug(slug: string): Promise<Route | undefined> {
   const wp = await fetchRawRouteBySlug(slug);
   if (wp) {
     const [rawVehicles, locations] = await Promise.all([fetchRawVehicles(), fetchLocationsV2()]);
-    return mapWPRouteToRoute(wp, rawVehicles, locationById(locations));
+    return publicRouteWithoutApprovedPrices(mapWPRouteToRoute(wp, rawVehicles, locationById(locations)));
   }
   if (useMockFallback) {
     const rawRoutes = await fetchRawRoutes();
     if (rawRoutes.length === 0) {
-      return mockRoutes.find((route) => route.slug === slug);
+      const route = mockRoutes.find((item) => item.slug === slug);
+      return route ? publicRouteWithoutApprovedPrices(route) : undefined;
     }
   }
   return undefined;

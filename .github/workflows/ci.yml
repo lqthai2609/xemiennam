@@ -129,8 +129,14 @@ jobs:
       - name: SEO-006A package and lead response fixtures
         run: npm run test:seo006a-core
 
+      - name: Unapproved public price suppression
+        run: npm run test:public-price-approval
+
       - name: Production build
         run: npm run build
 
       - name: Built HTML public location display audit
         run: npm run test:location-display-output
+
+      - name: Built HTML unapproved price and Offer audit
+        run: npm run test:public-price-html
