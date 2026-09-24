@@ -1,0 +1,7 @@
+# SEO-006A Day 37 — AC15 build evidence scope
+
+Core confirms the SEO-005 source rule: prelaunch Long Thanh and d35_10_blocked commercial Route surfaces must suppress every JSON-LD type, including BreadcrumbList. Source commit `bbb944453cf884509c917e1da55236aebb43c69b` passed CI run 35947779904, Gocar Core Package run 35947779935 and Location Migration Preview run 35947779902. These gates prove source/build only; the previous Long Thanh HTML fixture was vacuous when the build generated no matching page.
+
+The follow-up CI built-HTML audit requires a concrete Route 9190 and comparison Route 9117, prints JSON-LD count, robots and canonical for each, and reports Route 9055 (one D35-10 group) if generated. A D35-10 record with SEO-005 version 0 cannot be called blocked from source alone: version 0 explicitly preserves earlier runtime indexability. Its record, sitemap output and instance eligibility must be established separately. The audit does not imply live WordPress Content Readiness data or production deployment.
+
+Pending SEO VERIFY: post-hydration outbound/inbound of 9117; actual WordPress SEO-005 record/version for 9190, 9055 and 9117; sitemap output in the target environment; fact ledger from Operations; authenticated WordPress plus preview lead integration and retry/replay cases. Prices are not approved: use contact fallback, no Offer. DEP-011 BLOCKER/P0, D35-10 OPEN/P0, Long Thanh PRELAUNCH, production migration INACTIVE, launch NOT READY. PR #128 remains draft; no URL/canonical changes or merge.
