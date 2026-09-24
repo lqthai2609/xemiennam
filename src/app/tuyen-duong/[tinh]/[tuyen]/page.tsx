@@ -11,7 +11,7 @@ import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { buildPageMetadata } from "@/lib/metadata";
 import { routeHref, type Route } from "@/types/route";
-import { resolveRouteContentReadiness } from "@/lib/content-readiness";
+import { resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
@@ -120,15 +120,16 @@ export default async function Page({ params }: Props) {
         areaServed: [publicFrom, publicTo],
         offers: readiness.offerSchemaEligible ? buildRouteSchemaOffers(route) : undefined,
       });
-  const breadcrumbSchema = buildBreadcrumbListSchema([
+  const structuredDataAllowed = routeStructuredDataAllowed(route, readiness);
+  const breadcrumbSchema = structuredDataAllowed ? buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
     { name: getPublicLocationLabel(route.region), url: `/tuyen-duong/${route.regionSlug || "khac"}` },
     { name: getPublicRouteLabel(route), url: routeHref(route) },
-  ]);
+  ]) : undefined;
 
   return (
     <>
-      <JsonLd data={breadcrumbSchema} />
+      {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <RouteDetailPage route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
     </>

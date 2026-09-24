@@ -15,7 +15,7 @@ import { buildPageMetadata } from "@/lib/metadata";
 import { routeComboHref, routeHref } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
-import { resolveRouteContentReadiness } from "@/lib/content-readiness";
+import { resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
@@ -103,16 +103,17 @@ export default async function Page({ params }: Props) {
     areaServed: [getPublicLocationLabel(route.from), getPublicLocationLabel(route.to)],
     offers: readiness.offerSchemaEligible ? serviceOffers : undefined,
   }) : undefined;
-  const breadcrumbSchema = buildBreadcrumbListSchema([
+  const structuredDataAllowed = routeStructuredDataAllowed(route, readiness);
+  const breadcrumbSchema = structuredDataAllowed ? buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
     { name: getPublicLocationLabel(route.region), url: `/tuyen-duong/${route.regionSlug || "khac"}` },
     { name: getPublicRouteLabel(route), url: routeHref(route) },
     { name: vp.vehicleType, url: routeComboHref(route, loaiXe) },
-  ]);
+  ]) : undefined;
 
   return (
     <>
-      <JsonLd data={breadcrumbSchema} />
+      {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <ComboLandingPage
         route={route}

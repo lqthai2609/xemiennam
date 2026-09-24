@@ -79,3 +79,18 @@ test("DEP-011 replaces the public source brand while keeping the runtime hostnam
   assert.match(wordpressContract, /d35_10_blocked/);
 });
 
+
+test("SEO-005 suppresses all JSON-LD for prelaunch and D35-10 commercial Route surfaces", async () => {
+  const [readiness, detail, combo] = await Promise.all([
+    readFile(new URL("../src/lib/content-readiness.ts", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/tuyen-duong/[tinh]/[tuyen]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/tuyen-duong/[tinh]/[tuyen]/[loai-xe]/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(readiness, /routeStructuredDataAllowed/);
+  assert.match(readiness, /contentReadiness\?\.mappingState !== "d35_10_blocked"/);
+  assert.match(readiness, /contentReadiness\?\.serviceState !== "prelaunch"/);
+  for (const page of [detail, combo]) {
+    assert.match(page, /routeStructuredDataAllowed\(route, readiness\)/);
+    assert.match(page, /breadcrumbSchema \? <JsonLd data=\{breadcrumbSchema\} \/> : null/);
+  }
+});

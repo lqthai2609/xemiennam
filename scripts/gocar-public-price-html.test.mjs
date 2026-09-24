@@ -20,3 +20,12 @@ test("built route and vehicle pages never emit a structured price Offer before a
     assert.doesNotMatch(html, /"@type":"(?:AggregateOffer|Offer)"/, `Unapproved Offer in ${file}`);
   }
 });
+
+test("built Long Thanh commercial Route pages omit all JSON-LD while prelaunch", async () => {
+  const files = (await htmlFiles(new URL("../.next/server/app/tuyen-duong", import.meta.url).pathname))
+    .filter((file) => file.includes("san-bay-long-thanh"));
+  for (const file of files) {
+    const html = await readFile(file, "utf8");
+    assert.doesNotMatch(html, /type="application\/ld\+json"/, `Prelaunch structured data in ${file}`);
+  }
+});
