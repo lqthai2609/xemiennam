@@ -28,7 +28,8 @@
     "test:location-display": "node --test scripts/gocar-location-display.test.mjs",
     "test:location-display-output": "node --test scripts/gocar-location-display-output.test.mjs",
     "audit:location-display": "node scripts/gocar-location-display-audit.mjs",
-    "test:admin-wizard": "node --test scripts/gocar-admin-wizard-source.test.mjs"
+    "test:admin-wizard": "node --test scripts/gocar-admin-wizard-source.test.mjs",
+    "test:public-pricing": "node --test scripts/public-cms-pricing.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

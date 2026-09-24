@@ -123,6 +123,9 @@ jobs:
       - name: Admin wizard source guard
         run: npm run test:admin-wizard
 
+      - name: Public CMS pricing tuples
+        run: npm run test:public-pricing
+
       - name: Production build
         run: npm run build
 

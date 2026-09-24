@@ -7,7 +7,7 @@ type PriceExplanationProps = {
 const PRICE_TERMS = [
   {
     label: "Giá từ",
-    description: "Mức cơ bản đã được duyệt cho đúng chiều, loại xe và gói hành trình đang hiển thị.",
+    description: "Mức cơ bản đang được nhập trong hệ thống cho đúng chiều, loại xe và gói hành trình đang hiển thị.",
   },
   {
     label: "Ước tính chuyến",
@@ -45,4 +45,3 @@ export function PriceExplanation({ compact = false }: PriceExplanationProps) {
     </aside>
   );
 }
-
