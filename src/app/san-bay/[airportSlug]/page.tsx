@@ -35,6 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       readiness.metadataDescription?.(hub.airport.name) ??
       `Thuê xe đưa đón ${airportName} đi các tỉnh và chiều về sân bay. Xe riêng có tài xế, nhiều loại xe, xem tuyến và liên hệ báo giá tại ${SITE_NAME}.`,
     path: canonicalPath,
+    noIndex: readiness.phase === "prelaunch",
   });
 }
 
@@ -47,11 +48,11 @@ export default async function Page({ params }: Props) {
   const readiness = getAirportHubReadiness(hub.airport.slug);
   const airportName = airportDisplayName(hub.airport.name);
   const canonicalPath = airportHubHref(hub.airport.slug);
-  const breadcrumbSchema = buildBreadcrumbListSchema([
+  const breadcrumbSchema = readiness.phase === "live" ? buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
     { name: "Đưa đón sân bay", url: "/dich-vu/dua-don-san-bay" },
     { name: airportName, url: canonicalPath },
-  ]);
+  ]) : undefined;
 
   const airportOffers = buildFixedServiceOffers(
     hub.routes.flatMap((item) => {
@@ -81,7 +82,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <>
-      <JsonLd data={breadcrumbSchema} />
+      {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <AirportHubPage data={hub} relatedPosts={relatedPosts} />
     </>

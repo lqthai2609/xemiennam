@@ -133,7 +133,7 @@ export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubDa
 
   return (
     <main className="site-shell airport-hub-page">
-      <JsonLd data={buildFaqPageSchema(faqs)} />
+      {!isPrelaunch ? <JsonLd data={buildFaqPageSchema(faqs)} /> : null}
       <SiteHeader
         menuItems={navItems}
         hotline={SITE_HOTLINE}
