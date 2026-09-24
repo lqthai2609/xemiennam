@@ -1,7 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { fetchBookingWithIdempotency } from "../src/lib/booking-submit.ts";
+import { webcrypto } from "node:crypto";
+import ts from "typescript";
+
+const helperSource = await readFile(new URL("../src/lib/booking-submit.ts", import.meta.url), "utf8");
+const helperJavaScript = ts.transpileModule(helperSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const { fetchBookingWithIdempotency } = await import(`data:text/javascript;base64,${Buffer.from(helperJavaScript).toString("base64")}`);
+globalThis.crypto ??= webcrypto;
 
 test("failed submission retains its UUID; a different payload gets a new UUID", async () => {
   const originalFetch = globalThis.fetch;
