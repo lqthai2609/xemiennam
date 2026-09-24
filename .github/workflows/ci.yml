@@ -123,6 +123,9 @@ jobs:
       - name: Admin wizard source guard
         run: npm run test:admin-wizard
 
+      - name: Day 37 lead retry idempotency
+        run: npm run test:lead-idempotency
+
       - name: Production build
         run: npm run build
 
