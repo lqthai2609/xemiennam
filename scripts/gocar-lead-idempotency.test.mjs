@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { fetchBookingWithIdempotency } from "../src/lib/booking-submit.ts";
 
 test("failed submission retains its UUID; a different payload gets a new UUID", async () => {
@@ -18,4 +19,10 @@ test("failed submission retains its UUID; a different payload gets a new UUID", 
     assert.notEqual(keys[1], keys[2]);
     assert.match(keys[0], /^[a-f0-9-]{36}$/);
   } finally { globalThis.fetch = originalFetch; }
+});
+
+test("analytics events omit private URL queries and free-text route labels", async () => {
+  const analytics = await readFile(new URL("../src/lib/analytics.ts", import.meta.url), "utf8");
+  assert.match(analytics, /const pagePath = window\.location\.pathname;/);
+  assert.doesNotMatch(analytics, /content_name:\s*data\.route|content_category:\s*data\.vehicleType/);
 });
