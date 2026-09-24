@@ -12,6 +12,7 @@ import { MultiStopFields } from "@/components/multi-stop-fields";
 import { getZaloChatLink } from "@/lib/zalo";
 import { trackBookingLead } from "@/lib/analytics";
 import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
+import { fetchBookingWithIdempotency } from "@/lib/booking-submit";
 import { SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import type { RoutePricingDirectionKey, RoutePricingMode } from "@/types/route";
 
@@ -210,7 +211,7 @@ function QuickBookingDialog({
         noteParts.push(`Ngày giờ đi: ${formatDateTimeLabel(data.departureAt)}.`);
       }
 
-      const res = await fetch("/api/booking", {
+      const res = await fetchBookingWithIdempotency("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
