@@ -15,6 +15,9 @@ export async function fetchBookingWithIdempotency(input: string, init: RequestIn
     pending.set(digest, key);
   }
   const response = await fetch(input, { ...init, headers: { ...init.headers, "x-lead-idempotency-key": key } });
-  if (response.ok) pending.delete(digest);
+  if (response.ok) {
+    const result = await response.clone().json().catch(() => null);
+    if (result?.ok === true && Number.isSafeInteger(result.leadId) && result.leadId > 0) pending.delete(digest);
+  }
   return response;
 }

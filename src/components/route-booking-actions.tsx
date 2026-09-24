@@ -13,6 +13,7 @@ import { getZaloChatLink } from "@/lib/zalo";
 import { trackBookingLead } from "@/lib/analytics";
 import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
 import { fetchBookingWithIdempotency } from "@/lib/booking-submit";
+import { readCreatedLead } from "@/lib/lead-response";
 import { SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import type { RoutePricingDirectionKey, RoutePricingMode } from "@/types/route";
 
@@ -231,13 +232,10 @@ function QuickBookingDialog({
           note: noteParts.join(" "),
         }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error ?? `Gửi yêu cầu đặt xe thất bại (HTTP ${res.status}).`);
-      }
-      trackBookingLead({ route: visibleRoute, vehicleType });
+      const { leadId, replayed } = await readCreatedLead(res);
+      if (!replayed) trackBookingLead({ route: visibleRoute, vehicleType });
       toast.success(isQuote ? "Đã nhận yêu cầu báo giá" : "Đã nhận thông tin đặt xe", {
-        description: `${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
+        description: `Mã yêu cầu #${leadId}. ${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
       });
       onClose();
     } catch {

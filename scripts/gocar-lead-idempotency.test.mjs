@@ -34,3 +34,18 @@ test("analytics events omit private URL queries and free-text route labels", asy
   assert.match(analytics, /const pagePath = window\.location\.pathname;/);
   assert.doesNotMatch(analytics, /content_name:\s*data\.route|content_category:\s*data\.vehicleType/);
 });
+
+test("HTTP 200 without a persisted lead ID retains the retry key", async () => {
+  const originalFetch = globalThis.fetch;
+  const keys = [];
+  try {
+    globalThis.fetch = async (_path, init) => {
+      keys.push(init.headers["x-lead-idempotency-key"]);
+      return Response.json(keys.length === 1 ? { ok: true } : { ok: true, leadId: 105 });
+    };
+    const init = { method: "POST", body: JSON.stringify({ routeId: "test-no-pii" }) };
+    await fetchBookingWithIdempotency("/api/booking", init);
+    await fetchBookingWithIdempotency("/api/booking", init);
+    assert.equal(keys[0], keys[1]);
+  } finally { globalThis.fetch = originalFetch; }
+});
