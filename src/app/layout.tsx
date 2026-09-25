@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { FloatingContactActions } from "@/components/floating-contact-actions";
 import { AnalyticsScripts } from "@/components/analytics-scripts";
 import { AnalyticsPageview } from "@/components/analytics-pageview";
+import { MarketingConsent } from "@/components/marketing-consent";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site-config";
 import "./globals.css";
 
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-full flex flex-col">
         <AnalyticsScripts />
         <AnalyticsPageview />
+        <MarketingConsent />
         {children}
         <FloatingContactActions />
         <Toaster position="top-right" richColors closeButton />
