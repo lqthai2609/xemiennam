@@ -55,6 +55,18 @@ function buildRouteSchemaOffers(route: Route) {
   );
 }
 
+/** A pair-wide Offer floor may include a cheaper reverse direction or another package. */
+function routeHasLowerPairOfferThanOutboundFeatured(route: Route): boolean {
+  const featured = route.pricingV2?.outbound.featured;
+  if (featured?.mode !== "fixed" || !featured.price) return false;
+  const offers = buildRouteSchemaOffers(route);
+  return Boolean(offers && offers.lowPrice < featured.price);
+}
+
+function neutralRouteDescription(route: Route): string {
+  return `Thuê xe nguyên chiếc tuyến ${getPublicRouteLabel(route, " – ")}. Giá theo chiều, loại xe và gói hành trình đã chọn.`;
+}
+
 type Props = { params: Promise<{ tinh: string; tuyen: string }> };
 
 export async function generateStaticParams() {
@@ -86,9 +98,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
   }
 
+  const pairPriceScopeConflict = routeHasLowerPairOfferThanOutboundFeatured(route);
+
   return buildPageMetadata({
-    title: formatPublicLocationText(route.rankMathTitle || `Thuê xe ${publicFrom} đi ${publicTo}${metadataPriceSuffix(route)} | ${SITE_NAME}`),
-    description: formatPublicLocationText(route.rankMathDescription || route.summary || fallbackRouteDescription(route)),
+    title: pairPriceScopeConflict
+      ? `Thuê xe ${publicFrom} đi ${publicTo} | ${SITE_NAME}`
+      : formatPublicLocationText(route.rankMathTitle || `Thuê xe ${publicFrom} đi ${publicTo}${metadataPriceSuffix(route)} | ${SITE_NAME}`),
+    description: pairPriceScopeConflict
+      ? neutralRouteDescription(route)
+      : formatPublicLocationText(route.rankMathDescription || route.summary || fallbackRouteDescription(route)),
     path: canonicalPath,
     noIndex: !readiness.indexable,
   });
@@ -115,7 +133,9 @@ export default async function Page({ params }: Props) {
     ? undefined
     : buildServiceSchema({
         name: `Thuê xe nguyên chiếc ${publicFrom} đi ${publicTo}`,
-        description: formatPublicLocationText(route.summary || fallbackRouteDescription(route)),
+        description: routeHasLowerPairOfferThanOutboundFeatured(route)
+          ? neutralRouteDescription(route)
+          : formatPublicLocationText(route.summary || fallbackRouteDescription(route)),
         url: routeHref(route),
         areaServed: [publicFrom, publicTo],
         offers: readiness.offerSchemaEligible ? buildRouteSchemaOffers(route) : undefined,

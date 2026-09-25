@@ -28,6 +28,7 @@ export interface AirportHubData {
   routes: AirportHubRoute[];
   fromAirport: AirportHubRoute[];
   toAirport: AirportHubRoute[];
+  activeProvinceSlugs: string[];
 }
 
 export interface AirportConnectionLink {
@@ -218,6 +219,7 @@ export async function fetchAirportHubBySlug(airportSlug: string): Promise<Airpor
     routes: output,
     fromAirport: output.filter((item) => item.travelDirection === "from_airport"),
     toAirport: output.filter((item) => item.travelDirection === "to_airport"),
+    activeProvinceSlugs: Array.from(new Set(routes.filter(canSuggestRelatedRoute).map((route) => route.regionSlug).filter(Boolean))),
   };
 }
 
