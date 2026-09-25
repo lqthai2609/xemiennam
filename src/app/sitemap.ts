@@ -65,10 +65,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Hub tỉnh /tuyen-duong/[tinh] (Ngày 25) — 1 entry/tỉnh có ít nhất 1 tuyến (fetchRegionSlugs()
   // đã loại tỉnh rỗng, xem lib/api/routes.ts). lastModified lấy từ bài `diem_den` nếu tỉnh đó đã
   // có nội dung biên tập; nhiều tỉnh sẽ chưa có (trang hub vẫn hợp lệ, chỉ thiếu mốc modified).
-  // URL ho-chi-minh đang trả 404/noindex trên Preview: loại đúng entry này,
+  // URL /tuyen-duong/ho-chi-minh đang trả 404/noindex trên Preview: loại đúng entry này,
   // không tạo route mới hoặc thay canonical/redirect cho trang tỉnh.
+  const missingProvincePath = "/tuyen-duong/ho-chi-minh";
   const hubEntries: MetadataRoute.Sitemap = await Promise.all(
-    regionSlugs.filter((tinh) => tinh !== "ho-chi-minh").map(async (tinh) => {
+    regionSlugs.filter((tinh) => `/tuyen-duong/${tinh}` !== missingProvincePath).map(async (tinh) => {
       const hub = await fetchDiemDenBySlug(tinh);
       return {
         url: `${SITE_URL}/tuyen-duong/${tinh}`,
