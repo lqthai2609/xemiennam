@@ -69,7 +69,7 @@ const vehicleCards = [
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
 
-export function RoutePricingSection({ route, direction, onDirectionChange, vehicleImageByType = {} }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; vehicleImageByType?: Record<string, string> }) {
+export function RoutePricingSection({ route, direction, onDirectionChange, vehicleImageByType = {}, prelaunch = false }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean }) {
   const [journey, setJourney] = useState<Exclude<JourneyPackage, "threeDays">>("oneWay");
   const [days, setDays] = useState<"twoDays" | "threeDays">("twoDays");
   const pricing = route.pricingV2;
@@ -95,7 +95,9 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
       })
     : [];
 
-  if (!pricing) return <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
+  if (!pricing) return prelaunch
+    ? <p>Đang chuẩn bị tuyến. <a href="/lien-he">Liên hệ tư vấn</a>; chưa nhận đặt chuyến.</p>
+    : <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
   return <div className="route-vehicle-picker">
     {availableJourneys.length > 0 ? <div className="route-direction-tabs" role="tablist" aria-label="Chọn loại hành trình">
       {[{ key: "oneWay" as const, label: "Một chiều" }, { key: "roundTrip" as const, label: "Khứ hồi" }, { key: "twoDays" as const, label: "Theo ngày" }].filter((tab) => availableJourneys.includes(tab.key)).map((tab) => <button key={tab.key} type="button" role="tab" aria-selected={visibleJourney === tab.key} className={visibleJourney === tab.key ? "is-selected" : ""} onClick={() => setJourney(tab.key)}>{tab.label}</button>)}
@@ -105,7 +107,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
     <PriceExplanation compact />
     <div className="route-vehicle-grid">{visibleVehicles.map(({ vehicle, pkg }) => { const fixed = pkg.mode === "fixed" && typeof pkg.price === "number" && Number.isFinite(pkg.price) && pkg.price > 0; const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback; return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
       <div className="route-vehicle-image"><img src={image} alt={vehicle.type} loading="lazy" /><span>{vehicle.popular ? "Phổ biến" : ""}</span></div>
-      <div className="route-vehicle-body"><h3>{vehicle.type}</h3><p className="route-vehicle-model">{vehicle.models}</p><p className="route-vehicle-capacity">{vehicle.capacity}</p><ul>{vehicle.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul><div className="route-vehicle-bottom"><div className="route-vehicle-price">{fixed ? <><small>Từ</small><strong>{pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ`}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div><RouteBookingActions route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={pkg.vehicleType} price={fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} /></div></div>
+      <div className="route-vehicle-body"><h3>{vehicle.type}</h3><p className="route-vehicle-model">{vehicle.models}</p><p className="route-vehicle-capacity">{vehicle.capacity}</p><ul>{vehicle.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul><div className="route-vehicle-bottom"><div className="route-vehicle-price">{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : fixed ? <><small>Từ</small><strong>{pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ`}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>{prelaunch ? <a className="button button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={pkg.vehicleType} price={fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} />}</div></div>
     </article>; })}</div>
   </div>;
 }

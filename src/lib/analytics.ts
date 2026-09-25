@@ -32,20 +32,16 @@ declare global {
  */
 export function trackBookingLead(data: { route?: string; vehicleType?: string }) {
   if (typeof window === "undefined") return;
+  void data; // Free-text route labels may contain private trip details.
 
   if (GA_MEASUREMENT_ID && typeof window.gtag === "function") {
     window.gtag("event", "generate_lead", {
-      currency: "VND",
-      content_category: data.vehicleType,
-      content_name: data.route,
+      content_category: "booking_request",
     });
   }
 
   if (FB_PIXEL_ID && typeof window.fbq === "function") {
-    window.fbq("track", "Lead", {
-      content_name: data.route,
-      content_category: data.vehicleType,
-    });
+    window.fbq("track", "Lead", { content_category: "booking_request" });
   }
 }
 
@@ -63,7 +59,8 @@ export type ContactChannel = "phone" | "zalo";
 export function trackContactClick(channel: ContactChannel) {
   if (typeof window === "undefined") return;
 
-  const pagePath = `${window.location.pathname}${window.location.search}`;
+  // Query strings may contain addresses, phone numbers or tokens.
+  const pagePath = window.location.pathname;
 
   if (GA_MEASUREMENT_ID && typeof window.gtag === "function") {
     window.gtag("event", "contact_click", {

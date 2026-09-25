@@ -4,6 +4,7 @@ import { fetchRoutes } from "./routes";
 import { airportDisplayName, airportHubHref, airportPublicSlug } from "@/lib/airport-seo";
 import { routeHref, type Route, type RoutePricingPackage } from "@/types/route";
 import { getPublicRouteLabel } from "@/lib/public-location-label";
+import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
 export type AirportTravelDirection = "from_airport" | "to_airport";
 
@@ -27,6 +28,7 @@ export interface AirportHubData {
   routes: AirportHubRoute[];
   fromAirport: AirportHubRoute[];
   toAirport: AirportHubRoute[];
+  activeProvinceSlugs: string[];
 }
 
 export interface AirportConnectionLink {
@@ -217,6 +219,7 @@ export async function fetchAirportHubBySlug(airportSlug: string): Promise<Airpor
     routes: output,
     fromAirport: output.filter((item) => item.travelDirection === "from_airport"),
     toAirport: output.filter((item) => item.travelDirection === "to_airport"),
+    activeProvinceSlugs: Array.from(new Set(routes.filter(canSuggestRelatedRoute).map((route) => route.regionSlug).filter(Boolean))),
   };
 }
 
@@ -233,7 +236,7 @@ export async function fetchAirportConnectionsByProvinceSlug(
     fetchRoutes(),
   ]);
   const locationsById = new Map(locations.map((location) => [location.id, location]));
-  const routeSlugs = new Set(routes.map((route) => route.slug));
+  const routeSlugs = new Set(routes.filter(canSuggestRelatedRoute).map((route) => route.slug));
   const connections = new Map<number, { airport: LocationV2; routeSlugs: Set<string> }>();
 
   for (const pair of pairs) {
@@ -284,7 +287,7 @@ export async function fetchAirportRouteLinksForVehicleType(
     if (!origin || !destination || (origin.type !== "airport" && destination.type !== "airport")) continue;
 
     const route = routesBySlug.get(pair.routeSlug);
-    if (!route || !routeSupportsVehicleType(route, vehicleType)) continue;
+    if (!route || !canSuggestRelatedRoute(route) || !routeSupportsVehicleType(route, vehicleType)) continue;
 
     output.set(route.slug, {
       label: getPublicRouteLabel(route),

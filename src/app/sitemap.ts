@@ -42,8 +42,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Day 21: Airport Hub cũng phải theo data model, không hard-code riêng Tân Sơn Nhất.
   // Chỉ location type=airport đã thực sự xuất hiện trong ít nhất một Route Pair V2 mới có
-  // entry /san-bay/[slug]. Cách này tự đưa Long Thành vào sitemap khi route readiness đã có,
-  // đồng thời áp dụng được cho các sân bay tiếp theo mà không sửa danh sách tĩnh.
+  // entry /san-bay/[slug]. Long Thành hiện noindex/PRELAUNCH nên loại riêng khỏi
+  // sitemap cho đến khi có quyết định indexability mới; các sân bay khác giữ nguyên.
   const airportHubSlugs = Array.from(
     new Set(
       routes.flatMap((route) => {
@@ -54,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         return slugs;
       }),
     ),
-  ).filter(Boolean);
+  ).filter((slug) => Boolean(slug) && slug !== "long-thanh");
 
   const airportHubEntries: MetadataRoute.Sitemap = airportHubSlugs.map((airportSlug) => ({
     url: `${SITE_URL}/san-bay/${airportSlug}`,
@@ -65,8 +65,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Hub tỉnh /tuyen-duong/[tinh] (Ngày 25) — 1 entry/tỉnh có ít nhất 1 tuyến (fetchRegionSlugs()
   // đã loại tỉnh rỗng, xem lib/api/routes.ts). lastModified lấy từ bài `diem_den` nếu tỉnh đó đã
   // có nội dung biên tập; nhiều tỉnh sẽ chưa có (trang hub vẫn hợp lệ, chỉ thiếu mốc modified).
+  // URL /tuyen-duong/ho-chi-minh đang trả 404/noindex trên Preview: loại đúng entry này,
+  // không tạo route mới hoặc thay canonical/redirect cho trang tỉnh.
+  const missingProvincePath = "/tuyen-duong/ho-chi-minh";
   const hubEntries: MetadataRoute.Sitemap = await Promise.all(
-    regionSlugs.map(async (tinh) => {
+    regionSlugs.filter((tinh) => `/tuyen-duong/${tinh}` !== missingProvincePath).map(async (tinh) => {
       const hub = await fetchDiemDenBySlug(tinh);
       return {
         url: `${SITE_URL}/tuyen-duong/${tinh}`,

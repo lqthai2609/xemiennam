@@ -123,11 +123,20 @@ jobs:
       - name: Admin wizard source guard
         run: npm run test:admin-wizard
 
+      - name: Day 37 lead retry idempotency
+        run: npm run test:lead-idempotency
+
+      - name: SEO-006A package and lead response fixtures
+        run: npm run test:seo006a-core
+
       - name: Public CMS pricing tuples
         run: npm run test:public-pricing
 
       - name: Production build
         run: npm run build
+
+      - name: SEO-006B commercial listing and structured price HTML
+        run: node --test scripts/seo006b-listing-html.test.mjs scripts/gocar-public-price-html.test.mjs
 
       - name: Built HTML public location display audit
         run: npm run test:location-display-output

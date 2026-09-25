@@ -11,7 +11,7 @@ import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { buildPageMetadata } from "@/lib/metadata";
 import { routeHref, type Route } from "@/types/route";
-import { resolveRouteContentReadiness } from "@/lib/content-readiness";
+import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
@@ -55,6 +55,18 @@ function buildRouteSchemaOffers(route: Route) {
   );
 }
 
+/** A pair-wide Offer floor may include a cheaper reverse direction or another package. */
+function routeHasLowerPairOfferThanOutboundFeatured(route: Route): boolean {
+  const featured = route.pricingV2?.outbound.featured;
+  if (featured?.mode !== "fixed" || !featured.price) return false;
+  const offers = buildRouteSchemaOffers(route);
+  return Boolean(offers && offers.lowPrice < featured.price);
+}
+
+function neutralRouteDescription(route: Route): string {
+  return `Thuê xe nguyên chiếc tuyến ${getPublicRouteLabel(route, " – ")}. Giá theo chiều, loại xe và gói hành trình đã chọn.`;
+}
+
 type Props = { params: Promise<{ tinh: string; tuyen: string }> };
 
 export async function generateStaticParams() {
@@ -86,9 +98,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
   }
 
+  const pairPriceScopeConflict = routeHasLowerPairOfferThanOutboundFeatured(route);
+
   return buildPageMetadata({
-    title: formatPublicLocationText(route.rankMathTitle || `Thuê xe ${publicFrom} đi ${publicTo}${metadataPriceSuffix(route)} | ${SITE_NAME}`),
-    description: formatPublicLocationText(route.rankMathDescription || route.summary || fallbackRouteDescription(route)),
+    title: pairPriceScopeConflict
+      ? `Thuê xe ${publicFrom} đi ${publicTo} | ${SITE_NAME}`
+      : formatPublicLocationText(route.rankMathTitle || `Thuê xe ${publicFrom} đi ${publicTo}${metadataPriceSuffix(route)} | ${SITE_NAME}`),
+    description: pairPriceScopeConflict
+      ? neutralRouteDescription(route)
+      : formatPublicLocationText(route.rankMathDescription || route.summary || fallbackRouteDescription(route)),
     path: canonicalPath,
     noIndex: !readiness.indexable,
   });
@@ -108,27 +126,30 @@ export default async function Page({ params }: Props) {
     fetchTestimonials(),
     fetchPostsByRegion(route.regionSlug, 3),
   ]);
-  const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug).slice(0, 6);
+  const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug && canSuggestRelatedRoute(item)).slice(0, 6);
   const matchingTestimonials = allTestimonials.filter((item) => item.routeSlug === route.slug);
   const routeTestimonials = (matchingTestimonials.length > 0 ? matchingTestimonials : allTestimonials).slice(0, 6);
   const serviceSchema = !readiness.serviceSchemaEligible
     ? undefined
     : buildServiceSchema({
         name: `Thuê xe nguyên chiếc ${publicFrom} đi ${publicTo}`,
-        description: formatPublicLocationText(route.summary || fallbackRouteDescription(route)),
+        description: routeHasLowerPairOfferThanOutboundFeatured(route)
+          ? neutralRouteDescription(route)
+          : formatPublicLocationText(route.summary || fallbackRouteDescription(route)),
         url: routeHref(route),
         areaServed: [publicFrom, publicTo],
         offers: readiness.offerSchemaEligible ? buildRouteSchemaOffers(route) : undefined,
       });
-  const breadcrumbSchema = buildBreadcrumbListSchema([
+  const structuredDataAllowed = routeStructuredDataAllowed(route, readiness);
+  const breadcrumbSchema = structuredDataAllowed ? buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
     { name: getPublicLocationLabel(route.region), url: `/tuyen-duong/${route.regionSlug || "khac"}` },
     { name: getPublicRouteLabel(route), url: routeHref(route) },
-  ]);
+  ]) : undefined;
 
   return (
     <>
-      <JsonLd data={breadcrumbSchema} />
+      {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <RouteDetailPage route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
     </>

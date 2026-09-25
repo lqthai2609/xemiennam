@@ -10,6 +10,7 @@ import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 import { stripHtml } from "@/lib/wp";
 import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
+import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
 type Props = { params: Promise<{ tinh: string }> };
 
@@ -20,7 +21,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tinh } = await params;
-  const [hub, routes] = await Promise.all([fetchDiemDenBySlug(tinh), fetchRoutesByRegion(tinh)]);
+  const [hub, regionRoutes] = await Promise.all([fetchDiemDenBySlug(tinh), fetchRoutesByRegion(tinh)]);
+  const routes = regionRoutes.filter(canSuggestRelatedRoute);
   if (routes.length === 0 && !hub) {
     return buildPageMetadata({
       title: "Không tìm thấy điểm đến",
@@ -42,11 +44,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { tinh } = await params;
-  const [hub, routes, airportConnections] = await Promise.all([
+  const [hub, regionRoutes, airportConnections] = await Promise.all([
     fetchDiemDenBySlug(tinh),
     fetchRoutesByRegion(tinh),
     fetchAirportConnectionsByProvinceSlug(tinh),
   ]);
+  const routes = regionRoutes.filter(canSuggestRelatedRoute);
   if (routes.length === 0 && !hub) notFound();
 
   const regionName = routes[0]?.region || hub?.title || tinh;

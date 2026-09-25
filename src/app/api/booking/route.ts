@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
@@ -179,12 +180,20 @@ export async function POST(request: Request) {
   }
   if (data.note) noteParts.push(data.note);
 
-  const result = await wpAuthedFetch<{ id: number }>("/booking_request", {
+  // No approved consent capture exists yet. The same-origin Referer is the form
+  // page, not an acquisition touch; do not send its URL or UTM to WordPress.
+  // A successful backend booking_request is still the only source of lead_id.
+  const acquisition = { consent_state: "unknown" };
+
+  const result = await wpAuthedFetch<{ id: number; lead_id: number; replayed: boolean }>("/gocar/v1/leads", {
     method: "POST",
     body: {
-      title: data.fullName,
-      status: "publish",
-      meta: {
+      idempotency_key: request.headers.get("x-lead-idempotency-key") || randomUUID(),
+      acquisition,
+      booking: {
+        title: data.fullName,
+        status: "publish",
+        meta: {
         so_dien_thoai: data.phone,
         tuyen_quan_tam: routeContext.routeId ?? 0,
         loai_xe_dat: vehicleId ?? 0,
@@ -230,6 +239,7 @@ export async function POST(request: Request) {
         },
         ghi_chu: noteParts.join(" | "),
         trang_thai_booking: "moi",
+        },
       },
     },
   });
@@ -238,6 +248,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: result.message }, { status: result.status || 502 });
   }
 
+  if (!Number.isSafeInteger(result.data?.lead_id) || result.data.lead_id <= 0 || result.data.id !== result.data.lead_id) {
+    return NextResponse.json({ ok: false, error: "Không xác nhận được mã yêu cầu từ hệ thống." }, { status: 502 });
+  }
+
+  if (result.data.replayed) {
+    return NextResponse.json({ ok: true, id: result.data.lead_id, leadId: result.data.lead_id, notificationSent: false, replayed: true });
+  }
   const notification = await sendBookingNotification({
     bookingId: result.data.id,
     fullName: data.fullName,
@@ -259,5 +276,5 @@ export async function POST(request: Request) {
     });
   }
 
-  return NextResponse.json({ ok: true, id: result.data.id, notificationSent: notification.sent });
+  return NextResponse.json({ ok: true, id: result.data.lead_id, leadId: result.data.lead_id, notificationSent: notification.sent });
 }
