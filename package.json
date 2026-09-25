@@ -30,6 +30,7 @@
     "audit:location-display": "node scripts/gocar-location-display-audit.mjs",
     "test:admin-wizard": "node --test scripts/gocar-admin-wizard-source.test.mjs",
     "test:lead-idempotency": "node --test scripts/gocar-lead-idempotency.test.mjs",
+    "test:marketing-consent": "node --test scripts/marketing-consent.test.mjs",
     "test:seo006a-core": "node --test scripts/gocar-seo006a-core.test.mjs",
     "test:public-pricing": "node --test scripts/public-cms-pricing.test.mjs"
   },

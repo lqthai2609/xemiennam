@@ -1,32 +1,27 @@
 "use client";
 
 import { Suspense, useEffect, useRef } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { FB_PIXEL_ID, GA_MEASUREMENT_ID, trackContactClick } from "@/lib/analytics";
+import { usePathname } from "next/navigation";
+import { GA_MEASUREMENT_ID, trackContactClick } from "@/lib/analytics";
+import { hasMarketingConsent } from "@/lib/marketing-consent";
 
 /** Track client-side navigations only. The initial page view is emitted by the lazy-loaded
  * analytics bootstrap, which keeps third-party JS away from the critical rendering path. */
 function PageviewTracker() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const isFirstEffect = useRef(true);
 
   useEffect(() => {
+    if (!hasMarketingConsent()) return;
     if (isFirstEffect.current) {
       isFirstEffect.current = false;
       return;
     }
 
-    const query = searchParams.toString();
-    const url = query ? `${pathname}?${query}` : pathname;
-
     if (GA_MEASUREMENT_ID && typeof window.gtag === "function") {
-      window.gtag("event", "page_view", { page_path: url });
+      window.gtag("event", "page_view", { page_path: pathname });
     }
-    if (FB_PIXEL_ID && typeof window.fbq === "function") {
-      window.fbq("track", "PageView");
-    }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   useEffect(() => {
     function handleContactClick(event: MouseEvent) {

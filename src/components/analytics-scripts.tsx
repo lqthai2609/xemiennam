@@ -1,5 +1,9 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
 import Script from "next/script";
-import { FB_PIXEL_ID, GA_MEASUREMENT_ID } from "@/lib/analytics";
+import { GA_MEASUREMENT_ID } from "@/lib/analytics";
+import { hasMarketingConsent, subscribeMarketingConsent } from "@/lib/marketing-consent";
 
 /**
  * Analytics is deliberately loaded after the browser load event so third-party JS does not
@@ -7,6 +11,8 @@ import { FB_PIXEL_ID, GA_MEASUREMENT_ID } from "@/lib/analytics";
  * page_view from its config call; client-side route changes are tracked by AnalyticsPageview.
  */
 export function AnalyticsScripts() {
+  const allowed = useSyncExternalStore(subscribeMarketingConsent, hasMarketingConsent, () => false);
+  if (!allowed) return null;
   return (
     <>
       {GA_MEASUREMENT_ID && (
@@ -21,35 +27,17 @@ export function AnalyticsScripts() {
               function gtag(){dataLayer.push(arguments);}
               window.gtag = gtag;
               gtag('js', new Date());
-              gtag('config', '${GA_MEASUREMENT_ID}');
+              gtag('config', '${GA_MEASUREMENT_ID}', {
+                page_location: window.location.origin + window.location.pathname,
+                page_path: window.location.pathname,
+                page_referrer: '',
+                cookie_expires: 2592000,
+                cookie_update: false,
+                allow_google_signals: false,
+                allow_ad_personalization_signals: false
+              });
             `}
           </Script>
-        </>
-      )}
-
-      {FB_PIXEL_ID && (
-        <>
-          <Script id="fb-pixel-init" strategy="lazyOnload">
-            {`
-              !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-              n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-              n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-              document,'script','https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '${FB_PIXEL_ID}');
-              fbq('track', 'PageView');
-            `}
-          </Script>
-          <noscript>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              height={1}
-              width={1}
-              style={{ display: "none" }}
-              src={`https://www.facebook.com/tr?id=${FB_PIXEL_ID}&ev=PageView&noscript=1`}
-              alt=""
-            />
-          </noscript>
         </>
       )}
     </>
