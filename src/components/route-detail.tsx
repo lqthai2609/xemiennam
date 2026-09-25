@@ -131,7 +131,7 @@ export function RouteDetailPage({
         <div className="detail-main">
           <div className="section-heading detail-heading"><div><p className="section-label">{isPrelaunch ? "BÁO GIÁ THEO CHIỀU" : "GIÁ THUÊ XE THEO CHIỀU"}</p><h2>{isPrelaunch ? "Tham khảo chiều hành trình." : "Chọn cách bạn muốn đi."}</h2></div><p className="heading-note">{isPrelaunch ? <>Tuyến chưa có giá sân bay được xác minh sẽ hiển thị “Liên hệ báo giá”.<br />Không sao chép giá từ tuyến khác.</> : <>Giá và package hiển thị theo đúng chiều đã chọn.<br />Không dùng giá mặc định của chiều ngược lại.</>}</p></div>
           <div id="pricing">
-            <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} />
+            <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={isPrelaunch} />
           </div>
 
           {!isPrelaunch && pickupPoints.length > 0 && dropoffPoints.length > 0 ? <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">ĐIỂM ĐÓN & TRẢ</p><h2>Điểm nào cũng gần bạn.</h2></div></div><div className="stops-grid"><div><span className="stop-kicker"><MapPin size={15} /> Điểm đón tại {displayFrom}</span><ul>{pickupPoints.map((stop) => <li key={stop}><span className="stop-dot" />{formatPublicLocationText(stop)}</li>)}</ul></div><div><span className="stop-kicker"><MapPin size={15} /> Điểm trả tại {displayTo}</span><ul>{dropoffPoints.map((stop) => <li key={stop}><span className="stop-dot destination" />{formatPublicLocationText(stop)}</li>)}</ul></div></div></div> : null}
