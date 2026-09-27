@@ -17,6 +17,13 @@ function get_option( $key ) { return $GLOBALS['options'][ $key ] ?? false; }
 function add_option( $key, $value ) { if ( isset( $GLOBALS['options'][ $key ] ) ) return false; $GLOBALS['options'][ $key ] = $value; return true; }
 function update_option( $key, $value ) { $GLOBALS['options'][ $key ] = $value; return true; }
 function delete_option( $key ) { unset( $GLOBALS['options'][ $key ] ); }
+function get_posts( $args ) {
+    $ids = array();
+    foreach ( $GLOBALS['posts'] as $id => $type ) {
+        if ( $type === $args['post_type'] && get_post_meta( $id, $args['meta_key'], true ) === $args['meta_value'] ) $ids[] = $id;
+    }
+    return array_slice( $ids, 0, $args['posts_per_page'] );
+}
 function rest_ensure_response( $x ) { return $x; }
 function rest_do_request( $request ) {
     if ( 'error' === ( $GLOBALS['response_mode'] ?? '' ) ) return new FakeResponse( array(), true );
@@ -24,7 +31,7 @@ function rest_do_request( $request ) {
     $id = 199 + $GLOBALS['creates'];
     $GLOBALS['posts'][ $id ] = 'booking_request';
     Gocar_Lead_Lifecycle::legacy_create( new WP_Post( $id, 'booking_request' ), $request, true );
-    return new FakeResponse( 'malformed' === ( $GLOBALS['response_mode'] ?? '' ) ? array() : array( 'id' => $id ) );
+    return new FakeResponse( 'malformed' === ( $GLOBALS['response_mode'] ?? '' ) ? array() : array( 'id' => $id ), 'error_after_insert' === ( $GLOBALS['response_mode'] ?? '' ) );
 }
 function wp_cache_delete() {}
 class WP_Error { public function __construct( public string $code, public string $message, public array $details ) {} }
@@ -102,9 +109,14 @@ check( get_post_meta( 200, '_gocar_lead_attribution_v1', true )['attribution_sta
 $GLOBALS['response_mode'] = 'malformed';
 $malformed = new WP_REST_Request(); $malformed->set_body_params( array( 'idempotency_key' => 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'booking' => array( 'title' => 'Test 2', 'meta' => array() ) ) );
 check( Gocar_Lead_Lifecycle::create( $malformed ) instanceof WP_Error, 'malformed post response is never acknowledged as lead success' );
-check( Gocar_Lead_Lifecycle::create( $malformed ) instanceof WP_Error && 2 === $GLOBALS['creates'], 'uncertain post outcome remains pending and does not duplicate on retry' );
+check( 201 === Gocar_Lead_Lifecycle::create( $malformed )['lead_id'] && 2 === $GLOBALS['creates'], 'malformed response after insert is reconciled to the existing post on retry' );
+$after_insert = new WP_REST_Request(); $after_insert->set_body_params( array( 'idempotency_key' => 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'booking' => array( 'title' => 'Test 4', 'meta' => array() ) ) );
+$GLOBALS['response_mode'] = 'error_after_insert';
+check( Gocar_Lead_Lifecycle::create( $after_insert ) instanceof WP_Error, 'error after insert is never acknowledged as success' );
+check( 202 === Gocar_Lead_Lifecycle::create( $after_insert )['lead_id'] && 3 === $GLOBALS['creates'], 'error after insert reconciles without duplicate' );
 $GLOBALS['response_mode'] = 'error';
 $failed = new WP_REST_Request(); $failed->set_body_params( array( 'idempotency_key' => 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'booking' => array( 'title' => 'Test 3', 'meta' => array() ) ) );
-check( Gocar_Lead_Lifecycle::create( $failed ) instanceof WP_Error && 2 === $GLOBALS['creates'], 'definite upstream failure is not counted as a lead' );
-check( ! get_option( '_gocar_lead_key_' . hash( 'sha256', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc' ) ), 'definite failure releases reservation for retry' );
+check( Gocar_Lead_Lifecycle::create( $failed ) instanceof WP_Error && 3 === $GLOBALS['creates'], 'upstream failure is not counted as a lead' );
+check( get_option( '_gocar_lead_key_' . hash( 'sha256', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc' ) ), 'uncertain failure retains reservation for operator reconciliation' );
+check( Gocar_Lead_Lifecycle::create( $failed ) instanceof WP_Error && 3 === $GLOBALS['creates'], 'retry without a marked post cannot duplicate an uncertain request' );
 echo "Lead lifecycle behavioral tests passed.\n";
