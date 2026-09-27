@@ -1,6 +1,13 @@
 # Alo Đặt Xe — Day 38 source receipt (DEP-002 / PAID-002 / SEO-006B)
 
-Date: 2026-09-24. Status: **SOURCE PARTIAL; WORDPRESS INTEGRATION PENDING; SEO VERIFY PENDING; PRODUCTION NOT AUTHORIZED**.
+Date: 2026-09-24; updated 2026-09-27. Status: **SOURCE PARTIAL; ISOLATED PREVIEW BOOKING PASS; SEO VERIFY PENDING; PRODUCTION NOT AUTHORIZED**.
+
+## Isolated WordPress Preview update — 27/09/2026
+
+- Draft PR #132 carries the branch-only WordPress Application Password transport and test fixture. All four Vercel variables are scoped only to `day38-wordpress-isolated-test` Preview, and the password remains a Vercel Secret. The branch code rejects any other environment, branch or WordPress URL. No production variable or production CMS data was changed.
+- Preview `dpl_5i1y4KCE3fCTvkEcEQ4UdKfLscL3` at `a460c35` is READY. A synthetic request from its `/lien-he` form reached the isolated WordPress `/gocar/v1/leads` path and returned HTTP 200 with matching WordPress lead ID `24`; Vercel logs show that its notification was intentionally suppressed (`isolated_test`). The test record still needs cleanup and must not enter business reports. Internal WordPress verifier previously passed 10/10; GitHub CI #277 on `a460c35` and #278 on the documentation update both passed.
+- The test site's anonymous REST gate returned HTTP 401. Its intentionally empty catalog caused the Preview to use mock routes; absent `testimonial`, `dich_vu` and `diem-den` endpoints returned HTTP 404 with fallback. This proves one isolated create path, not production schema or all network failure cases. The detailed receipt is `day38-wordpress-isolated-integration-plan.md`.
+- Day 38 remains OPEN. Consent/retention and multi-visit attribution, pending-key reconciliation, Operations facts, a real version ≥1 D35-10 blocked instance, DEP-011, SEO and Paid acceptance and backend-first production readiness remain separate gates. PR #132 stays draft/unmerged; no production deployment, domain, DNS, canonical or redirect change is authorized by this test.
 
 ## Rebaseline
 
