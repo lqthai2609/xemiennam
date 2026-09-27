@@ -11,8 +11,10 @@
  * chặn quảng cáo.
  */
 
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "";
-export const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID ?? "";
+// Day 39 release gate: no marketing measurement before consent and retention approval.
+// Keep the public exports for existing callers; a later approved consent guard can restore them.
+export const GA_MEASUREMENT_ID = "";
+export const FB_PIXEL_ID = "";
 
 declare global {
   interface Window {
