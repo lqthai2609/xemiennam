@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Alo Dat Xe Day 38 Verifier
  * Description: Runs isolated lead integration checks with synthetic records and removes them afterward.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires at least: 6.5
  * Requires PHP: 8.1
  */
@@ -47,7 +47,8 @@ function alo_day38_verify(): array {
     $key_a = wp_generate_uuid4();
     $key_b = wp_generate_uuid4();
     $key_c = wp_generate_uuid4();
-    $keys = array( $key_a, $key_b, $key_c );
+    $key_d = wp_generate_uuid4();
+    $keys = array( $key_a, $key_b, $key_c, $key_d );
     $marker = 'DAY38-' . substr( $key_a, 0, 8 );
     $booking_a = array( 'title' => $marker . '-A', 'status' => 'draft', 'meta' => array() );
     $booking_b = array( 'title' => $marker . '-B', 'status' => 'draft', 'meta' => array() );
@@ -78,6 +79,49 @@ function alo_day38_verify(): array {
         $id_b = is_array( $second_data ) ? absint( $second_data['lead_id'] ?? 0 ) : 0;
         if ( $id_b ) { $created[] = $id_b; }
         alo_day38_check( $checks, 'Yêu cầu khác có mã khác', 200 === $second->get_status() && $id_b > 0 && $id_b !== $id_a, 'Mã: ' . $id_b );
+
+        // Simulate a response lost AFTER WordPress has saved the post. This
+        // filter acts only on this verifier's unique, synthetic inner request.
+        $fault_title = $marker . '-FAULT';
+        $fault_booking = array( 'title' => $fault_title, 'status' => 'draft', 'meta' => array() );
+        $fault_body = array( 'idempotency_key' => $key_d, 'booking' => $fault_booking, 'acquisition' => $context );
+        $injected = false;
+        $corrupt_response = static function ( $response, $handler, WP_REST_Request $request ) use ( $fault_title, &$injected ) {
+            if ( $injected || '/wp/v2/booking_request' !== $request->get_route() || $fault_title !== $request->get_param( 'title' ) || ! $response instanceof WP_REST_Response ) {
+                return $response;
+            }
+            $data = $response->get_data();
+            if ( ! is_array( $data ) || ! absint( $data['id'] ?? 0 ) ) {
+                return $response;
+            }
+            $injected = true;
+            return new WP_REST_Response( array(), 200 );
+        };
+        add_filter( 'rest_request_after_callbacks', $corrupt_response, 1000, 3 );
+        try {
+            $uncertain = alo_day38_dispatch( '/gocar/v1/leads', $fault_body );
+        } finally {
+            remove_filter( 'rest_request_after_callbacks', $corrupt_response, 1000 );
+        }
+        $fault_posts = get_posts( array( 'post_type' => 'booking_request', 'post_status' => 'any', 'posts_per_page' => 20, 's' => $fault_title ) );
+        $fault_ids = array();
+        foreach ( $fault_posts as $fault_post ) {
+            if ( $fault_title === $fault_post->post_title ) {
+                $fault_ids[] = $fault_post->ID;
+                $created[] = $fault_post->ID;
+            }
+        }
+        $fault_id = 1 === count( $fault_ids ) ? $fault_ids[0] : 0;
+        alo_day38_check( $checks, 'Mất phản hồi sau khi lưu không báo thành công', $injected && 502 === $uncertain->get_status() && $fault_id > 0 );
+        $recovered = alo_day38_dispatch( '/gocar/v1/leads', $fault_body );
+        $recovered_data = $recovered->get_data();
+        alo_day38_check( $checks, 'Gửi lại tìm đúng mã đã lưu, không tạo trùng', $fault_id > 0 && 200 === $recovered->get_status() && $fault_id === absint( $recovered_data['lead_id'] ?? 0 ) && true === ( $recovered_data['replayed'] ?? null ) && 1 === count( get_post_meta( $fault_id, '_gocar_lead_history_v1', false ) ) );
+        $fault_after = get_posts( array( 'post_type' => 'booking_request', 'post_status' => 'any', 'posts_per_page' => 20, 's' => $fault_title ) );
+        $exact_fault_count = 0;
+        foreach ( $fault_after as $fault_post ) {
+            if ( $fault_title === $fault_post->post_title ) { ++$exact_fault_count; $created[] = $fault_post->ID; }
+        }
+        alo_day38_check( $checks, 'Sau gửi lại vẫn chỉ có một yêu cầu', 1 === $exact_fault_count );
 
         $invalid = alo_day38_dispatch( '/gocar/v1/leads', array( 'idempotency_key' => 'invalid', 'booking' => $booking_a ) );
         alo_day38_check( $checks, 'Khóa sai định dạng bị từ chối', 400 === $invalid->get_status() );
