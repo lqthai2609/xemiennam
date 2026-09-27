@@ -16,6 +16,7 @@ final class Gocar_Lead_Lifecycle {
     private const LEGACY = array( 'moi' => 'new', 'bao_gia' => 'quote', 'da_gui_gia' => 'sent', 'dong_y' => 'agreed', 'dat_coc' => 'deposit', 'xep_xe' => 'assigned', 'hoan_thanh' => 'complete', 'mat_khach' => 'lost' );
     private const LEGACY_BY_STATE = array( 'new' => 'moi', 'quote' => 'bao_gia', 'sent' => 'da_gui_gia', 'agreed' => 'dong_y', 'deposit' => 'dat_coc', 'assigned' => 'xep_xe', 'complete' => 'hoan_thanh', 'lost' => 'mat_khach' );
     private static bool $syncing_legacy = false;
+    private static ?string $creating_key_hash = null;
     private const CONTEXT_KEYS = array( 'source' => 100, 'medium' => 50, 'campaign' => 150, 'utm_source' => 100, 'utm_medium' => 50, 'utm_campaign' => 150, 'utm_id' => 100, 'utm_term' => 150, 'utm_content' => 150, 'landing_page_id' => 100, 'landing_path' => 500, 'landing_family' => 100 );
     private const SEARCH_HOSTS = array( 'google.com', 'google.com.vn', 'bing.com', 'search.yahoo.com', 'duckduckgo.com', 'coccoc.com' );
     private const FIRST_PARTY_HOSTS = array( 'xemiennam.vercel.app', 'alodatxe.com', 'www.alodatxe.com' );
@@ -150,7 +151,22 @@ final class Gocar_Lead_Lifecycle {
 
     public static function legacy_create( WP_Post $post, WP_REST_Request $request, bool $creating ): void {
         if ( ! $creating || 'booking_request' !== $post->post_type ) { return; }
+        // The internal create call can lose its REST response after the post is saved.
+        // Store only a hash so the reserved key can find that post on a retry.
+        if ( null !== self::$creating_key_hash ) {
+            add_post_meta( $post->ID, '_gocar_lead_request_key_hash', self::$creating_key_hash, true );
+        }
         self::initialize( $post->ID, $request->get_param( 'acquisition' ) );
+    }
+
+    private static function find_reserved_post( string $key_hash ): int {
+        $matches = get_posts( array(
+            'post_type' => 'booking_request', 'post_status' => 'any',
+            'meta_key' => '_gocar_lead_request_key_hash', 'meta_value' => $key_hash,
+            'fields' => 'ids', 'posts_per_page' => 2,
+        ) );
+        // Ambiguous matches require operator review; never guess which post won.
+        return 1 === count( $matches ) && 'booking_request' === get_post_type( (int) $matches[0] ) ? (int) $matches[0] : 0;
     }
 
     private static function initialize( int $id, $context ): void {
@@ -166,20 +182,33 @@ final class Gocar_Lead_Lifecycle {
         if ( ! is_string( $key ) || ! preg_match( '/^[a-f0-9-]{36}$/i', $key ) ) { return new WP_Error( 'invalid_key', 'A UUID idempotency key is required.', array( 'status' => 400 ) ); }
         $booking = $request->get_param( 'booking' );
         if ( ! is_array( $booking ) || empty( $booking['title'] ) || ! isset( $booking['meta'] ) || ! is_array( $booking['meta'] ) ) { return new WP_Error( 'invalid_booking', 'Booking payload is required.', array( 'status' => 400 ) ); }
-        $option = '_gocar_lead_key_' . hash( 'sha256', $key );
+        $key_hash = hash( 'sha256', $key );
+        $option = '_gocar_lead_key_' . $key_hash;
         $fingerprint = hash( 'sha256', wp_json_encode( array( $booking, $request->get_param( 'acquisition' ) ) ) );
         $existing = get_option( $option );
         if ( $existing ) {
             if ( ! is_array( $existing ) || ! hash_equals( $existing['fingerprint'] ?? '', $fingerprint ) ) { return new WP_Error( 'key_conflict', 'Idempotency key belongs to another request.', array( 'status' => 409 ) ); }
             if ( ! empty( $existing['id'] ) && 'booking_request' === get_post_type( (int) $existing['id'] ) ) { return rest_ensure_response( array( 'id' => (int) $existing['id'], 'lead_id' => (int) $existing['id'], 'replayed' => true ) ); }
+            $recovered_id = self::find_reserved_post( $key_hash );
+            if ( $recovered_id ) {
+                update_option( $option, array( 'fingerprint' => $fingerprint, 'id' => $recovered_id ), false );
+                return rest_ensure_response( array( 'id' => $recovered_id, 'lead_id' => $recovered_id, 'replayed' => true ) );
+            }
             return new WP_Error( 'lead_in_progress', 'Lead creation is in progress; retry with the same key.', array( 'status' => 409 ) );
         }
         if ( ! add_option( $option, array( 'fingerprint' => $fingerprint, 'id' => null, 'reserved_at' => gmdate( 'c' ) ), '', false ) ) { return new WP_Error( 'lead_in_progress', 'Lead creation is in progress; retry with the same key.', array( 'status' => 409 ) ); }
         $inner = new WP_REST_Request( 'POST', '/wp/v2/booking_request' );
         $inner->set_body_params( $booking );
         $inner->set_param( 'acquisition', $request->get_param( 'acquisition' ) );
-        $response = rest_do_request( $inner );
-        if ( $response->is_error() ) { delete_option( $option ); return $response->as_error(); }
+        self::$creating_key_hash = $key_hash;
+        try {
+            $response = rest_do_request( $inner );
+        } finally {
+            self::$creating_key_hash = null;
+        }
+        // A REST error can happen after insertion. Keep the reservation until a
+        // marked post is found on retry or an operator establishes no insert.
+        if ( $response->is_error() ) { return $response->as_error(); }
         $record = $response->get_data();
         // The REST response may be malformed after a post was inserted. Keep the pending
         // reservation for reconciliation; releasing it could create a duplicate on retry.
