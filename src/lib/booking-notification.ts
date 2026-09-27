@@ -1,4 +1,6 @@
 import { SITE_NAME } from "@/lib/site-config";
+import { day38TestAuthHeader } from "@/lib/api/wp-preview-auth";
+import { WP_API_BASE } from "@/lib/wp";
 import { formatIntermediateStops, type IntermediateStop } from "@/lib/booking-stops";
 
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
@@ -43,6 +45,9 @@ function phoneCallUri(phone: string): string {
 export async function sendBookingNotification(
   data: BookingNotificationData,
 ): Promise<BookingNotificationResult> {
+  if (day38TestAuthHeader(WP_API_BASE)) {
+    return { sent: false, reason: "isolated_test" };
+  }
   const accessKey = process.env.WEB3FORMS_ACCESS_KEY?.trim();
   if (!accessKey) {
     return { sent: false, reason: "missing_access_key" };
