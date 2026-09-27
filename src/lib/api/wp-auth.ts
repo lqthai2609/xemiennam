@@ -1,4 +1,5 @@
 import { WP_API_BASE } from "@/lib/wp";
+import { day38TestAuthHeader } from "@/lib/api/wp-preview-auth";
 
 /**
  * JWT Authentication for WP REST API (Ngày 20) — dùng khi Route Handler cần đọc/ghi
@@ -13,8 +14,13 @@ import { WP_API_BASE } from "@/lib/wp";
  * trường WP_JWT_USERNAME / WP_JWT_PASSWORD (xem .env.example).
  */
 
-const WP_ORIGIN = new URL(WP_API_BASE).origin;
-const TOKEN_URL = `${WP_ORIGIN}/wp-json/jwt-auth/v1/token`;
+const wpApiUrl = new URL(WP_API_BASE);
+const restPathIndex = wpApiUrl.pathname.indexOf('/wp-json/');
+if (restPathIndex < 0) {
+  throw new Error('WP_API_BASE_URL must include /wp-json/wp/v2.');
+}
+const WP_REST_ROOT = `${wpApiUrl.origin}${wpApiUrl.pathname.slice(0, restPathIndex)}/wp-json`;
+const TOKEN_URL = `${WP_REST_ROOT}/jwt-auth/v1/token`;
 
 type CachedToken = { value: string; expiresAt: number };
 let cachedToken: CachedToken | null = null;
@@ -66,7 +72,8 @@ export async function wpAuthedFetch<T>(
   path: string,
   init: { method: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown },
 ): Promise<WpAuthedResult<T>> {
-  const url = path.startsWith("/gocar/v1/") ? `${WP_ORIGIN}/wp-json${path}` : `${WP_API_BASE}${path}`;
+  const url = path.startsWith("/gocar/v1/") ? `${WP_REST_ROOT}${path}` : `${WP_API_BASE}${path}`;
+  const testAuthorization = day38TestAuthHeader(WP_API_BASE);
   const doRequest = (token: string) =>
     fetch(url, {
       method: init.method,
@@ -79,6 +86,21 @@ export async function wpAuthedFetch<T>(
     });
 
   try {
+    if (testAuthorization) {
+      const res = await fetch(url, {
+        method: init.method,
+        headers: { "Content-Type": "application/json", Authorization: testAuthorization },
+        body: init.method !== "GET" && init.body !== undefined ? JSON.stringify(init.body) : undefined,
+        cache: "no-store",
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        const message = data && typeof data === "object" && "message" in data
+          ? String((data as { message?: unknown }).message) : `HTTP ${res.status}`;
+        return { ok: false, status: res.status, message };
+      }
+      return { ok: true, data: data as T };
+    }
     let token = await getWpAuthToken();
     let res = await doRequest(token);
 

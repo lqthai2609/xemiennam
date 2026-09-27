@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "wordpress/gocar-core/**"
+      - "wordpress/gocar-day38-verifier/**"
       - "scripts/gocar-price-conditions-php.test.php"
       - "scripts/gocar-admin-api-php.test.php"
       - "scripts/gocar-lead-lifecycle-php.test.php"
@@ -13,6 +14,7 @@ on:
       - main
     paths:
       - "wordpress/gocar-core/**"
+      - "wordpress/gocar-day38-verifier/**"
       - "scripts/gocar-price-conditions-php.test.php"
       - "scripts/gocar-admin-api-php.test.php"
       - "scripts/gocar-lead-lifecycle-php.test.php"
@@ -43,6 +45,7 @@ jobs:
         run: |
           set -euo pipefail
           find wordpress/gocar-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          find wordpress/gocar-day38-verifier -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Condition sanitizer behavioral tests
         run: php scripts/gocar-price-conditions-php.test.php

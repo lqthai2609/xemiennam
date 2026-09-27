@@ -10,6 +10,8 @@
  *   để lớp gọi (routes.ts/vehicles.ts) tự quyết định fallback (xem ghi chú ở đó).
  */
 
+import { day38TestAuthHeader } from "@/lib/api/wp-preview-auth";
+
 export const WP_API_BASE =
   process.env.WP_API_BASE_URL ?? "https://xemiennam.datxesaigon.com/wp-json/wp/v2";
 
@@ -20,9 +22,10 @@ export async function wpFetch<T>(
   revalidate: number = REVALIDATE_SECONDS,
 ): Promise<T | null> {
   try {
+    const authorization = day38TestAuthHeader(WP_API_BASE);
     const res = await fetch(`${WP_API_BASE}${path}`, {
-      next: { revalidate },
-      headers: { Accept: "application/json" },
+      ...(authorization ? { cache: "no-store" as const } : { next: { revalidate } }),
+      headers: { Accept: "application/json", ...(authorization ? { Authorization: authorization } : {}) },
     });
     if (!res.ok) {
       console.error(`[wpFetch] ${path} → HTTP ${res.status}`);

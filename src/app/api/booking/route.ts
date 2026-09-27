@@ -7,7 +7,9 @@ import { fetchLocationsV2, locationById } from "@/lib/api/locations";
 import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
 import { resolvePriceRulesV2 } from "@/lib/api/price-rules";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
+import { day38TestAuthHeader } from "@/lib/api/wp-preview-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
+import { WP_API_BASE } from "@/lib/wp";
 import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
@@ -250,6 +252,22 @@ export async function POST(request: Request) {
 
   if (!Number.isSafeInteger(result.data?.lead_id) || result.data.lead_id <= 0 || result.data.id !== result.data.lead_id) {
     return NextResponse.json({ ok: false, error: "Không xác nhận được mã yêu cầu từ hệ thống." }, { status: 502 });
+  }
+
+  // Preview-only, exact synthetic booking: discard the first successful reply
+  // after the remote WordPress write. The form must retain its key, and the
+  // next identical submit must recover the same lead without notifying anyone.
+  if (
+    !result.data.replayed &&
+    data.fullName === "DAY38 TEST LOST RESPONSE 20260927" &&
+    data.phone === "0900000000" &&
+    data.note === "DAY38 TEST ONLY - NO CUSTOMER" &&
+    day38TestAuthHeader(WP_API_BASE)
+  ) {
+    return NextResponse.json(
+      { ok: false, error: "Thử nghiệm mất phản hồi sau khi lưu. Gửi lại đúng nội dung vừa nhập." },
+      { status: 502 },
+    );
   }
 
   if (result.data.replayed) {
