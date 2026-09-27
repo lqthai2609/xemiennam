@@ -1,14 +1,10 @@
 /**
  * GA4 + Facebook Pixel.
  *
- * Đọc thẳng biến môi trường NEXT_PUBLIC_* (tiền tố bắt buộc để Next.js inline giá trị vào
- * bundle client lúc build, dùng được ở cả Server và Client Component — cùng pattern
- * NEXT_PUBLIC_ZALO_OA_ID đã dùng ở Ngày 21, xem lib/zalo.ts).
- *
- * Thiếu biến nào thì phần script/track tương ứng tự tắt hoàn toàn (không render script rỗng,
- * không gọi hàm track khi window.gtag/window.fbq chưa tồn tại) — không throw lỗi, không làm
- * hỏng luồng gửi form khi chưa có tài khoản GA4/Meta Business, hoặc khi trình duyệt khách
- * chặn quảng cáo.
+ * Tạm khóa toàn bộ đo lường marketing cho ứng viên phát hành đầu.
+ * Các export giữ nguyên giao diện gọi, nhưng luôn rỗng để không nạp GA4/Meta Pixel
+ * hoặc gửi event kể cả khi môi trường build có NEXT_PUBLIC_* tương ứng.
+ * Chỉ khôi phục qua cơ chế consent và retention được duyệt riêng.
  */
 
 // Day 39 release gate: no marketing measurement before consent and retention approval.
