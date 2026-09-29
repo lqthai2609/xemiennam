@@ -13,6 +13,7 @@ const destinationImageBySlug: Record<string, string> = {
   "chau-doc": "/images/destinations/chau-doc.webp",
   "da-lat": "/images/destinations/da-lat.webp",
   "dong-nai": "/images/destinations/dong-nai.webp",
+  "ho-chi-minh": "/images/destinations/ho-chi-minh.webp",
   "tphcm-noi-thanh": "/images/destinations/ho-chi-minh.webp",
   "long-an": "/images/destinations/long-an.webp",
   "my-tho": "/images/destinations/my-tho.webp",
