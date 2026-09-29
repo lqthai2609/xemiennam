@@ -73,11 +73,14 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
     if (area || vehicleType) setFilters((current) => ({ ...current, area, vehicleType }));
   }, []);
 
-  const filteredRoutes = useMemo(() => routes.filter((route) =>
-    (!filters.area || route.to === filters.area) &&
-    (!filters.vehicleType || route.vehicleTypes.includes(filters.vehicleType)) &&
-    (!destinationQuery || [route.from, route.to, route.region].some((place) => locationMatchesQuery(place, destinationQuery))),
-  ), [destinationQuery, filters, routes]);
+  const filteredRoutes = useMemo(() => {
+    const hasDirectDestination = destinationQuery && routes.some((route) => locationMatchesQuery(route.to, destinationQuery));
+    return routes.filter((route) =>
+      (!filters.area || route.to === filters.area) &&
+      (!filters.vehicleType || route.vehicleTypes.includes(filters.vehicleType)) &&
+      (!destinationQuery || [route.from, route.to, ...(hasDirectDestination ? [] : [route.region])].some((place) => locationMatchesQuery(place, destinationQuery))),
+    );
+  }, [destinationQuery, filters, routes]);
 
   const groups = useMemo(() => {
     const map = new Map<string, Route[]>();
