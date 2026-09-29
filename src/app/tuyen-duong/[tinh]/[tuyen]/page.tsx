@@ -13,6 +13,8 @@ import { buildPageMetadata } from "@/lib/metadata";
 import { routeHref, type Route } from "@/types/route";
 import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
+import "../../../home-redesign.css";
+import "./route-detail-redesign.css";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
 async function buildVehicleImageByType(): Promise<Record<string, string>> {
