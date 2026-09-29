@@ -1,11 +1,15 @@
 "use client";
 
 import { MessageCircle, Phone } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { getZaloChatLink } from "@/lib/zalo";
 import { SITE_CONTACT_PHONE, SITE_CONTACT_PHONE_TEL, SITE_NAME } from "@/lib/site-config";
 
 export function FloatingContactActions() {
+  const pathname = usePathname();
   const zaloLink = getZaloChatLink();
+
+  if (pathname === "/") return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 flex flex-row gap-2 bg-background p-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:flex-col sm:bg-transparent sm:p-0">

@@ -18,7 +18,8 @@ const destinationImages: Record<string, string> = {
 function pickFeaturedRoutes(routes: Route[]) {
   const used = new Set<string>();
   return featuredDestinations.flatMap((name) => {
-    const route = routes.find((item) => !used.has(item.slug) && canSuggestRelatedRoute(item) && item.to.toLowerCase().includes(name.toLowerCase()));
+    const candidates = routes.filter((item) => !used.has(item.slug) && canSuggestRelatedRoute(item) && item.to.toLowerCase().includes(name.toLowerCase()));
+    const route = candidates.find((item) => getPublicLocationLabel(item.from).toLowerCase().includes("sài gòn")) || candidates[0];
     if (!route) return [];
     used.add(route.slug);
     return [route];
@@ -65,7 +66,7 @@ export async function HomeFeaturedBlog() {
   if (!featuredPost) return null;
   return <section className="home-blog home-container" id="blog"><Heading title="Bài viết nổi bật" description="Thông tin hữu ích trước khi lên đường." href="/blog" link="Xem tất cả bài viết" />
     <Link className="home-blog-card" href={`/blog/${featuredPost.slug}`}>
-      <div className="home-blog-image">{featuredPost.featuredImageUrl && <Image src={featuredPost.featuredImageUrl} alt="" fill sizes="(max-width: 700px) 35vw, 220px" />}</div>
+      <div className="home-blog-image"><Image src={featuredPost.featuredImageUrl || "/images/services/airport.png"} alt="" fill sizes="(max-width: 700px) 35vw, 220px" /></div>
       <strong>{featuredPost.title}</strong><span>Đọc bài <ArrowRight size={16} /></span>
     </Link>
   </section>;

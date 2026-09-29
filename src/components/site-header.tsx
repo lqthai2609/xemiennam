@@ -54,11 +54,11 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref,
   return (
     <header className={`site-header${homeDesign ? " home-site-header" : ""}`}>
       <Link href="/" className="brand" aria-label={`${SITE_NAME} trang chủ`}>
-        <img
+        {homeDesign ? <span className="home-brand-lockup" aria-hidden="true"><span className="home-brand-symbol">A</span><span>Alo Đặt Xe</span></span> : <img
           className="brand-logo"
           src="/logo-alo-dat-xe.webp"
           alt={`${SITE_NAME} - Đồng hành mọi hành trình`}
-        />
+        />}
       </Link>
       <nav className="main-nav" aria-label="Điều hướng chính">
         {menuItems.map((item) => (
