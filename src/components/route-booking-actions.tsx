@@ -545,73 +545,32 @@ export function RouteBookingActions({
 
   if (pricingMode === "disabled") return null;
 
-  if (pricingMode === "contact") {
-    return (
-      <>
-        <div className="detail-price-actions flex-wrap">
-          <Button ref={triggerRef} size="sm" className="detail-price-cta min-w-full" onClick={() => setOpen(true)}>
-            Yêu cầu báo giá
-          </Button>
-          {zaloLink && (
-            <Button size="sm" variant="outline" className="flex-1" asChild>
-              <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`Nhắn Zalo nhận báo giá xe ${vehicleType}`}>
-                <MessageCircle data-icon="inline-start" size={16} />
-                Nhắn Zalo
-              </a>
-            </Button>
-          )}
-          <Button size="sm" variant="outline" className="flex-1" asChild>
-            <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi nhận báo giá xe ${vehicleType}`}>
-              <Phone data-icon="inline-start" size={16} />
-              Gọi báo giá
-            </a>
-          </Button>
-        </div>
-        {open && (
-          <QuickBookingDialog
-            route={route}
-            routeId={routeId}
-            displayRoute={displayRoute}
-            vehicleType={vehicleType}
-            price={price}
-            direction={direction}
-            packageKey={packageKey}
-            packageLabel={packageLabel}
-            pricingMode="contact"
-            airportContext={airportContext}
-            airportName={airportName}
-            onClose={closeDialog}
-          />
-        )}
-      </>
-    );
-  }
+  const isQuote = pricingMode === "contact";
 
   return (
     <>
-      <div className="detail-price-actions">
-        <Button ref={triggerRef} size="sm" className="detail-price-cta" onClick={() => setOpen(true)}>
-          Đặt xe online
-        </Button>
+      <div className="detail-price-actions route-booking-actions">
         {zaloLink && (
-          <a
-            href={zaloLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="detail-price-icon-cta"
-            aria-label={`Đặt xe ${vehicleType} qua Zalo`}
-          >
-            <MessageCircle size={16} />
-          </a>
+          <Button size="sm" className="route-booking-primary" asChild>
+            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`${isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"} ${vehicleType}`}>
+              <MessageCircle aria-hidden="true" size={18} />
+              {isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"}
+            </a>
+          </Button>
         )}
-        <a
-          href={`tel:${SITE_HOTLINE_TEL}`}
-          className="detail-price-icon-cta"
-          aria-label={`Gọi điện đặt xe ${vehicleType}`}
-        >
-          <Phone size={16} />
-        </a>
+        <div className="route-booking-secondary">
+          <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" onClick={() => setOpen(true)}>
+            {isQuote ? "Gửi yêu cầu báo giá" : "Gửi yêu cầu đặt xe"}
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`${isQuote ? "Gọi báo giá" : "Gọi đặt xe"} ${vehicleType}`}>
+              <Phone aria-hidden="true" size={16} />
+              {isQuote ? "Gọi báo giá" : "Gọi đặt xe"}
+            </a>
+          </Button>
+        </div>
       </div>
+      {!isQuote && <p className="route-booking-note">Chúng tôi xác nhận lịch xe và chi phí cuối cùng trước khi nhận chuyến.</p>}
       {open && (
         <QuickBookingDialog
           route={route}
@@ -622,7 +581,7 @@ export function RouteBookingActions({
           direction={direction}
           packageKey={packageKey}
           packageLabel={packageLabel}
-          pricingMode="fixed"
+          pricingMode={pricingMode}
           airportContext={airportContext}
           airportName={airportName}
           onClose={closeDialog}
