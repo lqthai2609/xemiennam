@@ -170,6 +170,8 @@
   .home-booking-wrap #booking h2 { font-size: 21px; }
   .home-booking-wrap #booking h2::before { width: 30px; height: 30px; flex-basis: 30px; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child > button { right: auto; left: 50%; top: 3.1rem; width: 30px; height: 30px; transform: translateX(-50%); background: #fff; border-radius: 50%; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid > label { grid-column: span 1; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid > label:last-child { grid-column: 1 / -1; }
   .home-booking-wrap #booking [role="tabpanel"] label { font-size: 12px; }
