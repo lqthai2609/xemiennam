@@ -128,7 +128,7 @@ export default async function Page({ params }: Props) {
   ]);
   const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug && canSuggestRelatedRoute(item)).slice(0, 6);
   const matchingTestimonials = allTestimonials.filter((item) => item.routeSlug === route.slug);
-  const routeTestimonials = (matchingTestimonials.length > 0 ? matchingTestimonials : allTestimonials).slice(0, 6);
+  const routeTestimonials = matchingTestimonials.slice(0, 6);
   const serviceSchema = !readiness.serviceSchemaEligible
     ? undefined
     : buildServiceSchema({
