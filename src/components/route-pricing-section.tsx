@@ -50,7 +50,7 @@ function LegacyPricingGrid({
               Thuê xe {vp.vehicleType} đi {getPublicLocationLabel(route.to)} <ArrowRight size={15} />
             </Link>
           </Button>
-          <RouteBookingActions route={routeLabel} routeId={route.id} vehicleType={vp.vehicleType} price={vp.price} />
+          <RouteBookingActions route={routeLabel} routeId={route.id} vehicleType={vp.vehicleType} price={vp.price} pricingMode={vp.pricingMode === "contact" ? "contact" : "fixed"} />
         </article>
       ))}
     </div>
