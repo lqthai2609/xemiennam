@@ -51,7 +51,7 @@ interface ContactBookingFormProps {
   /** Mặc định lấy đúng VEHICLE_TYPE_ORDER (lib/api/routes.ts) — khớp taxonomy vehicle_type thật, không tự đặt tên khác ("Xe 4 chỗ"...). */
   vehicleTypeOptions?: string[];
   defaultRoute?: string;
-  onSubmit: (data: BookingFormData) => void | Promise<void>;
+  onSubmit: (data: BookingFormData) => Promise<{ leadId: number; replayed: boolean }>;
 }
 
 const FALLBACK_ROUTES = ["Vũng Tàu", "Cần Thơ", "Đà Lạt"].map(
@@ -96,12 +96,12 @@ export function ContactBookingForm({
 
   const submitForm = async (data: BookingFormData) => {
     try {
-      await onSubmit(data);
+      const { leadId, replayed } = await onSubmit(data);
       // Ngày 22 — chỉ bắn sau khi onSubmit() (gọi /api/booking) đã thành công, tránh đếm lead
       // ảo cho những lượt gửi lỗi. Tự tắt nếu chưa cấu hình GA4/FB Pixel, xem lib/analytics.ts.
-      trackBookingLead({ route: data.route, vehicleType: data.vehicleType });
+      if (!replayed) trackBookingLead({ route: data.route, vehicleType: data.vehicleType });
       toast.success("Đã nhận thông tin đặt xe", {
-        description: `${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
+        description: `Mã yêu cầu #${leadId}. ${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
       });
       reset({ ...data, fullName: "", phone: "", pickupAddress: "", dropoffAddress: "", pickupNote: "", intermediateStops: [], note: "" });
     } catch {

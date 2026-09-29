@@ -55,11 +55,15 @@ export function isPrelaunchAirportLocation(locationSlug: string | undefined): bo
 }
 
 export function isPrelaunchAirportRoute(route: {
+  slug?: string;
   originLocation?: { slug: string };
   destinationLocation?: { slug: string };
 }): boolean {
   return (
     isPrelaunchAirportLocation(route.originLocation?.slug) ||
-    isPrelaunchAirportLocation(route.destinationLocation?.slug)
+    isPrelaunchAirportLocation(route.destinationLocation?.slug) ||
+    // Route data may still render when the separate Location REST read fails.
+    // The existing airport route slug is enough to preserve the prelaunch lock.
+    /(?:^|-)san-bay-long-thanh(?:-|$)/.test(route.slug ?? "")
   );
 }

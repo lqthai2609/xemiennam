@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gocar Core
  * Description: Core WordPress contracts and migration helpers for Alo Đặt Xe.
- * Version: 0.11.0
+ * Version: 0.11.1
  * Author: Alo Đặt Xe
  * Requires at least: 6.5
  * Requires PHP: 8.1
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'GOCAR_CORE_VERSION', '0.11.0' );
+define( 'GOCAR_CORE_VERSION', '0.11.1' );
 define( 'GOCAR_CORE_PATH', plugin_dir_path( __FILE__ ) );
 
 // Phase 1 is intentionally non-mutating: shared normalization only.
@@ -31,6 +31,8 @@ require_once GOCAR_CORE_PATH . 'includes/class-gocar-blog-relations.php';
 
 // Day 31: Booking V2 exact pickup/dropoff persistence contract.
 require_once GOCAR_CORE_PATH . 'includes/class-gocar-booking-request.php';
+// Day 37: booking_request owns the lead lifecycle and immutable acquisition snapshot.
+require_once GOCAR_CORE_PATH . 'includes/class-gocar-lead-lifecycle.php';
 
 // Day 32: authoritative Location service zones + Booking surcharge result persistence.
 require_once GOCAR_CORE_PATH . 'includes/class-gocar-service-area.php';

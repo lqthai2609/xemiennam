@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { fetchRoutes } from "@/lib/api/routes";
 import { BangGiaPageClient } from "@/components/bang-gia-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
+import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Bảng giá thuê xe nguyên chiếc theo tuyến | Alo Đặt Xe",
@@ -20,7 +21,7 @@ export const metadata: Metadata = buildPageMetadata({
  * nhiều tuyến nên không có 1 mốc modified duy nhất như trang chi tiết 1 tuyến).
  */
 export default async function BangGiaPage() {
-  const routes = await fetchRoutes();
+  const routes = (await fetchRoutes()).filter(canSuggestRelatedRoute);
   const lastModified = routes
     .map((r) => r.modifiedDate)
     .filter((d): d is string => Boolean(d))

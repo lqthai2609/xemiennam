@@ -20,6 +20,8 @@ const ALLOWED_PATHS = [
   /^routes\/\d+\/archive$/,
   /^audit$/,
   /^audit\/\d+\/rollback$/,
+  /^leads\/\d+$/,
+  /^leads\/\d+\/transition$/,
 ];
 
 function allowed(path: string) {

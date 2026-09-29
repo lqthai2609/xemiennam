@@ -27,6 +27,7 @@ import type { BlogPost } from "@/types/blog";
 import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
+import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 
 const footerLinkGroups = [
   { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
@@ -71,10 +72,13 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
     () => findComboVehiclePriceForDirection(route, category.slug, direction) ?? vehiclePrice,
     [category.slug, direction, route, vehiclePrice],
   );
+  const isPrelaunch = isPrelaunchAirportRoute(route);
   const isInbound = direction === "inbound";
   const displayFrom = getPublicLocationLabel(isInbound ? route.to : route.from);
   const displayTo = getPublicLocationLabel(isInbound ? route.from : route.to);
-  const description = formatPublicLocationText(comboDescriptionOrDefault(route, activeVehiclePrice));
+  const description = isPrelaunch
+    ? `Thông tin chuẩn bị hành trình từ ${displayFrom} đến ${displayTo}. Chưa nhận đặt chuyến khi lịch khai thác sân bay chưa được xác minh.`
+    : formatPublicLocationText(comboDescriptionOrDefault(route, activeVehiclePrice));
   const routeLabel = getPublicRouteLabel(route, " – ");
   const displayRoute = `${displayFrom} – ${displayTo}`;
   const isContact = activeVehiclePrice.pricingMode === "contact";
@@ -105,12 +109,12 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
         menuItems={navItems}
         hotline={SITE_HOTLINE}
         hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
-        ctaLabel="Đặt xe ngay"
-        ctaHref="#booking"
+        ctaLabel={isPrelaunch ? "Liên hệ tư vấn" : "Đặt xe ngay"}
+        ctaHref={isPrelaunch ? "/lien-he" : "#booking"}
       />
       <UnifiedHero
-        eyebrow={`${getPublicLocationLabel(route.region)} · ${category.label}`}
-        title={<>Thuê xe {category.label.toLowerCase()}<br /><em>{displayFrom} → {displayTo}</em></>}
+        eyebrow={isPrelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : `${getPublicLocationLabel(route.region)} · ${category.label}`}
+        title={<>{isPrelaunch ? "Chuẩn bị xe" : "Thuê xe"} {category.label.toLowerCase()}<br /><em>{displayFrom} → {displayTo}</em></>}
         description={description}
         backgroundImage={heroImage}
         backHref={backHref}
@@ -120,9 +124,9 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
         <div className="section-heading">
           <div>
             <p className="section-label">XE PHÙ HỢP CHO HÀNH TRÌNH</p>
-            <h2>Chọn xe, đặt chuyến ngay.</h2>
+            <h2>{isPrelaunch ? "Tham khảo loại xe cho hành trình." : "Chọn xe, đặt chuyến ngay."}</h2>
           </div>
-          <p className="heading-note">Giá và điều kiện chuyến được xác nhận trước khi khởi hành.</p>
+          <p className="heading-note">{isPrelaunch ? "Chưa nhận đặt chuyến khi lịch sân bay chưa được xác minh." : "Giá và điều kiện chuyến được xác nhận trước khi khởi hành."}</p>
         </div>
         <article className="combo-vehicle-card">
           <div className="combo-vehicle-media">
@@ -133,7 +137,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
             <div className="combo-vehicle-top">
               <div><h2>{vehicle?.name || `Xe ${activeVehiclePrice.vehicleType}`}</h2></div>
               <div className="combo-price">
-                <strong>{isContact ? "Liên hệ báo giá" : hasValidFixedPrice ? activeVehiclePrice.price : "Liên hệ báo giá"}</strong>
+                <strong>{isPrelaunch ? "Đang chuẩn bị" : isContact ? "Liên hệ báo giá" : hasValidFixedPrice ? activeVehiclePrice.price : "Liên hệ báo giá"}</strong>
                 {activeVehiclePrice.packageLabel && <small>{activeVehiclePrice.packageLabel}</small>}
               </div>
             </div>
@@ -146,12 +150,14 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
             <div className="combo-vehicle-actions">
               <div>
                 <p className="combo-alert">
-                  {isContact || !hasValidFixedPrice
+                  {isPrelaunch
+                    ? "Liên hệ để ghi nhận nhu cầu; chưa xác nhận lịch hoặc giá chuyến."
+                    : isContact || !hasValidFixedPrice
                     ? "Liên hệ để xác nhận giá theo lịch thực tế"
                     : "Giá và điều kiện chuyến được xác nhận trước khi khởi hành."}
                 </p>
               </div>
-              <RouteBookingActions
+              {isPrelaunch ? <a className="button button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions
                 route={routeLabel}
                 routeId={route.id}
                 displayRoute={displayRoute}
@@ -163,13 +169,13 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
                 pricingMode={isContact || !hasValidFixedPrice ? "contact" : "fixed"}
                 airportContext={airportContext}
                 airportName={airportName}
-              />
+              />}
             </div>
           </div>
         </article>
       </section>
 
-      <section className="section-wrap combo-benefits">
+      {!isPrelaunch && <section className="section-wrap combo-benefits">
         <div className="section-heading">
           <div>
             <p className="section-label">THÔNG TIN HÀNH TRÌNH</p>
@@ -181,7 +187,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
           <div><Clock3 size={22} /><strong>Đón tận nơi</strong><p>Linh hoạt điểm đón tại {displayFrom} và trả khách tại {displayTo}.</p></div>
           <div><MessageCircle size={22} /><strong>Hỗ trợ nhanh</strong><p>Luôn có đội ngũ hỗ trợ qua điện thoại và Zalo.</p></div>
         </div>
-      </section>
+      </section>}
 
       {similarRoutes.length > 0 && (
         <section className="section-wrap combo-similar-section">
@@ -207,9 +213,9 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
 
       <section className="vehicle-type-cta combo-final-cta">
         <div>
-          <p className="section-label">SẴN SÀNG LÊN ĐƯỜNG?</p>
-          <h2>Đặt xe {category.label.toLowerCase()} đi {displayTo}.</h2>
-          <p>Nhân viên {SITE_NAME} sẽ xác nhận giá và điều kiện chuyến trước khi hoàn tất đặt xe.</p>
+          <p className="section-label">{isPrelaunch ? "LIÊN HỆ TRƯỚC" : "SẴN SÀNG LÊN ĐƯỜNG?"}</p>
+          <h2>{isPrelaunch ? `Chuẩn bị hành trình đến ${displayTo}.` : `Đặt xe ${category.label.toLowerCase()} đi ${displayTo}.`}</h2>
+          <p>{isPrelaunch ? `Liên hệ ${SITE_NAME} để ghi nhận nhu cầu; chưa xác nhận chuyến khi lịch sân bay chưa được kiểm chứng.` : `Nhân viên ${SITE_NAME} sẽ xác nhận giá và điều kiện chuyến trước khi hoàn tất đặt xe.`}</p>
         </div>
         <a className="button button-primary" href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi ${SITE_HOTLINE}`}>
           Gọi {SITE_HOTLINE} <Phone size={16} />

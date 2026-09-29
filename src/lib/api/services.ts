@@ -10,6 +10,7 @@ import { shouldUseMockFallback } from "./mock-fallback";
 import { splitCommaList, stripHtml } from "@/lib/wp";
 import { SITE_HOTLINE } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicRouteLabel } from "@/lib/public-location-label";
+import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
 const useMockFallback = shouldUseMockFallback();
 
@@ -76,6 +77,7 @@ function relatedRoutesForService(service: Service, routes: Route[], count = 4): 
   if (accepted.size === 0) return [];
 
   return routes
+    .filter(canSuggestRelatedRoute)
     .map((route) => {
       const matchingTypes = route.vehicleTypes.filter((type) => accepted.has(vehicleTypeSlug(type)));
       if (matchingTypes.length === 0) return undefined;

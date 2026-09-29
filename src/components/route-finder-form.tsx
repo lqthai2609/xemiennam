@@ -7,6 +7,7 @@ import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, LoaderCircle, MapPi
 import { Button } from "@/components/ui/button";
 import { MultiStopFields } from "@/components/multi-stop-fields";
 import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
+import { fetchBookingWithIdempotency } from "@/lib/booking-submit";
 import {
   canonicalLocationKey,
   canonicalLocationLabel,
@@ -446,7 +447,7 @@ function JourneyQuoteDialog({
       }
       if (!vehicleType || vehicleType === CONSULT_VEHICLE) noteParts.push("Khách cần tư vấn loại xe phù hợp.");
 
-      const response = await fetch("/api/booking", {
+      const response = await fetchBookingWithIdempotency("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

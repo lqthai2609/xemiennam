@@ -15,7 +15,8 @@ import { buildPageMetadata } from "@/lib/metadata";
 import { routeComboHref, routeHref } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
-import { resolveRouteContentReadiness } from "@/lib/content-readiness";
+import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
+import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 
@@ -46,6 +47,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const guard = getComboIndexability(route, loaiXe);
   const readiness = resolveRouteContentReadiness(route);
+  if (isPrelaunchAirportRoute(route)) {
+    return buildPageMetadata({
+      title: `Chuẩn bị xe ${vp.vehicleType} cho tuyến ${getPublicRouteLabel(route, " – ")} | ${SITE_NAME}`,
+      description: `Thông tin chuẩn bị tuyến ${getPublicRouteLabel(route, " – ")}. Liên hệ tư vấn trước; chưa xác nhận chuyến khi lịch sân bay chưa được kiểm chứng.`,
+      path: routeComboHref(route, loaiXe),
+      noIndex: true,
+    });
+  }
   const priceText = vp.pricingMode === "contact" ? "liên hệ báo giá" : `giá từ ${vp.price}`;
   return buildPageMetadata({
     title: `Thuê xe ${vp.vehicleType} đi ${getPublicRouteLabel(route, " – ")}, ${priceText} | ${SITE_NAME}`,
@@ -69,6 +78,7 @@ export default async function Page({ params }: Props) {
       (item) =>
         item.regionSlug === route.regionSlug &&
         item.slug !== route.slug &&
+        canSuggestRelatedRoute(item) &&
         Boolean(findComboVehiclePrice(item, loaiXe)),
     )
     .slice(0, 3);
@@ -103,16 +113,17 @@ export default async function Page({ params }: Props) {
     areaServed: [getPublicLocationLabel(route.from), getPublicLocationLabel(route.to)],
     offers: readiness.offerSchemaEligible ? serviceOffers : undefined,
   }) : undefined;
-  const breadcrumbSchema = buildBreadcrumbListSchema([
+  const structuredDataAllowed = routeStructuredDataAllowed(route, readiness);
+  const breadcrumbSchema = structuredDataAllowed ? buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
     { name: getPublicLocationLabel(route.region), url: `/tuyen-duong/${route.regionSlug || "khac"}` },
     { name: getPublicRouteLabel(route), url: routeHref(route) },
     { name: vp.vehicleType, url: routeComboHref(route, loaiXe) },
-  ]);
+  ]) : undefined;
 
   return (
     <>
-      <JsonLd data={breadcrumbSchema} />
+      {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <ComboLandingPage
         route={route}

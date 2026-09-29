@@ -118,7 +118,7 @@ export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubDa
   const faqs = buildAirportFaqs(airportName, readiness.phase);
   const routePairCount = new Set(data.routes.map((item) => item.route.slug)).size;
   const allProvinceLinks = data.routes
-    .filter((item) => item.counterpart.provinceSlug)
+    .filter((item) => item.counterpart.provinceSlug && data.activeProvinceSlugs.includes(item.counterpart.provinceSlug))
     .map((item) => {
       const provinceSlug = item.counterpart.provinceSlug;
       const taxonomyMatchesLocationProvince = item.route.regionSlug === provinceSlug;
@@ -133,7 +133,7 @@ export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubDa
 
   return (
     <main className="site-shell airport-hub-page">
-      <JsonLd data={buildFaqPageSchema(faqs)} />
+      {!isPrelaunch ? <JsonLd data={buildFaqPageSchema(faqs)} /> : null}
       <SiteHeader
         menuItems={navItems}
         hotline={SITE_HOTLINE}

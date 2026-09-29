@@ -4,7 +4,7 @@ import test from "node:test";
 import { typescriptLoader } from "./lib/load-typescript.mjs";
 
 const load = typescriptLoader();
-const { resolveContentReadiness } = load("src/lib/content-readiness.ts");
+const { canSuggestRelatedRoute, resolveContentReadiness } = load("src/lib/content-readiness.ts");
 
 const readyRecord = {
   version: 1,
@@ -47,6 +47,16 @@ test("D35-10, prelaunch and unverified canonical states block activation indepen
   }
 });
 
+test("related Route suggestions exclude prelaunch and D35-10 without suppressing legacy live links", () => {
+  const live = { slug: "legacy-route" };
+  assert.equal(canSuggestRelatedRoute(live), true);
+  assert.equal(canSuggestRelatedRoute({ ...live, originLocation: { slug: "san-bay-long-thanh" } }), false);
+  assert.equal(canSuggestRelatedRoute({ ...live, destinationLocation: { slug: "san-bay-long-thanh" } }), false);
+  assert.equal(canSuggestRelatedRoute({ ...live, contentReadiness: { ...readyRecord, mappingState: "d35_10_blocked" } }), false);
+  assert.equal(canSuggestRelatedRoute({ ...live, contentReadiness: { ...readyRecord, serviceState: "paused" } }), false);
+  assert.equal(canSuggestRelatedRoute({ ...live, contentReadiness: readyRecord }), true);
+});
+
 test("contact pricing may keep Service schema but never creates an Offer", () => {
   const decision = resolveContentReadiness(readyRecord, { hasFixedOffer: false });
   assert.equal(decision.indexable, true);
@@ -79,3 +89,18 @@ test("DEP-011 replaces the public source brand while keeping the runtime hostnam
   assert.match(wordpressContract, /d35_10_blocked/);
 });
 
+
+test("SEO-005 suppresses all JSON-LD for prelaunch and D35-10 commercial Route surfaces", async () => {
+  const [readiness, detail, combo] = await Promise.all([
+    readFile(new URL("../src/lib/content-readiness.ts", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/tuyen-duong/[tinh]/[tuyen]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/tuyen-duong/[tinh]/[tuyen]/[loai-xe]/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(readiness, /routeStructuredDataAllowed/);
+  assert.match(readiness, /contentReadiness\?\.mappingState !== "d35_10_blocked"/);
+  assert.match(readiness, /contentReadiness\?\.serviceState !== "prelaunch"/);
+  for (const page of [detail, combo]) {
+    assert.match(page, /routeStructuredDataAllowed\(route, readiness\)/);
+    assert.match(page, /breadcrumbSchema \? <JsonLd data=\{breadcrumbSchema\} \/> : null/);
+  }
+});

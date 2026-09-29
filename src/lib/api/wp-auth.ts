@@ -66,8 +66,9 @@ export async function wpAuthedFetch<T>(
   path: string,
   init: { method: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown },
 ): Promise<WpAuthedResult<T>> {
+  const url = path.startsWith("/gocar/v1/") ? `${WP_ORIGIN}/wp-json${path}` : `${WP_API_BASE}${path}`;
   const doRequest = (token: string) =>
-    fetch(`${WP_API_BASE}${path}`, {
+    fetch(url, {
       method: init.method,
       headers: {
         "Content-Type": "application/json",

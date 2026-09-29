@@ -10,6 +10,8 @@ import { getZaloChatLink } from "@/lib/zalo";
 import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
+import { fetchBookingWithIdempotency } from "@/lib/booking-submit";
+import { readCreatedLead } from "@/lib/lead-response";
 
 const footerLinkGroups = [
   {
@@ -61,15 +63,12 @@ export function LienHePageClient({
   }, []);
 
   async function handleSubmit(data: BookingFormData) {
-    const res = await fetch("/api/booking", {
+    const res = await fetchBookingWithIdempotency("/api/booking", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!res.ok) {
-      const body = await res.json().catch(() => null);
-      throw new Error(body?.error ?? `Gửi yêu cầu đặt xe thất bại (HTTP ${res.status}).`);
-    }
+    return readCreatedLead(res);
   }
 
   return (

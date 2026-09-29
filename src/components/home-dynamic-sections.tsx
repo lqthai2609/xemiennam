@@ -10,6 +10,7 @@ import { fetchServices } from "@/lib/api/services";
 import { fetchTestimonials } from "@/lib/api/testimonials";
 import { routeHref, routePriceKicker, type Route } from "@/types/route";
 import { getPublicLocationLabel } from "@/lib/public-location-label";
+import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
 const featuredDestinationNames = ["Vũng Tàu", "Hồ Tràm", "Cần Thơ", "Mũi Né", "Phan Thiết", "Đà Lạt"];
 
@@ -17,7 +18,7 @@ function pickFeaturedRoutes(routes: Route[]) {
   const used = new Set<string>();
   return featuredDestinationNames.flatMap((destination) => {
     const match = routes.find(
-      (route) => !used.has(route.slug) && route.to.toLowerCase().includes(destination.toLowerCase()),
+      (route) => !used.has(route.slug) && canSuggestRelatedRoute(route) && route.to.toLowerCase().includes(destination.toLowerCase()),
     );
     if (!match) return [];
     used.add(match.slug);
@@ -44,7 +45,7 @@ export async function HomeDynamicSections() {
 
   return <>
     {destinations.length > 0 && <section className="destinations-section section-wrap" id="destinations"><Heading label="ĐIỂM ĐẾN PHỔ BIẾN" title="Đi đâu hôm nay?" href="/diem-den" link="Xem tất cả điểm đến" /><div className="destination-grid">{destinations.slice(0, 6).map((destination) => <DestinationCardTile destination={destination} key={destination.slug} />)}</div></section>}
-    <section className="routes-section section-wrap" id="routes"><Heading label="TUYẾN NỔI BẬT" title="Được đặt nhiều nhất." href="/tuyen-duong" link="Xem tất cả tuyến" /><div className="route-list">{featuredRoutes.map((route) => <RouteCard key={route.slug} route={route} />)}</div></section>
+    {featuredRoutes.length > 0 && <section className="routes-section section-wrap" id="routes"><Heading label="TUYẾN ĐƯỜNG" title="Khám phá các hành trình." href="/tuyen-duong" link="Xem tất cả tuyến" /><div className="route-list">{featuredRoutes.map((route) => <RouteCard key={route.slug} route={route} />)}</div></section>}
     <section className="home-services-section section-wrap" id="services"><Heading label="DỊCH VỤ" title="Dịch vụ theo nhu cầu của bạn." href="/dich-vu" link="Xem tất cả dịch vụ" /><div className="service-card-grid">{services.map((service) => <ServiceCard key={service.slug} service={service} />)}</div></section>
     <section className="stories-section section-wrap" id="stories"><div className="section-heading"><div><p className="section-label">HÀNH KHÁCH NÓI GÌ</p><h2>Chuyện trên những cung đường.</h2></div><div className="rating"><Star size={18} fill="currentColor" /><strong>{averageRating.toFixed(1)}</strong><span> / 5.0</span></div></div><div className="home-testimonial-grid">{featuredTestimonials.map((item) => <article className="combo-testimonial-card" key={item.id}><div className="combo-testimonial-stars">{Array.from({ length: 5 }).map((_, index) => <Star key={index} size={14} fill={index < item.rating ? "currentColor" : "none"} />)}</div><p>&ldquo;{item.quote}&rdquo;</p><div className="combo-testimonial-who"><span className="combo-testimonial-avatar">{item.initials}</span><b>{item.name}</b></div></article>)}</div></section>
     {posts.length > 0 && <section className="blog-section section-wrap" id="blog"><Heading label="BLOG" title="Cẩm nang trước khi lên xe." href="/blog" link="Xem tất cả bài viết" /><div className="route-grid blog-grid">{posts.slice(0, 3).map((post) => <BlogCard key={post.slug} post={post} />)}</div></section>}
