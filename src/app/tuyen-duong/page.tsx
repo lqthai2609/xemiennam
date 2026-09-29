@@ -4,6 +4,8 @@ import { RoutesPageClient } from "@/components/routes-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
 import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
 import { canSuggestRelatedRoute } from "@/lib/content-readiness";
+import "../home-redesign.css";
+import "./routes-redesign.css";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Các tuyến cho thuê xe nguyên chiếc | Alo Đặt Xe",
