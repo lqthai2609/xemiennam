@@ -16,6 +16,13 @@ import { getZaloChatLink } from "@/lib/zalo";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const preferredRegions = ["Bà Rịa - Vũng Tàu", "Cần Thơ", "Tây Ninh", "Đồng Nai"];
+const featuredPlaces = ["Vũng Tàu", "Hồ Tràm", "Long Hải"];
+function displayRegion(region: string) { return getPublicLocationLabel(region).replaceAll("&amp;", "&"); }
+function routeRank(route: Route) {
+  const fromSaigon = /Sài Gòn|Hồ Chí Minh|TP.?HCM/i.test(route.from);
+  const destination = featuredPlaces.findIndex((place) => route.to === place);
+  return (fromSaigon ? 0 : 100) + (destination < 0 ? 20 : destination);
+}
 const images: Record<string, string> = {
   "Bà Rịa - Vũng Tàu": "/images/destinations/ba-ria-vung-tau.webp",
   "Vũng Tàu": "/images/destinations/ba-ria-vung-tau.webp",
@@ -75,7 +82,7 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
   const groups = useMemo(() => {
     const map = new Map<string, Route[]>();
     filteredRoutes.forEach((route) => map.set(route.region, [...(map.get(route.region) || []), route]));
-    return [...map.entries()].sort(([a], [b]) => {
+    return [...map.entries()].map(([region, regionRoutes]) => [region, [...regionRoutes].sort((a, b) => routeRank(a) - routeRank(b))] as const).sort(([a], [b]) => {
       const x = preferredRegions.indexOf(a), y = preferredRegions.indexOf(b);
       return (x < 0 ? 99 : x) - (y < 0 ? 99 : y) || a.localeCompare(b, "vi");
     });
@@ -106,12 +113,12 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       <section className="routes-design-catalog" id="route-catalog" aria-labelledby="routes-catalog-title">
         <div className="routes-design-catalog-heading"><h2 id="routes-catalog-title">Khám phá các tuyến đường</h2><p>Chọn khu vực yêu thích để xem các tuyến đường phổ biến</p></div>
         <div className="routes-design-catalog-layout">
-          <nav className="routes-design-regions" aria-label="Khu vực tuyến đường">{groups.map(([region, regionRoutes], index) => <a className={index === 0 ? "is-active" : ""} href={`#region-${regionRoutes[0].regionSlug || index}`} key={region}><MapPin size={18} />{getPublicLocationLabel(region)}<ChevronRight size={16} /></a>)}</nav>
+          <nav className="routes-design-regions" aria-label="Khu vực tuyến đường">{groups.map(([region, regionRoutes], index) => <a className={index === 0 ? "is-active" : ""} href={`#region-${regionRoutes[0].regionSlug || index}`} key={region}><MapPin size={18} />{displayRegion(region)}<ChevronRight size={16} /></a>)}</nav>
           <div className="routes-design-groups" aria-live="polite">{groups.length ? groups.map(([region, regionRoutes], index) => {
             const id = `region-${regionRoutes[0].regionSlug || index}`;
             const expanded = expandedRegions.includes(region);
             return <section className="routes-design-region" id={id} key={region} aria-labelledby={`${id}-title`}>
-              <div className="routes-design-region-heading"><div><h3 id={`${id}-title`}>{getPublicLocationLabel(region)}</h3><span>{regionRoutes.length} tuyến</span></div><Link href={`/tuyen-duong/${regionRoutes[0].regionSlug}`}>Xem khu vực <ArrowRight size={17} /></Link></div>
+              <div className="routes-design-region-heading"><div><h3 id={`${id}-title`}>{displayRegion(region)}</h3><span>{regionRoutes.length} tuyến</span></div><Link href={`/tuyen-duong/${regionRoutes[0].regionSlug}`}>Xem khu vực <ArrowRight size={17} /></Link></div>
               <div className="routes-design-card-grid">{(expanded ? regionRoutes : regionRoutes.slice(0, 4)).map((route) => <RouteCard route={route} key={route.id} />)}</div>
               {!expanded && regionRoutes.length > 4 && <button className="routes-design-more" type="button" onClick={() => setExpandedRegions((current) => [...current, region])}>Xem thêm {regionRoutes.length - 4} tuyến <ArrowRight size={16} /></button>}
             </section>;
@@ -128,6 +135,6 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
         <a href={`tel:${SITE_HOTLINE_TEL}`} className="home-button home-button-outline"><Phone size={18} /> Gọi {SITE_HOTLINE}</a>
       </div></section>
     </div>
-    <SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "Khám phá", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến xe", href: "/tuyen-duong" }, { label: "Loại xe", href: "/loai-xe" }] }, { title: "Hỗ trợ", links: [{ label: "Câu hỏi thường gặp", href: "/faq" }, { label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
+    <SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "Khám phá", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến xe", href: "/tuyen-duong" }, { label: "Loại xe", href: "/loai-xe" }] }, { title: "Hỗ trợ", links: [{ label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
   </main>;
 }
