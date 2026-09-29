@@ -9,7 +9,7 @@ export function FloatingContactActions() {
   const pathname = usePathname();
   const zaloLink = getZaloChatLink();
 
-  if (pathname === "/" || pathname === "/tuyen-duong" || /^\/tuyen-duong\/[^/]+\/[^/]+$/.test(pathname)) return null;
+  if (pathname === "/" || pathname === "/tuyen-duong" || /^\/tuyen-duong\/[^/]+\/[^/]+(?:\/[^/]+)?$/.test(pathname)) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 flex flex-row gap-2 bg-background p-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:flex-col sm:bg-transparent sm:p-0">
