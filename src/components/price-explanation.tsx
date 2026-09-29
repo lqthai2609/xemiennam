@@ -7,15 +7,15 @@ type PriceExplanationProps = {
 const PRICE_TERMS = [
   {
     label: "Giá từ",
-    description: "Mức cơ bản đang được nhập trong hệ thống cho đúng chiều, loại xe và gói hành trình đang hiển thị.",
+    description: "Mức giá tham khảo cho loại xe và hành trình đang chọn.",
   },
   {
     label: "Ước tính chuyến",
-    description: "Chỉ xuất hiện khi giá cơ bản và mọi khoản áp dụng cho chuyến đều xác định được.",
+    description: "Mức dự tính theo các thông tin chuyến đi đã cung cấp. Giá cuối cùng được xác nhận khi tư vấn.",
   },
   {
     label: "Liên hệ báo giá",
-    description: "Dùng khi dữ liệu còn thiếu, cần xác nhận lịch thực tế hoặc có điều kiện chưa được phê duyệt.",
+    description: "Liên hệ để nhận mức giá phù hợp với loại xe, lịch đi và điểm đón trả của bạn.",
   },
 ] as const;
 
