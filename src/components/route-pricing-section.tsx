@@ -71,6 +71,7 @@ const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều",
 export function RoutePricingSection({ route, direction, onDirectionChange, vehicleImageByType = {}, prelaunch = false, redesign = false }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean; redesign?: boolean }) {
   const [journey, setJourney] = useState<Exclude<JourneyPackage, "threeDays">>("oneWay");
   const [days, setDays] = useState<"twoDays" | "threeDays">("twoDays");
+  const [showAllVehicles, setShowAllVehicles] = useState(false);
   const pricing = route.pricingV2;
   const activeDirection = pricing?.[direction]?.enabled ? direction : pricing?.outbound.enabled ? "outbound" : "inbound";
   const active = activeDirection ? pricing?.[activeDirection] : undefined;
@@ -95,6 +96,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
         return pkg && pkg.mode !== "disabled" ? [{ vehicle, pkg }] : [];
       })
     : [];
+  const displayedVehicles = redesign && !showAllVehicles ? visibleVehicles.slice(0, 3) : visibleVehicles;
 
   if (!pricing) return prelaunch
     ? <p>Đang chuẩn bị tuyến. <a href="/lien-he">Liên hệ tư vấn</a>; chưa nhận đặt chuyến.</p>
@@ -115,10 +117,11 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
       </dl>
       {hasTravelTime || hasDistance ? <p className="mt-3 border-t border-border pt-3 text-xs leading-5 text-muted-foreground">Thời gian và quãng đường có thể thay đổi theo điểm đón, lộ trình và tình hình giao thông.</p> : null}
     </section>
-    <div className="route-vehicle-grid">{visibleVehicles.map(({ vehicle, pkg }) => { const fixed = pkg.mode === "fixed" && typeof pkg.price === "number" && Number.isFinite(pkg.price) && pkg.price > 0; const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback; return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
+    <div className="route-vehicle-grid">{displayedVehicles.map(({ vehicle, pkg }) => { const fixed = pkg.mode === "fixed" && typeof pkg.price === "number" && Number.isFinite(pkg.price) && pkg.price > 0; const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback; return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
       <div className="route-vehicle-image"><img src={image} alt={vehicle.type} loading="lazy" />{vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>
       <div className="route-vehicle-body"><h3>{vehicle.type}</h3><p className="route-vehicle-model">{vehicle.models}</p><p className="route-vehicle-capacity"><UsersRound size={15} aria-hidden="true" /> {vehicle.capacity}</p><ul>{vehicle.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul><div className="route-vehicle-bottom"><div className="route-vehicle-price">{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ`}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>{prelaunch ? <a className="button button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={pkg.vehicleType} price={fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} />}</div></div>
     </article>; })}</div>
+    {redesign && visibleVehicles.length > 3 && <button className="route-detail-more-vehicles" type="button" aria-expanded={showAllVehicles} onClick={() => setShowAllVehicles((value) => !value)}>{showAllVehicles ? "Thu gọn loại xe" : `Xem thêm ${visibleVehicles.length - 3} loại xe`} <ArrowRight size={16} aria-hidden="true" /></button>}
   </div>;
 }
 

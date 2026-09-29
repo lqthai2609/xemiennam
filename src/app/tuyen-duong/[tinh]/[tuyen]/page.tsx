@@ -128,7 +128,11 @@ export default async function Page({ params }: Props) {
     fetchTestimonials(),
     fetchPostsByRegion(route.regionSlug, 3),
   ]);
-  const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug && canSuggestRelatedRoute(item)).slice(0, 6);
+  const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug && canSuggestRelatedRoute(item))
+    .sort((a, b) => {
+      const rank = (item: Route) => (/sân bay/i.test(item.from) ? 2 : 0) + (item.from === route.from ? 0 : 1);
+      return rank(a) - rank(b);
+    }).slice(0, 6);
   const matchingTestimonials = allTestimonials.filter((item) => item.routeSlug === route.slug);
   const routeTestimonials = matchingTestimonials.slice(0, 6);
   const serviceSchema = !readiness.serviceSchemaEligible
