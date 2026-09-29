@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
@@ -72,6 +72,13 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
   const [journey, setJourney] = useState<Exclude<JourneyPackage, "threeDays">>("oneWay");
   const [days, setDays] = useState<"twoDays" | "threeDays">("twoDays");
   const [showAllVehicles, setShowAllVehicles] = useState(false);
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("trip_type");
+    if (requested === "round_trip") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setJourney("roundTrip");
+    }
+  }, []);
   const pricing = route.pricingV2;
   const activeDirection = pricing?.[direction]?.enabled ? direction : pricing?.outbound.enabled ? "outbound" : "inbound";
   const active = activeDirection ? pricing?.[activeDirection] : undefined;
