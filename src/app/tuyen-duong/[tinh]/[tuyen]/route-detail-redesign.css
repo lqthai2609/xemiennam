@@ -20,7 +20,7 @@
 .route-detail-redesign .route-direction-tabs button.is-selected { background: #fff; color: #001eea; }
 .route-detail-redesign .route-direction-switch { order: 1; display: flex; gap: 8px; margin: 0 0 20px; padding: 0 16px 11px; border-radius: 0 0 10px 10px; background: #0019d7; color: #fff; }
 .route-detail-redesign .route-direction-switch > span { display: none; }
-.route-detail-redesign .route-direction-switch button { flex: 0 1 50%; display: inline-flex; align-items: center; justify-content: center; min-height: 45px; border: 1px solid #ffffff88; border-radius: 6px; color: #fff; font-size: 14px; }
+.route-detail-redesign .route-direction-switch button { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; min-height: 45px; border: 1px solid #ffffff88; border-radius: 6px; color: #fff; font-size: 14px; }
 .route-detail-redesign .route-direction-switch button.is-selected { border-color: #fff; background: #fff; color: #001eea; }
 .route-detail-redesign .route-direction-tabs:has(+ .route-detail-price-heading) { margin-bottom: 20px; border-radius: 10px; }
 .route-detail-redesign .route-day-tabs { order: 2; display: flex; gap: 8px; margin: -9px 0 18px; }
@@ -32,7 +32,8 @@
 .route-detail-redesign .route-vehicle-picker > section[aria-label="Thông tin tuyến đường"] { display: none; }
 .route-detail-redesign .route-vehicle-grid { order: 4; grid-template-columns: 1.05fr .95fr; grid-auto-flow: row; gap: 12px; }
 .route-detail-redesign .route-vehicle-card { display: grid; grid-template-columns: 50% 50%; min-height: 165px; overflow: hidden; border: 1px solid #e5eafb; border-radius: 10px; background: #fff; box-shadow: 0 5px 20px #10246b0d; }
-.route-detail-redesign .route-vehicle-card.is-popular { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; border-color: #ff6a3c; }
+.route-detail-redesign .route-vehicle-card:not(.is-popular) { position: relative; min-height: 225px; padding-bottom: 46px; }
+.route-detail-redesign .route-vehicle-card.is-popular { position: relative; grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; min-height: 462px; border-color: #ff6a3c; }
 .route-detail-redesign .route-vehicle-image { order: 2; height: auto; min-height: 150px; background: #f1f5ff; }
 .route-detail-redesign .route-vehicle-image img { object-fit: cover; }
 .route-detail-redesign .route-vehicle-image span { display: none; }
@@ -44,20 +45,20 @@
 .route-detail-redesign .route-vehicle-bottom { gap: 5px; padding-top: 12px; }
 .route-detail-redesign .route-vehicle-price strong { color: #001eea; font-size: 21px; line-height: 1.12; font-weight: 800; }
 .route-detail-redesign .route-vehicle-price small, .route-detail-redesign .route-vehicle-price span { font-size: 10px; }
-.route-detail-redesign .route-booking-actions { width: 100%; margin: 0; gap: 4px; }
+.route-detail-redesign .route-booking-actions { position: absolute; bottom: 9px; left: 9px; right: 9px; display: grid; grid-template-columns: 1.2fr 1fr .85fr; width: auto; margin: 0; gap: 4px; }
 .route-detail-redesign .route-booking-primary { min-height: 36px; background: #001eea; color: #fff; font-size: 11px; }
-.route-detail-redesign .route-booking-secondary { grid-template-columns: 1fr 1fr; gap: 4px; }
+.route-detail-redesign .route-booking-secondary { display: contents; }
 .route-detail-redesign .route-booking-secondary > * { min-width: 0; min-height: 35px; padding: 5px; border-color: #dce5f8; color: #001eea; font-size: 10px; }
 .route-detail-redesign .route-booking-note { display: none; }
-.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-image { order: 1; flex: 1; height: 245px; }
-.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-body { order: 2; flex: 0 0 auto; }
+.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-image { position: absolute; inset: 0; width: 100%; height: 100%; }
+.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-image::after { position: absolute; inset: 0; content: ''; background: linear-gradient(90deg, #fff 0%, #fffffff0 22%, #ffffff00 62%); pointer-events: none; }
+.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-body { z-index: 1; min-height: 462px; padding: 18px; background: transparent; }
 .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-body h3::after { content: 'Được đặt nhiều nhất'; display: inline-block; vertical-align: middle; margin-left: 10px; padding: 5px 10px; border-radius: 20px; background: #ff5d27; color: #fff; font-size: 10px; letter-spacing: 0; }
 .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-price strong { font-size: 31px; }
-.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-bottom { flex-direction: row; align-items: end; justify-content: space-between; gap: 10px; }
-.route-detail-redesign .route-vehicle-card.is-popular .route-booking-actions { width: min(100%, 350px); }
-.route-detail-redesign .route-vehicle-card.is-popular .route-booking-secondary { grid-template-columns: 1fr 1fr; }
+.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-bottom { margin-top: 24px; }
+.route-detail-redesign .route-vehicle-card.is-popular .route-booking-actions { width: auto; }
 .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-body { position: relative; }
-.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-image img { object-position: center 60%; }
+.route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-image img { object-fit: cover; object-position: center 60%; }
 .route-detail-more-vehicles { order: 5; display: inline-flex; align-items: center; justify-content: center; gap: 8px; align-self: center; margin: 14px 0 0; padding: 8px 16px; border: 1px solid #cad7fa; border-radius: 7px; background: #fff; color: #001eea; font-size: 12px; font-weight: 700; cursor: pointer; }
 .route-detail-more-vehicles[aria-expanded="true"] svg { transform: rotate(-90deg); }
 .route-detail-design-journey { padding: 36px 0 30px; }
@@ -145,13 +146,14 @@
   .route-detail-price-heading h2 { font-size: 23px; }
   .route-detail-price-heading p { margin-top: 4px; text-align: left; }
   .route-detail-redesign .route-vehicle-grid { grid-template-columns: 1fr; gap: 8px; }
-  .route-detail-redesign .route-vehicle-card, .route-detail-redesign .route-vehicle-card.is-popular { grid-column: auto; grid-row: auto; order: 0; display: grid; grid-template-columns: 40% 60%; min-height: 155px; }
+  .route-detail-redesign .route-vehicle-card, .route-detail-redesign .route-vehicle-card:not(.is-popular), .route-detail-redesign .route-vehicle-card.is-popular { grid-column: auto; grid-row: auto; order: 0; display: grid; grid-template-columns: 40% 60%; min-height: 205px; }
   .route-detail-redesign .route-vehicle-card.is-popular { order: -1; }
-  .route-detail-redesign .route-vehicle-image, .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-image { grid-column: 2; grid-row: 1; order: 0; height: 100%; min-height: 155px; }
-  .route-detail-redesign .route-vehicle-body, .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-body { grid-column: 1; grid-row: 1; order: 0; padding: 13px; }
+  .route-detail-redesign .route-vehicle-image, .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-image { position: relative; inset: auto; grid-column: 2; grid-row: 1; order: 0; height: 100%; min-height: 155px; }
+  .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-image::after { display: none; }
+  .route-detail-redesign .route-vehicle-body, .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-body { grid-column: 1; grid-row: 1; order: 0; min-height: 0; padding: 13px; }
   .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-body h3::after { margin-left: 4px; padding: 3px 5px; font-size: 8px; }
   .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-price strong { font-size: 25px; }
-  .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-bottom { display: block; }
+  .route-detail-redesign .route-vehicle-card.is-popular .route-vehicle-bottom { display: block; margin-top: 12px; }
   .route-detail-redesign .route-vehicle-price strong { font-size: 20px; }
   .route-detail-redesign .route-vehicle-bottom { padding-top: 12px; }
   .route-detail-redesign .route-booking-actions, .route-detail-redesign .route-vehicle-card.is-popular .route-booking-actions { position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 2; display: grid; grid-template-columns: 1.1fr 1fr 1fr; width: auto; gap: 4px; }
@@ -159,7 +161,7 @@
   .route-detail-redesign .route-booking-secondary { display: contents; }
   .route-detail-redesign .route-booking-primary { padding: 4px; }
   .route-detail-redesign .route-booking-primary svg, .route-detail-redesign .route-booking-secondary svg { width: 13px; height: 13px; }
-  .route-detail-redesign .route-vehicle-card { position: relative; padding-bottom: 46px; }
+  .route-detail-redesign .route-vehicle-card, .route-detail-redesign .route-vehicle-card.is-popular { position: relative; padding-bottom: 46px; }
   .route-detail-design-journey { padding-top: 24px; }
   .route-detail-design-section-heading { display: block; }
   .route-detail-design-section-heading h2 { font-size: 22px; }

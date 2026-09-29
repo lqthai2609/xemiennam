@@ -34,7 +34,7 @@ function defaultDirection(route: Route): RoutePricingDirectionKey {
 
 function RelatedCard({ route }: { route: Route }) {
   const href = routeHref(route);
-  const image = /sân bay/i.test(route.from) ? "/images/services/airport.png" : regionImages[route.region] || "/images/home-coastal-fleet.webp";
+  const image = route.featuredImage || (/sân bay/i.test(route.from) ? "/images/services/airport.png" : regionImages[route.region] || "/images/home-coastal-fleet.webp");
   return <Link href={href} className="route-detail-design-related-card">
     <span className="route-detail-design-related-image"><Image src={image} alt="" fill sizes="(max-width: 700px) 25vw, 100px" /></span>
     <span><strong>{getPublicLocationLabel(route.from)} đi {getPublicLocationLabel(route.to)}</strong><small>Xe riêng, chủ động thời gian</small></span>
