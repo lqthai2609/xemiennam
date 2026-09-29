@@ -22,15 +22,20 @@ const featuredDescriptions: Record<string, string> = {
   "tay-ninh": "Núi Bà Đen hùng vĩ, điểm đến tâm linh và khám phá.",
   "can-tho": "Miền Tây sông nước, văn hóa đặc sắc và ẩm thực phong phú.",
 };
+const regionOrder = ["binh-duong", "long-an", "binh-phuoc", "phan-thiet", "ben-tre", "my-tho", "chau-doc", "da-lat", "ho-chi-minh", "tphcm-noi-thanh"];
+
+function destinationName(destination: DestinationCard) {
+  return destination.slug === "tphcm-noi-thanh" ? "Sài Gòn nội thành" : getPublicLocationLabel(destination);
+}
 
 function destinationMatches(destination: DestinationCard, query: string, routes: Route[]) {
-  return locationMatchesQuery(destination.name, query) ||
+  return locationMatchesQuery(destinationName(destination), query) ||
     routes.some((route) => route.regionSlug === destination.slug &&
       [route.to, route.from].some((place) => locationMatchesQuery(place, query)));
 }
 
 function FeaturedCard({ destination }: { destination: DestinationCard }) {
-  const name = getPublicLocationLabel(destination);
+  const name = destinationName(destination);
   return <Link className="dest-featured-card" href={`/tuyen-duong/${destination.slug}`} aria-label={`Xem các tuyến ở ${name}`}>
     {destination.imageUrl ? <Image src={destination.imageUrl} alt="" fill sizes="(max-width: 700px) 100vw, 50vw" /> : <span className="dest-image-fallback"><MapPin aria-hidden="true" /></span>}
     <span className="dest-featured-shade" />
@@ -40,7 +45,7 @@ function FeaturedCard({ destination }: { destination: DestinationCard }) {
 }
 
 function RegionCard({ destination }: { destination: DestinationCard }) {
-  const name = getPublicLocationLabel(destination);
+  const name = destinationName(destination);
   return <Link className="dest-region-card" href={`/tuyen-duong/${destination.slug}`} aria-label={`Xem các tuyến ở ${name}`}>
     <span className="dest-region-image">{destination.imageUrl ? <Image src={destination.imageUrl} alt="" fill sizes="(max-width: 700px) 50vw, 25vw" /> : <MapPin aria-hidden="true" />}</span>
     <span className="dest-region-footer"><MapPin size={17} aria-hidden="true" /><strong>{name}</strong><span className="dest-region-link">Xem tuyến <ArrowRight size={14} aria-hidden="true" /></span></span>
@@ -51,7 +56,7 @@ function JourneyFinder({ routes }: { routes: Route[] }) {
   const router = useRouter();
   const locations = useMemo(() => {
     const unique = new Map<string, string>();
-    routes.forEach((route) => [route.from, route.to].forEach((value) => {
+    routes.forEach((route) => [route.from, route.to].filter((value) => !/^city tour/i.test(value)).forEach((value) => {
       const key = canonicalLocationKey(value);
       if (key && !unique.has(key)) unique.set(key, getPublicLocationLabel(value));
     }));
@@ -102,20 +107,24 @@ export function DestinationsPage({ destinations, routes }: { destinations: Desti
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
   const featured = featuredSlugs.flatMap((slug) => destinations.filter((item) => item.slug === slug));
-  const regions = destinations.filter((item) => !featuredSlugs.includes(item.slug));
+  const regions = destinations.filter((item) => !featuredSlugs.includes(item.slug)).sort((a, b) => {
+    const first = regionOrder.indexOf(a.slug), second = regionOrder.indexOf(b.slug);
+    return (first < 0 ? regionOrder.length : first) - (second < 0 ? regionOrder.length : second);
+  });
   const filteredFeatured = submittedQuery ? featured.filter((item) => destinationMatches(item, submittedQuery, routes)) : featured;
   const filteredRegions = (submittedQuery ? regions.filter((item) => destinationMatches(item, submittedQuery, routes)) : regions).filter((item) => !query || destinationMatches(item, query, routes));
   const zaloLink = getZaloChatLink();
 
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmittedQuery(query.trim());
-    document.getElementById("dest-featured")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const selected = query.trim();
+    setSubmittedQuery(selected);
+    document.getElementById(selected && !featured.some((item) => destinationMatches(item, selected, routes)) ? "dest-regions" : "dest-featured")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function choose(place: string) {
     setQuery(place);
     setSubmittedQuery(place);
-    document.getElementById("dest-featured")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(featured.some((item) => destinationMatches(item, place, routes)) ? "dest-featured" : "dest-regions")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   return <main className="site-shell home-redesign dest-redesign">
@@ -138,10 +147,10 @@ export function DestinationsPage({ destinations, routes }: { destinations: Desti
         <div className="dest-suggestions"><strong>Gợi ý điểm đến phổ biến:</strong><div>{["Vũng Tàu", "Hồ Tràm", "Tây Ninh", "Cần Thơ", "Đà Lạt"].map((place) => <button type="button" onClick={() => choose(place)} key={place}><MapPin size={16} aria-hidden="true" />{place}</button>)}{submittedQuery && <button type="button" className="dest-clear-search" onClick={() => { setQuery(""); setSubmittedQuery(""); }}><X size={15} aria-hidden="true" />Xóa lọc</button>}</div></div>
       </section>
 
-      <section className="dest-featured" id="dest-featured" aria-labelledby="dest-featured-title"><div className="dest-section-heading"><h2 id="dest-featured-title">Điểm đến nổi bật</h2><p>Những điểm đến được nhiều hành khách lựa chọn.</p></div>
-        {filteredFeatured.length > 0 && <div className="dest-featured-grid">{filteredFeatured.map((item) => <FeaturedCard key={item.slug} destination={item} />)}</div>}
-      </section>
-      <section className="dest-regions" aria-labelledby="dest-regions-title"><div className="dest-region-heading"><div className="dest-section-heading"><h2 id="dest-regions-title">Khám phá theo khu vực</h2><p>Chọn khu vực bạn quan tâm để xem các tuyến xe phù hợp.</p></div><label className="dest-region-search"><Search size={20} aria-hidden="true" /><span className="sr-only">Tìm khu vực hoặc điểm đến</span><input type="search" placeholder="Tìm khu vực hoặc điểm đến..." value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>
+      {filteredFeatured.length > 0 && <section className="dest-featured" id="dest-featured" aria-labelledby="dest-featured-title"><div className="dest-section-heading"><h2 id="dest-featured-title">Điểm đến nổi bật</h2><p>Những điểm đến được nhiều hành khách lựa chọn.</p></div>
+        <div className="dest-featured-grid">{filteredFeatured.map((item) => <FeaturedCard key={item.slug} destination={item} />)}</div>
+      </section>}
+      <section className="dest-regions" id="dest-regions" aria-labelledby="dest-regions-title"><div className="dest-region-heading"><div className="dest-section-heading"><h2 id="dest-regions-title">Khám phá theo khu vực</h2><p>Chọn khu vực bạn quan tâm để xem các tuyến xe phù hợp.</p></div><label className="dest-region-search"><Search size={20} aria-hidden="true" /><span className="sr-only">Tìm khu vực hoặc điểm đến</span><input type="search" placeholder="Tìm khu vực hoặc điểm đến..." value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>
         {filteredRegions.length > 0 && <div className="dest-region-grid">{filteredRegions.map((item) => <RegionCard key={item.slug} destination={item} />)}</div>}
         {!filteredRegions.length && !filteredFeatured.length && <div className="dest-empty" role="status"><p>Chưa tìm thấy điểm đến phù hợp.</p><button type="button" onClick={() => { setQuery(""); setSubmittedQuery(""); }}>Xem tất cả điểm đến</button></div>}
       </section>
