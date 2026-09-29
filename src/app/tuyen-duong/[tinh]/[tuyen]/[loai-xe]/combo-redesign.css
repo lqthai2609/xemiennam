@@ -18,6 +18,8 @@
 .combo-design-hero-cta { min-height: 42px; padding-inline: 15px; font-size: 13px; }
 .combo-design-booking { position: relative; z-index: 1; margin: -13px 0 22px; padding: 18px 20px 17px; border: 1px solid #e1e9fa; border-radius: 11px; background: #fff; box-shadow: 0 12px 30px #10246b0c; scroll-margin-top: 82px; }
 .combo-design-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 0; padding: 4px; border-radius: 8px; background: #eaf1ff; }
+.combo-design-tabs:has(> button:only-child) { grid-template-columns: 1fr; }
+.combo-design-tabs:has(> button:nth-child(2):last-child) { grid-template-columns: repeat(2,1fr); }
 .combo-design-tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 43px; border: 0; border-right: 1px solid #d6e1f7; background: transparent; color: #001eea; font-size: 14px; font-weight: 700; cursor: pointer; }
 .combo-design-tabs button:last-child { border-right: 0; }
 .combo-design-tabs button.is-selected { border-radius: 7px; background: #001eea; color: #fff; box-shadow: 0 4px 11px #001eea29; }
