@@ -64,7 +64,7 @@ test("contact pricing may keep Service schema but never creates an Offer", () =>
   assert.equal(decision.offerSchemaEligible, false);
 });
 
-test("Day 36B price explanation is shared by route pricing and the public price table", async () => {
+test("route pricing shows journey details while the price table explains price terms", async () => {
   const [component, routePricing, priceTable] = await Promise.all([
     readFile(new URL("../src/components/price-explanation.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/components/route-pricing-section.tsx", import.meta.url), "utf8"),
@@ -74,7 +74,10 @@ test("Day 36B price explanation is shared by route pricing and the public price 
   assert.match(component, /Ước tính chuyến/);
   assert.match(component, /Liên hệ báo giá/);
   assert.doesNotMatch(component, /price\s*=\s*0|giá\s+0/i);
-  assert.match(routePricing, /<PriceExplanation compact \/>/);
+  assert.match(routePricing, /Thông tin tuyến đường/);
+  assert.match(routePricing, /Thời gian dự kiến/);
+  assert.match(routePricing, /Quãng đường tham khảo/);
+  assert.doesNotMatch(routePricing, /<PriceExplanation compact \/>/);
   assert.match(priceTable, /<PriceExplanation compact \/>/);
 });
 
