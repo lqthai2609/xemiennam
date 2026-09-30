@@ -70,6 +70,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outlin
 .site-header { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; max-width: 1240px; margin: auto; padding: 10px 32px; background: var(--background); border-bottom: 1px solid var(--border); }
 .brand { display: inline-flex; align-items: center; color: var(--foreground); }
 .brand-logo { display: block; width: clamp(180px, 20vw, 252px); height: auto; max-height: 58px; object-fit: contain; }
+.footer-brand-logo { display: block; width: clamp(180px, 20vw, 220px); height: auto; max-width: 100%; }
 .main-nav { display: flex; align-items: center; gap: 22px; font-size: 13px; font-weight: 600; color: #4f5b5d; }
 .main-nav a:not(.nav-cta):hover, .footer-links a:hover { color: var(--primary); }
 .main-nav a.is-active { color: var(--primary); font-weight: 700; }

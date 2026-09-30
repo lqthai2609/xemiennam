@@ -23,7 +23,7 @@
 .home-redesign h1, .home-redesign h2, .home-redesign h3 { font-family: var(--font-vietnam), sans-serif; letter-spacing: -.045em; }
 .home-container { width: min(100% - 64px, 1160px); margin-inline: auto; }
 .home-redesign .home-site-header { width: 100%; max-width: none; min-height: 70px; padding: 8px max(32px, calc((100% - 1160px)/2)); background: #fff; border-color: #edf0fb; box-shadow: 0 2px 20px #07165d08; }
-.home-redesign .home-site-header .brand-logo { width: 166px; height: 48px; object-fit: contain; }
+.home-redesign .home-site-header .brand-logo { width: 166px; height: auto; max-height: 48px; object-fit: contain; }
 .home-redesign .home-site-header .main-nav { gap: clamp(12px, 1.7vw, 26px); }
 .home-redesign .home-site-header .main-nav a { color: #132569; font-size: 14px; }
 .home-redesign .home-site-header .main-nav .nav-hotline { color: #001eea; white-space: nowrap; }
@@ -129,7 +129,7 @@
 .home-contact-actions .home-button { white-space: nowrap; }
 .home-redesign .site-footer { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 0 60px; padding: 30px max(32px, calc((100% - 1160px)/2)) 18px; background: #00208e; color: #fff; }
 .home-redesign .footer-main { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 0 0 22px; }
-.home-redesign .footer-main .brand { display: flex; gap: 6px; color: #fff; font-size: 20px; font-weight: 800; }
+.home-redesign .footer-main .brand { display: flex; min-width: 0; gap: 6px; color: #fff; font-size: 20px; font-weight: 800; }
 .home-redesign .footer-main .brand-mark { color: #fff; background: #ff5d27; }
 .home-redesign .footer-main p { max-width: 330px; color: #dce7ff; font-size: 12px; }
 .home-redesign .footer-main .phone-link { color: #fff; }
