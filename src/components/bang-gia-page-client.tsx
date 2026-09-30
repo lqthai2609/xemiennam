@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowRightLeft, CalendarDays, CarFront, CheckCircle2, ChevronDown, ChevronRight, FileText, Info, MapPin, MessageCircle, Phone, RefreshCw, Search, Tag, X } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, CalendarDays, CarFront, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, FileText, Info, MapPin, MessageCircle, Phone, RefreshCw, Search, Tag, X } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
@@ -49,6 +49,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
   const [region, setRegion] = useState(() => routes.some((route) => route.regionSlug === featuredRegions[0]) ? featuredRegions[0] : routes[0]?.regionSlug || "");
   const [tripType, setTripType] = useState<TripType>("one_way");
   const [query, setQuery] = useState("");
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
   const railRef = useRef<HTMLDivElement>(null);
   const zaloLink = getZaloChatLink();
 
@@ -70,7 +71,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
   const columns = useMemo(() => ["4 chỗ", "7 chỗ", "16 chỗ", ...VEHICLE_TYPE_ORDER.filter((type) => !["4 chỗ", "7 chỗ", "16 chỗ"].includes(type))].filter((type) => originRoutes.some((route) => route.vehicleTypes.includes(type))).slice(0, 3), [originRoutes]);
   const tripLabel = tripType === "one_way" ? "Một chiều" : tripType === "round_trip_day" ? "Khứ hồi trong ngày" : "2 ngày 1 đêm";
 
-  function selectOrigin(value: string) { setOrigin(value); setQuery(""); }
+  function selectOrigin(value: string) { setOrigin(value); setQuery(""); railRef.current?.scrollTo({ left: 0 }); setCanScrollLeft(false); }
   function resetSearch() { setQuery(""); }
 
   return <main className="site-shell home-redesign pricing-redesign">
@@ -82,7 +83,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
         <div className="pricing-filter-top"><label className="pricing-origin"><MapPin size={24} aria-hidden="true" /><span><span>Điểm đón</span><select value={origin} onChange={(event) => selectOrigin(event.target.value)} aria-label="Chọn điểm đón">{origins.map((item) => <option key={item} value={item}>{getPublicLocationLabel(item)}</option>)}</select></span><ChevronDown size={17} aria-hidden="true" /></label>
           <div className="pricing-trip-tabs" role="group" aria-label="Loại chuyến"><button type="button" className={tripType === "one_way" ? "active" : ""} aria-pressed={tripType === "one_way"} onClick={() => setTripType("one_way")}><ArrowRightLeft aria-hidden="true" />Một chiều</button><button type="button" className={tripType === "round_trip_day" ? "active" : ""} aria-pressed={tripType === "round_trip_day"} onClick={() => setTripType("round_trip_day")}><RefreshCw aria-hidden="true" />Khứ hồi</button><button type="button" className={tripType === "2d1n" ? "active" : ""} aria-pressed={tripType === "2d1n"} onClick={() => setTripType("2d1n")}><CalendarDays aria-hidden="true" />Theo ngày</button></div>
         </div>
-        <h2>Chọn tỉnh thành</h2><div className="pricing-region-row"><div className="pricing-region-rail" ref={railRef}>{regions.map(([slug, name]) => <button type="button" key={slug} className={slug === selectedRegion ? "active" : ""} aria-pressed={slug === selectedRegion} onClick={() => { setRegion(slug); resetSearch(); }}>{slug === selectedRegion && <MapPin size={19} aria-hidden="true" />}{getPublicLocationLabel(name)}</button>)}</div><button type="button" className="pricing-rail-next" aria-label="Xem thêm tỉnh thành" onClick={() => railRef.current?.scrollBy({ left: 270, behavior: "smooth" })}><span>Xem thêm</span><ChevronRight aria-hidden="true" /></button></div>
+        <h2>Chọn tỉnh thành</h2><div className="pricing-region-row"><button type="button" className="pricing-rail-prev" aria-label="Xem các tỉnh thành phía trước" disabled={!canScrollLeft} onClick={() => railRef.current?.scrollBy({ left: -270, behavior: "smooth" })}><ChevronLeft aria-hidden="true" /><span>Quay lại</span></button><div className="pricing-region-rail" ref={railRef} onScroll={(event) => setCanScrollLeft(event.currentTarget.scrollLeft > 1)}>{regions.map(([slug, name]) => <button type="button" key={slug} className={slug === selectedRegion ? "active" : ""} aria-pressed={slug === selectedRegion} onClick={() => { setRegion(slug); resetSearch(); }}>{slug === selectedRegion && <MapPin size={19} aria-hidden="true" />}{getPublicLocationLabel(name)}</button>)}</div><button type="button" className="pricing-rail-next" aria-label="Xem thêm tỉnh thành" onClick={() => railRef.current?.scrollBy({ left: 270, behavior: "smooth" })}><span>Xem thêm</span><ChevronRight aria-hidden="true" /></button></div>
         <label className="pricing-search"><Search size={23} aria-hidden="true" /><span className="sr-only">Tìm địa điểm trong tỉnh</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm nhanh địa điểm trong tỉnh, ví dụ: Hồ Tràm" /><span className="pricing-result-count">{filteredRoutes.length} điểm đến</span>{query && <button type="button" onClick={resetSearch} aria-label="Xóa tìm kiếm"><X size={16} /></button>}</label>
       </section>
 

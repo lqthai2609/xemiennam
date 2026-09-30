@@ -21,10 +21,11 @@
 .pricing-region-row { display: flex; gap: 10px; }
 .pricing-region-rail { display: flex; gap: 10px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .pricing-region-rail::-webkit-scrollbar { display: none; }
-.pricing-region-rail button, .pricing-rail-next { display: inline-flex; justify-content: center; align-items: center; gap: 10px; flex: 1 0 128px; min-height: 45px; padding: 8px 16px; border: 0; border-radius: 8px; background: #ecf2ff; color: #07165d; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.pricing-region-rail button, .pricing-rail-prev, .pricing-rail-next { display: inline-flex; justify-content: center; align-items: center; gap: 10px; flex: 1 0 128px; min-height: 45px; padding: 8px 16px; border: 0; border-radius: 8px; background: #ecf2ff; color: #07165d; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
 .pricing-region-rail button.active { background: #001eea; color: #fff; box-shadow: 0 4px 9px #001eea25; }
-.pricing-rail-next { flex: 0 0 130px; }
-.pricing-rail-next svg { width: 17px; }
+.pricing-rail-prev, .pricing-rail-next { flex: 0 0 105px; }
+.pricing-rail-prev svg, .pricing-rail-next svg { width: 17px; }
+.pricing-rail-prev:disabled { opacity: .45; cursor: default; }
 .pricing-search { display: flex; align-items: center; gap: 12px; height: 48px; margin-top: 14px; padding: 0 14px; border: 1px solid #dce5f6; border-radius: 9px; color: #42558f; }
 .pricing-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: #07165d; font: 14px var(--font-vietnam), sans-serif; }
 .pricing-search input::placeholder { color: #5c6d9b; }
@@ -108,8 +109,8 @@
   .pricing-region-row { gap: 2px; }
   .pricing-region-rail { gap: 7px; }
   .pricing-region-rail button { flex: 0 0 auto; min-width: 115px; min-height: 42px; padding: 8px 12px; font-size: 12px; }
-  .pricing-rail-next { flex: 0 0 28px; min-height: 42px; padding: 0; background: #fff; color: #001eea; }
-  .pricing-rail-next span { display: none; }
+  .pricing-rail-prev, .pricing-rail-next { flex: 0 0 28px; min-height: 42px; padding: 0; background: #fff; color: #001eea; }
+  .pricing-rail-prev span, .pricing-rail-next span { display: none; }
   .pricing-search { height: 45px; margin-top: 10px; gap: 7px; padding: 0 10px; }
   .pricing-search > svg { width: 20px; flex: 0 0 20px; }
   .pricing-search input { font-size: 12px; }
