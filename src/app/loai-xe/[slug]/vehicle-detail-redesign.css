@@ -1,4 +1,6 @@
 .vehicle-detail { background: #fffdfa; color: #07165d; }
+.vehicle-detail .vehicle-detail-hero { display: block; grid-template-columns: none; gap: 0; max-width: none; margin: 0; padding: 0; border-radius: 0; color: #07165d; }
+.vehicle-detail .vehicle-detail-content { display: block; grid-template-columns: none; gap: 0; align-items: normal; }
 .vehicle-detail-width { width: min(100% - 64px, 1160px); margin-inline: auto; }
 .vehicle-detail-hero { position: relative; min-height: 465px; overflow: hidden; background: #fbf8f0; isolation: isolate; }
 .vehicle-detail-hero-photo { position: absolute; inset: 0 0 0 35%; z-index: -2; background: #a9dcf7 url('/images/home-coastal-fleet.webp') 66% 53% / cover no-repeat; }
@@ -114,10 +116,10 @@
 @media (max-width: 1050px) { .vehicle-detail-route-card { grid-template-columns: 36% minmax(0,1fr); }.vehicle-detail-route-link { grid-column: 2; justify-self: start; margin: 0 0 4px; }.vehicle-detail-contact { flex-wrap: wrap; }.vehicle-detail-finder form { grid-template-columns: 1fr 24px 1fr; }.vehicle-detail-finder form label:nth-of-type(3) { grid-column: 1 / 3; }.vehicle-detail-finder form button[type='submit'] { grid-column: 3; } }
 @media (max-width: 700px) {
   .vehicle-detail-width { width: min(100% - 24px,620px); }
-  .vehicle-detail-hero { min-height: 305px; }
+  .vehicle-detail .vehicle-detail-hero { min-height: 350px; padding: 0; }
   .vehicle-detail-hero-photo { left: 27%; background-size: auto 100%; background-position: 63% bottom; }
   .vehicle-detail-hero::after { background: linear-gradient(90deg,#fffdfa 0%,#fffdfaf2 32%,#fffdfaaa 49%,transparent 73%); }
-  .vehicle-detail-hero-inner { align-items: flex-start; min-height: 305px; }
+  .vehicle-detail-hero-inner { align-items: flex-start; min-height: 350px; }
   .vehicle-detail-hero-copy { max-width: 65%; padding: 5px 0 20px 6px; }
   .vehicle-detail-hero-copy nav { margin-bottom: 15px; font-size: 11px; }
   .vehicle-detail-hero-copy .home-eyebrow { margin-bottom: 6px; font-size: 10px; }
