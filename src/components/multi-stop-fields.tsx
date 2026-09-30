@@ -14,9 +14,10 @@ type MultiStopFieldsProps = {
   stops: IntermediateStopInput[];
   onChange: (stops: IntermediateStopInput[]) => void;
   errors?: Array<{ address?: { message?: string }; waitingMinutes?: { message?: string } }>;
+  compact?: boolean;
 };
 
-export function MultiStopFields({ stops, onChange, errors = [] }: MultiStopFieldsProps) {
+export function MultiStopFields({ stops, onChange, errors = [], compact = false }: MultiStopFieldsProps) {
   function updateStop(index: number, patch: Partial<IntermediateStopInput>) {
     onChange(stops.map((stop, stopIndex) => (stopIndex === index ? { ...stop, ...patch } : stop)));
   }
@@ -30,11 +31,9 @@ export function MultiStopFields({ stops, onChange, errors = [] }: MultiStopField
   }
 
   return (
-    <fieldset className="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 p-4 sm:col-span-2">
-      <legend className="px-1 text-sm font-semibold text-foreground">Điểm dừng trung gian</legend>
-      <p className="m-0 text-xs leading-5 text-muted-foreground">
-        Không bắt buộc. Tối đa {MAX_INTERMEDIATE_STOPS} điểm; thứ tự bên dưới là thứ tự hành trình.
-      </p>
+    <fieldset className={compact ? "contact-stops flex flex-col gap-3 sm:col-span-2" : "flex flex-col gap-3 rounded-xl border border-border bg-muted/20 p-4 sm:col-span-2"}>
+      <legend className={compact ? "text-sm font-semibold text-foreground" : "px-1 text-sm font-semibold text-foreground"}>Điểm dừng trung gian {compact && <small>(nếu có)</small>}</legend>
+      {!compact && <p className="m-0 text-xs leading-5 text-muted-foreground">Không bắt buộc. Tối đa {MAX_INTERMEDIATE_STOPS} điểm; thứ tự bên dưới là thứ tự hành trình.</p>}
 
       {stops.map((stop, index) => (
         <div key={index} className="grid gap-3 rounded-lg border border-border bg-card p-3 sm:grid-cols-[1fr_9rem_auto]">
@@ -83,12 +82,10 @@ export function MultiStopFields({ stops, onChange, errors = [] }: MultiStopField
         </div>
       ))}
 
-      {stops.length < MAX_INTERMEDIATE_STOPS && (
-        <Button type="button" variant="outline" className="w-full sm:w-fit" onClick={() => onChange([...stops, { address: "", waitingMinutes: 0 }])}>
-          <Plus data-icon="inline-start" aria-hidden="true" />
-          Thêm điểm dừng
-        </Button>
-      )}
+      <div className={compact ? "contact-stops-add" : ""}>
+        {stops.length < MAX_INTERMEDIATE_STOPS && <Button type="button" variant="outline" className={compact ? "" : "w-full sm:w-fit"} onClick={() => onChange([...stops, { address: "", waitingMinutes: 0 }])}><Plus data-icon="inline-start" aria-hidden="true" />Thêm điểm dừng</Button>}
+        {compact && <span>Tối đa {MAX_INTERMEDIATE_STOPS} điểm</span>}
+      </div>
     </fieldset>
   );
 }

@@ -3,6 +3,8 @@ import { fetchRoutes, VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
 import { LienHePageClient } from "@/components/lien-he-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
 import { getPublicRouteLabel } from "@/lib/public-location-label";
+import "../home-redesign.css";
+import "./contact-redesign.css";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Liên hệ đặt xe | Alo Đặt Xe",
