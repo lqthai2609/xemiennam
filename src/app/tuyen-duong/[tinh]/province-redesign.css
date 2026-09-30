@@ -1,0 +1,178 @@
+.province-redesign { background: #fffefa; }
+.province-width { width: min(100% - 64px, 1160px); margin-inline: auto; }
+.province-hero { position: relative; min-height: 405px; overflow: hidden; background: #d9eeff; isolation: isolate; }
+.province-hero-photo { z-index: -2; object-fit: cover; object-position: center 53%; }
+.province-hero::before { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg,#fffefa 0%,#fffefae8 32%,#fffefa20 68%,transparent 90%); content: ''; }
+.province-hero-inner { padding-top: 17px; }
+.province-breadcrumb { display: flex; align-items: center; gap: 10px; margin-bottom: 17px; color: #536394; font-size: 12px; }
+.province-breadcrumb a { color: #536394; }
+.province-breadcrumb a:hover { color: #001eea; }
+.province-hero-copy { max-width: 490px; }
+.province-hero .home-eyebrow { margin-bottom: 8px; font-size: 13px; }
+.province-hero h1 { margin: 0; color: #07165d; font-size: clamp(43px, 5vw, 62px); line-height: .98; font-weight: 800; }
+.province-hero-copy > p:not(.home-eyebrow) { max-width: 405px; margin: 11px 0 0; color: #345093; font-size: 16px; line-height: 1.38; }
+.province-hero-pills { display: flex; gap: 9px; margin-top: 15px; }
+.province-hero-pills span { display: inline-flex; align-items: center; gap: 7px; min-height: 31px; padding: 5px 10px; border-radius: 25px; background: #e8f0ffeb; color: #001eea; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.province-hero-actions { display: flex; gap: 9px; margin-top: 15px; }
+.province-hero-actions .home-button { min-height: 45px; }
+.province-content { padding-bottom: 0; }
+.province-benefits { position: relative; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0; margin: -14px 0 25px; padding: 11px 13px; border: 1px solid #e4ebfa; border-radius: 13px; background: #fff; box-shadow: 0 9px 25px #10246b12; }
+.province-benefits > div { display: flex; align-items: center; gap: 14px; padding: 8px 18px; border-right: 1px solid #e2e8f6; }
+.province-benefits > div:last-child { border: 0; }
+.province-benefits > div > span { display: grid; place-items: center; flex: 0 0 50px; height: 50px; border-radius: 50%; background: #eaf1ff; color: #001eea; }
+.province-benefits svg { width: 27px; height: 27px; }
+.province-benefits p { margin: 0; }
+.province-benefits strong, .province-benefits small { display: block; }
+.province-benefits strong { font-size: 13px; line-height: 1.2; }
+.province-benefits small { margin-top: 3px; color: #566a9f; font-size: 11px; line-height: 1.35; }
+.province-heading h2 { margin: 0; color: #07165d; font-size: clamp(24px, 2.7vw, 31px); line-height: 1.1; font-weight: 800; }
+.province-heading p { margin: 4px 0 0; color: #53689e; font-size: 13px; line-height: 1.4; }
+.province-routes { scroll-margin-top: 85px; }
+.province-search { display: flex; gap: 9px; margin-top: 10px; }
+.province-search label { display: flex; align-items: center; gap: 13px; flex: 1; min-width: 0; height: 48px; padding: 0 16px; border: 1px solid #dce5f9; border-radius: 7px; background: #fff; color: #001eea; }
+.province-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: #07165d; font: 13px var(--font-vietnam),sans-serif; }
+.province-search input::placeholder { color: #7a8cb9; }
+.province-search label button { display: grid; place-items: center; border: 0; background: transparent; color: #53689e; cursor: pointer; }
+.province-search > button { min-width: 165px; }
+.province-categories { display: flex; flex-wrap: wrap; gap: 8px; margin: 11px 0 14px; }
+.province-categories button { display: inline-flex; align-items: center; gap: 7px; min-height: 33px; padding: 7px 13px; border: 0; border-radius: 20px; background: #eaf1ff; color: #001eea; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.province-categories button.active { background: #001eea; color: #fff; }
+.province-route-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px 12px; }
+.province-route-card { display: flex; align-items: center; gap: 13px; min-width: 0; min-height: 86px; padding: 7px; border: 1px solid #e7ecf8; border-radius: 9px; background: #fff; box-shadow: 0 4px 14px #10246b0b; }
+.province-route-image { position: relative; flex: 0 0 98px; height: 67px; overflow: hidden; border-radius: 6px; background: #e8f1ff; }
+.province-route-image img { object-fit: cover; }
+.province-route-copy { flex: 1; min-width: 0; }
+.province-route-copy h3 { margin: 0 0 2px; font-size: 12px; line-height: 1.3; letter-spacing: 0; }
+.province-route-copy h3 a { display: inline-flex; align-items: center; flex-wrap: wrap; column-gap: 4px; color: #07165d; }
+.province-route-copy h3 a:hover { color: #001eea; }
+.province-route-copy p { margin: 0; font-size: 13px; font-weight: 800; line-height: 1.2; }
+.province-route-fixed { color: #ff5122; }
+.province-route-fixed strong { font-size: 22px; }
+.province-route-contact { color: #001eea; }
+.province-route-copy small { display: block; color: #7286b8; font-size: 11px; line-height: 1.2; }
+.province-route-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 0 0 auto; min-width: 108px; min-height: 34px; padding: 7px 10px; border: 1px solid #bdcfff; border-radius: 6px; color: #001eea; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.province-route-link:hover { border-color: #001eea; background: #eef3ff; }
+.province-empty { padding: 45px 20px; border: 1px solid #e6ecf9; border-radius: 9px; background: #fff; color: #53689e; text-align: center; }
+.province-pricing-note { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 41px; margin: 12px 0 17px; padding: 10px 14px; border-radius: 8px; background: #eaf1ff; color: #53689e; font-size: 11px; line-height: 1.4; }
+.province-pricing-note svg { flex: 0 0 19px; color: #001eea; }
+.province-vehicles { padding: 18px 19px 15px; border-radius: 11px; background: #e9f2ff; }
+.province-vehicle-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 13px; margin-top: 12px; }
+.province-vehicle-grid article { position: relative; min-width: 0; min-height: 216px; padding: 8px 10px 10px; border: 1px solid #e7edfa; border-radius: 9px; background: #fff; text-align: center; }
+.province-vehicle-grid article.popular { border: 2px solid #ff5d27; }
+.province-popular { position: absolute; z-index: 2; top: -11px; right: 0; padding: 5px 10px; border-radius: 16px; background: #ff5d27; color: #fff; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.province-vehicle-image { display: block; height: 109px; background: url('/images/home-vehicle-trio.webp') no-repeat; background-size: 300% auto; }
+.province-vehicle-image.car-left { background-position: left 53%; }
+.province-vehicle-image.car-center { background-position: center 53%; }
+.province-vehicle-image.car-right { background-position: right 53%; }
+.province-vehicle-grid h3 { margin: 0; font-size: 15px; }
+.province-vehicle-grid p { max-width: 210px; margin: 3px auto 7px; color: #6a7faf; font-size: 11px; line-height: 1.25; }
+.province-vehicle-grid article > div > a { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 132px; min-height: 30px; padding: 5px 10px; border: 1px solid #adbeff; border-radius: 5px; color: #001eea; font-size: 11px; font-weight: 700; }
+.province-explore { margin-top: 15px; }
+.province-explore-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 10px; }
+.province-explore-card { position: relative; display: block; min-height: 155px; overflow: hidden; padding: 0; border: 0; border-radius: 8px; background: #365c83; color: #fff; text-align: left; cursor: pointer; }
+.province-explore-photo { position: absolute; inset: 0; }
+.province-explore-photo img { object-fit: cover; }
+.province-explore-card::before { content: ''; position: absolute; z-index: 1; inset: 0; background: linear-gradient(0deg,#071738d9,transparent 80%); }
+.province-explore-caption { position: absolute; z-index: 2; inset: auto 13px 12px; }
+.province-explore-caption strong, .province-explore-caption small { display: block; }
+.province-explore-caption strong { font-size: 14px; }
+.province-explore-caption small { max-width: 250px; font-size: 11px; line-height: 1.3; }
+.province-explore-caption b { position: absolute; right: 0; bottom: 0; display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 5px; background: #fff; color: #001eea; font-size: 11px; white-space: nowrap; }
+.province-airports { margin-top: 20px; }
+.province-airports h2 { margin: 0 0 8px; font-size: 23px; }
+.province-airports > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.province-airports a { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border-radius: 8px; background: #eaf1ff; color: #001eea; font-size: 12px; font-weight: 700; }
+.province-more { margin-top: 16px; padding: 12px 17px; border: 1px solid #e2e9f9; border-radius: 9px; background: #fff; }
+.province-more > summary, .province-faq > summary { color: #07165d; font-size: 14px; font-weight: 700; cursor: pointer; }
+.province-more-copy { padding: 12px 0; color: #32477c; font-size: 14px; line-height: 1.6; }
+.province-faq { padding: 10px 0; border-top: 1px solid #e2e9f9; }
+.province-faq p { margin-bottom: 0; color: #53689e; font-size: 13px; }
+.province-contact { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 15px 0 0; padding: 13px 20px; border-radius: 10px 10px 0 0; background: linear-gradient(100deg,#ffe7d6,#fff0e6,#ffe2d2); }
+.province-contact h2 { margin: 0; font-size: 22px; }
+.province-contact p { margin: 3px 0 0; color: #50649a; font-size: 12px; }
+.province-contact > div:last-child { display: flex; gap: 8px; }
+.province-contact .home-button { min-height: 39px; padding: 8px 12px; border-radius: 6px; font-size: 11px; white-space: nowrap; }
+.province-contact .home-button-outline { border-color: #aebfff; }
+.province-redesign .site-footer { margin-top: 0; }
+.province-redesign :is(button,a,input):focus-visible { outline: 3px solid #ff5d27; outline-offset: 2px; }
+@media (max-width: 950px) {
+  .province-benefits > div { gap: 8px; padding-inline: 9px; }
+  .province-route-card { gap: 8px; }
+  .province-route-image { flex-basis: 78px; }
+  .province-route-link { min-width: 88px; }
+  .province-contact { flex-wrap: wrap; }
+}
+@media (max-width: 700px) {
+  .province-width { width: min(100% - 30px, 560px); }
+  .province-hero { min-height: 285px; }
+  .province-hero-photo { object-position: 66% center; }
+  .province-hero::before { background: linear-gradient(90deg,#fffefa 0%,#fffefae8 43%,#fffefa28 78%,transparent); }
+  .province-hero-inner { padding-top: 8px; }
+  .province-breadcrumb { gap: 7px; margin-bottom: 12px; font-size: 10px; }
+  .province-hero .home-eyebrow { margin-bottom: 5px; font-size: 10px; letter-spacing: .04em; }
+  .province-hero .home-eyebrow::after { width: 25px; }
+  .province-hero h1 { max-width: 240px; font-size: clamp(32px, 8vw, 43px); }
+  .province-hero-copy > p:not(.home-eyebrow) { max-width: 220px; margin-top: 6px; font-size: 12px; line-height: 1.3; }
+  .province-hero-pills { margin-top: 9px; }
+  .province-hero-pills span { min-height: 26px; padding: 4px 8px; font-size: 10px; }
+  .province-hero-pills span:not(:first-child) { display: none; }
+  .province-hero-actions { margin-top: 10px; }
+  .province-hero-actions .home-button { width: 100%; min-height: 40px; font-size: 12px; }
+  .province-hero-actions .home-button-outline { display: none; }
+  .province-content { width: min(100% - 24px, 560px); }
+  .province-benefits { margin: 0 0 19px; padding: 10px 4px; border: 0; border-radius: 0; box-shadow: none; }
+  .province-benefits > div { gap: 5px; padding: 0 5px; }
+  .province-benefits > div > span { flex-basis: 35px; height: 35px; }
+  .province-benefits svg { width: 20px; height: 20px; }
+  .province-benefits strong { font-size: 10px; }
+  .province-benefits small { font-size: 9px; line-height: 1.2; }
+  .province-heading h2 { font-size: 22px; }
+  .province-heading p { font-size: 11px; }
+  .province-search { margin-top: 8px; }
+  .province-search label { height: 44px; padding-inline: 12px; }
+  .province-search input { font-size: 12px; }
+  .province-search > button { display: none; }
+  .province-categories { flex-wrap: nowrap; gap: 6px; overflow-x: auto; margin: 8px 0 10px; scrollbar-width: none; }
+  .province-categories::-webkit-scrollbar { display: none; }
+  .province-categories button { flex: 0 0 auto; min-height: 31px; padding: 6px 10px; font-size: 10px; }
+  .province-route-grid { grid-template-columns: 1fr; gap: 6px; }
+  .province-route-card { min-height: 69px; gap: 9px; padding: 6px; }
+  .province-route-image { flex-basis: 79px; height: 55px; }
+  .province-route-copy h3 { font-size: 11px; }
+  .province-route-copy p { font-size: 11px; }
+  .province-route-fixed strong { font-size: 17px; }
+  .province-route-copy small { font-size: 9px; }
+  .province-route-link { min-width: 87px; min-height: 29px; padding: 5px 7px; font-size: 10px; }
+  .province-pricing-note { align-items: flex-start; justify-content: flex-start; margin: 9px 0 17px; padding: 10px; font-size: 10px; }
+  .province-vehicles { padding: 0; background: transparent; }
+  .province-vehicle-grid { grid-template-columns: 1fr; gap: 6px; margin-top: 9px; }
+  .province-vehicle-grid article, .province-vehicle-grid article.popular { display: flex; align-items: center; min-height: 75px; gap: 8px; padding: 5px 8px; border-width: 1px; text-align: left; }
+  .province-vehicle-image { flex: 0 0 120px; height: 64px; }
+  .province-vehicle-grid article > div { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; flex: 1; min-width: 0; column-gap: 6px; }
+  .province-vehicle-grid h3 { font-size: 12px; }
+  .province-vehicle-grid p { margin: 2px 0 0; font-size: 10px; }
+  .province-vehicle-grid article > div > a { grid-column: 2; grid-row: 1 / 3; min-width: 100px; min-height: 29px; padding-inline: 7px; font-size: 10px; }
+  .province-vehicle-grid article.popular { border-color: #ff5d27; }
+  .province-popular { top: -7px; right: 6px; padding: 3px 7px; font-size: 9px; }
+  .province-explore { margin-top: 16px; }
+  .province-explore-grid { gap: 7px; }
+  .province-explore-card { min-height: 160px; }
+  .province-explore-caption { inset: auto 8px 8px; }
+  .province-explore-caption strong { font-size: 11px; }
+  .province-explore-caption small { max-width: none; padding-bottom: 29px; font-size: 9px; }
+  .province-explore-caption b { right: 0; bottom: 0; font-size: 9px; }
+  .province-contact { display: block; margin-inline: -7px; padding: 13px 15px; }
+  .province-contact h2 { font-size: 18px; }
+  .province-contact p { font-size: 10px; }
+  .province-contact > div:last-child { margin-top: 9px; }
+  .province-contact .home-button { flex: 1; font-size: 10px; }
+  .province-request { display: none; }
+}
+@media (max-width: 420px) {
+  .province-hero { min-height: 275px; }
+  .province-benefits > div { flex-direction: column; align-items: flex-start; }
+  .province-route-image { flex-basis: 70px; }
+  .province-route-link { min-width: 75px; font-size: 9px; }
+  .province-vehicle-image { flex-basis: 105px; }
+  .province-vehicle-grid article > div > a { min-width: 82px; }
+}

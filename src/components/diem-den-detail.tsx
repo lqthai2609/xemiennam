@@ -1,235 +1,80 @@
+"use client";
+
+import { useMemo, useState, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock3, Milestone, Phone, PlaneTakeoff } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, Building2, CalendarDays, CarFront, ChevronRight, Factory, Info, MapPin, MessageCircle, Phone, Search, ShieldCheck, TicketCheck, Trees, UsersRound, X } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
+import { SiteFooter } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
-import { routeHref, routePriceKicker, type Route } from "@/types/route";
+import { routeHref, type Route, type RoutePricingPackage } from "@/types/route";
 import type { DiemDen } from "@/types/diem-den";
 import type { AirportConnectionLink } from "@/lib/api/airport-routes";
-import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
+import { locationMatchesQuery } from "@/lib/location-search";
+import { getZaloChatLink } from "@/lib/zalo";
 
-const footerLinkGroups = [
-  {
-    title: "KHÁM PHÁ",
-    links: [
-      { label: "Tuyến đường", href: "/tuyen-duong" },
-      { label: "Cẩm nang đi đường", href: "/blog" },
-    ],
-  },
-  {
-    title: "HỖ TRỢ",
-    links: [
-      { label: "Câu hỏi thường gặp", href: "#faq" },
-      { label: "Liên hệ", href: "/lien-he" },
-    ],
-  },
-];
+const vehicleSuggestions = [
+  { slug: "4-cho", type: "4 chỗ", className: "car-left", description: "Phù hợp khách đi cá nhân, cặp đôi hoặc nhóm nhỏ." },
+  { slug: "7-cho", type: "7 chỗ", className: "car-center", description: "Rộng rãi, thoải mái cho gia đình hoặc nhóm bạn." },
+  { slug: "16-cho", type: "16 chỗ", className: "car-right", description: "Phù hợp đoàn đông, công ty, đi công tác hoặc du lịch." },
+] as const;
+type Category = "all" | "city" | "industrial" | "travel" | "district";
+const categoryOptions = [
+  { key: "all", label: "Tất cả", icon: MapPin },
+  { key: "city", label: "Đô thị", icon: Building2 },
+  { key: "industrial", label: "Khu công nghiệp", icon: Factory },
+  { key: "travel", label: "Du lịch", icon: Trees },
+  { key: "district", label: "Huyện / thị xã", icon: Building2 },
+] as const;
 
-function RegionRouteCard({ route }: { route: Route }) {
-  return (
-    <Link className="route-ticket related-ticket" href={routeHref(route)}>
-      <div className="rt-price">
-        <span>{routePriceKicker(route)}</span>
-        <b>{route.price}</b>
-      </div>
-      <div className="rt-body">
-        <div className="rt-route">
-          <span>{getPublicLocationLabel(route.from)}</span>
-          <ArrowRight size={16} />
-          <span>{getPublicLocationLabel(route.to)}</span>
-        </div>
-        <div className="rt-meta">
-          {route.time && <span><Clock3 size={13} /> {route.time}</span>}
-          {route.distance && <span><Milestone size={13} /> {route.distance}</span>}
-          {route.vehicleTypes.length > 0 && <span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span>}
-        </div>
-      </div>
-      <div className="rt-cta">Xem chi tiết <ArrowRight size={14} /></div>
-    </Link>
-  );
+function routeCategory(route: Route): Category {
+  const name = route.to.toLocaleLowerCase("vi");
+  if (/kcn|vsip|khu công nghiệp|công nghiệp/.test(name)) return "industrial";
+  if (/du lịch|đại nam|hồ |thác|núi |suối|vườn|biển|chùa|đảo/.test(name)) return "travel";
+  if (/dĩ an|thuận an|thủ dầu một|tp\. mới|thành phố|trung tâm/.test(name)) return "city";
+  return "district";
 }
 
-function RelatedResourceCard({
-  href,
-  kicker,
-  title,
-  description,
-  cta,
-}: {
-  href: string;
-  kicker: string;
-  title: string;
-  description: string;
-  cta: string;
-}) {
-  return (
-    <Link className="route-ticket related-ticket" href={href}>
-      <div className="rt-price">
-        <span>Khám phá</span>
-        <b>{kicker}</b>
-      </div>
-      <div className="rt-body">
-        <div className="rt-route"><span>{title}</span></div>
-        <div className="rt-meta"><span>{description}</span></div>
-      </div>
-      <div className="rt-cta">{cta} <ArrowRight size={14} /></div>
-    </Link>
-  );
+function oneWayFourSeatPrice(route: Route): RoutePricingPackage | undefined {
+  if (!route.pricingV2?.outbound.enabled) return undefined;
+  return route.pricingV2.outbound.packages.find((item) => item.vehicleType === "4 chỗ" && item.packageKey === "one_way" && item.mode !== "disabled");
 }
 
-export function DiemDenDetailPage({
-  regionName,
-  hub,
-  routes,
-  airportConnections = [],
-  heroImageUrl,
-}: {
-  regionName: string;
-  hub?: DiemDen;
-  routes: Route[];
-  airportConnections?: AirportConnectionLink[];
-  heroImageUrl?: string;
-}) {
+function RouteCard({ route, imageUrl }: { route: Route; imageUrl?: string }) {
+  const from = getPublicLocationLabel(route.from), to = getPublicLocationLabel(route.to);
+  const price = oneWayFourSeatPrice(route);
+  const legacy = !route.pricingV2 ? route.pricingByVehicle.find((item) => item.vehicleType === "4 chỗ" && (!item.priceType || item.priceType === "one_way")) : undefined;
+  const fixedPrice = price?.mode === "fixed" && typeof price.price === "number" && price.price > 0 ? price.priceLabel || `${Math.round(price.price / 1000).toLocaleString("vi-VN")}K` : legacy && legacy.pricingMode !== "contact" ? legacy.price : undefined;
+  return <article className="province-route-card"><Link href={routeHref(route)} className="province-route-image" aria-label={`Xem tuyến ${from} đi ${to}`}>{imageUrl && <Image src={route.featuredImage || imageUrl} alt="" fill sizes="(max-width: 700px) 92px, 110px" />}</Link><div className="province-route-copy"><h3><Link href={routeHref(route)}>{from} <ArrowRight size={13} aria-hidden="true" /> {to}</Link></h3><p className={fixedPrice ? "province-route-fixed" : "province-route-contact"}>{fixedPrice ? <>Giá chỉ <strong>{fixedPrice}</strong></> : "Liên hệ báo giá"}</p><small>Xe 4 chỗ · Một chiều/chuyến</small></div><Link href={routeHref(route)} className="province-route-link">Xem tuyến <ArrowRight size={15} aria-hidden="true" /></Link></article>;
+}
+
+export function DiemDenDetailPage({ regionName, hub, routes, airportConnections = [], heroImageUrl }: { regionName: string; hub?: DiemDen; routes: Route[]; airportConnections?: AirportConnectionLink[]; heroImageUrl?: string }) {
   const publicRegionName = getPublicLocationLabel(regionName);
-  const routeCount = routes.length;
-  const heroDescription = routeCount > 0
-    ? `Thuê xe nguyên chuyến đi ${publicRegionName} với ${routeCount} tuyến đang phục vụ. Chủ động giờ khởi hành, loại xe và hành trình.`
-    : `Thuê xe nguyên chuyến đi ${publicRegionName}, chủ động giờ khởi hành, loại xe và hành trình.`;
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<Category>("all");
+  const zaloLink = getZaloChatLink();
+  const availableCategories = useMemo(() => categoryOptions.filter((item) => item.key === "all" || routes.some((route) => routeCategory(route) === item.key)), [routes]);
+  const visibleRoutes = useMemo(() => routes.filter((route) => (category === "all" || routeCategory(route) === category) && (!query.trim() || locationMatchesQuery(route.to, query.trim()) || locationMatchesQuery(route.from, query.trim()))), [routes, category, query]);
+  const industryRoutes = routes.filter((route) => routeCategory(route) === "industrial");
+  const travelRoutes = routes.filter((route) => routeCategory(route) === "travel");
 
-  return (
-    <main className="site-shell">
-      <SiteHeader
-        menuItems={navItems}
-        hotline={SITE_HOTLINE}
-        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
-        ctaLabel="Đặt xe ngay"
-        ctaHref="/#booking"
-      />
+  function search(event: FormEvent<HTMLFormElement>) { event.preventDefault(); document.getElementById("province-routes")?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  function chooseCategory(next: Category) { setCategory(next); setQuery(""); document.getElementById("province-routes")?.scrollIntoView({ behavior: "smooth", block: "start" }); }
 
-      <UnifiedHero
-        eyebrow="THUÊ XE LIÊN TỈNH"
-        title={`Thuê xe đi ${publicRegionName}`}
-        description={heroDescription}
-        backgroundImage={heroImageUrl}
-        backHref="/diem-den"
-        backLabel="Tất cả điểm đến"
-      />
-
-      <section className="section-wrap blog-detail-content">
-        <div className="section-heading">
-          <div>
-            <p className="section-label">THÔNG TIN ĐIỂM ĐẾN</p>
-            <h2>Chủ động hành trình đi {publicRegionName}.</h2>
-          </div>
-        </div>
-        {hub ? (
-          <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: formatPublicLocationText(hub.contentHtml) }} />
-        ) : (
-          <article className="blog-detail-body">
-            <p>
-              {SITE_NAME} nhận thuê xe nguyên chuyến đi {publicRegionName} cho gia đình, nhóm khách và doanh nghiệp.
-              Khách chủ động chọn giờ khởi hành, điểm đón trả và loại xe phù hợp, không phụ thuộc lịch trình cố định.
-            </p>
-            <p>
-              Chọn một tuyến bên dưới để xem thông tin hành trình và mức giá hiện có. Với nhu cầu riêng hoặc tuyến
-              chưa niêm yết, {SITE_NAME} sẽ tư vấn phương án phù hợp trước khi xác nhận chuyến.
-            </p>
-          </article>
-        )}
-      </section>
-
-      <section className="related-section section-wrap" id="routes">
-        <div className="section-heading">
-          <div>
-            <p className="section-label">TUYẾN XE ĐI {publicRegionName.toUpperCase()}</p>
-            <h2>{routeCount > 0 ? `${routeCount} tuyến đang phục vụ.` : "Tư vấn tuyến theo nhu cầu."}</h2>
-          </div>
-          <Link className="text-link" href="/bang-gia">
-            Xem bảng giá đầy đủ <ArrowRight size={17} />
-          </Link>
-        </div>
-        {routeCount > 0 ? (
-          <div className="route-list related-list">
-            {routes.map((route) => <RegionRouteCard route={route} key={route.id} />)}
-          </div>
-        ) : (
-          <p>Chưa có tuyến niêm yết cho khu vực này. Liên hệ {SITE_NAME} để được tư vấn hành trình phù hợp.</p>
-        )}
-      </section>
-
-      {airportConnections.length > 0 && (
-        <section className="section-wrap vehicle-type-related-routes">
-          <div className="section-heading-row">
-            <div>
-              <p className="section-label">KẾT NỐI SÂN BAY</p>
-              <h2>Tuyến sân bay liên quan đến {publicRegionName}.</h2>
-            </div>
-          </div>
-          <div className="departure-list">
-            {airportConnections.map((airport) => (
-              <Link key={airport.airportId} href={airport.href} className="vehicle-chip">
-                <PlaneTakeoff size={15} /> {airport.label} · {airport.routeCount} tuyến
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {hub && hub.faqItems.length > 0 && (
-        <section className="section-wrap blog-detail-content" id="faq">
-          <div className="blog-detail-faq">
-            <p className="section-label">CÂU HỎI THƯỜNG GẶP</p>
-            <h2>Thông tin cần biết khi thuê xe đi {publicRegionName}.</h2>
-            <div className="blog-faq-list">
-              {hub.faqItems.map((item, index) => (
-                <details className="blog-faq-item" key={`${item.question}-${index}`}>
-                  <summary>{formatPublicLocationText(item.question)}</summary>
-                  <p>{formatPublicLocationText(item.answer)}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section className="related-section section-wrap">
-        <div className="section-heading">
-          <div>
-            <p className="section-label">KHÁM PHÁ THÊM</p>
-            <h2>Lên kế hoạch chuyến đi thuận tiện hơn.</h2>
-          </div>
-        </div>
-        <div className="route-list related-list">
-          <RelatedResourceCard href="/tuyen-duong" kicker="Tuyến" title="Tất cả tuyến đường" description="So sánh các hành trình đang phục vụ" cta="Khám phá" />
-          <RelatedResourceCard href="/loai-xe" kicker="Xe" title="Chọn loại xe" description="Tìm xe phù hợp với số người và nhu cầu" cta="Xem loại xe" />
-          <RelatedResourceCard href="/blog" kicker="Blog" title="Cẩm nang đi đường" description="Tham khảo kinh nghiệm trước chuyến đi" cta="Đọc cẩm nang" />
-        </div>
-      </section>
-
-      <section className="vehicle-type-cta combo-final-cta section-wrap">
-        <div>
-          <p className="section-label">CẦN TƯ VẤN HÀNH TRÌNH?</p>
-          <h2>Đặt xe đi {publicRegionName}.</h2>
-          <p>Gọi {SITE_NAME} để được tư vấn tuyến, loại xe và phương án phù hợp trước khi xác nhận chuyến.</p>
-        </div>
-        <a className="button button-primary" href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`Gọi ${SITE_HOTLINE}`}>
-          Gọi {SITE_HOTLINE} <Phone size={16} />
-        </a>
-      </section>
-
-      <SiteFooter
-        tagline={<>Đi đâu cũng có {SITE_NAME}.<br />Kết nối những hành trình tử tế.</>}
-        phone={SITE_HOTLINE}
-        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
-        linkGroups={footerLinkGroups}
-        socialLinks={defaultSocialLinks}
-        copyright={`© 2026 ${SITE_NAME}`}
-        madeFor="Made for the road."
-        brandMark="GC"
-        brandName={SITE_NAME}
-      />
-    </main>
-  );
+  return <main className="site-shell home-redesign province-redesign">
+    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Bảng giá", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
+    <section className="province-hero" aria-labelledby="province-title">{heroImageUrl && <Image src={heroImageUrl} alt="" fill priority sizes="100vw" className="province-hero-photo" />}<div className="province-width province-hero-inner"><nav className="province-breadcrumb" aria-label="Đường dẫn"><Link href="/diem-den">⌂ <span>Điểm đến</span></Link><span>/</span><span>{publicRegionName}</span></nav><div className="province-hero-copy"><p className="home-eyebrow">TUYẾN ĐƯỜNG THEO TỈNH THÀNH</p><h1 id="province-title">Thuê xe đi<br />{publicRegionName}</h1><p>Xe riêng có tài xế từ Sài Gòn. Chọn điểm đến, loại xe và lịch trình phù hợp.</p><div className="province-hero-pills"><span><CarFront size={18} aria-hidden="true" />{routes.length} tuyến đang phục vụ</span><span><CalendarDays size={18} aria-hidden="true" />Chủ động giờ đón</span><span><ShieldCheck size={18} aria-hidden="true" />Xe riêng có tài xế</span></div><div className="province-hero-actions"><a className="home-button home-button-primary" href="#province-routes"><Search size={20} aria-hidden="true" />Khám phá các tuyến <ArrowRight size={17} aria-hidden="true" /></a>{zaloLink && <a className="home-button home-button-outline" href={zaloLink} target="_blank" rel="noopener noreferrer"><MessageCircle size={19} aria-hidden="true" />Nhắn Zalo tư vấn</a>}</div></div></div></section>
+    <div className="province-width province-content"><section className="province-benefits" aria-label="Lợi ích khi đặt xe"><div><span><UsersRound aria-hidden="true" /></span><p><strong>Xe riêng có tài xế</strong><small>Thoải mái, an toàn, phù hợp mọi nhu cầu di chuyển từ Sài Gòn.</small></p></div><div><span><CalendarDays aria-hidden="true" /></span><p><strong>Đón trả theo nhu cầu</strong><small>Chủ động thời gian, đón trả nơi theo lịch trình của bạn.</small></p></div><div><span><TicketCheck aria-hidden="true" /></span><p><strong>Xác nhận giá trước chuyến</strong><small>Minh bạch, rõ ràng, không phát sinh chi phí bất ngờ.</small></p></div></section>
+      <section className="province-routes" id="province-routes" aria-labelledby="province-routes-title"><div className="province-heading"><h2 id="province-routes-title">Chọn điểm đến tại {publicRegionName}</h2><p>Tìm nhanh tuyến phù hợp từ Sài Gòn.</p></div><form className="province-search" onSubmit={search}><label><Search size={23} aria-hidden="true" /><span className="sr-only">Tìm điểm đến trong tỉnh</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Tìm địa điểm tại ${publicRegionName}...`} />{query && <button type="button" aria-label="Xóa tìm kiếm" onClick={() => setQuery("")}><X size={17} /></button>}</label><button type="submit" className="home-button home-button-primary">Tìm tuyến <ArrowRight size={17} aria-hidden="true" /></button></form><div className="province-categories" role="group" aria-label="Lọc tuyến theo loại điểm đến">{availableCategories.map((item) => <button type="button" key={item.key} className={category === item.key ? "active" : ""} aria-pressed={category === item.key} onClick={() => chooseCategory(item.key)}><item.icon size={17} aria-hidden="true" />{item.key === "all" ? `Tất cả ${routes.length}` : item.label}</button>)}</div>{visibleRoutes.length ? <div className="province-route-grid">{visibleRoutes.map((route) => <RouteCard key={route.id} route={route} imageUrl={heroImageUrl} />)}</div> : <div className="province-empty" role="status">Chưa tìm thấy tuyến phù hợp. Hãy thử địa điểm hoặc nhóm khác.</div>}</section>
+      <p className="province-pricing-note"><Info size={19} aria-hidden="true" /><span>Giá chỉ áp dụng cho xe 4 chỗ, chiều {getPublicLocationLabel(routes[0]?.from || "Sài Gòn")} đi {publicRegionName}, một chiều/chuyến. Giá cuối cùng được xác nhận trước khi khởi hành.</span></p>
+      <section className="province-vehicles" aria-labelledby="province-vehicles-title"><div className="province-heading"><h2 id="province-vehicles-title">Chọn xe phù hợp cho hành trình</h2><p>Đa dạng loại xe, phục vụ tốt mọi nhu cầu từ cá nhân, gia đình đến đoàn nhóm.</p></div><div className="province-vehicle-grid">{vehicleSuggestions.map((item) => <article key={item.slug} className={item.slug === "7-cho" ? "popular" : ""}>{item.slug === "7-cho" && <span className="province-popular">Được đặt nhiều nhất</span>}<Link href={`/loai-xe/${item.slug}`} className={`province-vehicle-image ${item.className}`} aria-label={`Xem xe ${item.type}`} /><div><h3>Xe {item.type}</h3><p>{item.description}</p><Link href={`/loai-xe/${item.slug}`}>Xem chi tiết <ArrowRight size={15} aria-hidden="true" /></Link></div></article>)}</div></section>
+      {(industryRoutes.length > 0 || travelRoutes.length > 0) && <section className="province-explore" aria-labelledby="province-explore-title"><div className="province-heading"><h2 id="province-explore-title">Khám phá {publicRegionName} theo cách của bạn</h2><p>Dù đi công tác hay đi chơi, luôn có hành trình phù hợp cùng {SITE_NAME}.</p></div><div className="province-explore-grid">{industryRoutes.length > 0 && <button type="button" onClick={() => chooseCategory("industrial")} className="province-explore-card"><span className="province-explore-photo">{heroImageUrl && <Image src={heroImageUrl} alt="" fill sizes="(max-width: 700px) 50vw, 50vw" />}</span><span className="province-explore-caption"><strong>Đi công tác và khu công nghiệp</strong><small>Chủ động di chuyển đến các trung tâm hành chính, khu công nghiệp.</small><b>Xem các tuyến <ArrowRight size={15} /></b></span></button>}{travelRoutes.length > 0 && <button type="button" onClick={() => chooseCategory("travel")} className="province-explore-card"><span className="province-explore-photo">{heroImageUrl && <Image src={heroImageUrl} alt="" fill sizes="(max-width: 700px) 50vw, 50vw" />}</span><span className="province-explore-caption"><strong>Đi chơi cùng gia đình</strong><small>Khám phá các điểm vui chơi và nghỉ dưỡng tại {publicRegionName}.</small><b>Xem các tuyến <ArrowRight size={15} /></b></span></button>}</div></section>}
+      {airportConnections.length > 0 && <section className="province-airports" aria-labelledby="province-airports-title"><h2 id="province-airports-title">Tuyến sân bay liên quan</h2><div>{airportConnections.map((airport) => <Link key={airport.airportId} href={airport.href}>{airport.label} · {airport.routeCount} tuyến <ChevronRight size={16} /></Link>)}</div></section>}
+      {hub && (hub.contentHtml || hub.faqItems.length > 0) && <details className="province-more"><summary>Thông tin thêm về {publicRegionName}</summary>{hub.contentHtml && <div className="province-more-copy blog-detail-body" dangerouslySetInnerHTML={{ __html: formatPublicLocationText(hub.contentHtml) }} />}{hub.faqItems.map((item, index) => <details key={`${item.question}-${index}`} className="province-faq"><summary>{formatPublicLocationText(item.question)}</summary><p>{formatPublicLocationText(item.answer)}</p></details>)}</details>}
+      <section className="province-contact" aria-labelledby="province-contact-title"><div><h2 id="province-contact-title">Chưa thấy tuyến bạn cần?</h2><p>Liên hệ ngay để được tư vấn tuyến đường và báo giá nhanh nhất.</p></div><div>{zaloLink && <a className="home-button home-button-primary" href={zaloLink} target="_blank" rel="noopener noreferrer"><MessageCircle size={19} /> Nhắn Zalo để được tư vấn</a>}<Link className="home-button home-button-outline province-request" href="/lien-he"><BriefcaseBusiness size={18} /> Gửi yêu cầu</Link><a className="home-button home-button-outline" href={`tel:${SITE_HOTLINE_TEL}`}><Phone size={18} /> {SITE_HOTLINE}</a></div></section>
+    </div>
+    <SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "Khám phá", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Điểm đến", href: "/diem-den" }, { label: "Loại xe", href: "/loai-xe" }, { label: "Bảng giá", href: "/bang-gia" }] }, { title: "Hỗ trợ", links: [{ label: "Câu hỏi thường gặp", href: "/cau-hoi-thuong-gap" }, { label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
+  </main>;
 }
