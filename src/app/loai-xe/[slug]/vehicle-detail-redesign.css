@@ -38,8 +38,9 @@
 .vehicle-detail-needs { padding: 30px 12px 0; }
 .vehicle-detail-needs-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
 .vehicle-detail-needs-grid article { overflow: hidden; border: 1px solid #e7ebf4; border-radius: 7px; background: #fff; box-shadow: 0 5px 12px #0d267309; }
-.vehicle-detail-need-image { position: relative; height: 125px; background: #cbe8f8; }
-.vehicle-detail-need-image img { object-fit: cover; }
+.vehicle-detail-need-image { height: 125px; background: #cbe8f8 url("/images/vehicle-use-cases.webp") left center / 300% 100% no-repeat; }
+.vehicle-detail-need-image.family { background-position: center; }
+.vehicle-detail-need-image.business { background-position: right; }
 .vehicle-detail-needs-grid article > div:last-child { min-height: 100px; padding: 13px 18px; }
 .vehicle-detail-needs-grid h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 5px; font-size: 18px; font-weight: 800; }
 .vehicle-detail-needs-grid h3 svg { color: #001eea; }

@@ -22,9 +22,9 @@ type ServiceLink = { title: string; description: string; href: string };
 
 const capacity: Record<string, string> = { "4-cho": "1–3 hành khách", "7-cho": "3–6 hành khách", "16-cho": "7–14 hành khách", "29-cho": "Đoàn vừa", "45-cho": "Đoàn lớn", limousine: "Không gian cao cấp" };
 const needs = [
-  { title: "Cặp đôi", description: "Di chuyển thoải mái, riêng tư cho 2 người.", image: "/images/destinations/ba-ria-vung-tau.webp", icon: UsersRound },
-  { title: "Gia đình nhỏ", description: "Phù hợp cho gia đình 2–3 hành khách.", image: "/images/services/city-tour.png", icon: Luggage },
-  { title: "Đi công tác", description: "Chủ động thời gian, di chuyển nhanh chóng, thoải mái.", image: "/images/services/airport.png", icon: BriefcaseBusiness },
+  { title: "Cặp đôi", description: "Di chuyển thoải mái, riêng tư cho 2 người.", panel: "couple", icon: UsersRound },
+  { title: "Gia đình nhỏ", description: "Phù hợp cho gia đình 2–3 hành khách.", panel: "family", icon: Luggage },
+  { title: "Đi công tác", description: "Chủ động thời gian, di chuyển nhanh chóng, thoải mái.", panel: "business", icon: BriefcaseBusiness },
 ];
 
 export function VehicleTypeDetailRedesign({ category, routePrices, routes, airportRoutes, services, otherCategories }: {
@@ -71,7 +71,7 @@ export function VehicleTypeDetailRedesign({ category, routePrices, routes, airpo
     if (route) {
       const direction = direct ? "outbound" : "inbound";
       const available = route.pricingV2?.[direction].packages.some((row) => row.vehicleType === category.type && row.mode !== "disabled");
-      if (available) { router.push(`${routeComboHref(route, category.slug)}?direction=${direction}&trip_type=${trip}#pricing`); return; }
+      if (available) { router.push(`${routeComboHref(route, category.slug)}?direction=${direction}&package=${trip === "round_trip" ? "round_trip_day" : "one_way"}#pricing`); return; }
     }
     router.push(`/tuyen-duong?${new URLSearchParams({ from, to }).toString()}#route-catalog`);
   }
@@ -82,7 +82,7 @@ export function VehicleTypeDetailRedesign({ category, routePrices, routes, airpo
     <div className="vehicle-detail-width vehicle-detail-content">
       <section className="vehicle-detail-finder" aria-labelledby="vehicle-detail-finder-title"><div className="vehicle-detail-finder-heading"><h2 id="vehicle-detail-finder-title"><span><Search size={24} /></span>Bạn muốn đi đâu bằng xe {category.type}?</h2><p>Giá chưa có sẵn sẽ được báo theo lịch thực tế.</p></div><form onSubmit={submit}><label><MapPin size={22} /><span><strong>Điểm đón</strong><select value={from} onChange={(event) => { setFrom(event.target.value); setError(""); }} required><option value="">Chọn điểm đón</option>{locations.map((name) => <option key={name} value={name}>{name}</option>)}</select></span><ChevronDown size={16} /></label><button type="button" className="vehicle-detail-swap" aria-label="Đổi chiều điểm đón và điểm đến" onClick={() => { setFrom(to); setTo(from); }}><ArrowRightLeft size={21} /></button><label><MapPin size={22} /><span><strong>Điểm đến</strong><select value={to} onChange={(event) => { setTo(event.target.value); setError(""); }} required><option value="">Chọn điểm đến</option>{locations.map((name) => <option key={name} value={name}>{name}</option>)}</select></span><ChevronDown size={16} /></label><label><CarFront size={22} /><span><strong>Loại chuyến</strong><select value={trip} onChange={(event) => setTrip(event.target.value)}><option value="one_way">Một chiều</option><option value="round_trip">Khứ hồi</option></select></span><ChevronDown size={16} /></label><button type="submit" className="home-button home-button-primary">Xem giá chuyến xe <ArrowRight size={16} /></button></form>{error && <p className="vehicle-detail-error" role="alert">{error}</p>}</section>
 
-      <section className="vehicle-detail-needs"><header className="vehicle-detail-heading"><h2>Xe {category.type} phù hợp khi nào?</h2><p>Lựa chọn lý tưởng cho nhiều nhu cầu di chuyển hằng ngày.</p></header><div className="vehicle-detail-needs-grid">{needs.map((need) => <article key={need.title}><div className="vehicle-detail-need-image"><Image src={need.image} alt="" fill sizes="(max-width: 700px) 46vw, 33vw" /></div><div><h3><need.icon size={19} /> {need.title}</h3><p>{need.description}</p></div></article>)}</div><div className="vehicle-detail-dots" aria-hidden="true"><i /><i /><i /></div></section>
+      <section className="vehicle-detail-needs"><header className="vehicle-detail-heading"><h2>Xe {category.type} phù hợp khi nào?</h2><p>Lựa chọn lý tưởng cho nhiều nhu cầu di chuyển hằng ngày.</p></header><div className="vehicle-detail-needs-grid">{needs.map((need) => <article key={need.title}><div className={`vehicle-detail-need-image ${need.panel}`} role="img" aria-label={need.title} /><div><h3><need.icon size={19} /> {need.title}</h3><p>{need.description}</p></div></article>)}</div><div className="vehicle-detail-dots" aria-hidden="true"><i /><i /><i /></div></section>
 
       <section className="vehicle-detail-space"><div className="vehicle-detail-space-photos"><div className="vehicle-detail-car-photo"><Image src="/images/home-coastal-fleet.webp" alt={`Xe ${category.type} trên đường ven biển`} fill sizes="(max-width: 700px) 60vw, 33vw" /></div><div className="vehicle-detail-car-photo"><Image src="/images/home-vehicle-trio.webp" alt="Các lựa chọn xe riêng" fill sizes="(max-width: 700px) 60vw, 33vw" /></div></div><div className="vehicle-detail-space-copy"><h2>Không gian vừa đủ,<br />chuyến đi chủ động</h2><ul><li><Check />Xe riêng, chỉ phục vụ đoàn của bạn</li><li><Check />Có tài xế giàu kinh nghiệm, thân thiện</li><li><Check />Điểm đón và trả được xác nhận khi đặt</li></ul><p><Luggage size={21} />Không gian hành lý tùy dòng xe, vui lòng xác nhận khi tư vấn.</p></div></section>
 
