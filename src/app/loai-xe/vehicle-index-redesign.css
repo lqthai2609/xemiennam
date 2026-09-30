@@ -102,7 +102,7 @@
 @media (max-width: 700px) {
   .vehicle-index-width { width: min(100% - 28px,620px); }
   .vehicle-index-hero { min-height: 265px; }
-  .vehicle-index-hero-photo { left: 42%; background-position: center; }
+  .vehicle-index-hero-photo { left: 42%; background-color: #76c9f4; background-size: 200% auto; background-position: right bottom; }
   .vehicle-index-hero::after { background: linear-gradient(100deg,#fff9ee 0%,#fff9eefa 34%,#fff9eea3 48%,transparent 62%); }
   .vehicle-index-hero-inner { min-height: 265px; }
   .vehicle-index-hero-copy { max-width: 56%; padding: 17px 0 30px 8px; }
