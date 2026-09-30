@@ -40,6 +40,16 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDirection("inbound");
   }, [category.slug, route]);
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("package");
+    if (requested === "round_trip_day") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setJourney("roundTrip");
+    } else if (requested === "2d1n") {
+      setJourney("twoDays");
+      setDays("twoDays");
+    }
+  }, []);
 
   const prelaunch = isPrelaunchAirportRoute(route);
   const inboundAvailable = Boolean(findComboVehiclePriceForDirection(route, category.slug, "inbound"));
