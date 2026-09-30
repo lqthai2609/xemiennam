@@ -23,7 +23,7 @@ const featuredDescriptions: Record<string, string> = {
   "tay-ninh": "Núi Bà Đen hùng vĩ, điểm đến tâm linh và khám phá.",
   "can-tho": "Miền Tây sông nước, văn hóa đặc sắc và ẩm thực phong phú.",
 };
-const regionOrder = ["binh-duong", "long-an", "binh-phuoc", "phan-thiet", "ben-tre", "my-tho", "chau-doc", "da-lat", "ho-chi-minh", "tphcm-noi-thanh"];
+const regionSlugOrder = ["binh-duong", "long-an", "binh-phuoc", "phan-thiet", "ben-tre", "my-tho", "chau-doc", "da-lat", "ho-chi-minh", "tphcm-noi-thanh"]; // Canonical slug order; display labels use destinationName.
 
 function destinationName(destination: DestinationCard) {
   return destination.slug === "tphcm-noi-thanh" ? "Sài Gòn nội thành" : getPublicLocationLabel(destination);
@@ -109,8 +109,8 @@ export function DestinationsPage({ destinations, routes }: { destinations: Desti
   const [submittedQuery, setSubmittedQuery] = useState("");
   const featured = featuredSlugs.flatMap((slug) => destinations.filter((item) => item.slug === slug));
   const regions = destinations.filter((item) => !featuredSlugs.includes(item.slug)).sort((a, b) => {
-    const first = regionOrder.indexOf(a.slug), second = regionOrder.indexOf(b.slug);
-    return (first < 0 ? regionOrder.length : first) - (second < 0 ? regionOrder.length : second);
+    const first = regionSlugOrder.indexOf(a.slug), second = regionSlugOrder.indexOf(b.slug);
+    return (first < 0 ? regionSlugOrder.length : first) - (second < 0 ? regionSlugOrder.length : second);
   });
   const filteredFeatured = submittedQuery ? featured.filter((item) => destinationMatches(item, submittedQuery, routes)) : featured;
   const filteredRegions = (submittedQuery ? regions.filter((item) => destinationMatches(item, submittedQuery, routes)) : regions).filter((item) => !query || destinationMatches(item, query, routes));

@@ -20,7 +20,7 @@ const preferredRegions = ["Bà Rịa - Vũng Tàu", "Cần Thơ", "Tây Ninh", "
 const featuredPlaces = ["Vũng Tàu", "Hồ Tràm", "Long Hải"];
 function displayRegion(region: string) { return getPublicLocationLabel(region).replaceAll("&amp;", "&"); }
 function routeRank(route: Route) {
-  const fromSaigon = /Sài Gòn|Hồ Chí Minh|TP.?HCM/i.test(route.from);
+  const fromSaigon = getPublicLocationLabel(route.from) === "Sài Gòn";
   const destination = featuredPlaces.findIndex((place) => route.to === place);
   return (fromSaigon ? 0 : 100) + (destination < 0 ? 20 : destination);
 }

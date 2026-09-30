@@ -56,9 +56,17 @@ test("date and vehicle are optional and select the correct destination page", ()
 test("route vehicle combo preserves the requested pricing direction", () => {
   assert.match(comboLogic, /findComboVehiclePriceForDirection/);
   assert.match(comboLogic, /route\.pricingV2\?\.\[direction\]/);
-  assert.match(comboPage, /requestedDirection !== "inbound"/);
-  assert.match(comboPage, /direction=\{direction\}/);
-  assert.match(comboPage, /displayRoute=\{displayRoute\}/);
+  assert.match(comboPage, /new URLSearchParams\(window\.location\.search\)\.get\("direction"\)/);
+  assert.match(comboPage, /requested !== "inbound" \|\| !findComboVehiclePriceForDirection\(route, category\.slug, "inbound"\)/);
+  assert.match(comboPage, /setDirection\("inbound"\)/);
+  assert.match(comboPage, /const activeDirection: RoutePricingDirectionKey = inbound \? "inbound" : "outbound"/);
+  assert.match(comboPage, /route\.pricingV2\?\.\[activeDirection\]/);
+  assert.match(comboPage, /findComboVehiclePriceForDirection\(route, category\.slug, activeDirection\)/);
+  assert.match(comboPage, /const from = getPublicLocationLabel\(inbound \? route\.to : route\.from\)/);
+  assert.match(comboPage, /const to = getPublicLocationLabel\(inbound \? route\.from : route\.to\)/);
+  assert.match(comboPage, /const displayRoute = `\$\{from\} – \$\{to\}`/);
+  assert.match(comboPage, /const bookingProps = \{[^\n]*displayRoute,[^\n]*direction: activeDirection,/);
+  assert.match(comboPage, /<RouteBookingActions \{\.\.\.bookingProps\}/);
 });
 
 test("swap control is borderless, lower, and rotates clockwise", () => {
