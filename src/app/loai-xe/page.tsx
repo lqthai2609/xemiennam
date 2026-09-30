@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { VehicleCategoryIndex } from "@/components/vehicle-type-landing-day13";
+import { VehicleIndexRedesign } from "@/components/vehicle-index-redesign";
+import "../home-redesign.css";
+import "./vehicle-index-redesign.css";
 import { vehicleCategories, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchRoutes } from "@/lib/api/routes";
@@ -23,5 +25,5 @@ export default async function VehicleTypesPage() {
     startingPrice: getVehicleCategoryStartingPrice(routes, category.type) ?? "Liên hệ báo giá",
   }));
 
-  return <VehicleCategoryIndex categories={categories} routes={routes} />;
+  return <VehicleIndexRedesign categories={categories} routes={routes} />;
 }
