@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
+import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowRightLeft, CarFront, ChevronDown, MapPin, MessageCircle, Phone, Search, X, FileText } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, CarFront, ChevronDown, MapPin, Phone, Search, X, FileText } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
@@ -156,7 +157,7 @@ export function DestinationsPage({ destinations, routes }: { destinations: Desti
       </section>
       <section className="dest-steps" aria-labelledby="dest-steps-title"><div className="dest-section-heading"><h2 id="dest-steps-title">Chọn điểm đến, xem tuyến, chọn xe</h2><p>Chỉ với 3 bước đơn giản để tìm chuyến đi phù hợp.</p></div><div className="dest-steps-grid">{([{ icon: Search, title: "Chọn điểm đến", copy: "Tìm khu vực hoặc điểm đến bạn muốn đi." }, { icon: FileText, title: "Xem các tuyến", copy: "Khám phá các tuyến xe phù hợp." }, { icon: CarFront, title: "Chọn xe và đặt", copy: "Chọn loại xe phù hợp và liên hệ đặt chuyến." }] as const).map((step, index) => <div key={step.title}><span className="dest-step-number">{index + 1}</span><step.icon aria-hidden="true" /><p><strong>{step.title}</strong><small>{step.copy}</small></p></div>)}</div></section>
       <JourneyFinder routes={routes} />
-      <section className="dest-contact" aria-labelledby="dest-contact-title"><div><h2 id="dest-contact-title">Chưa thấy điểm đến bạn cần?</h2><p>Liên hệ ngay để được tư vấn tuyến đường và báo giá nhanh nhất.</p></div><div className="dest-contact-actions">{zaloLink && <a className="home-button home-button-primary" href={zaloLink} target="_blank" rel="noopener noreferrer"><MessageCircle size={18} />Nhắn Zalo</a>}<a className="home-button home-button-outline" href={`tel:${SITE_HOTLINE_TEL}`}><Phone size={17} />Gọi {SITE_HOTLINE}</a></div></section>
+      <section className="dest-contact" aria-labelledby="dest-contact-title"><div><h2 id="dest-contact-title">Chưa thấy điểm đến bạn cần?</h2><p>Liên hệ ngay để được tư vấn tuyến đường và báo giá nhanh nhất.</p></div><div className="dest-contact-actions">{zaloLink && <a className="home-button home-button-primary zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon />Nhắn Zalo</a>}<a className="home-button home-button-outline" href={`tel:${SITE_HOTLINE_TEL}`}><Phone size={17} />Gọi {SITE_HOTLINE}</a></div></section>
     </div>
     <SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "Khám phá", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Loại xe", href: "/loai-xe" }] }, { title: "Hỗ trợ", links: [{ label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
   </main>;

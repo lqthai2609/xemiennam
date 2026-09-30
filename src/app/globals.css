@@ -310,7 +310,10 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 .floating-action:hover { transform: translateY(-2px); box-shadow: 0 14px 28px color-mix(in srgb, var(--foreground) 24%, transparent); }
 .floating-action svg { width: 18px; height: 18px; }
 .floating-action-call { background: var(--primary); }
-.floating-action-zalo { background: var(--foreground); color: var(--background); }
+.floating-action-zalo { background: #ff5122; color: #fff; }
+.zalo-cta { background: #ff5122 !important; border-color: #ff5122 !important; color: #fff !important; }
+.zalo-cta:hover { background: #e8471c !important; border-color: #e8471c !important; color: #fff !important; }
+.zalo-icon { display: inline-block; width: 20px; height: 20px; flex: 0 0 20px; padding: 2px; border-radius: 50%; background: #fff; object-fit: contain; vertical-align: middle; }
 @media (max-width: 640px) { .floating-action { flex: 1; } }
 
 /* ===== /diem-den — danh sách khu vực ===== */

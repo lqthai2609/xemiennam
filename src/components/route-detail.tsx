@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Clock3, FileText, MapPin, MessageCircle, Phone, Route as RouteIcon, UsersRound } from "lucide-react";
+import { ArrowRight, CalendarDays, Clock3, FileText, MapPin, Phone, Route as RouteIcon, UsersRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { RoutePricingSection } from "@/components/route-pricing-section";
@@ -136,7 +137,7 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
       {relatedPosts.length > 0 && <section className="route-detail-design-extra" aria-labelledby="route-posts-title"><div className="route-detail-design-section-heading"><h2 id="route-posts-title">Cẩm nang hành trình</h2><Link href="/blog">Xem bài viết khác <ArrowRight size={16} /></Link></div><div className="blog-grid">{relatedPosts.map((post) => <BlogCard post={post} key={post.id} />)}</div></section>}
 
       <section className="route-detail-design-contact" aria-labelledby="route-contact-title"><div><span className="home-eyebrow">ALO ĐẶT XE</span><h2 id="route-contact-title">{prelaunch ? `Cần tư vấn tuyến ${to}?` : `Sẵn sàng đi ${to}?`}</h2><p>{prelaunch ? "Liên hệ để được tư vấn hành trình; tuyến chưa nhận đặt chuyến." : "Đặt xe ngay để có chuyến đi thoải mái, chủ động lịch trình của bạn."}</p></div><div className="route-detail-design-contact-actions">
-        {zaloLink && <a className="home-button home-button-primary" href={zaloLink} target="_blank" rel="noopener noreferrer"><MessageCircle size={19} /> {prelaunch ? "Nhắn Zalo tư vấn" : "Nhắn Zalo đặt xe"}</a>}
+        {zaloLink && <a className="home-button home-button-primary zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon /> {prelaunch ? "Nhắn Zalo tư vấn" : "Nhắn Zalo đặt xe"}</a>}
         {!prelaunch && <a className="home-button home-button-outline" href="#pricing"><FileText size={17} /> Chọn xe gửi yêu cầu</a>}
         <a className="home-button home-button-outline" href={`tel:${SITE_HOTLINE_TEL}`}><Phone size={17} /> Gọi {SITE_HOTLINE}</a>
       </div></section>

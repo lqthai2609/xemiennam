@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { ZaloIcon } from "@/components/zalo-icon";
 import { Suspense } from "react";
-import { ArrowRight, CalendarDays, CarFront, ClipboardCheck, MessageCircle, Phone, Search } from "lucide-react";
+import { ArrowRight, CalendarDays, CarFront, ClipboardCheck, Phone, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { HomeFeaturedRoutes, HomeFeaturedDestinations, HomeFeaturedBlog } from "@/components/home-dynamic-sections";
@@ -47,7 +48,7 @@ export default function Home() {
           <p className="home-hero-lede">Chọn tuyến, xem giá và chủ động lịch đón cùng Alo Đặt Xe.</p>
           <div className="home-hero-actions">
             <a className="home-button home-button-primary" href="#booking">Xem tuyến và giá <ArrowRight size={18} /></a>
-            {zaloLink && <a className="home-button home-button-outline" href={zaloLink} target="_blank" rel="noopener noreferrer"><MessageCircle size={18} /> Nhắn Zalo tư vấn</a>}
+            {zaloLink && <a className="home-button home-button-outline zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon /> Nhắn Zalo tư vấn</a>}
           </div>
         </div>
       </section>
@@ -85,7 +86,7 @@ export default function Home() {
       <section className="home-contact home-container" aria-labelledby="home-contact-title">
         <div><h2 id="home-contact-title">Chưa tìm thấy chuyến phù hợp?</h2><p>Liên hệ ngay để được tư vấn tuyến đường phù hợp nhất.</p></div>
         <div className="home-contact-actions">
-          {zaloLink && <a className="home-button home-button-primary" href={zaloLink} target="_blank" rel="noopener noreferrer"><MessageCircle size={18} /> Nhắn Zalo tư vấn <ArrowRight size={18} /></a>}
+          {zaloLink && <a className="home-button home-button-primary zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon /> Nhắn Zalo tư vấn <ArrowRight size={18} /></a>}
           <a className="home-button home-button-outline" href={`tel:${SITE_HOTLINE_TEL}`}><Phone size={18} /> Gọi {SITE_HOTLINE}</a>
         </div>
       </section>

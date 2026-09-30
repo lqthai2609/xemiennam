@@ -7,6 +7,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Home, Menu, Phone, Search, X } f
 import { Button } from "@/components/ui/button";
 import { SITE_NAME } from "@/lib/site-config";
 import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
+import { ZaloIcon } from "@/components/zalo-icon";
 import "./site-header.css";
 
 export type NavItem = { label: string; href: string };
@@ -76,9 +77,9 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref,
         <a className="nav-hotline" href={resolvedHotlineHref}>
           <Phone size={16} /> {hotline}
         </a>
-        <Button className="nav-cta" asChild>
+        <Button className={`nav-cta${ctaHref.startsWith("https://zalo.me/") ? " zalo-cta" : ""}`} asChild>
           <Link href={ctaHref}>
-            {ctaLabel} <ArrowRight data-icon="inline-end" />
+            {ctaHref.startsWith("https://zalo.me/") && <ZaloIcon />}{ctaLabel} <ArrowRight data-icon="inline-end" />
           </Link>
         </Button>
       </nav>

@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageCircle, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
+import { ZaloIcon } from "@/components/zalo-icon";
 import { usePathname } from "next/navigation";
 import { getZaloChatLink } from "@/lib/zalo";
 import { SITE_CONTACT_PHONE, SITE_CONTACT_PHONE_TEL, SITE_NAME } from "@/lib/site-config";
@@ -26,10 +27,10 @@ export function FloatingContactActions() {
         href={zaloLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="floating-action floating-action-zalo flex-1 justify-center sm:flex-none"
+        className="floating-action floating-action-zalo flex-1 justify-center sm:flex-none zalo-cta"
         aria-label={`Nhắn Zalo ${SITE_CONTACT_PHONE} với ${SITE_NAME}`}
       >
-        <MessageCircle data-icon="inline-start" />
+        <ZaloIcon />
         <span>Nhắn Zalo</span>
       </a>
     </div>

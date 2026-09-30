@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CarFront, ChevronRight, Clock3, Flame, MapPin, MessageCircle, Phone, Search } from "lucide-react";
+import { ArrowRight, CalendarDays, CarFront, ChevronRight, Clock3, Flame, MapPin, Phone, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BookingSearchForm } from "@/components/route-finder-form";
@@ -134,7 +135,7 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
         <div className="home-step"><span className="home-step-number">3</span><CalendarDays /><div><strong>Xác nhận lịch và giá</strong><p>Kiểm tra thông tin và xác nhận đặt xe dễ dàng.</p></div></div>
       </div></section>
       <section className="home-contact routes-design-contact" aria-labelledby="route-contact-title"><div><h2 id="route-contact-title">Chưa thấy tuyến bạn cần?</h2><p>Liên hệ ngay để được tư vấn tuyến đường phù hợp nhất.</p></div><div className="home-contact-actions">
-        {zaloLink && <a href={zaloLink} target="_blank" rel="noopener noreferrer" className="home-button home-button-primary"><MessageCircle size={18} /> Nhắn Zalo tư vấn <ArrowRight size={16} /></a>}
+        {zaloLink && <a href={zaloLink} target="_blank" rel="noopener noreferrer" className="home-button home-button-primary zalo-cta"><ZaloIcon /> Nhắn Zalo tư vấn <ArrowRight size={16} /></a>}
         <a href={`tel:${SITE_HOTLINE_TEL}`} className="home-button home-button-outline"><Phone size={18} /> Gọi {SITE_HOTLINE}</a>
       </div></section>
     </div>
