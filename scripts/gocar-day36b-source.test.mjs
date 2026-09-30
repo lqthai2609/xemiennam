@@ -78,7 +78,11 @@ test("route pricing shows journey details while the price table explains price t
   assert.match(routePricing, /Thời gian dự kiến/);
   assert.match(routePricing, /Quãng đường tham khảo/);
   assert.doesNotMatch(routePricing, /<PriceExplanation compact \/>/);
-  assert.match(priceTable, /<PriceExplanation compact \/>/);
+  assert.match(priceTable, /Cách đọc bảng giá/);
+  assert.match(priceTable, /Giá chỉ/);
+  assert.match(priceTable, /áp dụng đúng tuyến đường và loại xe hiển thị/);
+  assert.match(priceTable, /Liên hệ báo giá/);
+  assert.match(priceTable, /Giá cuối cùng, thời gian đón và các chi tiết dịch vụ sẽ được xác nhận trước khi khởi hành/);
 });
 
 test("DEP-011 replaces the public source brand while keeping the runtime hostname untouched", async () => {

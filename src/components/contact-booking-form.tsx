@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle } from "lucide-react";
+import { useEffect } from "react";
+import { CalendarDays, CarFront, Info, LoaderCircle, MapPin, Phone, Send, UserRound } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -94,6 +95,10 @@ export function ContactBookingForm({
   });
   const intermediateStops = useWatch({ control, name: "intermediateStops" }) ?? [];
 
+  useEffect(() => {
+    if (defaultRoute) setValue("route", defaultRoute);
+  }, [defaultRoute, setValue]);
+
   const submitForm = async (data: BookingFormData) => {
     try {
       const { leadId, replayed } = await onSubmit(data);
@@ -112,68 +117,25 @@ export function ContactBookingForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(submitForm)} className="flex flex-col gap-5" noValidate>
-      <div className="grid gap-5 sm:grid-cols-2">
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-          Họ tên <span className="text-destructive">*</span>
-          <input {...register("fullName")} aria-invalid={!!errors.fullName} placeholder="Nguyễn Văn A" className="form-control" />
-          <FieldError message={errors.fullName?.message} />
-        </label>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-          Số điện thoại <span className="text-destructive">*</span>
-          <input {...register("phone")} aria-invalid={!!errors.phone} inputMode="tel" placeholder="0901 234 567" className="form-control" />
-          <FieldError message={errors.phone?.message} />
-        </label>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-          Tuyến quan tâm <span className="text-destructive">*</span>
-          <select {...register("route")} aria-invalid={!!errors.route} className="form-control">
-            <option value="">Chọn tuyến xe</option>
-            {routes.map((route) => <option key={route} value={route}>{route}</option>)}
-          </select>
-          <FieldError message={errors.route?.message} />
-        </label>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-          Loại xe <span className="text-destructive">*</span>
-          <select {...register("vehicleType")} aria-invalid={!!errors.vehicleType} className="form-control">
-            <option value="">Chọn loại xe</option>
-            {vehicleTypes.map((vehicle) => <option key={vehicle} value={vehicle}>{vehicle}</option>)}
-          </select>
-          <FieldError message={errors.vehicleType?.message} />
-        </label>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-          Ngày đi
-          <input {...register("departureDate")} type="date" className="form-control" />
-        </label>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-          Điểm đón cụ thể <span className="text-destructive">*</span>
-          <input {...register("pickupAddress")} maxLength={240} aria-invalid={!!errors.pickupAddress} placeholder="Số nhà, tên đường, phường/xã..." className="form-control" />
-          <FieldError message={errors.pickupAddress?.message} />
-        </label>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground">
-          Điểm trả cụ thể <span className="text-destructive">*</span>
-          <input {...register("dropoffAddress")} maxLength={240} aria-invalid={!!errors.dropoffAddress} placeholder="Số nhà, tên đường, phường/xã..." className="form-control" />
-          <FieldError message={errors.dropoffAddress?.message} />
-        </label>
-        <MultiStopFields
-          stops={intermediateStops as IntermediateStopInput[]}
-          onChange={(stops) => setValue("intermediateStops", stops, { shouldDirty: true, shouldValidate: true })}
-          errors={errors.intermediateStops as MultiStopFieldsError[] | undefined}
-        />
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground sm:col-span-2">
-          Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
-          <textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." className="form-control min-h-24 resize-y" />
-          <FieldError message={errors.pickupNote?.message} />
-        </label>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-foreground sm:col-span-2">
-          Ghi chú <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
-          <textarea {...register("note")} aria-invalid={!!errors.note} placeholder="Số lượng hành khách, điểm đón hoặc yêu cầu khác..." className="form-control min-h-28 resize-y" />
-          <FieldError message={errors.note?.message} />
-        </label>
+    <form onSubmit={handleSubmit(submitForm)} className="contact-form" noValidate>
+      <div className="contact-form-section-title"><UserRound aria-hidden="true" /><strong>Thông tin liên hệ</strong></div>
+      <div className="contact-form-grid">
+        <label className="contact-field"><span>Họ tên <b>*</b></span><span className="contact-input-wrap"><UserRound aria-hidden="true" /><input {...register("fullName")} aria-invalid={!!errors.fullName} placeholder="Nhập họ tên của bạn" className="form-control" /></span><FieldError message={errors.fullName?.message} /></label>
+        <label className="contact-field"><span>Số điện thoại <b>*</b></span><span className="contact-input-wrap"><Phone aria-hidden="true" /><input {...register("phone")} aria-invalid={!!errors.phone} inputMode="tel" placeholder="Nhập số điện thoại" className="form-control" /></span><FieldError message={errors.phone?.message} /></label>
       </div>
-      <Button type="submit" disabled={isSubmitting} className="w-full sm:w-fit">
-        {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
-        {isSubmitting ? "Đang gửi thông tin..." : "Gửi yêu cầu đặt xe"}
-      </Button>
+      <div className="contact-form-section-title"><MapPin aria-hidden="true" /><strong>Hành trình của bạn</strong></div>
+      <div className="contact-form-grid">
+        <label className="contact-field"><span>Tuyến quan tâm <b>*</b></span><span className="contact-input-wrap"><MapPin aria-hidden="true" /><select {...register("route")} aria-invalid={!!errors.route} className="form-control"><option value="">Chọn tuyến xe</option>{routes.map((route) => <option key={route} value={route}>{route}</option>)}</select></span><FieldError message={errors.route?.message} /></label>
+        <label className="contact-field"><span>Loại xe <b>*</b></span><span className="contact-input-wrap"><CarFront aria-hidden="true" /><select {...register("vehicleType")} aria-invalid={!!errors.vehicleType} className="form-control"><option value="">Chọn loại xe</option>{vehicleTypes.map((vehicle) => <option key={vehicle} value={vehicle}>{vehicle}</option>)}</select></span><FieldError message={errors.vehicleType?.message} /></label>
+        <label className="contact-field contact-date"><span>Ngày đi</span><span className="contact-input-wrap"><CalendarDays aria-hidden="true" /><input {...register("departureDate")} type="date" className="form-control" /></span></label>
+        <label className="contact-field"><span>Điểm đón cụ thể <b>*</b></span><span className="contact-input-wrap"><MapPin aria-hidden="true" /><input {...register("pickupAddress")} maxLength={240} aria-invalid={!!errors.pickupAddress} placeholder="Nhập địa chỉ hoặc điểm đón cụ thể" className="form-control" /></span><FieldError message={errors.pickupAddress?.message} /></label>
+        <label className="contact-field"><span>Điểm trả cụ thể <b>*</b></span><span className="contact-input-wrap"><MapPin aria-hidden="true" /><input {...register("dropoffAddress")} maxLength={240} aria-invalid={!!errors.dropoffAddress} placeholder="Nhập địa chỉ hoặc điểm trả cụ thể" className="form-control" /></span><FieldError message={errors.dropoffAddress?.message} /></label>
+        <MultiStopFields compact stops={intermediateStops as IntermediateStopInput[]} onChange={(stops) => setValue("intermediateStops", stops, { shouldDirty: true, shouldValidate: true })} errors={errors.intermediateStops as MultiStopFieldsError[] | undefined} />
+        <label className="contact-field contact-full"><span>Lưu ý điểm đón <small>(nếu có)</small></span><textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} placeholder="Ví dụ: sảnh chung cư, cổng công ty, tên quán cà phê..." className="form-control" /><FieldError message={errors.pickupNote?.message} /></label>
+        <label className="contact-field contact-full"><span>Ghi chú <small>(nếu có)</small></span><textarea {...register("note")} maxLength={500} aria-invalid={!!errors.note} placeholder="Nhập thêm thông tin về chuyến đi, số người, hành lý..." className="form-control" /><FieldError message={errors.note?.message} /></label>
+      </div>
+      <Button type="submit" disabled={isSubmitting} className="contact-form-submit">{isSubmitting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <Send aria-hidden="true" />}{isSubmitting ? "Đang gửi thông tin..." : "Gửi yêu cầu đặt xe"}</Button>
+      <p className="contact-form-assurance"><Info aria-hidden="true" /> Chúng tôi xác nhận thông tin và giá trước chuyến đi.</p>
     </form>
   );
 }

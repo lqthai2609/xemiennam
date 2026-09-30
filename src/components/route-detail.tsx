@@ -1,55 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ZaloIcon } from "@/components/zalo-icon";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Check, Clock3, MapPin, Milestone, Phone, ShieldCheck, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, CalendarDays, Clock3, FileText, MapPin, Phone, Route as RouteIcon, UsersRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
+import { SiteFooter } from "@/components/site-footer";
 import { RoutePricingSection } from "@/components/route-pricing-section";
-import {
-  routeHref,
-  routeComboHref,
-  routePriceKicker,
-  vehicleTypeSlug,
-  type Route,
-  type RoutePricingDirectionKey,
-} from "@/types/route";
-import { navItems } from "@/data/nav";
-import { UnifiedHero } from "@/components/unified-hero";
 import { BlogCard } from "@/components/blog-card";
+import { routeComboHref, routeHref, vehicleTypeSlug, type Route, type RoutePricingDirectionKey } from "@/types/route";
+import { navItems } from "@/data/nav";
 import type { Testimonial } from "@/types/testimonial";
 import type { BlogPost } from "@/types/blog";
 import { reverseRouteMapEmbedSrc } from "@/lib/maps";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
+import { getZaloChatLink } from "@/lib/zalo";
 
-const footerLinkGroups = [
-  { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Cẩm nang đi đường", href: "/blog" }] },
-  { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "#" }, { label: "Chính sách huỷ chuyến", href: "#" }, { label: "Liên hệ", href: "/lien-he" }] },
-];
-
-function DetailCard({ route }: { route: Route }) {
-  return (
-    <Link className="route-ticket related-ticket" href={routeHref(route)}>
-      <div className="rt-price"><span>{routePriceKicker(route)}</span><b>{route.price}</b></div>
-      <div className="rt-body"><div className="rt-route"><span>{getPublicLocationLabel(route.from)}</span><ArrowRight size={16} /><span>{getPublicLocationLabel(route.to)}</span></div><div className="rt-meta"><span><Clock3 size={13} /> {route.time}</span><span><Milestone size={13} /> {route.distance}</span></div></div>
-      <div className="rt-cta">Xem tuyến <ArrowRight size={14} /></div>
-    </Link>
-  );
-}
-
-function directionDescription(route: Route, direction: RoutePricingDirectionKey): string {
-  const from = getPublicLocationLabel(direction === "outbound" ? route.from : route.to);
-  const to = getPublicLocationLabel(direction === "outbound" ? route.to : route.from);
-
-  if (isPrelaunchAirportRoute(route)) {
-    return `Thông tin chuẩn bị hành trình từ ${from} đến ${to}. Liên hệ ${SITE_NAME} để ghi nhận nhu cầu và tư vấn trước; lịch khai thác sân bay thực tế cần đối chiếu thông báo chính thức trước khi chốt chuyến.`;
-  }
-  if (direction === "outbound" && route.summary) return formatPublicLocationText(route.summary);
-  return `Thuê xe nguyên chiếc từ ${from} đến ${to}. Chọn loại xe và gói hành trình phù hợp, xem giá theo đúng chiều hoặc liên hệ ${SITE_NAME} để nhận báo giá theo lịch thực tế.`;
-}
+const regionImages: Record<string, string> = {
+  "Bà Rịa - Vũng Tàu": "/images/destinations/ba-ria-vung-tau.webp",
+  "Cần Thơ": "/images/destinations/can-tho.webp",
+  "Tây Ninh": "/images/destinations/tay-ninh.webp",
+  "Đồng Nai": "/images/destinations/dong-nai.webp",
+  "Phan Thiết": "/images/destinations/phan-thiet.webp",
+};
 
 function defaultDirection(route: Route): RoutePricingDirectionKey {
   if (route.pricingV2?.outbound.enabled) return "outbound";
@@ -57,104 +33,116 @@ function defaultDirection(route: Route): RoutePricingDirectionKey {
   return "outbound";
 }
 
-export function RouteDetailPage({
-  route,
-  relatedRoutes,
-  testimonials,
-  relatedPosts,
-  vehicleImageByType = {},
-}: {
+function RelatedCard({ route }: { route: Route }) {
+  const href = routeHref(route);
+  const image = route.featuredImage || (/sân bay/i.test(route.from) ? "/images/services/airport.png" : regionImages[route.region] || "/images/home-coastal-fleet.webp");
+  return <Link href={href} className="route-detail-design-related-card">
+    <span className="route-detail-design-related-image"><Image src={image} alt="" fill sizes="(max-width: 700px) 25vw, 100px" /></span>
+    <span><strong>{getPublicLocationLabel(route.from)} đi {getPublicLocationLabel(route.to)}</strong><small>Xe riêng, chủ động thời gian</small></span>
+    <span className="route-detail-design-related-arrow"><ArrowRight size={17} /></span>
+  </Link>;
+}
+
+export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPosts, vehicleImageByType = {} }: {
   route: Route;
   relatedRoutes: Route[];
   testimonials: Testimonial[];
   relatedPosts: BlogPost[];
-  /** Ảnh đại diện theo loại xe (vehicle.images[0] của 1 xe thật thuộc đúng loại), để hiện lên
-   * mỗi card giá — xem app/tuyen-duong/[tinh]/[tuyen]/page.tsx (nối fetchVehicles() thật). Rỗng
-   * nếu loại xe đó chưa có xe nào nhập ảnh, card tự fallback về icon. */
   vehicleImageByType?: Record<string, string>;
 }) {
   const [direction, setDirection] = useState<RoutePricingDirectionKey>(() => defaultDirection(route));
 
   useEffect(() => {
-    const requestedDirection = new URLSearchParams(window.location.search).get("direction");
-    if (requestedDirection !== "outbound" && requestedDirection !== "inbound") return;
-
-    const enabled = route.pricingV2
-      ? route.pricingV2[requestedDirection].enabled
-      : requestedDirection === "outbound";
-    if (!enabled) return;
-
-    // Query param chỉ đồng bộ UI sau hydration để không đưa searchParams vào Server Page/ISR contract.
+    const requested = new URLSearchParams(window.location.search).get("direction");
+    if (requested !== "outbound" && requested !== "inbound") return;
+    if (route.pricingV2 ? !route.pricingV2[requested].enabled : requested !== "outbound") return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDirection(requestedDirection);
+    setDirection(requested);
   }, [route]);
 
-  const isPrelaunch = isPrelaunchAirportRoute(route);
-  const isAirportRoute = route.originLocation?.type === "airport" || route.destinationLocation?.type === "airport";
-  const airportVehicleTypes = isAirportRoute && route.pricingV2
-    ? Array.from(new Set(
-        [route.pricingV2.outbound, route.pricingV2.inbound].flatMap((pricingDirection) =>
-          pricingDirection.enabled
-            ? pricingDirection.packages.filter((item) => item.mode !== "disabled").map((item) => item.vehicleType)
-            : [],
-        ),
-      ))
-    : [];
-  // Một số tuyến chưa có featured image trong CMS. Dùng ảnh WebP nhẹ làm fallback
-  // thay cho city-tour.png (2.3 MB), vì hero luôn là ảnh LCP được tải ưu tiên.
-  const heroImage = route.featuredImage || "/images/hero-dat-xe-sai-gon.webp";
-  const isInbound = direction === "inbound";
-  const displayFrom = getPublicLocationLabel(isInbound ? route.to : route.from);
-  const displayTo = getPublicLocationLabel(isInbound ? route.from : route.to);
-  const pickupPoints = isInbound ? route.dropoffPoints : route.pickupPoints;
-  const dropoffPoints = isInbound ? route.pickupPoints : route.dropoffPoints;
-  const heroEyebrow = isPrelaunch
-    ? `TUYẾN ĐANG CHUẨN BỊ · ${displayFrom.toUpperCase()} → ${displayTo.toUpperCase()}`
-    : isInbound
-      ? `CHIỀU ${displayFrom.toUpperCase()} → ${displayTo.toUpperCase()}`
-      : formatPublicLocationText(route.heroNote);
-  const mapEmbedSrc = isInbound
-    ? reverseRouteMapEmbedSrc(route.mapEmbedSrc, displayFrom, displayTo)
-    : route.mapEmbedSrc;
+  const prelaunch = isPrelaunchAirportRoute(route);
+  const inbound = direction === "inbound";
+  const from = getPublicLocationLabel(inbound ? route.to : route.from);
+  const to = getPublicLocationLabel(inbound ? route.from : route.to);
+  const mapSrc = inbound ? reverseRouteMapEmbedSrc(route.mapEmbedSrc, from, to) : route.mapEmbedSrc;
+  const distance = route.distance.trim() && route.distance !== "0 km" ? route.distance : "";
+  const time = route.time.trim() && route.time !== "0" ? route.time : "";
+  const zaloLink = getZaloChatLink();
+  const description = prelaunch
+    ? `Tuyến ${from} đi ${to} đang chuẩn bị. Liên hệ để được tư vấn; chưa nhận đặt chuyến.`
+    : inbound
+      ? `Xe riêng có tài xế từ ${from} đến ${to}, chủ động thời gian và điểm đón.`
+      : formatPublicLocationText(route.summary || `Xe riêng có tài xế từ ${from} đến ${to}, chủ động thời gian và điểm đón.`);
+  const heroImage = route.regionSlug === "ba-ria-vung-tau" ? "/images/home-coastal-fleet.webp" : route.featuredImage || "/images/home-coastal-fleet.webp";
+  const reverseAvailable = Boolean(route.pricingV2?.outbound.enabled && route.pricingV2?.inbound.enabled);
 
-  return (
-    <main className="site-shell route-detail-page">
-      <SiteHeader
-        menuItems={navItems}
-        hotline={SITE_HOTLINE}
-        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
-        ctaLabel={isPrelaunch ? "Liên hệ tư vấn" : "Đặt xe ngay"}
-        ctaHref={isPrelaunch ? "/lien-he" : "#booking"}
-      />
-      <UnifiedHero eyebrow={heroEyebrow} title={<>{displayFrom}<br /><em>→ {displayTo}</em></>} description={directionDescription(route, direction)} backgroundImage={heroImage} backHref={`/tuyen-duong/${route.regionSlug || "khac"}`} backLabel={`Tất cả tuyến ${getPublicLocationLabel(route.region)}`} />
-      <section className="detail-content section-wrap">
-        <div className="detail-main">
-          <div className="section-heading detail-heading"><div><p className="section-label">{isPrelaunch ? "THÔNG TIN HÀNH TRÌNH" : "GIÁ THUÊ XE THEO CHIỀU"}</p><h2>{isPrelaunch ? "Tham khảo chiều hành trình." : "Chọn cách bạn muốn đi."}</h2></div><p className="heading-note">{isPrelaunch ? <>Tuyến đang trong giai đoạn chuẩn bị.<br />Liên hệ để được tư vấn hành trình.</> : <>Chọn chiều đi và gói hành trình phù hợp.<br />Liên hệ để xác nhận giá theo lịch đón thực tế.</>}</p></div>
-          <div id="pricing">
-            <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={isPrelaunch} />
-          </div>
+  return <main className="site-shell home-redesign route-detail-redesign">
+    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Blog", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
 
-          {!isPrelaunch && !isInbound && pickupPoints.length > 0 && dropoffPoints.length > 0 ? <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">ĐIỂM ĐÓN & TRẢ</p><h2>Điểm nào cũng gần bạn.</h2></div></div><div className="stops-grid"><div><span className="stop-kicker"><MapPin size={15} /> Điểm đón tại {displayFrom}</span><ul>{pickupPoints.map((stop) => <li key={stop}><span className="stop-dot" />{formatPublicLocationText(stop)}</li>)}</ul></div><div><span className="stop-kicker"><MapPin size={15} /> Điểm trả tại {displayTo}</span><ul>{dropoffPoints.map((stop) => <li key={stop}><span className="stop-dot destination" />{formatPublicLocationText(stop)}</li>)}</ul></div></div></div> : null}
+    <section className="route-detail-design-hero" aria-labelledby="route-detail-title">
+      <Image src={heroImage} alt="" fill priority sizes="100vw" className="route-detail-design-hero-image" />
+      <div className="route-detail-design-hero-inner"><p className="home-eyebrow">{prelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : "TUYẾN ĐƯỜNG"}</p>
+        <h1 id="route-detail-title">{prelaunch ? "Thông tin tuyến" : "Xe riêng"} {from}<br />đi {to}</h1>
+        <p>{description}</p>
+        {(distance || time) && <div className="route-detail-design-hero-meta">
+          {distance && <span><MapPin aria-hidden="true" />{distance}</span>}
+          {time && <span><Clock3 aria-hidden="true" />{time}</span>}
+          <small>Thời gian di chuyển dự kiến tùy tình hình giao thông.</small>
+        </div>}
+      </div>
+    </section>
 
-          {!isPrelaunch && mapEmbedSrc ? <div className="detail-map-wrap"><div className="section-heading detail-heading"><div><p className="section-label">CUNG ĐƯỜNG</p><h2>Thấy trước hành trình.</h2></div></div><iframe className="detail-map" src={mapEmbedSrc} title={`Bản đồ tuyến ${displayFrom} đến ${displayTo}`} loading="lazy" /></div> : null}
-
-          {route.vehicleTypes.length > 0 ? <div className="detail-stops"><div className="section-heading detail-heading"><div><p className="section-label">LOẠI XE PHÙ HỢP</p><h2>Đi tuyến này bằng xe gì?</h2></div></div><div className="departure-list">{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeComboHref(route, vehicleTypeSlug(vehicle))} className="vehicle-chip">{vehicle}</Link>)}</div>{airportVehicleTypes.length > 0 ? <><p className="section-label">KHÁM PHÁ LOẠI XE</p><div className="departure-list">{airportVehicleTypes.map((vehicle) => <Link key={`pillar-${vehicle}`} href={`/loai-xe/${vehicleTypeSlug(vehicle)}`} className="vehicle-chip">Xem {vehicle}</Link>)}</div></> : null}</div> : null}
-        </div>
-        <aside className="detail-aside" id="booking">
-          <div className="booking-card"><p className="section-label">{isPrelaunch ? "LIÊN HỆ TRƯỚC" : "ĐẶT CHUYẾN"}</p><h2>{isPrelaunch ? "Chuẩn bị hành trình?" : "Sẵn sàng lên đường?"}</h2><p>{isPrelaunch ? `Liên hệ ${SITE_NAME} để được tư vấn về hành trình. Lịch phục vụ và giá sẽ được thông báo khi tuyến sẵn sàng.` : `Liên hệ ${SITE_NAME} để xác nhận xe, lịch đón và mức giá theo chiều ${displayFrom} → ${displayTo}.`}</p><Button size="lg" asChild><a href={`tel:${SITE_HOTLINE_TEL}`}>Gọi {SITE_HOTLINE} <Phone data-icon="inline-end" /></a></Button><span className="booking-note"><ShieldCheck size={16} /> {isPrelaunch ? "Tuyến đang chuẩn bị, chưa nhận đặt chuyến" : "Xác nhận điều kiện thanh toán khi tư vấn"}</span></div>
-          {route.departures.length > 0 || route.notes.length > 0 ? <div className="departures-card">
-            {route.departures.length > 0 ? <><p className="section-label">KHUNG GIỜ KHÁCH HAY CHỌN</p><div className="departure-list">{route.departures.map((time) => <span key={time}>{time}</span>)}</div></> : null}
-            {route.notes.length > 0 ? <ul className="detail-notes">{route.notes.map((note) => <li key={note}><Check size={15} />{formatPublicLocationText(note)}</li>)}</ul> : null}
-          </div> : null}
-        </aside>
+    <div className="route-detail-design-main">
+      <section className="route-detail-design-pricing" id="booking" aria-label="Chọn gói và xe cho tuyến">
+        <div id="pricing"><RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign /></div>
       </section>
 
-      {relatedRoutes.length > 0 && <section className="related-section section-wrap"><div className="section-heading"><div><p className="section-label">TUYẾN ĐƯỜNG LIÊN QUAN</p><h2>Thêm lựa chọn tại {getPublicLocationLabel(route.region)}.</h2></div><Link className="text-link" href={`/tuyen-duong/${route.regionSlug}`}>Xem tất cả tuyến <ArrowRight size={17} /></Link></div><div className="route-related-grid">{relatedRoutes.map((related) => <DetailCard route={related} key={related.id} />)}</div></section>}
+      <section className="route-detail-design-journey" aria-labelledby="route-journey-title">
+        <div className="route-detail-design-section-heading"><h2 id="route-journey-title">Hành trình {from} – {to}</h2><p>{prelaunch ? "Lộ trình và lịch phục vụ sẽ được xác nhận khi tuyến sẵn sàng." : "Lộ trình tham khảo; điểm đón và trả được xác nhận theo lịch trình của bạn."}</p></div>
+        <div className="route-detail-design-journey-grid">
+          <div className="route-detail-design-map">
+            {mapSrc && !prelaunch ? <iframe src={mapSrc} title={`Bản đồ tuyến ${from} đến ${to}`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <div className="route-detail-design-map-placeholder"><RouteIcon size={39} /><strong>{from} – {to}</strong><span>Bản đồ hành trình đang được cập nhật</span></div>}
+          </div>
+          <div className="route-detail-design-journey-facts">
+            {distance && <div><MapPin /><p><strong>{distance}</strong><span>Quãng đường di chuyển<br />từ {from} đến {to}</span></p></div>}
+            {time && <div><Clock3 /><p><strong>{time}</strong><span>Thời gian di chuyển dự kiến<br />tùy tình hình giao thông</span></p></div>}
+            <div><RouteIcon /><p><strong>Điểm đón / trả</strong><span>Xác nhận khi tư vấn<br />phù hợp với lịch trình của bạn</span></p></div>
+          </div>
+        </div>
+        {route.vehicleTypes.length > 0 && <div className="route-detail-design-vehicle-links"><strong>Loại xe trên tuyến</strong>{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeComboHref(route, vehicleTypeSlug(vehicle))}>{vehicle} <ArrowRight size={14} /></Link>)}</div>}
+        {route.departures.length > 0 && <div className="route-detail-design-vehicle-links"><strong>Khung giờ tham khảo</strong>{route.departures.map((time) => <span className="route-detail-design-time" key={time}>{time}</span>)}</div>}
+        {route.notes.length > 0 && <ul className="route-detail-design-notes">{route.notes.map((note) => <li key={note}>{formatPublicLocationText(note)}</li>)}</ul>}
+      </section>
+    </div>
 
-      {!isPrelaunch && testimonials.length > 0 && <section className="section-wrap route-testimonials"><div className="section-heading"><div><p className="section-label">KHÁCH HÀNG NÓI GÌ</p><h2>Trải nghiệm trên tuyến này.</h2></div><Link className="text-link" href="/danh-gia">Xem tất cả đánh giá <ArrowRight size={17} /></Link></div><div className="combo-testimonial-grid">{testimonials.map((item) => <article className="combo-testimonial-card" key={item.id}><div className="combo-testimonial-stars" aria-label={`${item.rating} trên 5 sao`}>{Array.from({ length: 5 }, (_, index) => <Star key={index} size={16} fill={index < item.rating ? "currentColor" : "none"} />)}</div><p>“{item.quote}”</p><div className="combo-testimonial-who"><span className="combo-testimonial-avatar">{item.initials}</span><b>{item.name}</b></div></article>)}</div></section>}
+    <section className="route-detail-design-benefits" aria-labelledby="route-benefits-title"><div className="route-detail-design-width">
+      <h2 id="route-benefits-title">Đi xe riêng, chủ động cả hành trình</h2>
+      <div className="route-detail-design-benefit-grid">
+        <div><span><UsersRound /></span><p><strong>Xe riêng có tài xế</strong><small>Tài xế am hiểu tuyến đường, hỗ trợ suốt hành trình.</small></p></div>
+        <div><span><CalendarDays /></span><p><strong>Chủ động lịch trình</strong><small>Tự do chọn giờ đi, điểm đón trả phù hợp với nhu cầu của bạn.</small></p></div>
+        <div><span><FileText /></span><p><strong>Xác nhận giá trước chuyến đi</strong><small>Báo giá rõ ràng, xác nhận trước khi sắp xếp xe.</small></p></div>
+      </div>
+    </div></section>
 
-      {relatedPosts.length > 0 && <section className="section-wrap route-blog-section"><div className="section-heading"><div><p className="section-label">CẨM NANG {getPublicLocationLabel(route.region).toUpperCase()}</p><h2>Bài viết liên quan.</h2></div><Link className="text-link" href="/blog">Xem tất cả bài viết <ArrowRight size={17} /></Link></div><div className="blog-grid">{relatedPosts.map((post) => <BlogCard post={post} key={post.id} />)}</div></section>}
-      <SiteFooter tagline={<>{SITE_NAME} đồng hành trên mọi hành trình.<br />Thuê xe chủ động, an toàn và minh bạch.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={footerLinkGroups} socialLinks={defaultSocialLinks} copyright={`© 2026 ${SITE_NAME}`} madeFor="Made for the road." brandName={SITE_NAME} />
-    </main>
-  );
+    <div className="route-detail-design-main route-detail-design-lower">
+      <section className="route-detail-design-faq" aria-labelledby="route-faq-title"><div className="route-detail-design-section-heading"><h2 id="route-faq-title">Câu hỏi thường gặp</h2></div>
+        <details><summary><span>1</span>{prelaunch ? `Tuyến ${to} đã nhận đặt xe chưa?` : `Làm thế nào để đặt xe đi ${to}?`}</summary><p>{prelaunch ? "Tuyến đang chuẩn bị và chưa nhận đặt chuyến. Bạn có thể liên hệ để được tư vấn trước." : `Chọn loại xe và gói hành trình ở trên, sau đó nhắn Zalo, gửi yêu cầu hoặc gọi ${SITE_HOTLINE}. ${SITE_NAME} sẽ xác nhận lịch và điều kiện chuyến đi.`}</p></details>
+        <details><summary><span>2</span>Có thể đặt xe khứ hồi {from} – {to} không?</summary><p>{reverseAvailable ? "Bạn có thể chọn chiều về hoặc gói khứ hồi nếu gói này đang hiển thị trong phần chọn xe và giá. Giá được xác nhận theo gói và loại xe đã chọn." : "Vui lòng liên hệ để được tư vấn hành trình chiều về theo dữ liệu tuyến và lịch xe hiện có."}</p></details>
+        <details><summary><span>3</span>Giá xe có được xác nhận trước chuyến đi không?</summary><p>Giá hiển thị áp dụng cho đúng chiều, loại xe và gói đã chọn. {SITE_NAME} xác nhận chi phí cuối cùng trước khi nhận chuyến; tổ hợp chưa có giá sẽ được báo giá riêng.</p></details>
+      </section>
+
+      {relatedRoutes.length > 0 && <section className="route-detail-design-related" aria-labelledby="route-related-title"><div className="route-detail-design-section-heading"><h2 id="route-related-title">Tuyến đường liên quan</h2><Link href={`/tuyen-duong/${route.regionSlug}`}>Khám phá thêm các tuyến xe <ArrowRight size={16} /></Link></div><div className="route-detail-design-related-grid">{relatedRoutes.slice(0, 3).map((item) => <RelatedCard route={item} key={item.id} />)}</div></section>}
+
+      {testimonials.length > 0 && <section className="route-detail-design-extra" aria-labelledby="route-reviews-title"><div className="route-detail-design-section-heading"><h2 id="route-reviews-title">Khách hàng chia sẻ</h2><Link href="/danh-gia">Xem thêm đánh giá <ArrowRight size={16} /></Link></div><div className="route-detail-design-review-grid">{testimonials.slice(0, 3).map((item) => <blockquote key={item.id}><p>“{item.quote}”</p><footer>{item.name}</footer></blockquote>)}</div></section>}
+      {relatedPosts.length > 0 && <section className="route-detail-design-extra" aria-labelledby="route-posts-title"><div className="route-detail-design-section-heading"><h2 id="route-posts-title">Cẩm nang hành trình</h2><Link href="/blog">Xem bài viết khác <ArrowRight size={16} /></Link></div><div className="blog-grid">{relatedPosts.map((post) => <BlogCard post={post} key={post.id} />)}</div></section>}
+
+      <section className="route-detail-design-contact" aria-labelledby="route-contact-title"><div><span className="home-eyebrow">ALO ĐẶT XE</span><h2 id="route-contact-title">{prelaunch ? `Cần tư vấn tuyến ${to}?` : `Sẵn sàng đi ${to}?`}</h2><p>{prelaunch ? "Liên hệ để được tư vấn hành trình; tuyến chưa nhận đặt chuyến." : "Đặt xe ngay để có chuyến đi thoải mái, chủ động lịch trình của bạn."}</p></div><div className="route-detail-design-contact-actions">
+        {zaloLink && <a className="home-button home-button-primary zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon /> {prelaunch ? "Nhắn Zalo tư vấn" : "Nhắn Zalo đặt xe"}</a>}
+        {!prelaunch && <a className="home-button home-button-outline" href="#pricing"><FileText size={17} /> Chọn xe gửi yêu cầu</a>}
+        <a className="home-button home-button-outline" href={`tel:${SITE_HOTLINE_TEL}`}><Phone size={17} /> Gọi {SITE_HOTLINE}</a>
+      </div></section>
+    </div>
+
+    <SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "Khám phá", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến xe", href: "/tuyen-duong" }, { label: "Loại xe", href: "/loai-xe" }] }, { title: "Hỗ trợ", links: [{ label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
+  </main>;
 }

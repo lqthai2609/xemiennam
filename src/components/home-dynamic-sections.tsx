@@ -1,53 +1,73 @@
-import { ArrowRight, Clock3, Milestone, Star } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { BlogCard } from "@/components/blog-card";
-import { DestinationCardTile } from "@/components/destination-card-tile";
-import { ServiceCard } from "@/components/service-card";
+import { ArrowRight } from "lucide-react";
 import { fetchPosts } from "@/lib/api/blog";
 import { fetchDestinationCards } from "@/lib/api/diem-den";
 import { fetchRoutes } from "@/lib/api/routes";
-import { fetchServices } from "@/lib/api/services";
-import { fetchTestimonials } from "@/lib/api/testimonials";
-import { routeHref, routePriceKicker, type Route } from "@/types/route";
+import { routeHref, type Route } from "@/types/route";
 import { getPublicLocationLabel } from "@/lib/public-location-label";
 import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
-const featuredDestinationNames = ["Vũng Tàu", "Hồ Tràm", "Cần Thơ", "Mũi Né", "Phan Thiết", "Đà Lạt"];
+const featuredDestinations = ["Vũng Tàu", "Hồ Tràm", "Long Hải"];
+const destinationImages: Record<string, string> = {
+  "Vũng Tàu": "/images/destinations/ba-ria-vung-tau.webp",
+  "Hồ Tràm": "/images/destinations/phan-thiet.webp",
+  "Long Hải": "/images/destinations/ba-ria-vung-tau.webp",
+};
 
 function pickFeaturedRoutes(routes: Route[]) {
   const used = new Set<string>();
-  return featuredDestinationNames.flatMap((destination) => {
-    const match = routes.find(
-      (route) => !used.has(route.slug) && canSuggestRelatedRoute(route) && route.to.toLowerCase().includes(destination.toLowerCase()),
-    );
-    if (!match) return [];
-    used.add(match.slug);
-    return [match];
+  return featuredDestinations.flatMap((name) => {
+    const candidates = routes.filter((item) => !used.has(item.slug) && canSuggestRelatedRoute(item) && item.to.toLowerCase().includes(name.toLowerCase()));
+    const route = candidates.find((item) => getPublicLocationLabel(item.from).toLowerCase().includes("sài gòn")) || candidates[0];
+    if (!route) return [];
+    used.add(route.slug);
+    return [route];
   });
 }
 
-function Heading({ label, title, href, link }: { label: string; title: string; href?: string; link?: string }) {
-  return <div className="section-heading"><div><p className="section-label">{label}</p><h2>{title}</h2></div>{href && link && <Link className="text-link" href={href}>{link} <ArrowRight size={17} /></Link>}</div>;
+function Heading({ title, description, href, link }: { title: string; description: string; href: string; link: string }) {
+  return <div className="home-section-heading"><div><h2>{title}</h2><p>{description}</p></div><Link href={href}>{link} <ArrowRight size={17} /></Link></div>;
 }
 
-function RouteCard({ route }: { route: Route }) {
-  return <article className="route-ticket"><div className="rt-price"><span>{routePriceKicker(route)}</span><b>{route.price}</b></div><div className="rt-body"><div className="rt-route"><span>{getPublicLocationLabel(route.from)}</span><ArrowRight size={16} /><span>{getPublicLocationLabel(route.to)}</span></div><div className="rt-meta"><span><Clock3 size={13} /> {route.time}</span><span><Milestone size={13} /> {route.distance}</span><span className="rt-vehicles">{route.vehicleTypes.join(" · ")}</span></div></div><div className="rt-cta"><Link href={routeHref(route)}>Xem chi tiết <ArrowRight size={14} /></Link></div></article>;
+export async function HomeFeaturedRoutes() {
+  const featuredRoutes = pickFeaturedRoutes(await fetchRoutes());
+  if (!featuredRoutes.length) return null;
+  return <section className="home-routes home-container" id="routes">
+    <Heading title="Tuyến được quan tâm" description="Những tuyến phổ biến, phù hợp cho nhiều nhu cầu di chuyển." href="/tuyen-duong" link="Xem tất cả tuyến" />
+    <div className="home-route-grid">{featuredRoutes.map((route) => {
+      const name = featuredDestinations.find((destination) => route.to.toLowerCase().includes(destination.toLowerCase())) || "Vũng Tàu";
+      const fixed = route.pricingV2?.outbound.featured?.mode === "fixed";
+      return <article className="home-route-card" key={route.slug}>
+        <Link className="home-route-image" href={routeHref(route)} tabIndex={-1} aria-hidden="true"><Image src={destinationImages[name]} alt="" fill sizes="(max-width: 700px) 42vw, 33vw" /></Link>
+        <div className="home-route-details"><h3>{getPublicLocationLabel(route.from)} đi {getPublicLocationLabel(route.to)}</h3><span>{fixed ? "Giá chỉ" : "Giá chuyến"}</span><div className="home-route-bottom"><p><strong>{fixed ? route.price : "Liên hệ báo giá"}</strong>{fixed && <small>Một chiều / chuyến</small>}</p><Link href={routeHref(route)}>Xem tuyến <ArrowRight size={17} /></Link></div></div>
+      </article>;
+    })}</div>
+  </section>;
 }
 
-/** CMS-backed, below-the-fold content is streamed independently so it cannot delay the LCP hero. */
-export async function HomeDynamicSections() {
-  const [routes, posts, services, testimonials, destinations] = await Promise.all([
-    fetchRoutes(), fetchPosts(), fetchServices(), fetchTestimonials(), fetchDestinationCards(),
-  ]);
-  const featuredRoutes = pickFeaturedRoutes(routes);
-  const featuredTestimonials = testimonials.slice(0, 6);
-  const averageRating = testimonials.length ? testimonials.reduce((sum, item) => sum + item.rating, 0) / testimonials.length : 0;
+export async function HomeFeaturedDestinations() {
+  const destinations = await fetchDestinationCards();
+  const preferredDestinations = ["ba-ria-vung-tau", "tay-ninh", "can-tho"];
+  const featuredHubs = preferredDestinations.flatMap((slug) => destinations.find((destination) => destination.slug === slug) || []);
+  if (!featuredHubs.length) return null;
+  return <section className="home-destinations home-container" id="destinations">
+    <Heading title="Khám phá điểm đến" description="Gợi ý những điểm đến nổi bật với nhiều tuyến đường phù hợp." href="/diem-den" link="Xem tất cả điểm đến" />
+    <div className="home-destination-grid">{featuredHubs.map((destination) => <Link className="home-destination-card" href={`/tuyen-duong/${destination.slug}`} key={destination.slug}>
+      <div className="home-destination-image">{destination.imageUrl && <Image src={destination.imageUrl} alt={`Phong cảnh ${getPublicLocationLabel(destination)}`} fill sizes="(max-width: 700px) 78vw, 33vw" />}</div>
+      <div><strong>{getPublicLocationLabel(destination)}</strong><span>Xem các tuyến <ArrowRight size={16} /></span></div>
+    </Link>)}</div>
+  </section>;
+}
 
-  return <>
-    {destinations.length > 0 && <section className="destinations-section section-wrap" id="destinations"><Heading label="ĐIỂM ĐẾN PHỔ BIẾN" title="Đi đâu hôm nay?" href="/diem-den" link="Xem tất cả điểm đến" /><div className="destination-grid">{destinations.slice(0, 6).map((destination) => <DestinationCardTile destination={destination} key={destination.slug} />)}</div></section>}
-    {featuredRoutes.length > 0 && <section className="routes-section section-wrap" id="routes"><Heading label="TUYẾN ĐƯỜNG" title="Khám phá các hành trình." href="/tuyen-duong" link="Xem tất cả tuyến" /><div className="route-list">{featuredRoutes.map((route) => <RouteCard key={route.slug} route={route} />)}</div></section>}
-    <section className="home-services-section section-wrap" id="services"><Heading label="DỊCH VỤ" title="Dịch vụ theo nhu cầu của bạn." href="/dich-vu" link="Xem tất cả dịch vụ" /><div className="service-card-grid">{services.map((service) => <ServiceCard key={service.slug} service={service} />)}</div></section>
-    <section className="stories-section section-wrap" id="stories"><div className="section-heading"><div><p className="section-label">HÀNH KHÁCH NÓI GÌ</p><h2>Chuyện trên những cung đường.</h2></div><div className="rating"><Star size={18} fill="currentColor" /><strong>{averageRating.toFixed(1)}</strong><span> / 5.0</span></div></div><div className="home-testimonial-grid">{featuredTestimonials.map((item) => <article className="combo-testimonial-card" key={item.id}><div className="combo-testimonial-stars">{Array.from({ length: 5 }).map((_, index) => <Star key={index} size={14} fill={index < item.rating ? "currentColor" : "none"} />)}</div><p>&ldquo;{item.quote}&rdquo;</p><div className="combo-testimonial-who"><span className="combo-testimonial-avatar">{item.initials}</span><b>{item.name}</b></div></article>)}</div></section>
-    {posts.length > 0 && <section className="blog-section section-wrap" id="blog"><Heading label="BLOG" title="Cẩm nang trước khi lên xe." href="/blog" link="Xem tất cả bài viết" /><div className="route-grid blog-grid">{posts.slice(0, 3).map((post) => <BlogCard key={post.slug} post={post} />)}</div></section>}
-  </>;
+export async function HomeFeaturedBlog() {
+  const posts = await fetchPosts();
+  const featuredPost = posts.find((post) => post.slug === "xe-4-cho-hay-7-cho-di-san-bay-lien-tinh") || posts[0];
+  if (!featuredPost) return null;
+  return <section className="home-blog home-container" id="blog"><Heading title="Bài viết nổi bật" description="Thông tin hữu ích trước khi lên đường." href="/blog" link="Xem tất cả bài viết" />
+    <Link className="home-blog-card" href={`/blog/${featuredPost.slug}`}>
+      <div className="home-blog-image"><Image src={featuredPost.featuredImageUrl || "/images/services/airport.png"} alt="" fill sizes="(max-width: 700px) 35vw, 220px" /></div>
+      <strong>{featuredPost.title}</strong><span>Đọc bài <ArrowRight size={16} /></span>
+    </Link>
+  </section>;
 }

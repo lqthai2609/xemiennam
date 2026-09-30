@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BusFront, MapPin } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { MediaPhoto } from "@/components/media-photo";
@@ -29,7 +29,7 @@ function LegacyPricingGrid({
     <div className="detail-price-grid">
       {route.pricingByVehicle.map((vp) => (
         <article className="detail-price-card" key={vp.vehicleType}>
-          <div className="detail-price-media">
+          <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))} className="detail-price-media" aria-label={`Xem tuyến ${routeLabel} bằng ${vp.vehicleType}`}>
             {vehicleImageByType[vp.vehicleType] ? (
               <MediaPhoto
                 src={vehicleImageByType[vp.vehicleType]}
@@ -39,8 +39,8 @@ function LegacyPricingGrid({
             ) : (
               <BusFront size={32} strokeWidth={1.4} />
             )}
-          </div>
-          <Link href={`/loai-xe/${vehicleTypeSlug(vp.vehicleType)}`} className="vehicle-chip">
+          </Link>
+          <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))} className="vehicle-chip">
             {vp.vehicleType}
           </Link>
           <strong>{vp.price}</strong>
@@ -68,9 +68,17 @@ const vehicleCards = [
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
 
-export function RoutePricingSection({ route, direction, onDirectionChange, vehicleImageByType = {}, prelaunch = false }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean }) {
+export function RoutePricingSection({ route, direction, onDirectionChange, vehicleImageByType = {}, prelaunch = false, redesign = false }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean; redesign?: boolean }) {
   const [journey, setJourney] = useState<Exclude<JourneyPackage, "threeDays">>("oneWay");
   const [days, setDays] = useState<"twoDays" | "threeDays">("twoDays");
+  const [showAllVehicles, setShowAllVehicles] = useState(false);
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("trip_type");
+    if (requested === "round_trip") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setJourney("roundTrip");
+    }
+  }, []);
   const pricing = route.pricingV2;
   const activeDirection = pricing?.[direction]?.enabled ? direction : pricing?.outbound.enabled ? "outbound" : "inbound";
   const active = activeDirection ? pricing?.[activeDirection] : undefined;
@@ -95,16 +103,18 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
         return pkg && pkg.mode !== "disabled" ? [{ vehicle, pkg }] : [];
       })
     : [];
+  const displayedVehicles = redesign && !showAllVehicles ? visibleVehicles.slice(0, 3) : visibleVehicles;
 
   if (!pricing) return prelaunch
     ? <p>Đang chuẩn bị tuyến. <a href="/lien-he">Liên hệ tư vấn</a>; chưa nhận đặt chuyến.</p>
     : <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
   return <div className="route-vehicle-picker">
     {availableJourneys.length > 0 ? <div className="route-direction-tabs" role="tablist" aria-label="Chọn loại hành trình">
-      {[{ key: "oneWay" as const, label: "Một chiều" }, { key: "roundTrip" as const, label: "Khứ hồi" }, { key: "twoDays" as const, label: "Theo ngày" }].filter((tab) => availableJourneys.includes(tab.key)).map((tab) => <button key={tab.key} type="button" role="tab" aria-selected={visibleJourney === tab.key} className={visibleJourney === tab.key ? "is-selected" : ""} onClick={() => setJourney(tab.key)}>{tab.label}</button>)}
+      {[{ key: "oneWay" as const, label: "Một chiều", icon: ArrowRightLeft }, { key: "roundTrip" as const, label: "Khứ hồi", icon: ArrowRightLeft }, { key: "twoDays" as const, label: "Theo ngày", icon: CalendarDays }].filter((tab) => availableJourneys.includes(tab.key)).map((tab) => <button key={tab.key} type="button" role="tab" aria-selected={visibleJourney === tab.key} className={visibleJourney === tab.key ? "is-selected" : ""} onClick={() => setJourney(tab.key)}>{redesign && <tab.icon size={17} aria-hidden="true" />}{tab.label}</button>)}
     </div> : <p>Chưa có gói được xác nhận cho chiều này. Liên hệ để được tư vấn.</p>}
     {visibleJourney === "twoDays" && <div className="route-day-tabs" role="group" aria-label="Chọn gói theo ngày">{(["twoDays", "threeDays"] as const).filter((key) => available.includes(key)).map((key) => <button key={key} type="button" aria-pressed={visibleDays === key} className={visibleDays === key ? "is-selected" : ""} onClick={() => setDays(key)}>{packageLabels[key]}</button>)}</div>}
     {pricing.inbound.enabled && pricing.outbound.enabled && <div className="route-direction-switch"><span>Chiều</span>{(["outbound", "inbound"] as const).map((key) => <button key={key} type="button" aria-pressed={activeDirection === key} className={activeDirection === key ? "is-selected" : ""} onClick={() => onDirectionChange(key)}>{key === "outbound" ? getPublicLocationLabel(route.from) : getPublicLocationLabel(route.to)} → {key === "outbound" ? getPublicLocationLabel(route.to) : getPublicLocationLabel(route.from)}</button>)}</div>}
+    {redesign && <div className="route-detail-price-heading"><h2>{prelaunch ? "Thông tin xe cho hành trình" : "Chọn xe và xem giá"}</h2><p>{prelaunch ? "Tuyến đang chuẩn bị, chưa nhận đặt chuyến." : `Giá áp dụng cho chiều ${displayRoute} · ${packageLabels[selectedPackage]} / chuyến`}</p></div>}
     <section className="mb-4 rounded-lg border border-border bg-card p-4 text-sm" aria-label="Thông tin tuyến đường">
       <h3 className="mb-3 flex items-center gap-2 font-semibold text-foreground"><MapPin aria-hidden="true" size={18} /> Thông tin tuyến đường</h3>
       <dl className="grid gap-3 text-muted-foreground sm:grid-cols-3">
@@ -114,10 +124,11 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
       </dl>
       {hasTravelTime || hasDistance ? <p className="mt-3 border-t border-border pt-3 text-xs leading-5 text-muted-foreground">Thời gian và quãng đường có thể thay đổi theo điểm đón, lộ trình và tình hình giao thông.</p> : null}
     </section>
-    <div className="route-vehicle-grid">{visibleVehicles.map(({ vehicle, pkg }) => { const fixed = pkg.mode === "fixed" && typeof pkg.price === "number" && Number.isFinite(pkg.price) && pkg.price > 0; const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback; return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
-      <div className="route-vehicle-image"><img src={image} alt={vehicle.type} loading="lazy" />{vehicle.popular && <span>Phổ biến</span>}</div>
-      <div className="route-vehicle-body"><h3>{vehicle.type}</h3><p className="route-vehicle-model">{vehicle.models}</p><p className="route-vehicle-capacity">{vehicle.capacity}</p><ul>{vehicle.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul><div className="route-vehicle-bottom"><div className="route-vehicle-price">{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ`}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>{prelaunch ? <a className="button button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={pkg.vehicleType} price={fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} />}</div></div>
+    <div className="route-vehicle-grid">{displayedVehicles.map(({ vehicle, pkg }) => { const fixed = pkg.mode === "fixed" && typeof pkg.price === "number" && Number.isFinite(pkg.price) && pkg.price > 0; const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback; const vehicleHref = routeComboHref(route, vehicleTypeSlug(pkg.vehicleType)); return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
+      <div className="route-vehicle-image"><Link href={vehicleHref} aria-label={`Xem tuyến ${displayRoute} bằng ${vehicle.type}`}><img src={image} alt={vehicle.type} loading="lazy" /></Link>{vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>
+      <div className="route-vehicle-body"><h3><Link href={vehicleHref}>{vehicle.type}</Link></h3><p className="route-vehicle-model">{vehicle.models}</p><p className="route-vehicle-capacity"><UsersRound size={15} aria-hidden="true" /> {vehicle.capacity}</p><ul>{vehicle.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul><div className="route-vehicle-bottom"><div className="route-vehicle-price">{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ`}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>{prelaunch ? <a className="button button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={pkg.vehicleType} price={fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} />}</div></div>
     </article>; })}</div>
+    {redesign && visibleVehicles.length > 3 && <button className="route-detail-more-vehicles" type="button" aria-expanded={showAllVehicles} onClick={() => setShowAllVehicles((value) => !value)}>{showAllVehicles ? "Thu gọn loại xe" : `Xem thêm ${visibleVehicles.length - 3} loại xe`} <ArrowRight size={16} aria-hidden="true" /></button>}
   </div>;
 }
 

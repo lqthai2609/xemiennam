@@ -3,10 +3,11 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, ChevronLeft, ChevronRight, Home, Phone, Search, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Home, Menu, Phone, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SITE_NAME } from "@/lib/site-config";
 import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
+import { ZaloIcon } from "@/components/zalo-icon";
 import "./site-header.css";
 
 export type NavItem = { label: string; href: string };
@@ -17,6 +18,7 @@ interface SiteHeaderProps {
   hotlineHref?: string;
   ctaLabel: string;
   ctaHref: string;
+  homeDesign?: boolean;
 }
 
 function isActive(pathname: string, href: string) {
@@ -25,8 +27,9 @@ function isActive(pathname: string, href: string) {
   return base === pathname;
 }
 
-export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref }: SiteHeaderProps) {
+export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref, homeDesign = false }: SiteHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const mobileNavRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
 
@@ -50,12 +53,14 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref 
   }
 
   return (
-    <header className="site-header">
+    <header className={`site-header${homeDesign ? " home-site-header" : ""}`}>
       <Link href="/" className="brand" aria-label={`${SITE_NAME} trang chủ`}>
         <img
           className="brand-logo"
-          src="/logo-alo-dat-xe.webp"
-          alt={`${SITE_NAME} - Đồng hành mọi hành trình`}
+          src="/logo-header.webp"
+          width={2048}
+          height={721}
+          alt={SITE_NAME}
         />
       </Link>
       <nav className="main-nav" aria-label="Điều hướng chính">
@@ -72,9 +77,9 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref 
         <a className="nav-hotline" href={resolvedHotlineHref}>
           <Phone size={16} /> {hotline}
         </a>
-        <Button className="nav-cta" asChild>
+        <Button className={`nav-cta${ctaHref.startsWith("https://zalo.me/") ? " zalo-cta" : ""}`} asChild>
           <Link href={ctaHref}>
-            {ctaLabel} <ArrowRight data-icon="inline-end" />
+            {ctaHref.startsWith("https://zalo.me/") && <ZaloIcon />}{ctaLabel} <ArrowRight data-icon="inline-end" />
           </Link>
         </Button>
       </nav>
@@ -85,6 +90,10 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref 
       >
         <Search />
       </button>
+
+      {homeDesign && <button className="home-mobile-phone" type="button" onClick={() => window.location.href = resolvedHotlineHref} aria-label={`Gọi ${hotline}`}><Phone /></button>}
+      {homeDesign && <button className="home-mobile-menu" type="button" aria-label={menuOpen ? "Đóng menu" : "Mở menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X /> : <Menu />}</button>}
+      {homeDesign && menuOpen && <nav className="home-mobile-menu-panel" aria-label="Menu chính">{menuItems.map((item) => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}</Link>)}</nav>}
 
       <div className="mobile-nav-scroller" role="group" aria-label="Điều hướng nhanh">
         <button

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import "../../../../home-redesign.css";
+import "./combo-redesign.css";
 import { notFound } from "next/navigation";
 import { ComboLandingPage } from "@/components/route-vehicle-combo";
 import { fetchRoutes, fetchRouteBySlug } from "@/lib/api/routes";
 import { fetchVehicles } from "@/lib/api/vehicles";
-import { fetchPosts } from "@/lib/api/blog";
 import { getVehicleCategory } from "@/data/vehicle-categories";
 import {
   comboDescriptionOrDefault,
@@ -72,7 +73,7 @@ export default async function Page({ params }: Props) {
   const category = getVehicleCategory(loaiXe);
   if (!vp || !category) notFound();
 
-  const [allRoutes, vehicles, posts] = await Promise.all([fetchRoutes(), fetchVehicles(), fetchPosts()]);
+  const [allRoutes, vehicles] = await Promise.all([fetchRoutes(), fetchVehicles()]);
   const similarRoutes = allRoutes
     .filter(
       (item) =>
@@ -81,21 +82,11 @@ export default async function Page({ params }: Props) {
         canSuggestRelatedRoute(item) &&
         Boolean(findComboVehiclePrice(item, loaiXe)),
     )
+    .sort((a, b) => Number(a.from !== route.from) - Number(b.from !== route.from) || Number(/sân bay/i.test(a.from)) - Number(/sân bay/i.test(b.from)))
     .slice(0, 3);
   const vehicle =
     vehicles.find((item) => item.type === vp.vehicleType && item.images.length > 0) ||
     vehicles.find((item) => item.type === vp.vehicleType);
-  const relatedPosts = posts
-    .filter((post) => {
-      const text = `${post.title} ${post.excerpt}`.toLowerCase();
-      return (
-        text.includes(route.to.toLowerCase()) ||
-        text.includes(route.from.toLowerCase()) ||
-        text.includes(route.region.toLowerCase()) ||
-        text.includes(vp.vehicleType.toLowerCase())
-      );
-    })
-    .slice(0, 3);
   const description = comboDescriptionOrDefault(route, vp);
   const guard = getComboIndexability(route, loaiXe);
   const readiness = resolveRouteContentReadiness(route);
@@ -130,7 +121,6 @@ export default async function Page({ params }: Props) {
         vehiclePrice={vp}
         category={category}
         similarRoutes={similarRoutes}
-        relatedPosts={relatedPosts}
         vehicle={vehicle}
       />
     </>

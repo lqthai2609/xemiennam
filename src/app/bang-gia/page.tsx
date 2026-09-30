@@ -1,3 +1,5 @@
+import "./pricing-redesign.css";
+import "../home-redesign.css";
 import type { Metadata } from "next";
 import { fetchRoutes } from "@/lib/api/routes";
 import { BangGiaPageClient } from "@/components/bang-gia-page-client";

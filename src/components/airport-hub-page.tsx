@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowDown, ArrowRight, CheckCircle2, MapPin, MessageCircle, Phone, PlaneLanding, PlaneTakeoff } from "lucide-react";
+import { ZaloIcon } from "@/components/zalo-icon";
+import { ArrowDown, ArrowRight, CheckCircle2, MapPin, Phone, PlaneLanding, PlaneTakeoff } from "lucide-react";
 import { BlogCard } from "@/components/blog-card";
 import { Button } from "@/components/ui/button";
 import { JsonLd } from "@/components/json-ld";
@@ -164,7 +165,7 @@ export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubDa
                 <a href={`tel:${SITE_HOTLINE_TEL}`}><Phone data-icon="inline-start" /> Gọi ngay</a>
               </Button>
               <Button size="lg" variant="ghost" asChild>
-                <a href={`https://zalo.me/${SITE_CONTACT_PHONE_TEL.replace("+", "")}`}><MessageCircle data-icon="inline-start" /> Zalo</a>
+                <a href={`https://zalo.me/${SITE_CONTACT_PHONE_TEL.replace("+", "")}`} className="zalo-cta"><ZaloIcon /> Zalo</a>
               </Button>
             </div>
           </div>
@@ -273,7 +274,7 @@ export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubDa
               <a href={`tel:${SITE_HOTLINE_TEL}`}><Phone data-icon="inline-start" /> Gọi {SITE_HOTLINE}</a>
             </Button>
             <Button variant="secondary" asChild>
-              <a href={`https://zalo.me/${SITE_CONTACT_PHONE_TEL.replace("+", "")}`}><MessageCircle data-icon="inline-start" /> Nhắn Zalo</a>
+              <a href={`https://zalo.me/${SITE_CONTACT_PHONE_TEL.replace("+", "")}`} className="zalo-cta"><ZaloIcon /> Nhắn Zalo</a>
             </Button>
           </div>
         </section>

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import "../home-redesign.css";
+import "./destinations-redesign.css";
 import { DestinationsPage } from "@/components/destinations-page";
 import { fetchDestinationCards } from "@/lib/api/diem-den";
 import { fetchRoutes } from "@/lib/api/routes";

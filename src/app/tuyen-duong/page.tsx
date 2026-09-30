@@ -4,10 +4,12 @@ import { RoutesPageClient } from "@/components/routes-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
 import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
 import { canSuggestRelatedRoute } from "@/lib/content-readiness";
+import "../home-redesign.css";
+import "./routes-redesign.css";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Các tuyến cho thuê xe nguyên chiếc | Alo Đặt Xe",
-  description: `Toàn bộ tuyến cho thuê xe nguyên chiếc ${HO_CHI_MINH_PUBLIC_LABEL} đi Vũng Tàu, Cần Thơ, Đà Lạt... lọc theo khu vực, loại xe và số chỗ.`,
+  description: `Khám phá tuyến xe riêng có tài xế từ ${HO_CHI_MINH_PUBLIC_LABEL} đi Vũng Tàu, Cần Thơ, Đà Lạt và các điểm đến khác. Tìm tuyến và xem giá chuyến xe.`,
   path: "/tuyen-duong",
 });
 

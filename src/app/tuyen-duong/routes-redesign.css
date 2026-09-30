@@ -1,0 +1,141 @@
+.routes-design { background: #fff; }
+.routes-design h1, .routes-design h2, .routes-design h3 { font-family: var(--font-vietnam), sans-serif; letter-spacing: -.045em; }
+.routes-design-hero { min-height: 285px; background: #c9e8ff url('/images/home-coastal-fleet.webp') center 51% / cover no-repeat; position: relative; }
+.routes-design-hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #fffefa 1%, #fffefa 30%, #fffefae8 38%, #fffefa00 62%); }
+.routes-design-hero-inner { position: relative; width: min(100% - 64px, 1160px); margin: auto; padding: 52px 0 58px; }
+.routes-design-hero h1 { margin: 0; color: #07165d; font-size: clamp(37px, 4vw, 54px); line-height: 1.02; font-weight: 800; }
+.routes-design-hero-inner > p:last-child { margin: 12px 0 0; color: #536395; font-size: 18px; }
+.routes-design-main { width: min(100% - 64px, 1160px); margin: -32px auto 0; position: relative; z-index: 2; }
+.routes-design-search-card { padding: 21px 26px 18px; border: 1px solid #e0e8f8; border-radius: 15px; background: #fff; box-shadow: 0 10px 30px #10246b11; }
+.routes-design-search-title { display: flex; align-items: center; gap: 12px; }
+.routes-design-search-title > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 9px; background: #001eea; color: #fff; box-shadow: 0 5px 12px #001eea36; }
+.routes-design-search-title h2 { margin: 0; color: #0016af; font-size: 25px; font-weight: 800; }
+.routes-design-quick-search { display: grid; grid-template-columns: minmax(0, 1fr) 160px; align-items: center; gap: 9px; margin-top: 12px; }
+.routes-design-quick-search > div { margin: 0; }
+.routes-design-quick-search input { height: 47px; border-radius: 7px; background: #fff; border-color: #c9dafa; font-size: 14px; }
+.routes-design-quick-search .home-button { height: 47px; }
+.routes-design #route-booking { max-width: none; margin: 15px 0 0; padding: 0; }
+.routes-design #route-booking form { padding: 0; border: 0; border-radius: 0; background: #fff; box-shadow: none; backdrop-filter: none; }
+.routes-design #route-booking form > div:first-child { display: none; }
+.routes-design #route-booking [role="tablist"] { display: flex; width: fit-content; gap: 7px; margin: 0 0 15px; padding: 0; border: 0; background: transparent; }
+.routes-design #route-booking [role="tab"] { min-width: 184px; min-height: 43px; border: 1px solid #dce5f8; border-radius: 7px; background: #fff; color: #001eea; box-shadow: none; }
+.routes-design #route-booking [role="tab"][aria-selected="true"] { border-color: #001eea; background: #001eea; color: #fff; }
+.routes-design #route-booking [role="tabpanel"] > .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+.routes-design #route-booking [role="tabpanel"] > .grid > div:first-child { grid-column: 1 / -1; }
+.routes-design #route-booking [role="tabpanel"] > .grid > label { grid-column: span 2; }
+.routes-design #route-booking [role="tabpanel"] label { font-size: 13px; color: #07165d; }
+.routes-design #route-booking [role="tabpanel"] input, .routes-design #route-booking [role="tabpanel"] select { height: 48px; border-color: #dce5f8; border-radius: 7px; background-color: #fff; font-size: 14px; }
+.routes-design #route-booking form > .mt-4 { align-items: flex-end; margin-top: 13px; }
+.routes-design #route-booking form > .mt-4 button { width: auto; min-width: 213px; height: 47px; border-radius: 7px; background: #001eea; }
+.routes-design #route-booking form > .mt-4 > div { max-width: 600px; min-height: 0; text-align: right; }
+.routes-design #route-booking form > .mt-4 p { font-size: 11px; }
+.routes-design-popular { display: flex; align-items: center; gap: 18px; margin-top: 9px; padding: 11px 17px; border: 1px solid #e6ecf9; border-radius: 13px; background: #fff; box-shadow: 0 8px 22px #10246b0a; }
+.routes-design-popular > strong { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; color: #ff5d27; font-size: 15px; }
+.routes-design-popular > div { display: flex; align-items: center; gap: 7px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.routes-design-popular > div::-webkit-scrollbar { display: none; }
+.routes-design-popular button { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; min-height: 37px; padding: 3px 9px 3px 3px; border: 1px solid #dce5f8; border-radius: 22px; background: #fff; color: #07165d; font-size: 12px; font-weight: 700; cursor: pointer; }
+.routes-design-popular button:last-child { padding: 5px 12px; color: #001eea; }
+.routes-design-popular button.is-selected { border-color: #001eea; background: #edf3ff; }
+.routes-design-popular img { width: 30px; height: 30px; object-fit: cover; border-radius: 50%; }
+.routes-design-catalog { padding-top: 34px; scroll-margin-top: 84px; }
+.routes-design-catalog-heading h2 { margin: 0; font-size: 31px; line-height: 1.15; font-weight: 800; }
+.routes-design-catalog-heading p { margin: 5px 0 18px; color: #62719f; font-size: 14px; }
+.routes-design-catalog-layout { display: grid; grid-template-columns: 238px minmax(0, 1fr); gap: 26px; }
+.routes-design-regions { display: flex; flex-direction: column; height: fit-content; padding: 0 8px; border: 1px solid #edf0fa; border-radius: 12px; box-shadow: 0 5px 18px #10246b0c; }
+.routes-design-regions a { display: flex; align-items: center; gap: 10px; min-height: 53px; padding: 11px 9px; border-bottom: 1px solid #edf0fa; color: #07165d; font-size: 14px; font-weight: 700; }
+.routes-design-regions a:last-child { border: 0; }
+.routes-design-regions a svg:first-child { color: #001eea; flex: 0 0 auto; }
+.routes-design-regions a svg:last-child { margin-left: auto; flex: 0 0 auto; }
+.routes-design-regions a.is-active, .routes-design-regions a:hover { margin: 0 -8px; padding-inline: 17px; border-radius: 8px; border-color: transparent; background: #001eea; color: #fff; }
+.routes-design-regions a.is-active svg, .routes-design-regions a:hover svg { color: #fff; }
+.routes-design-groups { min-width: 0; }
+.routes-design-region { margin-bottom: 26px; scroll-margin-top: 84px; }
+.routes-design-region-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 12px; }
+.routes-design-region-heading > div { display: flex; align-items: center; gap: 14px; }
+.routes-design-region-heading h3 { margin: 0; color: #07165d; font-size: 23px; font-weight: 800; }
+.routes-design-region-heading span { padding: 4px 11px; border-radius: 20px; background: #eaf1ff; color: #001eea; font-size: 11px; font-weight: 700; }
+.routes-design-region-heading a, .routes-design-more { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; color: #001eea; font-size: 12px; font-weight: 700; }
+.routes-design-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.routes-design-card { min-width: 0; overflow: hidden; border: 1px solid #e9edf7; border-radius: 9px; background: #fff; box-shadow: 0 5px 18px #10246b0d; }
+.routes-design-card-image { display: block; height: 105px; position: relative; overflow: hidden; background: #e4edfb; }
+.routes-design-card-image img { object-fit: cover; transition: transform .25s; }
+.routes-design-card:hover img { transform: scale(1.04); }
+.routes-design-card-body { padding: 10px 13px 12px; }
+.routes-design-card h3 { margin: 0; color: #07165d; font-size: 16px; line-height: 1.3; font-weight: 800; }
+.routes-design-card-meta { display: flex; gap: 12px; margin: 5px 0; color: #526498; font-size: 11px; }
+.routes-design-card-meta span { display: flex; align-items: center; gap: 4px; }
+.routes-design-card-meta svg { color: #001eea; }
+.routes-design-card-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 7px; }
+.routes-design-card-bottom div { display: flex; flex-direction: column; min-width: 0; }
+.routes-design-card-bottom small { color: #6373a2; font-size: 10px; }
+.routes-design-card-bottom strong { color: #001eea; font-size: 23px; line-height: 1.05; font-weight: 800; }
+.routes-design-card-bottom a { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; min-height: 34px; padding: 7px 10px; border-radius: 6px; background: #edf3ff; color: #001eea; font-size: 11px; font-weight: 700; }
+.routes-design-more { margin: 13px 0 0; padding: 7px 0; border: 0; background: transparent; cursor: pointer; }
+.routes-design-empty { padding: 40px; border: 1px solid #dce5f8; border-radius: 12px; text-align: center; }
+.routes-design-empty h3 { font-size: 22px; }
+.routes-design-empty p { color: #62719f; }
+.routes-design-empty button { padding: 10px 16px; border: 0; border-radius: 7px; background: #001eea; color: #fff; cursor: pointer; }
+.routes-design-steps { padding-top: 14px; }
+.routes-design-steps h2 { font-size: 22px; }
+.routes-design-contact { margin-top: 18px; }
+
+@media (max-width: 800px) {
+  .routes-design-hero { min-height: 185px; width: min(100% - 30px, 620px); margin: 0 auto; border-radius: 11px; overflow: hidden; background-position: 61% center; }
+  .routes-design-hero::before { background: linear-gradient(90deg, #fffefaed, #fffefabb 42%, #fffefa00 76%); }
+  .routes-design-hero-inner { width: calc(100% - 30px); padding: 23px 0; }
+  .routes-design-hero h1 { font-size: clamp(27px, 6vw, 38px); }
+  .routes-design-hero-inner > p:last-child { margin-top: 7px; font-size: 13px; }
+  .routes-design-main { width: min(100% - 30px, 620px); margin-top: -1px; }
+  .routes-design-search-card { padding: 16px; border-radius: 12px; }
+  .routes-design-search-title h2 { font-size: 21px; }
+  .routes-design-search-title > span { width: 31px; height: 31px; }
+  .routes-design-quick-search { grid-template-columns: 1fr; gap: 7px; margin-top: 10px; }
+  .routes-design-quick-search input { height: 45px; font-size: 12px; }
+  .routes-design-quick-search .home-button { width: 100%; height: 42px; }
+  .routes-design #route-booking { margin-top: 15px; }
+  .routes-design #route-booking [role="tablist"] { width: 100%; gap: 0; }
+  .routes-design #route-booking [role="tab"] { min-width: 0; width: 50%; padding: 6px; font-size: 12px; }
+  .routes-design #route-booking [role="tabpanel"] > .grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+  .routes-design #route-booking [role="tabpanel"] > .grid > div:first-child { display: grid; grid-template-columns: 1fr; gap: 9px; }
+  .routes-design #route-booking [role="tabpanel"] > .grid > div:first-child > button { right: auto; left: 50%; top: calc(50% + 15px); transform: translate(-50%, -50%); width: 33px; height: 33px; border-radius: 50%; background: #fff; }
+  .routes-design #route-booking [role="tabpanel"] > .grid > label { grid-column: span 1; }
+  .routes-design #route-booking [role="tabpanel"] > .grid > label:last-child { grid-column: 1 / -1; }
+  .routes-design #route-booking [role="tabpanel"] input, .routes-design #route-booking [role="tabpanel"] select { height: 45px; font-size: 12px; }
+  .routes-design #route-booking form > .mt-4 { align-items: stretch; }
+  .routes-design #route-booking form > .mt-4 button { width: 100%; }
+  .routes-design #route-booking form > .mt-4 > div { text-align: center; }
+  .routes-design-popular { gap: 10px; padding: 8px 10px; }
+  .routes-design-popular > strong { font-size: 12px; }
+  .routes-design-popular > strong svg { width: 20px; }
+  .routes-design-popular button { font-size: 10px; }
+  .routes-design-catalog { padding-top: 20px; }
+  .routes-design-catalog-heading h2 { font-size: 24px; }
+  .routes-design-catalog-heading p { font-size: 12px; }
+  .routes-design-catalog-layout { display: block; }
+  .routes-design-regions { flex-direction: row; gap: 6px; overflow-x: auto; padding: 0 0 8px; border: 0; box-shadow: none; scrollbar-width: none; }
+  .routes-design-regions a, .routes-design-regions a.is-active, .routes-design-regions a:hover { flex: 0 0 auto; min-height: 37px; margin: 0; padding: 7px 12px; border: 1px solid #dce5f8; border-radius: 20px; font-size: 12px; }
+  .routes-design-regions a svg:last-child { display: none; }
+  .routes-design-regions a.is-active { border-color: #001eea; }
+  .routes-design-region { margin-top: 11px; margin-bottom: 18px; }
+  .routes-design-region-heading h3 { font-size: 20px; }
+  .routes-design-region-heading a { font-size: 11px; }
+  .routes-design-card-grid { grid-template-columns: 1fr; gap: 9px; }
+  .routes-design-card { display: grid; grid-template-columns: 36% minmax(0,1fr); min-height: 116px; }
+  .routes-design-card-image { height: 100%; min-height: 116px; }
+  .routes-design-card-body { display: flex; flex-direction: column; padding: 9px 10px; }
+  .routes-design-card h3 { font-size: 14px; }
+  .routes-design-card-meta { display: none; }
+  .routes-design-card-bottom { margin-top: auto; }
+  .routes-design-card-bottom strong { font-size: 20px; }
+  .routes-design-card-bottom a { min-height: 31px; padding: 5px 7px; font-size: 10px; }
+  .routes-design-steps { padding-top: 4px; }
+  .routes-design-steps h2 { font-size: 19px; }
+  .routes-design-contact { margin-bottom: 8px; }
+}
+@media (max-width: 420px) {
+  .routes-design-popular { display: block; }
+  .routes-design-popular > div { margin-top: 6px; }
+  .routes-design-card-bottom a { font-size: 0; gap: 0; }
+  .routes-design-card-bottom a svg { width: 17px; }
+  .routes-design-region-heading > div { gap: 7px; }
+}

@@ -1,11 +1,16 @@
 "use client";
 
-import { MessageCircle, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
+import { ZaloIcon } from "@/components/zalo-icon";
+import { usePathname } from "next/navigation";
 import { getZaloChatLink } from "@/lib/zalo";
 import { SITE_CONTACT_PHONE, SITE_CONTACT_PHONE_TEL, SITE_NAME } from "@/lib/site-config";
 
 export function FloatingContactActions() {
+  const pathname = usePathname();
   const zaloLink = getZaloChatLink();
+
+  if (pathname === "/" || pathname === "/lien-he" || pathname === "/tuyen-duong" || pathname === "/diem-den" || pathname === "/loai-xe" || /^\/tuyen-duong\/[^/]+\/[^/]+(?:\/[^/]+)?$/.test(pathname)) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 flex flex-row gap-2 bg-background p-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:flex-col sm:bg-transparent sm:p-0">
@@ -22,10 +27,10 @@ export function FloatingContactActions() {
         href={zaloLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="floating-action floating-action-zalo flex-1 justify-center sm:flex-none"
+        className="floating-action floating-action-zalo flex-1 justify-center sm:flex-none zalo-cta"
         aria-label={`Nhắn Zalo ${SITE_CONTACT_PHONE} với ${SITE_NAME}`}
       >
-        <MessageCircle data-icon="inline-start" />
+        <ZaloIcon />
         <span>Nhắn Zalo</span>
       </a>
     </div>

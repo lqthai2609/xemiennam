@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ZaloIcon } from "@/components/zalo-icon";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle, MessageCircle, Phone, Plane, X } from "lucide-react";
+import { LoaderCircle, Phone, Plane, X } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -551,9 +552,9 @@ export function RouteBookingActions({
     <>
       <div className="detail-price-actions route-booking-actions">
         {zaloLink && (
-          <Button size="sm" className="route-booking-primary" asChild>
-            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`${isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"} ${vehicleType}`}>
-              <MessageCircle aria-hidden="true" size={18} />
+          <Button size="sm" className="route-booking-primary zalo-cta" asChild>
+            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`${isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"} ${vehicleType}`} className="zalo-cta">
+              <ZaloIcon />
               {isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"}
             </a>
           </Button>

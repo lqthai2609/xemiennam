@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import "../../home-redesign.css";
+import "./province-redesign.css";
 import { notFound } from "next/navigation";
 import { fetchRegionSlugs, fetchRoutesByRegion } from "@/lib/api/routes";
 import { fetchAirportConnectionsByProvinceSlug } from "@/lib/api/airport-routes";

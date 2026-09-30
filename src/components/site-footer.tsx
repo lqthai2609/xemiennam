@@ -43,7 +43,6 @@ export function SiteFooter({
   socialLinks,
   copyright,
   madeFor,
-  brandMark = "G",
   brandName = "ALO ĐẶT XE",
 }: SiteFooterProps) {
   const resolvedPhoneHref = phoneHref || `tel:${phone.replace(/\s/g, "")}`;
@@ -54,8 +53,7 @@ export function SiteFooter({
     <footer className="site-footer">
       <div className="footer-main">
         <Link href="/" className="brand" aria-label={`${brandName} trang chủ`}>
-          <span className="brand-mark">{brandMark}</span>
-          <span>{brandName}</span>
+          <img className="footer-brand-logo" src="/logo-footer.webp" width={2048} height={721} alt={brandName} />
         </Link>
         <p>{tagline}</p>
         <a className="phone-link" href={resolvedPhoneHref}>
