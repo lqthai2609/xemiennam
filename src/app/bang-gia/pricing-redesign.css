@@ -90,7 +90,7 @@
 }
 @media (max-width: 700px) {
   .pricing-width { width: min(100% - 28px, 600px); }
-  .pricing-hero { min-height: 235px; background-position: 58% center; }
+  .pricing-hero { min-height: 235px; background-position: right center; }
   .pricing-hero::before { background: linear-gradient(90deg, #fffffff5 0%, #ffffffdb 38%, #ffffff00 72%); }
   .pricing-hero-inner { padding-top: 22px; }
   .pricing-hero .home-eyebrow { margin-bottom: 7px; font-size: 11px; }

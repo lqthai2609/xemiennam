@@ -16,6 +16,7 @@ import { getZaloChatLink } from "@/lib/zalo";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 const featuredRegions = ["ba-ria-vung-tau", "dong-nai", "tay-ninh", "can-tho", "binh-thuan"];
+const featuredCoastalDestinations = ["Vũng Tàu", "Hồ Tràm", "Xuyên Mộc", "Long Hải", "Bình Châu"];
 const localRegionImages = new Set(["ba-ria-vung-tau", "dong-nai", "tay-ninh", "can-tho", "ben-tre", "phan-thiet", "binh-duong", "binh-phuoc", "long-an", "my-tho", "chau-doc", "da-lat", "ho-chi-minh"]);
 type TripType = "one_way" | "round_trip_day" | "2d1n";
 
@@ -61,7 +62,11 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
     });
   }, [originRoutes]);
   const selectedRegion = regions.some(([slug]) => slug === region) ? region : regions[0]?.[0] || "";
-  const filteredRoutes = useMemo(() => originRoutes.filter((route) => route.regionSlug === selectedRegion && (!query.trim() || locationMatchesQuery(route.to, query.trim()))), [originRoutes, selectedRegion, query]);
+  const filteredRoutes = useMemo(() => originRoutes.filter((route) => route.regionSlug === selectedRegion && (!query.trim() || locationMatchesQuery(route.to, query.trim()))).sort((a, b) => {
+    if (selectedRegion !== "ba-ria-vung-tau") return 0;
+    const first = featuredCoastalDestinations.indexOf(a.to), second = featuredCoastalDestinations.indexOf(b.to);
+    return (first < 0 ? featuredCoastalDestinations.length : first) - (second < 0 ? featuredCoastalDestinations.length : second);
+  }), [originRoutes, selectedRegion, query]);
   const columns = useMemo(() => ["4 chỗ", "7 chỗ", "16 chỗ", ...VEHICLE_TYPE_ORDER.filter((type) => !["4 chỗ", "7 chỗ", "16 chỗ"].includes(type))].filter((type) => originRoutes.some((route) => route.vehicleTypes.includes(type))).slice(0, 3), [originRoutes]);
   const tripLabel = tripType === "one_way" ? "Một chiều" : tripType === "round_trip_day" ? "Khứ hồi trong ngày" : "2 ngày 1 đêm";
 
@@ -87,7 +92,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
       </section>
       <p className="pricing-note"><Info size={21} aria-hidden="true" /><span>Giá áp dụng cho tuyến, loại xe và gói dịch vụ bạn chọn. Giá cuối cùng sẽ được xác nhận trước khi khởi hành.{lastModified && <> Cập nhật {formatVNDate(lastModified)}.</>}</span></p>
 
-      <section className="pricing-guide" aria-labelledby="pricing-guide-title"><h2 id="pricing-guide-title">Cách đọc bảng giá</h2><div className="pricing-guide-grid"><div><span><Tag aria-hidden="true" /></span><p><strong>Giá chỉ</strong><small>Là mức giá tham khảo cho một chiều di chuyển, áp dụng đúng tuyến đường và loại xe hiển thị.</small></p></div><div><span><FileText aria-hidden="true" /></span><p><strong>Liên hệ báo giá</strong><small>Một số tuyến hoặc loại xe cần tư vấn thêm để có giá phù hợp với thời gian, nhu cầu và lịch trình của bạn.</small></p></div><div><span><CheckCircle2 aria-hidden="true" /></span><p><strong>Xác nhận chuyến</strong><small>Giá cuối cùng, thời gian đón và các chi tiết dịch vụ sẽ được xác nhận trước khi khởi hành.</small></p></div></div></section>
+      <section className="pricing-guide" aria-labelledby="pricing-guide-title"><h2 id="pricing-guide-title">Cách đọc bảng giá</h2><div className="pricing-guide-grid"><div><span><Tag aria-hidden="true" /></span><p><strong>Giá chỉ</strong><small>Là mức giá tham khảo cho gói hành trình đã chọn, áp dụng đúng tuyến đường và loại xe hiển thị.</small></p></div><div><span><FileText aria-hidden="true" /></span><p><strong>Liên hệ báo giá</strong><small>Một số tuyến hoặc loại xe cần tư vấn thêm để có giá phù hợp với thời gian, nhu cầu và lịch trình của bạn.</small></p></div><div><span><CheckCircle2 aria-hidden="true" /></span><p><strong>Xác nhận chuyến</strong><small>Giá cuối cùng, thời gian đón và các chi tiết dịch vụ sẽ được xác nhận trước khi khởi hành.</small></p></div></div></section>
       <section className="pricing-contact" aria-labelledby="pricing-contact-title"><div className="pricing-contact-copy"><h2 id="pricing-contact-title">Không thấy điểm đến hoặc giá phù hợp?</h2><p>Hãy gửi yêu cầu hoặc liên hệ với chúng tôi để được tư vấn lịch trình và báo giá phù hợp.</p></div><div className="pricing-contact-actions">{zaloLink && <a href={zaloLink} target="_blank" rel="noopener noreferrer" className="home-button home-button-primary"><MessageCircle size={20} aria-hidden="true" /> Nhắn Zalo để được tư vấn <ArrowRight size={17} aria-hidden="true" /></a>}<div><Link href="/lien-he" className="home-button home-button-outline"><FileText size={20} aria-hidden="true" /> Gửi yêu cầu</Link><a href={`tel:${SITE_HOTLINE_TEL}`} className="home-button home-button-outline"><Phone size={20} aria-hidden="true" /> {SITE_HOTLINE}</a></div></div></section>
     </div>
     <SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "Khám phá", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Điểm đến", href: "/diem-den" }, { label: "Loại xe", href: "/loai-xe" }, { label: "Bảng giá", href: "/bang-gia" }] }, { title: "Hỗ trợ", links: [{ label: "Câu hỏi thường gặp", href: "/cau-hoi-thuong-gap" }, { label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
