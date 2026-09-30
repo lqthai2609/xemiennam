@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { VehicleTypeLanding } from "@/components/vehicle-type-landing-day13";
+import { VehicleTypeDetailRedesign } from "@/components/vehicle-type-detail-redesign";
 import { getVehicleCategory, vehicleCategories, withRealCategoryImage, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchRoutes } from "@/lib/api/routes";
@@ -12,6 +12,8 @@ import { buildBreadcrumbListSchema, buildServiceSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 import { buildVehicleCategoryRoutePrices, getVehicleCategoryStartingPrice } from "@/lib/vehicle-category-pricing";
+import "../../home-redesign.css";
+import "./vehicle-detail-redesign.css";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -70,8 +72,7 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
     .map((item) => ({
       ...item,
       startingPrice: getVehicleCategoryStartingPrice(allRoutes, item.type) ?? "Liên hệ báo giá",
-    }))
-    .slice(0, 3);
+    }));
 
   const canonicalPath = `/loai-xe/${category.slug}`;
   const serviceSchema = buildServiceSchema({
@@ -89,9 +90,10 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
     <>
       <JsonLd data={breadcrumbSchema} />
       <JsonLd data={serviceSchema} />
-      <VehicleTypeLanding
+      <VehicleTypeDetailRedesign
         category={displayCategory}
         routePrices={routePrices}
+        routes={allRoutes}
         relatedRoutes={relatedRoutes}
         airportRoutes={airportRoutes}
         services={services}
