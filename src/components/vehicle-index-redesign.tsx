@@ -42,7 +42,7 @@ function RouteFinder({ routes, categories }: { routes: Route[]; categories: Vehi
   const router = useRouter();
   const locations = useMemo(() => {
     const unique = new Map<string, string>();
-    routes.forEach((route) => [route.from, route.to].forEach((value) => {
+    routes.forEach((route) => [route.from, route.to].filter((value) => !/^City Tour/i.test(value)).forEach((value) => {
       const key = canonicalLocationKey(value);
       if (key && !unique.has(key)) unique.set(key, getPublicLocationLabel(value));
     }));

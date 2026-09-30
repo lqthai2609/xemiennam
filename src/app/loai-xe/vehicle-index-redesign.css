@@ -178,4 +178,5 @@
   .vehicle-index-contact .home-button { flex: 1; min-height: 36px; padding: 5px; font-size: 10px; }
   .vehicle-index-contact .home-button svg { width: 14px; }
 }
+@media (max-width: 480px) { .vehicle-index-selector-row { grid-template-columns: repeat(2,minmax(0,1fr)); row-gap: 12px; }.vehicle-index-selector-row button { justify-content: flex-start; padding-left: 12px; }.vehicle-index-selector-row strong { font-size: 11px; }.vehicle-index-selector-row small { font-size: 9px; }.vehicle-index-other-grid { grid-template-columns: 1fr; }.vehicle-index-other-card:last-child { grid-column: auto; }.vehicle-index-other-body > strong { font-size: 16px; }.vehicle-index-other-body > span { font-size: 11px; }.vehicle-index-other-body > small,.vehicle-index-other-body > b { font-size: 10px; } }
 @media (max-width: 390px) { .vehicle-index-selector-row button > svg { display: none; }.vehicle-index-selector-row button { justify-content: center; }.vehicle-index-needs-car { display: none; }.vehicle-index-needs-kind { width: 102px; }.vehicle-index-contact > div:last-child { flex-direction: column; } }
