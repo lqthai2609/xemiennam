@@ -6,8 +6,8 @@
  * - REVALIDATE_SECONDS: mặc định 3600s (1h) — nằm trong khoảng 1–6h theo kế hoạch.
  *   Next.js App Router dùng `fetch(url, { next: { revalidate } })` để bật ISR cho
  *   đúng lời gọi đó; không cần khai báo gì thêm ở route segment.
- * - wpFetch không throw ra ngoài: nếu API lỗi/timeout, trả về null và log lỗi,
- *   để lớp gọi (routes.ts/vehicles.ts) tự quyết định fallback (xem ghi chú ở đó).
+ * - Chỉ 404 được xem là không có dữ liệu. Lỗi kết nối/API phải throw để ISR giữ
+ *   trang thành công gần nhất, thay vì lưu một trang rỗng và gây 404 giả.
  */
 
 export const WP_API_BASE =
@@ -19,20 +19,41 @@ export async function wpFetch<T>(
   path: string,
   revalidate: number = REVALIDATE_SECONDS,
 ): Promise<T | null> {
-  try {
-    const res = await fetch(`${WP_API_BASE}${path}`, {
-      next: { revalidate },
-      headers: { Accept: "application/json" },
-    });
-    if (!res.ok) {
-      console.error(`[wpFetch] ${path} → HTTP ${res.status}`);
-      return null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let res: Response;
+    try {
+      res = await fetch(`${WP_API_BASE}${path}`, {
+        next: { revalidate },
+        // A different retry header prevents React request memoization from
+        // replaying the first failed response, while retaining normal ISR.
+        headers: {
+          Accept: "application/json",
+          ...(attempt > 0 ? { "X-Alo-Dat-Xe-Retry": "1" } : {}),
+        },
+      });
+    } catch (cause) {
+      if (attempt === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        continue;
+      }
+      throw new Error(`[wpFetch] ${path}: không kết nối được WordPress`, { cause });
     }
-    return (await res.json()) as T;
-  } catch (err) {
-    console.error(`[wpFetch] ${path} → lỗi khi gọi WP REST API`, err);
-    return null;
+
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      if (attempt === 0 && (res.status === 429 || res.status >= 500)) {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        continue;
+      }
+      throw new Error(`[wpFetch] ${path}: HTTP ${res.status}`);
+    }
+    try {
+      return (await res.json()) as T;
+    } catch (cause) {
+      throw new Error(`[wpFetch] ${path}: phản hồi WordPress không phải JSON hợp lệ`, { cause });
+    }
   }
+  throw new Error(`[wpFetch] ${path}: không lấy được dữ liệu WordPress`);
 }
 
 const namedHtmlEntities: Record<string, string> = {
