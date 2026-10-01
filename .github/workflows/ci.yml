@@ -132,6 +132,9 @@ jobs:
       - name: Public CMS pricing tuples
         run: npm run test:public-pricing
 
+      - name: WordPress API failure and recovery
+        run: node --test scripts/wp-fetch-resilience.test.mjs
+
       - name: Production build
         run: npm run build
 
