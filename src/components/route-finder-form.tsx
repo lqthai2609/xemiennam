@@ -47,6 +47,7 @@ export type BookingSearchFormProps = {
   routes: Route[];
   id?: string;
   variant?: BookingSearchVariant;
+  mobileStacked?: boolean;
   initialPickup?: string;
   initialDestination?: string;
   initialMode?: BookingSearchMode;
@@ -644,6 +645,7 @@ export function BookingSearchForm({
   routes,
   id,
   variant = "default",
+  mobileStacked = false,
   initialPickup = "",
   initialDestination = "",
   initialMode = "standard",
@@ -813,6 +815,33 @@ export function BookingSearchForm({
       : journey
         ? "Đã nhận diện tuyến có dữ liệu. Loại xe được lọc theo đúng chiều di chuyển và Pricing V2 hiện có."
         : "Nhập hành trình để hệ thống kiểm tra bảng giá; tuyến chưa có dữ liệu vẫn được tiếp nhận báo giá riêng.";
+
+  const vehicleField = (
+    <label className="booking-vehicle-field flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2 xl:col-span-1">
+      <span>Loại xe <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+      <span className="relative block">
+        <BusFront
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
+          size={18}
+        />
+        <select
+          value={vehicleType}
+          onChange={(event) => {
+            setVehicleType(event.target.value);
+            setError("");
+          }}
+          className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+        >
+          <option value="">Chưa chọn loại xe</option>
+          {availableVehicleTypes.map((type) => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+          <option value={CONSULT_VEHICLE}>{CONSULT_VEHICLE_LABEL}</option>
+        </select>
+      </span>
+    </label>
+  );
 
   return (
     <section className={outerClass} id={id} aria-labelledby={headingId}>
@@ -997,8 +1026,10 @@ export function BookingSearchForm({
               )}
             </div>
 
-            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span>Ngày đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+            {mobileStacked && vehicleField}
+
+            <label className="booking-date-field flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span className="booking-date-label">Ngày đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
               <span className="relative block">
                 <CalendarDays
                   aria-hidden="true"
@@ -1018,7 +1049,7 @@ export function BookingSearchForm({
               </span>
             </label>
 
-            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
+            <label className="booking-trip-field flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
               <span>Loại chuyến</span>
               <span className="relative block">
                 <Repeat2
@@ -1040,30 +1071,7 @@ export function BookingSearchForm({
               </span>
             </label>
 
-            <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2 xl:col-span-1">
-              <span>Loại xe <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
-              <span className="relative block">
-                <BusFront
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-primary"
-                  size={18}
-                />
-                <select
-                  value={vehicleType}
-                  onChange={(event) => {
-                    setVehicleType(event.target.value);
-                    setError("");
-                  }}
-                  className="h-12 w-full appearance-none rounded-xl border border-border bg-background pl-10 pr-8 text-base font-medium text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
-                >
-                  <option value="">Chưa chọn loại xe</option>
-                  {availableVehicleTypes.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                  <option value={CONSULT_VEHICLE}>{CONSULT_VEHICLE_LABEL}</option>
-                </select>
-              </span>
-            </label>
+            {!mobileStacked && vehicleField}
           </div>
         </div>
 

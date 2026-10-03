@@ -24,7 +24,7 @@ export const metadata: Metadata = buildPageMetadata({
 
 async function HeroBooking() {
   const routes = await fetchRoutes();
-  return <RouteFinderForm id="booking" routes={routes} variant="hero" />;
+  return <RouteFinderForm id="booking" routes={routes} variant="hero" mobileStacked />;
 }
 
 const steps = [
