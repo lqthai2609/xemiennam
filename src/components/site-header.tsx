@@ -57,9 +57,9 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref,
       <Link href="/" className="brand" aria-label={`${SITE_NAME} trang chủ`}>
         <img
           className="brand-logo"
-          src="/logo-header.webp"
-          width={2048}
-          height={721}
+          src="/logo-header-20261003.webp"
+          width={1420}
+          height={395}
           alt={SITE_NAME}
         />
       </Link>
