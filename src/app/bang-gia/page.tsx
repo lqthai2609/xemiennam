@@ -29,5 +29,6 @@ export default async function BangGiaPage() {
     .filter((d): d is string => Boolean(d))
     .sort()
     .at(-1);
-  return <BangGiaPageClient routes={routes} lastModified={lastModified} />;
+  const updatedOn = new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date());
+  return <BangGiaPageClient updatedOn={updatedOn} routes={routes} lastModified={lastModified} />;
 }

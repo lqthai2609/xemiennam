@@ -1,16 +1,28 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, ChevronLeft, ChevronRight, Home, Menu, Phone, Search, X } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Home, Menu, Phone, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SITE_NAME } from "@/lib/site-config";
 import { HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
 import { ZaloIcon } from "@/components/zalo-icon";
 import "./site-header.css";
 
-export type NavItem = { label: string; href: string };
+export type NavItem = { label: string; href: string; children?: { label: string; href: string }[] };
+
+function NavigationItem({ item, pathname, onNavigate }: { item: NavItem; pathname: string; onNavigate?: () => void }) {
+  const [open, setOpen] = useState(false);
+  const submenuId = useId();
+  const active = isActive(pathname, item.href) || item.children?.some((child) => isActive(pathname, child.href));
+  return <div className="nav-item" onPointerEnter={(event) => { if (event.pointerType === "mouse") setOpen(true); }} onPointerLeave={(event) => { if (event.pointerType === "mouse") setOpen(false); }} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }} onKeyDown={(event) => { if (event.key === "Escape") { setOpen(false); event.currentTarget.querySelector<HTMLButtonElement>("button")?.focus(); } }}>
+    <div className="nav-item-heading"><Link href={item.href} className={active ? "is-active" : undefined} aria-current={isActive(pathname, item.href) ? "page" : undefined} onClick={onNavigate}>{item.label}</Link>
+      {item.children && <button type="button" className="nav-submenu-toggle" aria-label={`Các mục ${item.label.toLowerCase()}`} aria-expanded={open} aria-controls={submenuId} onClick={() => setOpen(!open)}><ChevronDown size={14} /></button>}
+    </div>
+    {item.children && <div id={submenuId} className={`nav-submenu${open ? " is-open" : ""}`}>{item.children.map((child) => <Link key={child.href} href={child.href} aria-current={isActive(pathname, child.href) ? "page" : undefined} onClick={() => { setOpen(false); onNavigate?.(); }}>{child.label}</Link>)}</div>}
+  </div>;
+}
 
 interface SiteHeaderProps {
   menuItems: NavItem[];
@@ -64,16 +76,7 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref,
         />
       </Link>
       <nav className="main-nav" aria-label="Điều hướng chính">
-        {menuItems.map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            aria-current={isActive(pathname, item.href) ? "page" : undefined}
-            className={isActive(pathname, item.href) ? "is-active" : undefined}
-          >
-            {item.label}
-          </Link>
-        ))}
+        {menuItems.map((item) => <NavigationItem key={item.href} item={item} pathname={pathname} />)}
         <a className="nav-hotline" href={resolvedHotlineHref}>
           <Phone size={16} /> {hotline}
         </a>
@@ -92,8 +95,8 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref,
       </button>
 
       {homeDesign && <button className="home-mobile-phone" type="button" onClick={() => window.location.href = resolvedHotlineHref} aria-label={`Gọi ${hotline}`}><Phone /></button>}
-      {homeDesign && <button className="home-mobile-menu" type="button" aria-label={menuOpen ? "Đóng menu" : "Mở menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X /> : <Menu />}</button>}
-      {homeDesign && menuOpen && <nav className="home-mobile-menu-panel" aria-label="Menu chính">{menuItems.map((item) => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>{item.label}</Link>)}</nav>}
+      <button className="home-mobile-menu" type="button" aria-label={menuOpen ? "Đóng menu" : "Mở menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X /> : <Menu />}</button>
+      {menuOpen && <nav className="home-mobile-menu-panel" aria-label="Menu chính">{menuItems.map((item) => <NavigationItem key={item.href} item={item} pathname={pathname} onNavigate={() => setMenuOpen(false)} />)}</nav>}
 
       <div className="mobile-nav-scroller" role="group" aria-label="Điều hướng nhanh">
         <button

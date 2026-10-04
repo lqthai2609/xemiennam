@@ -53,7 +53,7 @@ export function SiteFooter({
     <footer className="site-footer">
       <div className="footer-main">
         <Link href="/" className="brand" aria-label={`${brandName} trang chủ`}>
-          <img className="footer-brand-logo" src="/logo-footer-20261003.webp" width={1420} height={395} alt={brandName} />
+          <img className="footer-brand-logo" src="/logo-footer-transparent-20261004.webp" width={1420} height={395} alt={brandName} />
         </Link>
         <p>{tagline}</p>
         <a className="phone-link" href={resolvedPhoneHref}>

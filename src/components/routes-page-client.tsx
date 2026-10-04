@@ -100,7 +100,7 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
   }
 
   return <main className="site-shell home-redesign routes-design">
-    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Blog", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
+    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
     <section className="routes-design-hero" aria-labelledby="routes-design-title"><div className="routes-design-hero-inner">
       <p className="home-eyebrow">TUYẾN ĐƯỜNG</p><h1 id="routes-design-title">Tìm tuyến xe<br />phù hợp với bạn</h1><p>Xe riêng có tài xế, chủ động lịch trình</p>
     </div></section>

@@ -44,7 +44,7 @@ function destinationImage(route: Route) {
   return localRegionImages.has(route.regionSlug) ? `/images/destinations/${route.regionSlug}.webp` : "/images/home-coastal-fleet.webp";
 }
 
-export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; lastModified?: string }) {
+export function BangGiaPageClient({ routes, lastModified, updatedOn }: { routes: Route[]; lastModified?: string; updatedOn: string }) {
   const origins = useMemo(() => Array.from(new Set(routes.map((route) => route.from))).sort((a, b) => getPublicLocationLabel(a).localeCompare(getPublicLocationLabel(b), "vi")), [routes]);
   const [origin, setOrigin] = useState(() => origins.find((item) => getPublicLocationLabel(item) === "Sài Gòn") || origins[0] || "");
   const [region, setRegion] = useState(() => routes.some((route) => route.regionSlug === featuredRegions[0]) ? featuredRegions[0] : routes[0]?.regionSlug || "");
@@ -76,7 +76,7 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
   function resetSearch() { setQuery(""); }
 
   return <main className="site-shell home-redesign pricing-redesign">
-    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Bảng giá", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
+    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
     <section className="pricing-hero" aria-labelledby="pricing-title"><div className="pricing-width pricing-hero-inner"><p className="home-eyebrow">BẢNG GIÁ</p><h1 id="pricing-title">Bảng giá xe riêng<br />theo điểm đến</h1><p>Chọn tỉnh thành, tìm địa điểm và xem giá theo loại xe.</p></div></section>
 
     <div className="pricing-width pricing-main">
@@ -88,7 +88,8 @@ export function BangGiaPageClient({ routes, lastModified }: { routes: Route[]; l
         <label className="pricing-search"><Search size={23} aria-hidden="true" /><span className="sr-only">Tìm địa điểm trong tỉnh</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm nhanh địa điểm trong tỉnh, ví dụ: Hồ Tràm" /><span className="pricing-result-count">{filteredRoutes.length} điểm đến</span>{query && <button type="button" onClick={resetSearch} aria-label="Xóa tìm kiếm"><X size={16} /></button>}</label>
       </section>
 
-      <section className="pricing-results" aria-label={`Giá xe ${tripLabel.toLowerCase()} theo điểm đến`}>
+      <section className="pricing-results" aria-labelledby="pricing-table-title">
+        <div className="pricing-results-heading"><h2 id="pricing-table-title">Bảng giá thuê xe theo tuyến</h2><p>Cập nhật ngày {updatedOn}</p></div>
         <div className="pricing-table-scroll"><table className="pricing-table"><thead><tr><th scope="col">ĐIỂM ĐẾN <span className="pricing-desktop-only">/ TUYẾN</span></th>{columns.map((type) => <th key={type} scope="col"><CarFront size={29} aria-hidden="true" /> XE {type.toUpperCase()}</th>)}<th scope="col" className="pricing-route-column">XEM TUYẾN</th></tr></thead><tbody>{filteredRoutes.map((route) => { const { from, to } = getPublicRouteLocations(route); return <tr key={route.slug}><td className="pricing-destination-cell"><Link href={routeHref(route)} className="pricing-place"><span className="pricing-place-image"><Image src={destinationImage(route)} alt="" fill sizes="(max-width: 700px) 70px, 95px" /></span><span><strong>{to}</strong><small>{from} đi {to}</small></span></Link></td>{columns.map((type) => { const price = priceFor(route, type, tripType); const label = priceText(price); return <td key={type}><div className="pricing-price-cell">{price && isFixed(price) && <small>Giá chỉ</small>}{price ? <Link href={`${routeComboHref(route, vehicleTypeSlug(type))}?package=${tripType}#pricing`} className={isFixed(price) ? "pricing-fixed" : "pricing-contact-price"} title={`Xem xe ${type} tuyến ${from} đi ${to}`}>{label}</Link> : <span className="pricing-unavailable">{label}</span>}<small>{tripLabel} / chuyến</small></div></td>; })}<td className="pricing-route-column"><Link href={routeHref(route)} className="pricing-view-route">Xem tuyến <ArrowRight size={16} aria-hidden="true" /></Link></td></tr>; })}</tbody></table>{!filteredRoutes.length && <p className="pricing-empty">Chưa tìm thấy điểm đến phù hợp. Hãy thử một tỉnh hoặc từ khóa khác.</p>}</div>
         <p className="pricing-mobile-hint"><span>☝</span> Chạm tên điểm đến để xem tuyến <ArrowRight size={20} aria-hidden="true" /></p>
       </section>

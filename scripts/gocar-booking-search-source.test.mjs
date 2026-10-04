@@ -6,6 +6,7 @@ const routeFinderForm = await readFile(
   new URL("../src/components/route-finder-form.tsx", import.meta.url),
   "utf8",
 );
+const locationField = await readFile(new URL("../src/components/location-field.tsx", import.meta.url), "utf8");
 const locationSearch = await readFile(
   new URL("../src/lib/location-search.ts", import.meta.url),
   "utf8",
@@ -24,7 +25,7 @@ test("booking search reuses canonical Ho Chi Minh aliases", () => {
     assert.ok(locationSearch.includes(`\"${alias}\"`), `missing alias: ${alias}`);
   }
 
-  assert.match(routeFinderForm, /locationMatchesQuery\(option, value\)/);
+  assert.match(locationField, /locationMatchesQuery\(option, value\)/);
   assert.match(routeFinderForm, /canonicalLocationKey\(pickup\)/);
   assert.match(routeFinderForm, /canonicalLocationKey\(destination\)/);
 });
@@ -39,7 +40,7 @@ test("district and area aliases resolve to the canonical Ho Chi Minh route", () 
   }
 
   assert.match(locationSearch, /resolveLocationAlias/);
-  assert.match(routeFinderForm, /Đã quy đổi về/);
+  assert.match(locationField, /Đã quy đổi về/);
   assert.match(routeFinderForm, /Hai điểm này đều thuộc nhóm giá \$\{HO_CHI_MINH_PUBLIC_LABEL\}/);
 });
 

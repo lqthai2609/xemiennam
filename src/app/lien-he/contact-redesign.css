@@ -131,3 +131,6 @@
   .contact-redesign .contact-field .form-control { font-size: 11px; }
   .contact-side-zalo .home-button { gap: 5px; }
 }
+
+.contact-journey-locations { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 700px) { .contact-journey-locations { grid-template-columns: minmax(0, 1fr); } }

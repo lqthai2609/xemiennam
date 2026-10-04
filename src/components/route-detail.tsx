@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock3, FileText, MapPin, Phone, Route as RouteIcon, UsersRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { RouteFinderForm } from "@/components/route-finder-form";
 import { RoutePricingSection } from "@/components/route-pricing-section";
 import { BlogCard } from "@/components/blog-card";
 import { routeComboHref, routeHref, vehicleTypeSlug, type Route, type RoutePricingDirectionKey } from "@/types/route";
@@ -43,9 +44,10 @@ function RelatedCard({ route }: { route: Route }) {
   </Link>;
 }
 
-export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPosts, vehicleImageByType = {} }: {
+export function RouteDetailPage({ route, relatedRoutes, finderRoutes, testimonials, relatedPosts, vehicleImageByType = {} }: {
   route: Route;
   relatedRoutes: Route[];
+  finderRoutes: Route[];
   testimonials: Testimonial[];
   relatedPosts: BlogPost[];
   vehicleImageByType?: Record<string, string>;
@@ -73,11 +75,11 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
     : inbound
       ? `Xe riêng có tài xế từ ${from} đến ${to}, chủ động thời gian và điểm đón.`
       : formatPublicLocationText(route.summary || `Xe riêng có tài xế từ ${from} đến ${to}, chủ động thời gian và điểm đón.`);
-  const heroImage = route.regionSlug === "ba-ria-vung-tau" ? "/images/home-coastal-fleet.webp" : route.featuredImage || "/images/home-coastal-fleet.webp";
+  const heroImage = route.featuredImage || regionImages[route.region] || "/images/home-coastal-fleet.webp";
   const reverseAvailable = Boolean(route.pricingV2?.outbound.enabled && route.pricingV2?.inbound.enabled);
 
   return <main className="site-shell home-redesign route-detail-redesign">
-    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Blog", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
+    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
 
     <section className="route-detail-design-hero" aria-labelledby="route-detail-title">
       <Image src={heroImage} alt="" fill priority sizes="100vw" className="route-detail-design-hero-image" />
@@ -92,8 +94,10 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
       </div>
     </section>
 
+    {!prelaunch && <div className="home-booking-wrap route-detail-booking-search"><RouteFinderForm key={`${route.id}-${direction}`} id="booking" routes={finderRoutes} variant="hero" mobileStacked initialPickup={from} initialDestination={to} source="route_detail" /></div>}
+
     <div className="route-detail-design-main">
-      <section className="route-detail-design-pricing" id="booking" aria-label="Chọn gói và xe cho tuyến">
+      <section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến">
         <div id="pricing"><RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign /></div>
       </section>
 

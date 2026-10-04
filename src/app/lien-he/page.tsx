@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { fetchRoutes, VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
+import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 import { LienHePageClient } from "@/components/lien-he-page-client";
 import { buildPageMetadata } from "@/lib/metadata";
-import { getPublicRouteLabel } from "@/lib/public-location-label";
+import { getPublicLocationLabel } from "@/lib/public-location-label";
 import "../home-redesign.css";
 import "./contact-redesign.css";
 
@@ -19,7 +20,7 @@ export const metadata: Metadata = buildPageMetadata({
  * (Ngày 20) trong LienHePageClient.
  */
 export default async function Page() {
-  const routes = await fetchRoutes();
-  const routeOptions = [...new Set(routes.map((route) => getPublicRouteLabel(route, " – ")))];
-  return <LienHePageClient routeOptions={routeOptions} vehicleTypeOptions={VEHICLE_TYPE_ORDER} />;
+  const routes = (await fetchRoutes()).filter(canSuggestRelatedRoute);
+  const locationOptions = [...new Set(routes.flatMap((route) => [getPublicLocationLabel(route.from), getPublicLocationLabel(route.to)]))].filter(Boolean).sort((a, b) => a.localeCompare(b, "vi"));
+  return <LienHePageClient locationOptions={locationOptions} vehicleTypeOptions={VEHICLE_TYPE_ORDER} />;
 }

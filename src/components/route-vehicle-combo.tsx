@@ -83,7 +83,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   const bookingProps = { route: getPublicRouteLabel(route, " – "), routeId: route.id, displayRoute, vehicleType: category.type, price: hasFixedPrice ? priceLabel : undefined, direction: activeDirection, packageKey, packageLabel, pricingMode: hasFixedPrice ? "fixed" as const : "contact" as const, airportContext, airportName };
 
   return <main className="site-shell home-redesign combo-redesign">
-    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Blog", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
+    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
     <section className="combo-design-hero" aria-labelledby="combo-title"><Image src={heroImage} alt="" fill priority sizes="100vw" className="combo-design-hero-image" /><div className="combo-design-width combo-design-hero-inner">
       <nav className="combo-design-breadcrumb" aria-label="Đường dẫn"><Link href="/tuyen-duong">Tuyến đường</Link><span>/</span><Link href={`/tuyen-duong/${route.regionSlug}`}>{getPublicLocationLabel(route.region)}</Link><span>/</span><span>Xe {category.type}</span></nav>
       <p className="home-eyebrow">{prelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : "XE RIÊNG CÓ TÀI XẾ"}</p><h1 id="combo-title">Xe {category.type}<br />{from} đi {to}</h1>

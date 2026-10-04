@@ -129,7 +129,7 @@ export function DestinationsPage({ destinations, routes }: { destinations: Desti
   }
 
   return <main className="site-shell home-redesign dest-redesign">
-    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Blog", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
+    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
     <section className="dest-hero" aria-labelledby="dest-title"><div className="dest-width dest-hero-inner">
       <div className="dest-hero-copy"><p className="home-eyebrow">KHÁM PHÁ ĐIỂM ĐẾN</p><h1 id="dest-title">Bạn muốn<br />đến đâu?</h1><p>Khám phá điểm đến và chọn tuyến xe riêng phù hợp.</p></div>
       <div className="dest-hero-collage" aria-label="Khám phá Vũng Tàu, Tây Ninh và Cần Thơ">
