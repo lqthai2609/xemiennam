@@ -3,14 +3,14 @@
 .route-detail-price-heading h2 { margin: 0; color: #07165d; font-size: 34px; line-height: 1.2; font-weight: 800; }
 .route-detail-price-heading p { margin: 6px 0 0; color: #64739e; font-size: 18px; }
 .route-detail-redesign .route-vehicle-grid { order: 4; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
-.route-detail-redesign .route-vehicle-card { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); grid-template-areas: "image heading" "image body"; gap: 8px 20px; min-height: 0; padding: 14px; border: 1px solid #dce5f8; border-radius: 14px; background: #fff; box-shadow: 0 5px 20px #10246b0d; }
+.route-detail-redesign .route-vehicle-card { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); grid-template-rows: auto 1fr; grid-template-areas: "image heading" "image body"; gap: 8px 20px; min-height: 0; padding: 14px; border: 1px solid #dce5f8; border-radius: 14px; background: #fff; box-shadow: 0 5px 20px #10246b0d; }
 .route-detail-redesign .route-vehicle-card.is-popular { border-color: #ff5122; }
 .route-detail-redesign .route-vehicle-heading { grid-area: heading; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
 .route-detail-redesign .route-vehicle-heading h3 { margin: 0; color: #07165d; font-size: 30px; line-height: 1.15; font-weight: 800; }
 .route-detail-redesign .route-vehicle-heading h3 a { color: inherit; }
 .route-vehicle-popular { flex: none; padding: 6px 12px; border-radius: 999px; background: #ff5122; color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; }
-.route-detail-redesign .route-vehicle-image { grid-area: image; order: initial; height: 100%; min-height: 250px; overflow: hidden; border-radius: 11px; background: #f1f5fa; }
-.route-detail-redesign .route-vehicle-image a { display: block; width: 100%; height: 100%; }
+.route-detail-redesign .route-vehicle-image { grid-area: image; order: initial; position: relative; height: auto; min-height: 0; aspect-ratio: 1.9; overflow: hidden; border-radius: 11px; background: #f1f5fa; }
+.route-detail-redesign .route-vehicle-image a { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .route-detail-redesign .route-vehicle-image img { width: 100%; height: 100%; object-fit: contain; }
 .route-detail-redesign .route-vehicle-body { grid-area: body; min-width: 0; padding: 0; }
 .route-detail-redesign .route-vehicle-model { min-height: 0; margin: 0 0 14px; color: #07165d; font-size: 15px; font-weight: 700; line-height: 1.4; }
@@ -185,7 +185,7 @@
   .route-price-title-desktop { display: none; }
   .route-detail-price-heading p { font-size: 15px; }
   .route-detail-redesign .route-vehicle-grid { gap: 16px; }
-  .route-detail-redesign .route-vehicle-card { grid-template-columns: minmax(0, 1fr); grid-template-areas: "heading" "image" "body"; gap: 8px; padding: 11px; }
+  .route-detail-redesign .route-vehicle-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; grid-template-areas: "heading" "image" "body"; gap: 8px; padding: 11px; }
   .route-detail-redesign .route-vehicle-heading { gap: 8px; }
   .route-detail-redesign .route-vehicle-heading h3 { font-size: 26px; }
   .route-vehicle-popular { padding: 5px 9px; font-size: 10px; }
