@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { Phone } from "lucide-react";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
 export type FooterLinkGroup = {
   title: string;
@@ -10,13 +11,13 @@ export type FooterLinkGroup = {
 export type SocialLink = { label: string; href: string };
 
 interface SiteFooterProps {
-  tagline: ReactNode;
-  phone: string;
+  tagline?: ReactNode;
+  phone?: string;
   phoneHref?: string;
-  linkGroups: FooterLinkGroup[];
-  socialLinks: SocialLink[];
-  copyright: string;
-  madeFor: string;
+  linkGroups?: FooterLinkGroup[];
+  socialLinks?: SocialLink[];
+  copyright?: string;
+  madeFor?: string;
   brandMark?: string;
   brandName?: string;
 }
@@ -36,16 +37,19 @@ function sanitizeFooterLinkGroups(linkGroups: FooterLinkGroup[]): FooterLinkGrou
 }
 
 export function SiteFooter({
-  tagline,
-  phone,
+  tagline = <>Alo Đặt Xe cung cấp dịch vụ xe riêng di chuyển từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>,
+  phone = SITE_HOTLINE,
   phoneHref,
-  linkGroups,
-  socialLinks,
-  copyright,
-  madeFor,
-  brandName = "ALO ĐẶT XE",
-}: SiteFooterProps) {
-  const resolvedPhoneHref = phoneHref || `tel:${phone.replace(/\s/g, "")}`;
+  linkGroups = [
+    { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Điểm đến", href: "/diem-den" }, { label: "Loại xe", href: "/loai-xe" }, { label: "Blog", href: "/blog" }] },
+    { title: "HỖ TRỢ", links: [{ label: "Liên hệ", href: "/lien-he" }] },
+  ],
+  socialLinks = [],
+  copyright = `© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`,
+  madeFor = "Đồng hành cùng bạn trên mọi hành trình.",
+  brandName = SITE_NAME,
+}: SiteFooterProps = {}) {
+  const resolvedPhoneHref = phoneHref || `tel:${phone === SITE_HOTLINE ? SITE_HOTLINE_TEL : phone.replace(/\s/g, "")}`;
   const safeLinkGroups = sanitizeFooterLinkGroups(linkGroups);
   const safeSocialLinks = socialLinks.filter((social) => isRenderableFooterHref(social.href));
 

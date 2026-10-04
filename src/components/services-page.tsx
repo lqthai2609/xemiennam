@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CarFront } from "lucide-react";
@@ -7,7 +8,7 @@ import type { Service } from "@/types/service";
 import type { Route } from "@/types/route";
 import { ServiceCard } from "@/components/service-card";
 import { BookingSearchForm } from "@/components/route-finder-form";
-import { ServiceContactBanner, ServiceDesignFooter, ServiceFeatureList, ServiceSteps, serviceImage, servicePromises } from "@/components/service-design-shared";
+import { ServiceContactBanner, ServiceFeatureList, ServiceSteps, serviceImage, servicePromises } from "@/components/service-design-shared";
 import { ZaloIcon } from "@/components/zalo-icon";
 import { SITE_CONTACT_PHONE_DISPLAY, SITE_CONTACT_PHONE_TEL } from "@/lib/site-config";
 import { getZaloChatLink } from "@/lib/zalo";
@@ -24,6 +25,6 @@ export function ServicesPage({ services, routes, vehicleImages = {} }: { service
     <section className="svc-promise-band"><div className="svc-container"><ServiceFeatureList items={servicePromises} /></div></section>
     <section className="svc-catalog svc-container" id="services"><div className="svc-heading svc-heading-center"><p className="svc-eyebrow">DỊCH VỤ NỔI BẬT</p><h2>Chọn dịch vụ <em>phù hợp</em></h2><p>Đa dạng dịch vụ xe riêng có tài xế, đáp ứng cho cả nhu cầu cá nhân và doanh nghiệp.</p></div>{ordered.length ? <div className="svc-card-grid">{ordered.map(service => <ServiceCard key={service.slug} service={service} image={serviceImage(service, vehicleImages)} redesign />)}</div> : <div className="route-empty" role="status"><h3>Hiện chưa có dịch vụ được công bố</h3><p>Alo Đặt Xe vẫn nhận tư vấn hành trình trực tiếp.</p><Link className="svc-button svc-button-blue" href="/lien-he">Liên hệ tư vấn</Link></div>}</section>
     <section className="svc-process-band"><div className="svc-container"><div className="svc-heading svc-heading-center"><p className="svc-eyebrow">QUY TRÌNH ĐẶT XE</p><h2>Đặt xe theo nhu cầu, <em>thật đơn giản</em></h2><p>Chỉ với 3 bước, bạn đã có thể đặt xe riêng với lịch trình phù hợp.</p></div><ServiceSteps /><div className="home-booking-wrap svc-booking"><BookingSearchForm routes={routes} variant="hero" mobileStacked id="booking" source="services_catalog" /></div></div></section>
-    <ServiceContactBanner /><ServiceDesignFooter services={ordered} />
+    <ServiceContactBanner /><SiteFooter />
   </main>;
 }

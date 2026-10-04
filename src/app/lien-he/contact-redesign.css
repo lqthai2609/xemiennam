@@ -40,7 +40,6 @@
 .contact-redesign .contact-field textarea.form-control { height: 52px; min-height: 52px; padding: 10px; resize: vertical; }
 .contact-redesign .contact-field .form-control::placeholder { color: #8794b9; }
 .contact-redesign .contact-field select.form-control { padding-right: 10px; }
-.contact-date { grid-column: 1 / -1; width: calc(50% - 9px); }
 .contact-full, .contact-stops { grid-column: 1 / -1; }
 .contact-stops { min-width: 0; margin: 0; padding: 0; border: 0; }
 .contact-stops legend { margin-bottom: 5px; padding: 0; color: #07165d; font-size: 12px; }
@@ -107,7 +106,6 @@
   .contact-redesign .lien-he-form-card { width: 100%; padding: 15px; }
   .contact-form-intro h2 { font-size: 22px; }
   .contact-form-grid { gap: 12px 10px; }
-  .contact-date { grid-column: 1 / -1; width: 100%; }
   .contact-sidebar { width: 100%; }
   .contact-sidebar > div { padding: 15px; }
   .contact-side-zalo .contact-side-heading { margin-bottom: 10px; }

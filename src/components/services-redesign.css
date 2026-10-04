@@ -256,17 +256,3 @@
   .svc-related h2 { font-size: 23px; }
 }
 @media (prefers-reduced-motion: reduce) { .svc-card { transition: none; } }
-/* The reference uses a compact dark footer on both service pages. */
-.service-redesign.home-redesign .site-footer { background: #071b34; }
-@media (max-width: 800px) {
-  .service-redesign.home-redesign .site-footer { display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 15px; padding-block: 22px 14px; }
-  .service-redesign.home-redesign .footer-main { display: flex; grid-column: 1; gap: 10px; padding-bottom: 0; }
-  .service-redesign.home-redesign .footer-main .brand { width: 125px; }
-  .service-redesign.home-redesign .footer-main .phone-link { font-size: 10px; }
-  .service-redesign.home-redesign .footer-main p { font-size: 10px; line-height: 1.5; }
-  .service-redesign.home-redesign .footer-links { grid-column: 2; display: grid; grid-template-columns: 1fr; gap: 16px; padding: 0; border: 0; }
-  .service-redesign.home-redesign .footer-links > div { grid-column: auto; }
-  .service-redesign.home-redesign .footer-links span { font-size: 10px; }
-  .service-redesign.home-redesign .footer-links a { font-size: 10px; }
-  .service-redesign.home-redesign .footer-bottom { grid-column: 1 / -1; padding-top: 14px; font-size: 9px; }
-}

@@ -1,10 +1,11 @@
+import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock3, FileText, Info, MapPin, Route as RouteIcon, UsersRound, type LucideIcon } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { navItems } from "@/data/nav";
 import type { Service } from "@/types/service";
-import { ServiceContactActions, ServiceContactBanner, ServiceDesignFooter, ServiceFeatureList, ServiceSteps, serviceImage, servicePromises, type ServiceFeature } from "@/components/service-design-shared";
+import { ServiceContactActions, ServiceContactBanner, ServiceFeatureList, ServiceSteps, serviceImage, servicePromises, type ServiceFeature } from "@/components/service-design-shared";
 import { SITE_CONTACT_PHONE_DISPLAY, SITE_CONTACT_PHONE_TEL } from "@/lib/site-config";
 import { getZaloChatLink } from "@/lib/zalo";
 import "@/app/home-redesign.css";
@@ -61,6 +62,6 @@ export function ServiceDetail({ service, vehicleImages = {} }: { service: Servic
     <section className="svc-details-bottom svc-container"><div><div className="svc-heading"><p className="svc-eyebrow">THÔNG TIN CẦN CHUẨN BỊ</p><h2>Thông tin cần chuẩn bị để báo giá</h2><p>Để nhận báo giá phù hợp, vui lòng cung cấp một số thông tin sau:</p></div><div className="svc-checklist">{(business ? businessChecklist : tripChecklist).map(({ title, description, icon: Icon }) => <div key={title}><span className="svc-icon"><Icon aria-hidden="true" /></span><div><h3>{title}</h3><p>{description}</p></div></div>)}</div>{service.notes.length > 0 && <details className="svc-notes"><summary>Lưu ý riêng cho dịch vụ này</summary><ul>{service.notes.map(note => <li key={note}>{note}</li>)}</ul></details>}</div><div><div className="svc-heading"><p className="svc-eyebrow">CÂU HỎI THƯỜNG GẶP</p><h2>Một số thắc mắc phổ biến</h2></div><div className="svc-faq" id="service-faq">{faqs.map(faq => <details key={faq.q}><summary>{faq.q}</summary><p>{faq.a}</p></details>)}</div><div className="svc-price-note"><Info aria-hidden="true" /><p>Báo giá riêng theo lộ trình và nhu cầu thực tế.</p></div></div></section>
     {service.slug === "dua-don-san-bay" && <section className="svc-related svc-container"><h2>Khám phá tuyến sân bay</h2><Link className="svc-text-link" href="/san-bay/tan-son-nhat">Xem các tuyến Sân bay Tân Sơn Nhất<ArrowRight aria-hidden="true" /></Link></section>}
     {Boolean(service.relatedRoutes?.length) && <section className="svc-related svc-container"><h2>Tuyến đường phù hợp</h2><div>{service.relatedRoutes!.map(route => <article key={route.href}><Link className="svc-text-link" href={route.href}>{route.name}<ArrowRight aria-hidden="true" /></Link>{route.summary && <p>{route.summary}</p>}<div className="svc-related-combos">{route.combos.map(combo => <Link href={combo.href} key={combo.href}>{combo.vehicleType}</Link>)}</div></article>)}</div></section>}
-    <ServiceContactBanner business={business} image={image} /><ServiceDesignFooter />
+    <ServiceContactBanner business={business} image={image} /><SiteFooter />
   </main>;
 }

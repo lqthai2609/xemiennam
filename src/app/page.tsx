@@ -91,20 +91,7 @@ export default function Home() {
         </div>
       </section>
 
-      <SiteFooter
-        tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng di chuyển từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>}
-        phone={SITE_HOTLINE}
-        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
-        linkGroups={[
-          { title: "KHÁM PHÁ", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Điểm đến", href: "/diem-den" }, { label: "Loại xe", href: "/loai-xe" }, { label: "Blog", href: "/blog" }] },
-          { title: "HỖ TRỢ", links: [{ label: "Liên hệ", href: "/lien-he" }] },
-        ]}
-        socialLinks={[]}
-        copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`}
-        madeFor="Đồng hành cùng bạn trên mọi hành trình."
-        brandMark="A"
-        brandName={SITE_NAME}
-      />
+      <SiteFooter />
     </main>
   );
 }

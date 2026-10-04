@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, CarFront, CheckCircle2, ClipboardList, MapPin, Phone, type LucideIcon } from "lucide-react";
-import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { ZaloIcon } from "@/components/zalo-icon";
 import { SITE_CONTACT_PHONE_DISPLAY, SITE_CONTACT_PHONE_TEL, SITE_NAME } from "@/lib/site-config";
 import { getZaloChatLink } from "@/lib/zalo";
@@ -38,10 +37,4 @@ export function ServiceContactActions({ quote = false }: { quote?: boolean }) {
 }
 export function ServiceContactBanner({ business = false, image = "/images/home-coastal-fleet.webp" }: { business?: boolean; image?: string }) {
   return <section className="svc-contact-banner"><Image src={image} alt="" fill sizes="100vw" /><div className="svc-container"><div>{business && <p className="svc-eyebrow">ĐỒNG HÀNH CÙNG DOANH NGHIỆP</p>}<h2>{business ? "Trao đổi lịch xe cho doanh nghiệp của bạn" : <>Cần một chuyến xe<br />theo lịch riêng?</>}</h2><p>{business ? `Đội ngũ ${SITE_NAME} sẵn sàng tư vấn phương án di chuyển phù hợp với quy mô và nhu cầu thực tế.` : "Đội ngũ tư vấn luôn sẵn sàng hỗ trợ bạn."}</p><ServiceContactActions /></div></div></section>;
-}
-export function ServiceDesignFooter({ services = [] }: { services?: Service[] }) {
-  return <SiteFooter tagline={<>Xe riêng có tài xế, đồng hành cùng bạn<br />trên mọi hành trình.</>} phone={SITE_CONTACT_PHONE_DISPLAY} phoneHref={`tel:${SITE_CONTACT_PHONE_TEL}`} linkGroups={[
-    { title: "DỊCH VỤ", links: services.length ? services.map(s => ({ label: s.name, href: `/dich-vu/${s.slug}` })) : [{ label: "Tất cả dịch vụ", href: "/dich-vu" }] },
-    { title: "THÔNG TIN", links: [{ label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Điểm đến", href: "/diem-den" }, { label: "Loại xe", href: "/loai-xe" }, { label: "Bảng giá", href: "/bang-gia" }, { label: "Blog", href: "/blog" }, { label: "Liên hệ", href: "/lien-he" }] },
-  ]} socialLinks={defaultSocialLinks} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Xe riêng cho hành trình của bạn." />;
 }
