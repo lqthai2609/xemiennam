@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Cloudflare local compatibility spike
+.open-next/
+.wrangler/
+.dev.vars*

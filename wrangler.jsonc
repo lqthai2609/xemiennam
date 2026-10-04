@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "alodatxe-migration-spike",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-04",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "services": [
+    { "binding": "WORKER_SELF_REFERENCE", "service": "alodatxe-migration-spike" }
+  ],
+  "images": { "binding": "IMAGES" },
+  "vars": {
+    "GOCAR_ENABLE_MOCK_FALLBACK": "false",
+    "GOCAR_ADMIN_WIZARD_ENABLED": "false"
+  }
+}
