@@ -5,6 +5,8 @@ import { fetchServices, fetchServiceBySlug } from "@/lib/api/services";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildServiceSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
+import { fetchVehicles } from "@/lib/api/vehicles";
+import { vehicleTypeSlug } from "@/types/route";
 import { SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText } from "@/lib/public-location-label";
 
@@ -36,6 +38,12 @@ export default async function Page({ params }: Props) {
   const { slug } = await params;
   const service = await fetchServiceBySlug(slug);
   if (!service) notFound();
+  const vehicles = await fetchVehicles();
+  const vehicleImages: Record<string, string> = {};
+  for (const vehicle of vehicles) {
+    const type = vehicleTypeSlug(vehicle.type);
+    if (!vehicleImages[type] && vehicle.images[0]) vehicleImages[type] = vehicle.images[0];
+  }
   const canonicalPath = `/dich-vu/${service.slug}`;
   const serviceSchema = buildServiceSchema({
     name: service.name,
@@ -51,7 +59,7 @@ export default async function Page({ params }: Props) {
     <>
       <JsonLd data={breadcrumbSchema} />
       <JsonLd data={serviceSchema} />
-      <ServiceDetail service={service} />
+      <ServiceDetail service={service} vehicleImages={vehicleImages} />
     </>
   );
 }

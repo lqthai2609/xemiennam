@@ -454,7 +454,7 @@ function JourneyQuoteDialog({
                 </label>
               )}
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+                <span>Lưu ý điểm đón</span>
                 <textarea
                   value={pickupNote}
                   onChange={(event) => {
@@ -676,7 +676,7 @@ export function BookingSearchForm({
 
   const vehicleField = (
     <label className="booking-vehicle-field flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2 xl:col-span-1">
-      <span>Loại xe <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+      <span>Loại xe</span>
       <span className="relative block">
         <BusFront
           aria-hidden="true"
@@ -890,7 +890,7 @@ export function BookingSearchForm({
             {mobileStacked && vehicleField}
 
             <label className="booking-date-field flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span className="booking-date-label">Ngày đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+              <span className="booking-date-label">Ngày đi</span>
               <span className="relative block">
                 <CalendarDays
                   aria-hidden="true"

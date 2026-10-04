@@ -122,12 +122,11 @@ export default async function Page({ params }: Props) {
   const publicFrom = getPublicLocationLabel(route.from);
   const publicTo = getPublicLocationLabel(route.to);
 
-  const [regionRoutes, vehicleImageByType, allTestimonials, relatedPosts, finderRoutes] = await Promise.all([
+  const [regionRoutes, vehicleImageByType, allTestimonials, relatedPosts] = await Promise.all([
     fetchRoutesByRegion(route.regionSlug),
     buildVehicleImageByType(),
     fetchTestimonials(),
     fetchPostsByRegion(route.regionSlug, 3),
-    fetchRoutes(),
   ]);
   const relatedRoutes = regionRoutes.filter((item) => item.slug !== route.slug && canSuggestRelatedRoute(item))
     .sort((a, b) => {
@@ -158,7 +157,7 @@ export default async function Page({ params }: Props) {
     <>
       {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
-      <RouteDetailPage route={route} relatedRoutes={relatedRoutes} finderRoutes={finderRoutes.filter(canSuggestRelatedRoute)} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
+      <RouteDetailPage route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
     </>
   );
 }

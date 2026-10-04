@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, Heart, MapPin, Plane } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CalendarDays, Heart, MapPin, Plane } from "lucide-react";
 import type { Service } from "@/types/service";
 
 const icons = { wedding: Heart, airport: Plane, monthly: CalendarDays, "city-tour": MapPin };
@@ -8,7 +8,11 @@ const icons = { wedding: Heart, airport: Plane, monthly: CalendarDays, "city-tou
 // service.image ưu tiên ảnh thật (embeddedFeaturedImage(), xem lib/api/services.ts).
 const fallbackImages = { wedding: "/images/services/wedding.png", airport: "/images/services/airport.png", monthly: "/images/services/monthly.png", "city-tour": "/images/services/city-tour.png" };
 
-export function ServiceCard({ service }: { service: Service }) {
+export function ServiceCard({ service, redesign = false, image }: { service: Service; redesign?: boolean; image?: string }) {
+  if (redesign) {
+    const badge = service.slug === "dua-don-nhan-vien-cong-ty" ? "DOANH NGHIỆP" : service.icon === "airport" ? "ĐƯA ĐÓN SÂN BAY" : service.icon === "wedding" ? "XE CƯỚI" : "DU LỊCH – THAM QUAN";
+    return <Link className="svc-card" href={`/dich-vu/${service.slug}`}><div className="svc-card-image"><Image src={image || service.image || fallbackImages[service.icon]} alt={`Dịch vụ ${service.name}`} fill sizes="(max-width: 800px) 100vw, 50vw" /><span>{badge}</span></div><div className="svc-card-copy"><h3>{service.name}</h3><p>{service.shortDescription}</p><span className="svc-card-link">Xem dịch vụ <ArrowRight aria-hidden="true" /></span></div></Link>;
+  }
   const Icon = icons[service.icon];
   return (
     <Link href={`/dich-vu/${service.slug}`} className="service-card">

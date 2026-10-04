@@ -50,8 +50,8 @@ test("date and vehicle are optional and select the correct destination page", ()
   assert.match(routeFinderForm, /if \(departureDate\) params\.set\("ngay_di", departureDate\)/);
   assert.match(routeFinderForm, /routeComboHref\(journey\.route, selectedVehicleSlug\)/);
   assert.match(routeFinderForm, /: routeHref\(journey\.route\)/);
-  assert.match(routeFinderForm, /Ngày đi[\s\S]{0,120}\(không bắt buộc\)/);
-  assert.match(routeFinderForm, /Loại xe[\s\S]{0,120}\(không bắt buộc\)/);
+  assert.doesNotMatch(routeFinderForm, /\(không bắt buộc\)/);
+
 });
 
 test("route vehicle combo preserves the requested pricing direction", () => {

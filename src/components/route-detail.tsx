@@ -7,7 +7,6 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock3, FileText, MapPin, Phone, Route as RouteIcon, UsersRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { RouteFinderForm } from "@/components/route-finder-form";
 import { RoutePricingSection } from "@/components/route-pricing-section";
 import { BlogCard } from "@/components/blog-card";
 import { routeComboHref, routeHref, vehicleTypeSlug, type Route, type RoutePricingDirectionKey } from "@/types/route";
@@ -44,10 +43,9 @@ function RelatedCard({ route }: { route: Route }) {
   </Link>;
 }
 
-export function RouteDetailPage({ route, relatedRoutes, finderRoutes, testimonials, relatedPosts, vehicleImageByType = {} }: {
+export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPosts, vehicleImageByType = {} }: {
   route: Route;
   relatedRoutes: Route[];
-  finderRoutes: Route[];
   testimonials: Testimonial[];
   relatedPosts: BlogPost[];
   vehicleImageByType?: Record<string, string>;
@@ -93,8 +91,6 @@ export function RouteDetailPage({ route, relatedRoutes, finderRoutes, testimonia
         </div>}
       </div>
     </section>
-
-    {!prelaunch && <div className="home-booking-wrap route-detail-booking-search"><RouteFinderForm key={`${route.id}-${direction}`} id="booking" routes={finderRoutes} variant="hero" mobileStacked initialPickup={from} initialDestination={to} source="route_detail" /></div>}
 
     <div className="route-detail-design-main">
       <section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến">

@@ -342,7 +342,7 @@ function QuickBookingDialog({
               </label>
             )}
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-              <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+              <span>Lưu ý điểm đón</span>
               <textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />
               <FieldError message={errors.pickupNote?.message} />
             </label>
@@ -356,7 +356,7 @@ function QuickBookingDialog({
           {!airportContext && (
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
               <span>
-                Ngày giờ đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                Ngày giờ đi
               </span>
               <input {...register("departureAt")} type="datetime-local" className="form-control" />
             </label>
@@ -368,7 +368,7 @@ function QuickBookingDialog({
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Số hiệu chuyến bay <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Số hiệu chuyến bay
                   </span>
                   <input
                     {...register("flightNumber")}
@@ -380,13 +380,13 @@ function QuickBookingDialog({
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Giờ hạ cánh dự kiến <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Giờ hạ cánh dự kiến
                   </span>
                   <input {...register("landingAt")} type="datetime-local" className="form-control" />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                   <span>
-                    Nhà ga <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Nhà ga
                   </span>
                   <input
                     {...register("airportTerminal")}
@@ -412,7 +412,7 @@ function QuickBookingDialog({
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Số kiện hành lý <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Số kiện hành lý
                   </span>
                   <input
                     {...register("luggageCount")}
@@ -457,13 +457,13 @@ function QuickBookingDialog({
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Giờ bay dự kiến <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Giờ bay dự kiến
                   </span>
                   <input {...register("flightAt")} type="datetime-local" className="form-control" />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Giờ cần có mặt tại sân bay <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Giờ cần có mặt tại sân bay
                   </span>
                   <input {...register("airportArrivalAt")} type="datetime-local" className="form-control" />
                 </label>
@@ -483,7 +483,7 @@ function QuickBookingDialog({
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Số kiện hành lý <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Số kiện hành lý
                   </span>
                   <input
                     {...register("luggageCount")}
