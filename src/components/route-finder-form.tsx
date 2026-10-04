@@ -1,5 +1,7 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { useEffect, useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, LoaderCircle, MapPin, Plane, Repeat2, X } from "lucide-react";
@@ -376,7 +378,7 @@ function JourneyQuoteDialog({
 
             <form className="quick-booking-form" onSubmit={submitQuote} noValidate>
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Họ tên <span className="text-destructive">*</span></span>
+                <span className="form-field-label">Họ tên <RequiredMark /></span>
                 <input
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
@@ -386,7 +388,7 @@ function JourneyQuoteDialog({
                 />
               </label>
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Số điện thoại <span className="text-destructive">*</span></span>
+                <span className="form-field-label">Số điện thoại <RequiredMark /></span>
                 <input
                   value={phone}
                   onChange={(event) => setPhone(event.target.value)}
@@ -408,7 +410,7 @@ function JourneyQuoteDialog({
                 </div>
               ) : (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                  <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+                  <span className="form-field-label">Điểm đón cụ thể <RequiredMark /></span>
                   <input
                     value={pickupAddress}
                     onChange={(event) => {
@@ -436,7 +438,7 @@ function JourneyQuoteDialog({
                 </div>
               ) : (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                  <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+                  <span className="form-field-label">Điểm trả cụ thể <RequiredMark /></span>
                   <input
                     value={dropoffAddress}
                     onChange={(event) => {
@@ -776,6 +778,7 @@ export function BookingSearchForm({
                 <>
                   <LocationField
                     label="Điểm đón"
+                    required
                     value={standardPickup}
                     onChange={(value) => {
                       setStandardPickup(value);
@@ -809,6 +812,7 @@ export function BookingSearchForm({
 
                   <LocationField
                     label="Điểm đến"
+                    required
                     value={standardDestination}
                     onChange={(value) => {
                       setStandardDestination(value);
@@ -822,7 +826,7 @@ export function BookingSearchForm({
               ) : (
                 <>
                   <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-                    <span>{airportDirection === "pickup" ? "Điểm đón · Sân bay" : "Điểm đến · Sân bay"}</span>
+                    <span className="form-field-label">{airportDirection === "pickup" ? "Điểm đón · Sân bay" : "Điểm đến · Sân bay"} <RequiredMark /></span>
                     <span className="relative block">
                       <Plane
                         aria-hidden="true"
@@ -869,6 +873,7 @@ export function BookingSearchForm({
 
                   <LocationField
                     label={airportDirection === "pickup" ? "Điểm đến" : "Điểm đón"}
+                    required
                     value={airportPlace}
                     onChange={(value) => {
                       setAirportPlace(value);

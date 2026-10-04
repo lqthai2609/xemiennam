@@ -1,5 +1,7 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -148,7 +150,7 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref,
             <p className="header-search-description">Nhập điểm đi và điểm đến để xem các tuyến phù hợp.</p>
             <form className="header-search-form" onSubmit={handleRouteSearch}>
               <label><span>Điểm đi</span><input name="from" placeholder={`Ví dụ: ${HO_CHI_MINH_PUBLIC_LABEL}`} autoFocus /></label>
-              <label><span>Điểm đến</span><input name="to" placeholder="Ví dụ: Vũng Tàu" required /></label>
+              <label><span className="form-field-label">Điểm đến <RequiredMark /></span><input name="to" placeholder="Ví dụ: Vũng Tàu" required /></label>
               <Button type="submit">Tìm tuyến <ArrowRight data-icon="inline-end" /></Button>
             </form>
           </section>

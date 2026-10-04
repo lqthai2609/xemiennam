@@ -105,10 +105,8 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       <p className="home-eyebrow">TUYẾN ĐƯỜNG</p><h1 id="routes-design-title">Tìm tuyến xe<br />phù hợp với bạn</h1><p>Xe riêng có tài xế, chủ động lịch trình</p>
     </div></section>
     <div className="routes-design-main">
-      <div className="routes-design-search-card">
-        <div className="routes-design-search-title"><span><Search size={21} /></span><h2>Tìm nhanh tuyến đường</h2></div>
-        <div className="routes-design-quick-search"><RouteDestinationSearch routes={routes} value={destinationQuery} onChange={setDestinationQuery} /><a href="#route-catalog" className="home-button home-button-primary">Tìm tuyến <ArrowRight size={17} /></a></div>
-        <BookingSearchForm routes={routes} variant="hero" id="route-booking" source="routes_catalog" />
+      <div className="home-booking-wrap routes-catalog-booking">
+        <BookingSearchForm routes={routes} variant="hero" mobileStacked id="booking" source="routes_catalog" />
       </div>
       {popular.length > 0 && <div className="routes-design-popular" aria-label="Điểm đến phổ biến"><strong><Flame size={23} /> Điểm đến phổ biến</strong><div>
         {popular.map((place) => <button key={place} type="button" onClick={() => selectPlace(place)} className={destinationQuery === place ? "is-selected" : ""}><Image src={images[place]} width={31} height={31} alt="" />{place}</button>)}
@@ -116,6 +114,7 @@ export function RoutesPageClient({ routes }: { routes: Route[] }) {
       </div></div>}
       <section className="routes-design-catalog" id="route-catalog" aria-labelledby="routes-catalog-title">
         <div className="routes-design-catalog-heading"><h2 id="routes-catalog-title">Khám phá các tuyến đường</h2><p>Chọn khu vực yêu thích để xem các tuyến đường phổ biến</p></div>
+        <div className="routes-design-catalog-search"><RouteDestinationSearch routes={routes} value={destinationQuery} onChange={setDestinationQuery} /></div>
         <div className="routes-design-catalog-layout">
           <nav className="routes-design-regions" aria-label="Khu vực tuyến đường">{groups.map(([region, regionRoutes], index) => <a className={index === 0 ? "is-active" : ""} href={`#region-${regionRoutes[0].regionSlug || index}`} key={region}><MapPin size={18} />{displayRegion(region)}<ChevronRight size={16} /></a>)}</nav>
           <div className="routes-design-groups" aria-live="polite">{groups.length ? groups.map(([region, regionRoutes], index) => {

@@ -6,29 +6,6 @@
 .routes-design-hero h1 { margin: 0; color: #07165d; font-size: clamp(37px, 4vw, 54px); line-height: 1.02; font-weight: 800; }
 .routes-design-hero-inner > p:last-child { margin: 12px 0 0; color: #536395; font-size: 18px; }
 .routes-design-main { width: min(100% - 64px, 1160px); margin: -32px auto 0; position: relative; z-index: 2; }
-.routes-design-search-card { padding: 21px 26px 18px; border: 1px solid #e0e8f8; border-radius: 15px; background: #fff; box-shadow: 0 10px 30px #10246b11; }
-.routes-design-search-title { display: flex; align-items: center; gap: 12px; }
-.routes-design-search-title > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 9px; background: #001eea; color: #fff; box-shadow: 0 5px 12px #001eea36; }
-.routes-design-search-title h2 { margin: 0; color: #0016af; font-size: 25px; font-weight: 800; }
-.routes-design-quick-search { display: grid; grid-template-columns: minmax(0, 1fr) 160px; align-items: center; gap: 9px; margin-top: 12px; }
-.routes-design-quick-search > div { margin: 0; }
-.routes-design-quick-search input { height: 47px; border-radius: 7px; background: #fff; border-color: #c9dafa; font-size: 14px; }
-.routes-design-quick-search .home-button { height: 47px; }
-.routes-design #route-booking { max-width: none; margin: 15px 0 0; padding: 0; }
-.routes-design #route-booking form { padding: 0; border: 0; border-radius: 0; background: #fff; box-shadow: none; backdrop-filter: none; }
-.routes-design #route-booking form > div:first-child { display: none; }
-.routes-design #route-booking [role="tablist"] { display: flex; width: fit-content; gap: 7px; margin: 0 0 15px; padding: 0; border: 0; background: transparent; }
-.routes-design #route-booking [role="tab"] { min-width: 184px; min-height: 43px; border: 1px solid #dce5f8; border-radius: 7px; background: #fff; color: #001eea; box-shadow: none; }
-.routes-design #route-booking [role="tab"][aria-selected="true"] { border-color: #001eea; background: #001eea; color: #fff; }
-.routes-design #route-booking [role="tabpanel"] > .grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-.routes-design #route-booking [role="tabpanel"] > .grid > div:first-child { grid-column: 1 / -1; }
-.routes-design #route-booking [role="tabpanel"] > .grid > label { grid-column: span 2; }
-.routes-design #route-booking [role="tabpanel"] label { font-size: 13px; color: #07165d; }
-.routes-design #route-booking [role="tabpanel"] input, .routes-design #route-booking [role="tabpanel"] select { height: 48px; border-color: #dce5f8; border-radius: 7px; background-color: #fff; font-size: 14px; }
-.routes-design #route-booking form > .mt-4 { align-items: flex-end; margin-top: 13px; }
-.routes-design #route-booking form > .mt-4 button { width: auto; min-width: 213px; height: 47px; border-radius: 7px; background: #001eea; }
-.routes-design #route-booking form > .mt-4 > div { max-width: 600px; min-height: 0; text-align: right; }
-.routes-design #route-booking form > .mt-4 p { font-size: 11px; }
 .routes-design-popular { display: flex; align-items: center; gap: 18px; margin-top: 9px; padding: 11px 17px; border: 1px solid #e6ecf9; border-radius: 13px; background: #fff; box-shadow: 0 8px 22px #10246b0a; }
 .routes-design-popular > strong { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; color: #ff5d27; font-size: 15px; }
 .routes-design-popular > div { display: flex; align-items: center; gap: 7px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
@@ -85,25 +62,7 @@
   .routes-design-hero-inner { width: calc(100% - 30px); padding: 23px 0; }
   .routes-design-hero h1 { font-size: clamp(27px, 6vw, 38px); }
   .routes-design-hero-inner > p:last-child { margin-top: 7px; font-size: 13px; }
-  .routes-design-main { width: min(100% - 30px, 620px); margin-top: -1px; }
-  .routes-design-search-card { padding: 16px; border-radius: 12px; }
-  .routes-design-search-title h2 { font-size: 21px; }
-  .routes-design-search-title > span { width: 31px; height: 31px; }
-  .routes-design-quick-search { grid-template-columns: 1fr; gap: 7px; margin-top: 10px; }
-  .routes-design-quick-search input { height: 45px; font-size: 12px; }
-  .routes-design-quick-search .home-button { width: 100%; height: 42px; }
-  .routes-design #route-booking { margin-top: 15px; }
-  .routes-design #route-booking [role="tablist"] { width: 100%; gap: 0; }
-  .routes-design #route-booking [role="tab"] { min-width: 0; width: 50%; padding: 6px; font-size: 12px; }
-  .routes-design #route-booking [role="tabpanel"] > .grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
-  .routes-design #route-booking [role="tabpanel"] > .grid > div:first-child { display: grid; grid-template-columns: 1fr; gap: 9px; }
-  .routes-design #route-booking [role="tabpanel"] > .grid > div:first-child > button { right: auto; left: 50%; top: calc(50% + 15px); transform: translate(-50%, -50%); width: 33px; height: 33px; border-radius: 50%; background: #fff; }
-  .routes-design #route-booking [role="tabpanel"] > .grid > label { grid-column: span 1; }
-  .routes-design #route-booking [role="tabpanel"] > .grid > label:last-child { grid-column: 1 / -1; }
-  .routes-design #route-booking [role="tabpanel"] input, .routes-design #route-booking [role="tabpanel"] select { height: 45px; font-size: 12px; }
-  .routes-design #route-booking form > .mt-4 { align-items: stretch; }
-  .routes-design #route-booking form > .mt-4 button { width: 100%; }
-  .routes-design #route-booking form > .mt-4 > div { text-align: center; }
+  .routes-design-main { width: min(100% - 32px, 620px); margin-top: -1px; }
   .routes-design-popular { gap: 10px; padding: 8px 10px; }
   .routes-design-popular > strong { font-size: 12px; }
   .routes-design-popular > strong svg { width: 20px; }
@@ -139,3 +98,5 @@
   .routes-design-card-bottom a svg { width: 17px; }
   .routes-design-region-heading > div { gap: 7px; }
 }
+.routes-catalog-booking.home-booking-wrap { width: 100%; margin: 0; }
+.routes-design-catalog-search { margin-bottom: 18px; max-width: 600px; }

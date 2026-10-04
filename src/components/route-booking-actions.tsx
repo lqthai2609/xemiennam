@@ -1,9 +1,11 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ZaloIcon } from "@/components/zalo-icon";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle, Phone, Plane, X } from "lucide-react";
+import { ClipboardList, LoaderCircle, Phone, Plane, X } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -286,9 +288,8 @@ function QuickBookingDialog({
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-2 text-sm font-semibold text-foreground">Thông tin khách hàng</legend>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span>
-                Họ tên <span className="text-destructive">*</span>
-              </span>
+              <span className="form-field-label">
+                Họ tên <RequiredMark /></span>
               <input
                 {...register("fullName")}
                 aria-invalid={!!errors.fullName}
@@ -299,9 +300,8 @@ function QuickBookingDialog({
               <FieldError message={errors.fullName?.message} />
             </label>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span>
-                Số điện thoại <span className="text-destructive">*</span>
-              </span>
+              <span className="form-field-label">
+                Số điện thoại <RequiredMark /></span>
               <input
                 {...register("phone")}
                 aria-invalid={!!errors.phone}
@@ -321,7 +321,7 @@ function QuickBookingDialog({
               </div>
             ) : (
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+                <span className="form-field-label">Điểm đón cụ thể <RequiredMark /></span>
                 <input {...register("pickupAddress")} maxLength={240} aria-invalid={!!errors.pickupAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
                 <FieldError message={errors.pickupAddress?.message} />
               </label>
@@ -336,7 +336,7 @@ function QuickBookingDialog({
               </div>
             ) : (
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+                <span className="form-field-label">Điểm trả cụ thể <RequiredMark /></span>
                 <input {...register("dropoffAddress")} maxLength={240} aria-invalid={!!errors.dropoffAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
                 <FieldError message={errors.dropoffAddress?.message} />
               </label>
@@ -397,9 +397,8 @@ function QuickBookingDialog({
                   <FieldError message={errors.airportTerminal?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>
-                    Số khách <span className="text-destructive">*</span>
-                  </span>
+                  <span className="form-field-label">
+                    Số khách <RequiredMark /></span>
                   <input
                     {...register("passengerCount")}
                     type="number"
@@ -435,9 +434,8 @@ function QuickBookingDialog({
 
               {requestNameplate && (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>
-                    Tên hiển thị trên bảng <span className="text-destructive">*</span>
-                  </span>
+                  <span className="form-field-label">
+                    Tên hiển thị trên bảng <RequiredMark /></span>
                   <input
                     {...register("nameplateName")}
                     aria-invalid={!!errors.nameplateName}
@@ -470,9 +468,8 @@ function QuickBookingDialog({
                   <input {...register("airportArrivalAt")} type="datetime-local" className="form-control" />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>
-                    Số khách <span className="text-destructive">*</span>
-                  </span>
+                  <span className="form-field-label">
+                    Số khách <RequiredMark /></span>
                   <input
                     {...register("passengerCount")}
                     type="number"
@@ -530,10 +527,12 @@ export function RouteBookingActions({
   pricingMode = "fixed",
   airportContext,
   airportName,
+  compactLabels = false,
 }: {
   route: string;
   vehicleType: string;
   price?: string;
+  compactLabels?: boolean;
 } & BookingPricingContext) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -560,8 +559,8 @@ export function RouteBookingActions({
           </Button>
         )}
         <div className="route-booking-secondary">
-          <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" onClick={() => setOpen(true)}>
-            {isQuote ? "Gửi yêu cầu báo giá" : "Gửi yêu cầu đặt xe"}
+          <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" aria-label={compactLabels ? `Gửi yêu cầu ${vehicleType}` : undefined} onClick={() => setOpen(true)}>
+            {compactLabels && <ClipboardList aria-hidden="true" size={20} />}{compactLabels ? "Gửi yêu cầu" : isQuote ? "Gửi yêu cầu báo giá" : "Gửi yêu cầu đặt xe"}
           </Button>
           <Button size="sm" variant="outline" asChild>
             <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`${isQuote ? "Gọi báo giá" : "Gọi đặt xe"} ${vehicleType}`}>

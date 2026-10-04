@@ -1,5 +1,7 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { useMemo, useState, type FormEvent } from "react";
 import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
@@ -94,9 +96,9 @@ function JourneyFinder({ routes }: { routes: Route[] }) {
   return <section className="dest-finder" aria-labelledby="dest-finder-title">
     <div className="dest-section-heading"><h2 id="dest-finder-title">Đã biết nơi cần đi?</h2><p>Nhập thông tin để xem giá chuyến xe nhanh chóng.</p></div>
     <form onSubmit={submit}>
-      <label className="dest-finder-field"><MapPin size={19} aria-hidden="true" /><span><strong>Điểm đón</strong><select value={from} onChange={(event) => { setFrom(event.target.value); setError(""); }} aria-label="Điểm đón" required><option value="">Chọn điểm đón</option>{locations.map((item) => <option key={item} value={item}>{item}</option>)}</select></span><ChevronDown size={15} aria-hidden="true" /></label>
+      <label className="dest-finder-field"><MapPin size={19} aria-hidden="true" /><span><strong className="form-field-label">Điểm đón <RequiredMark /></strong><select value={from} onChange={(event) => { setFrom(event.target.value); setError(""); }} aria-label="Điểm đón" required><option value="">Chọn điểm đón</option>{locations.map((item) => <option key={item} value={item}>{item}</option>)}</select></span><ChevronDown size={15} aria-hidden="true" /></label>
       <button type="button" className="dest-finder-swap" onClick={() => { setFrom(to); setTo(from); setError(""); }} aria-label="Đổi chiều điểm đón và điểm đến"><ArrowRightLeft size={21} /></button>
-      <label className="dest-finder-field"><MapPin size={19} aria-hidden="true" /><span><strong>Điểm đến</strong><select value={to} onChange={(event) => { setTo(event.target.value); setError(""); }} aria-label="Điểm đến" required><option value="">Chọn điểm đến</option>{locations.map((item) => <option key={item} value={item}>{item}</option>)}</select></span><ChevronDown size={15} aria-hidden="true" /></label>
+      <label className="dest-finder-field"><MapPin size={19} aria-hidden="true" /><span><strong className="form-field-label">Điểm đến <RequiredMark /></strong><select value={to} onChange={(event) => { setTo(event.target.value); setError(""); }} aria-label="Điểm đến" required><option value="">Chọn điểm đến</option>{locations.map((item) => <option key={item} value={item}>{item}</option>)}</select></span><ChevronDown size={15} aria-hidden="true" /></label>
       <label className="dest-finder-field"><CarFront size={19} aria-hidden="true" /><span><strong>Loại chuyến</strong><select value={tripType} onChange={(event) => setTripType(event.target.value as "one_way" | "round_trip")} aria-label="Loại chuyến"><option value="one_way">Một chiều</option><option value="round_trip">Khứ hồi</option></select></span><ChevronDown size={15} aria-hidden="true" /></label>
       <button className="home-button home-button-primary dest-finder-submit" type="submit">Xem giá chuyến xe <ArrowRight size={17} aria-hidden="true" /></button>
     </form>

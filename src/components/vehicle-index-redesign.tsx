@@ -1,5 +1,7 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { useMemo, useState, type FormEvent } from "react";
 import { ZaloIcon } from "@/components/zalo-icon";
 import Link from "next/link";
@@ -79,9 +81,9 @@ function RouteFinder({ routes, categories }: { routes: Route[]; categories: Vehi
   return <section className="vehicle-index-finder" aria-labelledby="vehicle-index-finder-title">
     <div className="vehicle-index-heading"><h2 id="vehicle-index-finder-title">Đã chọn xe, tìm tuyến phù hợp</h2><p>Nhập thông tin để xem giá và tư vấn tuyến đường phù hợp.</p></div>
     <form onSubmit={submit}>
-      <label className="vehicle-index-field"><MapPin size={20} /><span><strong>Điểm đón</strong><select required value={from} onChange={(event) => { setFrom(event.target.value); setError(""); }}><option value="">Chọn điểm đón</option>{locations.map((item) => <option key={item}>{item}</option>)}</select></span><ChevronDown size={16} /></label>
+      <label className="vehicle-index-field"><MapPin size={20} /><span><strong className="form-field-label">Điểm đón <RequiredMark /></strong><select required value={from} onChange={(event) => { setFrom(event.target.value); setError(""); }}><option value="">Chọn điểm đón</option>{locations.map((item) => <option key={item}>{item}</option>)}</select></span><ChevronDown size={16} /></label>
       <button type="button" className="vehicle-index-swap" aria-label="Đổi chiều điểm đón và điểm đến" onClick={() => { setFrom(to); setTo(from); setError(""); }}><ArrowRightLeft size={21} /></button>
-      <label className="vehicle-index-field"><MapPin size={20} /><span><strong>Điểm đến</strong><select required value={to} onChange={(event) => { setTo(event.target.value); setError(""); }}><option value="">Chọn điểm đến</option>{locations.map((item) => <option key={item}>{item}</option>)}</select></span><ChevronDown size={16} /></label>
+      <label className="vehicle-index-field"><MapPin size={20} /><span><strong className="form-field-label">Điểm đến <RequiredMark /></strong><select required value={to} onChange={(event) => { setTo(event.target.value); setError(""); }}><option value="">Chọn điểm đến</option>{locations.map((item) => <option key={item}>{item}</option>)}</select></span><ChevronDown size={16} /></label>
       <label className="vehicle-index-field"><CarFront size={20} /><span><strong>Loại chuyến</strong><select value={tripType} onChange={(event) => setTripType(event.target.value)}><option value="one_way">Một chiều</option><option value="round_trip">Khứ hồi</option></select></span><ChevronDown size={16} /></label>
       <label className="vehicle-index-field"><CarFront size={20} /><span><strong>Loại xe</strong><select value={vehicle} onChange={(event) => setVehicle(event.target.value)}><option value="">Chọn loại xe</option>{categories.map((item) => <option key={item.slug} value={item.slug}>Xe {item.type}</option>)}</select></span><ChevronDown size={16} /></label>
       <button className="home-button home-button-primary vehicle-index-submit" type="submit">Xem giá chuyến xe <ArrowRight size={16} /></button>

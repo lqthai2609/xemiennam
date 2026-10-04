@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
+import { RequiredMark } from "@/components/required-mark";
 import { canonicalLocationKey, locationMatchesQuery, normalizeSearch, resolveLocationAlias } from "@/lib/location-search";
 import { getPublicLocationLabel, HO_CHI_MINH_PUBLIC_LABEL } from "@/lib/public-location-label";
 
@@ -11,6 +12,7 @@ export function LocationField({
   placeholder,
   listId,
   options,
+  required = false,
 }: {
   label: string;
   value: string;
@@ -18,6 +20,7 @@ export function LocationField({
   placeholder: string;
   listId: string;
   options: string[];
+  required?: boolean;
 }) {
   const inputId = `${listId}-input`;
   const suggestionsId = `${listId}-suggestions`;
@@ -73,7 +76,7 @@ export function LocationField({
 
   return (
     <div className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-      <label htmlFor={inputId}>{label}</label>
+      <label htmlFor={inputId} className="form-field-label">{label}{required && <RequiredMark />}</label>
       <div className="relative">
         <MapPin
           aria-hidden="true"
@@ -82,6 +85,8 @@ export function LocationField({
         />
         <input
           id={inputId}
+          required={required}
+          aria-required={required}
           value={value}
           onChange={(event) => {
             onChange(event.target.value);
@@ -102,7 +107,6 @@ export function LocationField({
           aria-controls={suggestionsId}
           aria-activedescendant={activeIndex >= 0 ? `${suggestionsId}-${activeIndex}` : undefined}
           className="h-12 w-full rounded-xl border border-border bg-background pl-10 pr-3 text-base font-medium text-foreground outline-none transition placeholder:font-normal placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
-          required
         />
 
         {showSuggestions && (
