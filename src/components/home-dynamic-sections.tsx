@@ -8,18 +8,18 @@ import { routeHref, type Route } from "@/types/route";
 import { getPublicLocationLabel } from "@/lib/public-location-label";
 import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
-const featuredDestinations = ["Vũng Tàu", "Hồ Tràm", "Long Hải"];
-const destinationImages: Record<string, string> = {
-  "Vũng Tàu": "/images/destinations/ba-ria-vung-tau.webp",
-  "Hồ Tràm": "/images/destinations/phan-thiet.webp",
-  "Long Hải": "/images/destinations/ba-ria-vung-tau.webp",
-};
+const featuredDestinations = [
+  { destination: /vũng tàu/i, label: "Vũng Tàu", preferredSlug: "tp-hcm-vung-tau", fallbackImage: "/images/destinations/ba-ria-vung-tau.webp" },
+  { destination: /hồ tràm/i, label: "Hồ Tràm", preferredSlug: "tp-hcm-ho-tram-1-ngay", fallbackImage: "/images/destinations/ba-ria-vung-tau.webp" },
+  { destination: /mũi né|phan thiết/i, label: "Mũi Né / Phan Thiết", preferredSlug: "tp-hcm-phan-thiet", fallbackImage: "/images/destinations/phan-thiet.webp" },
+];
 
 function pickFeaturedRoutes(routes: Route[]) {
   const used = new Set<string>();
-  return featuredDestinations.flatMap((name) => {
-    const candidates = routes.filter((item) => !used.has(item.slug) && canSuggestRelatedRoute(item) && item.to.toLowerCase().includes(name.toLowerCase()));
-    const route = candidates.find((item) => getPublicLocationLabel(item.from).toLowerCase().includes("sài gòn")) || candidates[0];
+  return featuredDestinations.flatMap(({ destination, preferredSlug }) => {
+    const candidates = routes.filter((item) => !used.has(item.slug) && canSuggestRelatedRoute(item)
+      && getPublicLocationLabel(item.from) === "Sài Gòn" && destination.test(item.to));
+    const route = candidates.find((item) => item.slug === preferredSlug) || candidates[0];
     if (!route) return [];
     used.add(route.slug);
     return [route];
@@ -36,11 +36,12 @@ export async function HomeFeaturedRoutes() {
   return <section className="home-routes home-container" id="routes">
     <Heading title="Tuyến được quan tâm" description="Những tuyến phổ biến, phù hợp cho nhiều nhu cầu di chuyển." href="/tuyen-duong" link="Xem tất cả tuyến" />
     <div className="home-route-grid">{featuredRoutes.map((route) => {
-      const name = featuredDestinations.find((destination) => route.to.toLowerCase().includes(destination.toLowerCase())) || "Vũng Tàu";
+      const destination = featuredDestinations.find((item) => item.destination.test(route.to));
+      const fallbackImage = destination?.fallbackImage || "/images/home-coastal-fleet.webp";
       const fixed = route.pricingV2?.outbound.featured?.mode === "fixed";
       return <article className="home-route-card" key={route.slug}>
-        <Link className="home-route-image" href={routeHref(route)} tabIndex={-1} aria-hidden="true"><Image src={destinationImages[name]} alt="" fill sizes="(max-width: 700px) 42vw, 33vw" /></Link>
-        <div className="home-route-details"><h3>{getPublicLocationLabel(route.from)} đi {getPublicLocationLabel(route.to)}</h3><span>{fixed ? "Giá chỉ" : "Giá chuyến"}</span><div className="home-route-bottom"><p><strong>{fixed ? route.price : "Liên hệ báo giá"}</strong>{fixed && <small>Một chiều / chuyến</small>}</p><Link href={routeHref(route)}>Xem tuyến <ArrowRight size={17} /></Link></div></div>
+        <Link className="home-route-image" href={routeHref(route)} tabIndex={-1} aria-hidden="true"><Image src={route.featuredImage || fallbackImage} alt="" fill sizes="(max-width: 700px) 42vw, 33vw" /></Link>
+        <div className="home-route-details"><h3>{getPublicLocationLabel(route.from)} đi {destination?.label || getPublicLocationLabel(route.to)}</h3><span>{fixed ? "Giá chỉ" : "Giá chuyến"}</span><div className="home-route-bottom"><p><strong>{fixed ? route.price : "Liên hệ báo giá"}</strong>{fixed && <small>Một chiều / chuyến</small>}</p><Link href={routeHref(route)}>Xem tuyến <ArrowRight size={17} /></Link></div></div>
       </article>;
     })}</div>
   </section>;
