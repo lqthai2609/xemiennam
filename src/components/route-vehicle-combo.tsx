@@ -72,7 +72,8 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   const packageLabel = selectedRow?.packageLabel || legacyPrice.packageLabel || "Một chiều";
   const packageKey = selectedRow?.packageKey || legacyPrice.packageKey;
   const image = vehicle?.images[0] || category.imageUrl;
-  const heroImage = route.regionSlug === "ba-ria-vung-tau" ? "/images/home-coastal-fleet.webp" : route.featuredImage || "/images/home-coastal-fleet.webp";
+  const heroFallback = route.regionSlug === "phan-thiet" ? "/images/destinations/phan-thiet.webp" : "/images/home-coastal-fleet.webp";
+  const heroImage = route.featuredImage || heroFallback;
   const mapSrc = inbound ? reverseRouteMapEmbedSrc(route.mapEmbedSrc, from, to) : route.mapEmbedSrc;
   const passengerLabel = passengerLabels[category.type] || vehicle?.capacity || "Đi theo nhóm";
   const zaloLink = getZaloChatLink();

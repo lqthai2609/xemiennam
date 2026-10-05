@@ -29,12 +29,14 @@ test("Day 33 API persists ordered booking-instance stops", () => {
   assert.match(bookingContract, /count\( \$sanitized \) \+ 1/);
 });
 
-test("Day 33 exposes one shared Multi-stop control across all booking entry points", () => {
+test("Multi-stop remains on contact form while booking popups send no stops", () => {
   assert.match(sharedFields, /Thêm điểm dừng/);
   assert.match(sharedFields, /moveStop/);
-  for (const frontend of [contactForm, quickBooking, journeyQuote]) {
-    assert.match(frontend, /MultiStopFields/);
-    assert.match(frontend, /intermediateStops/);
+  assert.match(contactForm, /MultiStopFields/);
+  assert.match(contactForm, /intermediateStops/);
+  for (const popup of [quickBooking, journeyQuote]) {
+    assert.doesNotMatch(popup, /MultiStopFields/);
+    assert.match(popup, /intermediateStops: \[\]/);
   }
 });
 
