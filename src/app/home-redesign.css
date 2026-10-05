@@ -174,13 +174,11 @@
   .home-booking-wrap #booking h2::before { width: 30px; height: 30px; flex-basis: 30px; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child > button { right: 10px; left: auto; top: calc(50% + 24px); width: 30px; height: 30px; transform: translateY(-50%); background: #fff; border-radius: 50%; }
+  .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child > button { right: 10px; left: auto; top: calc(50% + 25.5px); width: 30px; height: 30px; transform: translateY(-50%); background: #fff; border-radius: 50%; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid > label { grid-column: span 1; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid > .booking-vehicle-field { grid-column: 1 / -1; grid-row: 2; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid > .booking-date-field { grid-column: 1; grid-row: 3; }
   .home-booking-wrap #booking [role="tabpanel"] > .grid > .booking-trip-field { grid-column: 2; grid-row: 3; }
-  .home-booking-wrap #booking .booking-date-label { min-height: 36px; }
-  .home-booking-wrap #booking .booking-trip-field > span:first-child { min-height: 36px; display: flex; align-items: flex-start; }
   .home-booking-wrap #booking [aria-label="Đổi chiều điểm đón và điểm đến"] > svg:first-child { display: block; }
   .home-booking-wrap #booking [aria-label="Đổi chiều điểm đón và điểm đến"] > svg:last-child { display: none; }
   .home-booking-wrap #booking [role="tabpanel"] label { font-size: 12px; }

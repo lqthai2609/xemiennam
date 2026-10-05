@@ -40,9 +40,10 @@ const images: Record<string, string> = {
 function RouteCard({ route }: { route: Route }) {
   const href = routeHref(route);
   const fixed = route.pricingV2?.outbound.featured?.mode === "fixed";
-  const image = /sân bay/i.test(route.from) || /sân bay/i.test(route.to)
+  const fallbackImage = /sân bay/i.test(route.from) || /sân bay/i.test(route.to)
     ? "/images/services/airport.png"
     : images[route.to] || images[route.region] || "/images/home-coastal-fleet.webp";
+  const image = route.featuredImage || fallbackImage;
   return <article className="routes-design-card">
     <Link href={href} className="routes-design-card-image" aria-label={`Xem tuyến ${getPublicLocationLabel(route.from)} đi ${getPublicLocationLabel(route.to)}`}>
       <Image src={image} alt="" fill sizes="(max-width: 700px) 40vw, 30vw" />
