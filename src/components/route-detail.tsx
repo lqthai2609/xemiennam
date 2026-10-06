@@ -68,35 +68,28 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
   const distance = route.distance.trim() && route.distance !== "0 km" ? route.distance : "";
   const time = route.time.trim() && route.time !== "0" ? route.time : "";
   const zaloLink = getZaloChatLink();
-  const description = prelaunch
-    ? `Tuyến ${from} đi ${to} đang chuẩn bị. Liên hệ để được tư vấn; chưa nhận đặt chuyến.`
-    : inbound
-      ? `Xe riêng có tài xế từ ${from} đến ${to}, chủ động thời gian và điểm đón.`
-      : formatPublicLocationText(route.summary || `Xe riêng có tài xế từ ${from} đến ${to}, chủ động thời gian và điểm đón.`);
+  const vehicleLabel = route.vehicleTypes.map((type) => type.replace(/^Xe\s+/i, "")).join(", ");
   const heroImage = route.featuredImage || regionImages[route.region] || "/images/home-coastal-fleet.webp";
   const reverseAvailable = Boolean(route.pricingV2?.outbound.enabled && route.pricingV2?.inbound.enabled);
 
   return <main className="site-shell home-redesign route-detail-redesign">
     <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
 
-    <section className="route-detail-design-hero" aria-labelledby="route-detail-title">
-      <Image src={heroImage} alt="" fill priority sizes="100vw" className="route-detail-design-hero-image" />
-      <div className="route-detail-design-hero-inner"><p className="home-eyebrow">{prelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : "TUYẾN ĐƯỜNG"}</p>
-        <h1 id="route-detail-title">{prelaunch ? "Thông tin tuyến" : "Xe riêng"} {from}<br />đi {to}</h1>
-        <p>{description}</p>
+    <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign hero={<>
+      <nav className="route-detail-design-breadcrumb" aria-label="Đường dẫn trang"><Link href="/">Trang chủ</Link><span aria-hidden="true">/</span><Link href="/tuyen-duong">Tuyến đường</Link></nav>
+      <div className="route-detail-design-hero-media"><Image src={heroImage} alt={`Điểm đến ${to}`} fill preload sizes="(max-width: 800px) 100vw, 1160px" className="route-detail-design-hero-image" /></div>
+      <div className="route-detail-design-hero-inner"><p className="home-eyebrow">{prelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : "XE RIÊNG CÓ TÀI XẾ"}</p>
+        <h1 id="route-detail-title">{from} đi {to}</h1>
+        <p>{prelaunch ? "Liên hệ để được tư vấn; tuyến đang chuẩn bị, chưa nhận đặt chuyến." : <>Đón tận nơi{vehicleLabel && <> · {vehicleLabel}</>}</>}</p>
         {(distance || time) && <div className="route-detail-design-hero-meta">
           {distance && <span><MapPin aria-hidden="true" />{distance}</span>}
           {time && <span><Clock3 aria-hidden="true" />{time}</span>}
-          <small>Thời gian di chuyển dự kiến tùy tình hình giao thông.</small>
+          <small>Thời gian dự kiến tùy giao thông.</small>
         </div>}
       </div>
-    </section>
+    </>} />
 
     <div className="route-detail-design-main">
-      <section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến">
-        <div id="pricing"><RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign /></div>
-      </section>
-
       <section className="route-detail-design-journey" aria-labelledby="route-journey-title">
         <div className="route-detail-design-section-heading"><h2 id="route-journey-title">Hành trình {from} – {to}</h2><p>{prelaunch ? "Lộ trình và lịch phục vụ sẽ được xác nhận khi tuyến sẵn sàng." : "Lộ trình tham khảo; điểm đón và trả được xác nhận theo lịch trình của bạn."}</p></div>
         <div className="route-detail-design-journey-grid">

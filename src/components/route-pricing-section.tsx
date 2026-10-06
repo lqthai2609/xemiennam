@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
@@ -68,7 +68,7 @@ const vehicleCards = [
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
 
-export function RoutePricingSection({ route, direction, onDirectionChange, vehicleImageByType = {}, prelaunch = false, redesign = false }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean; redesign?: boolean }) {
+export function RoutePricingSection({ route, direction, onDirectionChange, vehicleImageByType = {}, prelaunch = false, redesign = false, hero }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean; redesign?: boolean; hero?: ReactNode }) {
   const [journey, setJourney] = useState<Exclude<JourneyPackage, "threeDays">>("oneWay");
   const [days, setDays] = useState<"twoDays" | "threeDays">("twoDays");
   const [showAllVehicles, setShowAllVehicles] = useState(false);
@@ -108,15 +108,22 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
     : visibleVehicles;
   const displayedVehicles = redesign && !showAllVehicles ? orderedVehicles.slice(0, 3) : orderedVehicles;
 
-  if (!pricing) return prelaunch
+  const legacy = prelaunch
     ? <p>Đang chuẩn bị tuyến. <a href="/lien-he">Liên hệ tư vấn</a>; chưa nhận đặt chuyến.</p>
     : <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
-  return <div className="route-vehicle-picker">
+  const journeyControls = <>
     {availableJourneys.length > 0 ? <div className="route-direction-tabs" role="tablist" aria-label="Chọn loại hành trình">
       {[{ key: "oneWay" as const, label: "Một chiều", icon: ArrowRightLeft }, { key: "roundTrip" as const, label: "Khứ hồi", icon: ArrowRightLeft }, { key: "twoDays" as const, label: "Theo ngày", icon: CalendarDays }].filter((tab) => availableJourneys.includes(tab.key)).map((tab) => <button key={tab.key} type="button" role="tab" aria-selected={visibleJourney === tab.key} className={visibleJourney === tab.key ? "is-selected" : ""} onClick={() => setJourney(tab.key)}>{redesign && <tab.icon size={17} aria-hidden="true" />}{tab.label}</button>)}
     </div> : <p>Chưa có gói được xác nhận cho chiều này. Liên hệ để được tư vấn.</p>}
     {visibleJourney === "twoDays" && <div className="route-day-tabs" role="group" aria-label="Chọn gói theo ngày">{(["twoDays", "threeDays"] as const).filter((key) => available.includes(key)).map((key) => <button key={key} type="button" aria-pressed={visibleDays === key} className={visibleDays === key ? "is-selected" : ""} onClick={() => setDays(key)}>{packageLabels[key]}</button>)}</div>}
-    {pricing.inbound.enabled && pricing.outbound.enabled && <div className="route-direction-switch"><span>Chiều</span>{(["outbound", "inbound"] as const).map((key) => <button key={key} type="button" aria-pressed={activeDirection === key} className={activeDirection === key ? "is-selected" : ""} onClick={() => onDirectionChange(key)}>{key === "outbound" ? getPublicLocationLabel(route.from) : getPublicLocationLabel(route.to)} → {key === "outbound" ? getPublicLocationLabel(route.to) : getPublicLocationLabel(route.from)}</button>)}</div>}
+    {hero ? <div className="route-detail-design-endpoints" aria-label="Chiều hành trình">
+      <div><small>Điểm đi</small><strong>{getPublicLocationLabel(activeDirection === "inbound" ? route.to : route.from)}</strong></div>
+      <button type="button" aria-label="Đổi chiều hành trình" disabled={!pricing?.outbound.enabled || !pricing?.inbound.enabled} onClick={() => onDirectionChange(activeDirection === "inbound" ? "outbound" : "inbound")}><ArrowRightLeft size={18} aria-hidden="true" /></button>
+      <div><small>Điểm đến</small><strong>{getPublicLocationLabel(activeDirection === "inbound" ? route.from : route.to)}</strong></div>
+    </div> : pricing?.inbound.enabled && pricing.outbound.enabled && <div className="route-direction-switch"><span>Chiều</span>{(["outbound", "inbound"] as const).map((key) => <button key={key} type="button" aria-pressed={activeDirection === key} className={activeDirection === key ? "is-selected" : ""} onClick={() => onDirectionChange(key)}>{key === "outbound" ? getPublicLocationLabel(route.from) : getPublicLocationLabel(route.to)} → {key === "outbound" ? getPublicLocationLabel(route.to) : getPublicLocationLabel(route.from)}</button>)}</div>}
+  </>;
+  const picker = !pricing ? legacy : <div className="route-vehicle-picker">
+    {!hero && journeyControls}
     {redesign && <div className="route-detail-price-heading"><h2>{prelaunch ? "Thông tin xe cho hành trình" : <>Chọn xe phù hợp<span className="route-price-title-desktop"> với hành trình</span></>}</h2><p>{prelaunch ? "Tuyến đang chuẩn bị, chưa nhận đặt chuyến." : selectedPackage ? `Giá cho chuyến ${packageLabels[selectedPackage].toLowerCase()}` : "Liên hệ để được tư vấn gói chuyến phù hợp."}</p></div>}
     <section className="mb-4 rounded-lg border border-border bg-card p-4 text-sm" aria-label="Thông tin tuyến đường">
       <h3 className="mb-3 flex items-center gap-2 font-semibold text-foreground"><MapPin aria-hidden="true" size={18} /> Thông tin tuyến đường</h3>
@@ -150,6 +157,13 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
     })}</div>
     {redesign && visibleVehicles.length > 3 && <button className="route-detail-more-vehicles" type="button" aria-expanded={showAllVehicles} onClick={() => setShowAllVehicles((value) => !value)}>{showAllVehicles ? "Thu gọn loại xe" : `Xem thêm ${visibleVehicles.length - 3} loại xe`} <ArrowRight size={16} aria-hidden="true" /></button>}
   </div>;
+  return hero ? <>
+    <section className="route-detail-design-hero" aria-labelledby="route-detail-title">
+      {hero}
+      {pricing && <div className="route-detail-design-hero-controls"><h2>Chọn chuyến đi</h2>{journeyControls}</div>}
+    </section>
+    <div className="route-detail-design-main"><section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến"><div id="pricing">{picker}</div></section></div>
+  </> : picker;
 }
 
 export default RoutePricingSection;
