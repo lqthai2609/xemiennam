@@ -16,8 +16,10 @@ R2 `alodatxe-migration-cache` (Standard, Private) và D1 `alodatxe-migration-tag
 | Durable Object SQLite | `DOQueueHandler`, binding `NEXT_CACHE_DO_QUEUE` | Hàng đợi tái tạo trang theo thời gian |
 
 Không có regional Cache API layer. Không mở bucket công khai/r2.dev.
-Booking, trang quản trị và POST `/api/revalidate` vẫn bị chặn. D1 sẵn sàng
-cho bước webhook sau; chưa tuyên bố webhook WordPress hoạt động.
+Booking, trang quản trị và POST `/api/revalidate` vẫn bị chặn mặc định. Cổng
+webhook ISR chỉ cho phép đúng POST đó khi `CF_ISR_WEBHOOK_ENABLED=true` và
+`REVALIDATE_SECRET` là secret riêng dài ít nhất 32 ký tự. Chưa bật cổng,
+chưa kết nối WordPress và chưa tuyên bố webhook hoạt động.
 Header `X-AloDatXe-Cache: r2-isr` chỉ là nhãn cấu hình, không phải bằng chứng HIT.
 
 ## Kiểm tra đã thực hiện ngày 06/10/2026
@@ -99,3 +101,19 @@ Không triển khai production hoặc đổi DNS/domain/canonical trong Ngày 2.
 - Probe ISR 60 giây trên Worker thử đổi thời điểm tạo trang từ `2026-10-06T10:07:15.373Z` sang `2026-10-06T10:10:56.148Z` sau các lượt tải mới. Đây là bằng chứng tái tạo trang theo thời gian, chưa chứng minh giá WordPress tự cập nhật. Probe được gỡ khỏi source trong commit biên nhận này.
 - WordPress thử Day 38 chỉ có yêu cầu thử nghiệm, chưa có danh mục route/vehicle/pricing. Không sửa giá WordPress đang bán để làm thử nghiệm. CF-07 về giá/nội dung nguồn và webhook WordPress còn mở.
 - Worker vẫn là bản thử Access All traffic, chỉ đọc và noindex. Vercel production, domain, DNS, canonical và sitemap không đổi.
+
+## Cổng webhook chuẩn bị ngày 06/10/2026
+
+- Commit `88d8627` thêm điều kiện chặn theo đường dẫn/phương thức, commit
+  `dff8584` kiểm tra cục bộ: ẩn mặc định, secret thiếu/giá trị mẫu bị chặn;
+  `/api/booking`, admin và mọi phương thức ghi khác vẫn bị chặn.
+- Trước khi bật: tạo secret riêng cho Cloudflare Worker bằng cơ chế Secrets,
+  không đưa secret vào repo; WordPress phải gửi cùng secret trong JSON.
+  Cloudflare Access cần Service Token với policy Service Auth áp dụng cho
+  endpoint webhook; không mở Bypass công khai. Cấu hình chính xác sẽ làm cùng
+  fixture WordPress thử có route/vehicle/giá và quyền REST riêng.
+- Sau khi có fixture: kiểm tra Access từ WordPress, payload sai trả 401,
+  payload đúng làm mới trang thử, ảnh hưởng đến trang liên quan và trạng thái
+  khi nguồn WordPress lỗi. Chỉ khi các bước này đạt mới mở cổng và kết luận CF-07.
+- Tài liệu: https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/
+  và https://opennext.js.org/cloudflare/caching
