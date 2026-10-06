@@ -4,12 +4,21 @@ const NOINDEX = "noindex, nofollow, noarchive";
 const PUBLIC_WP_PROBE =
   "https://xemiennam.datxesaigon.com/wp-json/wp/v2/route?per_page=1&_fields=id";
 
-function previewResponse(response, method) {
+function previewResponse(response, request, startedAt) {
   const headers = new Headers(response.headers);
   headers.set("X-Robots-Tag", NOINDEX);
-  headers.set("Cache-Control", "private, no-store");
+  // Only versioned JS/CSS/fonts may be reused in the signed-in browser.
+  // HTML, public files without build hashes, errors and cookie responses stay no-store.
+  const immutableAsset = response.ok && !headers.has("Set-Cookie") &&
+    new URL(request.url).pathname.startsWith("/_next/static/");
+  headers.set("Cache-Control", immutableAsset
+    ? "private, max-age=31536000, immutable"
+    : "private, no-store");
   headers.set("X-AloDatXe-Preview", "readonly-20261006");
-  return new Response(method === "HEAD" ? null : response.body, {
+  headers.set("X-AloDatXe-Cache", "build-snapshot");
+  // Measures time until handler response headers, not full stream/image transfer.
+  headers.append("Server-Timing", `preview;dur=${(performance.now() - startedAt).toFixed(1)}`);
+  return new Response(request.method === "HEAD" ? null : response.body, {
     status: response.status,
     statusText: response.statusText,
     headers,
@@ -36,6 +45,7 @@ function normalizedPath(url) {
 export function createPreviewWorker(handler, probeFetch = globalThis.fetch) {
   return {
     async fetch(request, env, ctx) {
+      const startedAt = performance.now();
       const method = request.method.toUpperCase();
       let response;
       try {
@@ -45,7 +55,8 @@ export function createPreviewWorker(handler, probeFetch = globalThis.fetch) {
         } else if (
           path === "/api" || path.startsWith("/api/") ||
           path === "/quan-tri" || path.startsWith("/quan-tri/") ||
-          path === "/_next/image" || path.startsWith("/cdn-cgi/image/")
+          path === "/_next/image" || path.startsWith("/cdn-cgi/image/") ||
+          path === "/cdn-cgi/_next_cache" || path.startsWith("/cdn-cgi/_next_cache/")
         ) {
           response = json({ error: "Chức năng này được tắt trong bản thử nghiệm." }, 403);
         } else if (path === "/robots.txt") {
@@ -53,7 +64,7 @@ export function createPreviewWorker(handler, probeFetch = globalThis.fetch) {
             headers: { "Content-Type": "text/plain; charset=utf-8" },
           });
         } else if (path === "/__migration/health") {
-          response = json({ mode: "read-only", guard: "readonly-20261006" });
+          response = json({ mode: "read-only", guard: "readonly-20261006", cache: "build-snapshot" });
         } else if (path === "/__migration/wordpress") {
           // Fixed public URL, GET only, no credentials, no booking/customer data.
           const upstream = await probeFetch(PUBLIC_WP_PROBE, {
@@ -75,7 +86,7 @@ export function createPreviewWorker(handler, probeFetch = globalThis.fetch) {
         // Do not expose backend responses, credentials, or request bodies.
         response = json({ error: "Không thể tải dữ liệu trên bản thử nghiệm." }, 502);
       }
-      return previewResponse(response, method);
+      return previewResponse(response, request, startedAt);
     },
   };
 }

@@ -1,4 +1,9 @@
 import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+import staticAssetsIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/static-assets-incremental-cache";
 
-// Day 1 compatibility spike. Persistent ISR/revalidation is configured in CF-07.
-export default defineCloudflareConfig();
+// Dedicated read-only preview: serve the public data/pages captured by the build.
+// CMS changes require a new build; persistent ISR/revalidation remains CF-07.
+export default defineCloudflareConfig({
+  incrementalCache: staticAssetsIncrementalCache,
+  enableCacheInterception: true,
+});

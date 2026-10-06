@@ -1,7 +1,8 @@
 # Cloudflare migration: Day 1 compatibility spike
 
-Status: protected read-only preview prepared and locally packaged; online
-application runtime remains unverified. Not a production candidate.
+Status: online homepage, guard marker and public WordPress connectivity confirmed
+for 6de7222. A preview cache improvement is prepared; online performance and route
+acceptance remain open. Not a production candidate.
 Baseline: main at 5a446a0cb5af384c9da97d8da9e124aa263e77dc.
 Branch: chore/cloudflare-day1-spike. Production remains on Vercel.
 
@@ -66,7 +67,8 @@ Evidence: project owner's Cloudflare Settings and build-result screenshots,
 plus the Access checks described below.
 
 - Worker `alodatxe-migration-spike` was created using the Hello World template.
-  Its public endpoint currently serves that template, not the migrated website.
+  That was the initial online version; the application was subsequently deployed
+  as recorded below.
 - Git repository: `lqthai2609/xemiennam`.
 - Production branch for this dedicated test Worker: `chore/cloudflare-day1-spike`.
 - Build command: `npm run cf:build`.
@@ -82,7 +84,8 @@ plus the Access checks described below.
 Cloudflare build #ef075761 for commit
 `9200d899233664f1359b7034c6152d657cecb7a0` succeeded in approximately 1m38s.
 Its log shows 556 generated pages and a successful packaging-only dry run.
-Hello World remains the online application until the real deploy command is used.
+That dry run left Hello World unchanged. The owner subsequently saved
+`npm run cf:deploy:preview` as the Deploy command and retried the build.
 
 ## Access and read-only preview, 2026-10-06
 
@@ -124,7 +127,7 @@ Hello World remains the online application until the real deploy command is used
   Cloudflare runtime test; do not claim it is proven to be only a local-network
   limitation. No browser visual or performance acceptance has been completed.
 
-### Next dashboard action after this commit is available
+### Initial application deployment procedure (completed by owner)
 
 1. Keep Build command `npm run cf:build`, root `/`, and branch
    `chore/cloudflare-day1-spike`. Disable builds for non-production branches.
@@ -142,6 +145,75 @@ If the preview fails, use the previous Hello World Worker version as rollback;
 Vercel production stays unchanged. Access must remain enabled for all traffic.
 No production cutover, DNS change, isolated-backend acceptance, persistent ISR
 cache acceptance, Free CPU suitability or Day 1 closure is claimed here.
+
+## Online evidence and reported slowness, 2026-10-06
+
+The owner provided an online homepage screenshot and two browser screenshots with
+the dedicated Worker URLs visible. Health returns `mode: read-only` and
+`guard: readonly-20261006`; the direct WordPress GET probe returns
+`wordpress_reachable: true`, HTTP 200 and one public route. This establishes
+those specific online results for 6de7222. It does not establish every route,
+mobile behavior, fresh CMS updates, booking functionality or production readiness.
+
+One retry build failed during prerendering with a WordPress fetch
+`UND_ERR_SOCKET` (connection closed); a subsequent retry displayed the application.
+The underlying intermittent connection cause is not proven. The owner then
+reported very slow page loading; no authenticated browser waterfall or online
+before/after timings are available in the agent environment.
+
+### Narrow preview performance change
+
+- The prior `defineCloudflareConfig()` resolves to a dummy incremental cache in
+  the pinned adapter, so it cannot reuse the build-time pages/data at runtime.
+  Configure the adapter's read-only Static Assets incremental cache and cache
+  interception instead. No R2, KV, D1, Durable Objects, credentials or paid plan
+  are provisioned. Assets and the existing self-reference remain the only bindings.
+- Public prerendered pages/data become a **build snapshot**. WordPress changes
+  require a new build/deployment; time-based/on-demand revalidation is unsupported
+  by this cache and remains CF-07. Newly added routes may require runtime reads.
+  Keep the direct WordPress health probe uncached to check live connectivity.
+- Only successful cookie-free `/_next/static/` responses may be stored privately
+  in the signed-in browser for one year (immutable build files). HTML, non-versioned
+  public images, errors and responses with cookies retain `private, no-store`.
+  Access, noindex and the write/private-route guard remain in place. External reads
+  of `/cdn-cgi/_next_cache` are explicitly denied; internal ASSETS binding reads
+  populate/serve the snapshot without going through that external route.
+- Health also reports `cache: build-snapshot`; responses carry
+  `X-AloDatXe-Cache: build-snapshot` and a `Server-Timing` handler duration. That
+  duration ends at response headers, not full streamed body/image transfer.
+  Image optimization remains disabled and is not addressed by this change.
+
+### Verification of the cache candidate
+
+- Six guard/cache-policy tests, typecheck, focused ESLint and diff checks passed.
+- Full build succeeded with 556 pages. After preview cache population, dry run
+  succeeded with 941 assets; Worker upload 10351.57 KiB, gzip 1948.23 KiB.
+- Real local workerd served homepage and Sài Gòn–Vũng Tàu public route with HTTP
+  200 from the snapshot. Repeated complete response times were 39.1/29.8 ms for
+  home and 8.8/8.6 ms for the route on localhost; these **are not Cloudflare online
+  load times**, have no TLS/Access/remote network and exclude browser rendering.
+- Both pages' React Server Component navigation requests returned 200 with
+  `text/x-component`. An actual compiled JavaScript asset returned private
+  immutable cache headers. Booking POST, admin page and internal cache URL
+  remained 403; every checked response carried noindex.
+- Homepage HTML is still 1,080,379 bytes uncompressed and RSC data 902,501 bytes;
+  the route HTML is 152,004 bytes. Large page payloads and original images may
+  still contribute to browser loading; no complete frontend performance acceptance
+  is claimed. Reduce payload/image costs only with separate measured evidence.
+
+### Việc tiếp theo
+
+1. Core pushes this tested candidate only to `chore/cloudflare-day1-spike`; the
+   connected build uses the already saved real preview Deploy command.
+2. Owner checks the new build is green, reloads homepage and Sài Gòn–Vũng Tàu
+   twice in the authenticated browser, and reports whether repeated loads improve.
+   Health must report `cache: build-snapshot` for this candidate.
+3. If slow loading persists, measure the authenticated request waterfall to
+   distinguish document wait, RSC payload, image transfer and JavaScript work.
+   Do not recommend an upgrade or claim a speed improvement without online evidence.
+4. Core keeps performance/route acceptance open; persistent CMS cache/revalidation,
+   image optimization and production readiness remain later tasks. The previous
+   6de7222 Worker version is available as rollback for this cache change.
 
 Implementation references:
 - https://opennext.js.org/cloudflare/howtos/custom-worker

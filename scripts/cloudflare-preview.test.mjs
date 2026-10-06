@@ -18,6 +18,8 @@ test("write methods and private routes never reach Next or the WordPress probe",
     ["GET", "/API/admin/session"], ["GET", "/%71uan-tri"],
     ["GET", "/public/%2e%2e/api/admin/leads"],
     ["GET", "/_next/image?url=https://example.com/image.jpg&w=640&q=75"],
+    ["GET", "/cdn-cgi/_next_cache/build-id/index.cache"],
+    ["GET", "/cdn-cgi/%5fnext_cache/build-id/index.cache"],
   ];
   for (const [method, path] of requests) {
     const response = await worker.fetch(new Request(origin + path, { method }), {}, {});
@@ -47,6 +49,8 @@ test("public pages and assets retain their content, carry noindex, and allow bod
       assert.equal(response.headers.get("Cache-Control"), "private, no-store");
       assert.equal(response.headers.get("X-Robots-Tag"), "noindex, nofollow, noarchive");
       assert.equal(response.headers.get("X-AloDatXe-Preview"), "readonly-20261006");
+      assert.equal(response.headers.get("X-AloDatXe-Cache"), "build-snapshot");
+      assert.match(response.headers.get("Server-Timing"), /preview;dur=\d+\.\d/);
       const body = await response.text();
       assert.equal(body, method === "HEAD" ? "" : path.endsWith(".webp") ? "image bytes" : "real content");
     }
@@ -59,7 +63,31 @@ test("robots disallows all crawling and health works without Next/backend", asyn
   const robots = await worker.fetch(new Request(origin + "/robots.txt"), {}, {});
   assert.equal(await robots.text(), "User-agent: *\nDisallow: /\n");
   const health = await worker.fetch(new Request(origin + "/__migration/health"), {}, {});
-  assert.deepEqual(await health.json(), { mode: "read-only", guard: "readonly-20261006" });
+  assert.deepEqual(await health.json(), {
+    mode: "read-only", guard: "readonly-20261006", cache: "build-snapshot",
+  });
+});
+
+test("only successful cookie-free versioned assets can be reused privately by the browser", async () => {
+  for (const method of ["GET", "HEAD"]) {
+    for (const [path, status, cookie, expected] of [
+      ["/_next/static/chunks/abc123.js", 200, false, "private, max-age=31536000, immutable"],
+      ["/_next/static/media/abc123.woff2", 200, false, "private, max-age=31536000, immutable"],
+      ["/_next/static/chunks/missing.js", 404, false, "private, no-store"],
+      ["/_next/static/chunks/session.js", 200, true, "private, no-store"],
+      ["/images/logo.webp", 200, false, "private, no-store"],
+    ]) {
+      const worker = createPreviewWorker({ fetch() {
+        return new Response("asset bytes", {
+          status, headers: cookie ? { "Set-Cookie": "example=1" } : {},
+        });
+      } });
+      const response = await worker.fetch(new Request(origin + path, { method }), {}, {});
+      assert.equal(response.headers.get("Cache-Control"), expected, path);
+      assert.equal(response.headers.get("X-Robots-Tag"), "noindex, nofollow, noarchive");
+      if (method === "HEAD") assert.equal(await response.text(), "");
+    }
+  }
 });
 
 test("WordPress probe ignores user destinations, sends no credentials, and returns no source data", async () => {
