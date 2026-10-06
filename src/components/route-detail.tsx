@@ -18,6 +18,7 @@ import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
 import { getZaloChatLink } from "@/lib/zalo";
+import { findVehiclePackage } from "@/lib/route-package-capability";
 
 const regionImages: Record<string, string> = {
   "Bà Rịa - Vũng Tàu": "/images/destinations/ba-ria-vung-tau.webp",
@@ -71,6 +72,14 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
   const vehicleLabel = route.vehicleTypes.map((type) => type.replace(/^Xe\s+/i, "")).join(", ");
   const heroImage = route.featuredImage || regionImages[route.region] || "/images/home-coastal-fleet.webp";
   const reverseAvailable = Boolean(route.pricingV2?.outbound.enabled && route.pricingV2?.inbound.enabled);
+  const heroPrices = !prelaunch && route.pricingV2?.[direction].enabled
+    ? ["Xe 4 chỗ", "Xe 7 chỗ"].flatMap((vehicleType) => {
+        const pkg = findVehiclePackage(route.pricingV2![direction].packages, vehicleType, "oneWay");
+        if (!pkg || pkg.mode === "disabled") return [];
+        const fixed = pkg.mode === "fixed" && typeof pkg.price === "number" && Number.isFinite(pkg.price) && pkg.price > 0;
+        return [{ vehicleType, price: fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : "Liên hệ báo giá", fixed }];
+      })
+    : [];
 
   return <main className="site-shell home-redesign route-detail-redesign">
     <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
@@ -85,6 +94,11 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
         {(distance || time) && <div className="route-detail-design-hero-meta">
           {distance && <span><MapPin aria-hidden="true" /><strong>{distance}<small>Quãng đường tham khảo</small></strong></span>}
           {time && <span><Clock3 aria-hidden="true" /><strong>{time}<small>Thời gian dự kiến tùy giao thông</small></strong></span>}
+        </div>}
+        {heroPrices.length > 0 && <div className="route-detail-design-hero-prices" role="group" aria-label={`Giá một chiều từ ${from} đến ${to}`}>
+          {heroPrices.map(({ vehicleType, price, fixed }) => <div key={vehicleType}>
+            <span>{vehicleType}</span><strong className={fixed ? "is-fixed" : ""}>{price}</strong><small>Một chiều / chuyến</small>
+          </div>)}
         </div>}
         {zaloLink && <a className="home-button home-button-primary route-detail-design-hero-cta zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon />{prelaunch ? "Nhắn Zalo tư vấn" : "Nhắn Zalo đặt xe"}<ArrowRight size={17} aria-hidden="true" /></a>}
       </div>

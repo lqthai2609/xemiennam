@@ -48,8 +48,16 @@
 .route-detail-design-hero-meta strong, .route-detail-design-hero-meta small { display: block; }
 .route-detail-design-hero-meta strong { font-size: 13px; }
 .route-detail-design-hero-meta small { margin-top: 2px; color: #6174a5; font-size: 10px; font-weight: 400; }
+.route-detail-design-hero-prices { display: flex; gap: 9px; max-width: 500px; margin: 12px 0; }
+.route-detail-design-hero-prices > div { flex: 1; min-width: 0; padding: 10px 14px; border: 1px solid #dfebfb; border-radius: 9px; background: #ffffffed; box-shadow: 0 3px 12px #0c2f8710; }
+.route-detail-design-hero-prices span, .route-detail-design-hero-prices strong, .route-detail-design-hero-prices small { display: block; }
+.route-detail-design-hero-prices span { color: #07165d; font-size: 13px; font-weight: 700; }
+.route-detail-design-hero-prices strong { margin: 3px 0; color: #001eea; font-size: 18px; line-height: 1.2; overflow-wrap: anywhere; }
+.route-detail-design-hero-prices strong.is-fixed { color: #ff5122; font-size: 30px; font-weight: 800; }
+.route-detail-design-hero-prices small { color: #6174a5; font-size: 11px; }
 .route-detail-design-hero .route-detail-design-hero-cta { min-height: 42px; margin-top: 12px; padding-inline: 15px; font-size: 13px; }
 .route-detail-design-hero .route-detail-design-hero-meta + .route-detail-design-hero-cta { margin-top: 0; }
+.route-detail-design-hero .route-detail-design-hero-prices + .route-detail-design-hero-cta { margin-top: 0; }
 .route-detail-design-hero-controls { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; width: min(100% - 64px, 1160px); margin: -13px auto 22px; padding: 18px 20px 17px; border: 1px solid #e1e9fa; border-radius: 11px; background: #fff; box-shadow: 0 12px 30px #10246b0c; }
 .route-detail-design-hero-controls h2 { margin: 0; color: #07165d; font-size: 20px; line-height: 1.2; font-weight: 800; }
 .route-detail-redesign .route-detail-design-hero-controls .route-direction-tabs { gap: 0; padding: 3px; border: 1px solid #dce5f8; border-radius: 8px; background: #f5f9ff; }
@@ -159,6 +167,12 @@
   .route-detail-design-hero-meta svg { width: 22px; height: 22px; }
   .route-detail-design-hero-meta strong { font-size: 10px; }
   .route-detail-design-hero-meta small { font-size: 8px; }
+  .route-detail-design-hero-prices { max-width: 340px; gap: 7px; margin: 9px 0; }
+  .route-detail-design-hero-prices > div { padding: 8px 10px; }
+  .route-detail-design-hero-prices span { font-size: 11px; }
+  .route-detail-design-hero-prices strong { font-size: 14px; }
+  .route-detail-design-hero-prices strong.is-fixed { font-size: 24px; }
+  .route-detail-design-hero-prices small { font-size: 10px; }
   .route-detail-design-hero .route-detail-design-hero-cta { min-height: 35px; padding: 7px 11px; font-size: 11px; }
   .route-detail-design-hero-controls { width: min(100% - 30px, 620px); margin: -7px auto 18px; padding: 10px; gap: 7px; }
   .route-detail-design-hero-controls h2 { font-size: 18px; }
