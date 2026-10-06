@@ -28,6 +28,37 @@ test("ISR profile preserves the queue HEAD response and still forbids writes", a
   assert.equal((await health.json()).cache, "r2-isr");
 });
 
+test("ISR webhook requires explicit opt-in and a non-placeholder secret", async () => {
+  const secret = "a".repeat(48);
+  let delegated = 0;
+  const worker = createPreviewWorker({ fetch(request, env) {
+    delegated++;
+    assert.equal(request.method, "POST");
+    assert.equal(new URL(request.url).pathname, "/api/revalidate");
+    assert.equal(env.REVALIDATE_SECRET, secret);
+    return Response.json({ revalidated: true });
+  } }, undefined, { cacheMode: "r2-isr" });
+  const post = (path, env) => worker.fetch(new Request(origin + path, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+  }), env, {});
+
+  for (const env of [
+    {}, { CF_ISR_WEBHOOK_ENABLED: "true" },
+    { CF_ISR_WEBHOOK_ENABLED: "true", REVALIDATE_SECRET: "THAY-SECRET-NAY" },
+    { CF_ISR_WEBHOOK_ENABLED: "true", REVALIDATE_SECRET: "too-short" },
+  ]) assert.equal((await post("/api/revalidate", env)).status, 403);
+
+  const enabled = { CF_ISR_WEBHOOK_ENABLED: "true", REVALIDATE_SECRET: secret };
+  for (const path of ["/api/booking", "/api/admin/session", "/%61pi%2frevalidate/other"]) {
+    assert.equal((await post(path, enabled)).status, 403);
+  }
+  assert.equal((await post("/api/revalidate", enabled)).status, 200);
+  assert.equal(delegated, 1);
+  assert.equal((await post("/api/revalidate", { ...enabled, CF_ISR_WEBHOOK_ENABLED: "false" })).status, 403);
+  const day1 = createPreviewWorker({ fetch() { throw new Error("must not delegate"); } });
+  assert.equal((await day1.fetch(new Request(origin + "/api/revalidate", { method: "POST" }), enabled, {})).status, 403);
+});
+
 test("write methods and private routes never reach Next or the WordPress probe", async () => {
   let delegated = 0;
   let probed = 0;
