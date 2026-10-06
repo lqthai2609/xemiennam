@@ -4,6 +4,30 @@ import { createPreviewWorker } from "../cloudflare/preview-guard.mjs";
 
 const origin = "https://alodatxe-migration-spike.thaivt-thai.workers.dev";
 
+test("ISR profile preserves the queue HEAD response and still forbids writes", async () => {
+  let delegated = 0;
+  const worker = createPreviewWorker({ fetch(request) {
+    delegated++;
+    assert.equal(request.method, "HEAD");
+    assert.equal(request.headers.get("x-isr"), "1");
+    return new Response(null, { headers: { "x-nextjs-cache": "REVALIDATED" } });
+  } }, undefined, { cacheMode: "r2-isr" });
+  const head = await worker.fetch(new Request(origin + "/tuyen-duong", {
+    method: "HEAD", headers: { "x-isr": "1", "x-prerender-revalidate": "local-test" },
+  }), {}, {});
+  assert.equal(head.status, 200);
+  assert.equal(head.headers.get("x-nextjs-cache"), "REVALIDATED");
+  assert.equal(head.headers.get("X-AloDatXe-Cache"), "r2-isr");
+  assert.equal(await head.text(), "");
+  for (const path of ["/api/revalidate", "/api/booking", "/__migration/health"]) {
+    const blocked = await worker.fetch(new Request(origin + path, { method: "POST" }), {}, {});
+    assert.equal(blocked.status, 403);
+  }
+  assert.equal(delegated, 1);
+  const health = await worker.fetch(new Request(origin + "/__migration/health"), {}, {});
+  assert.equal((await health.json()).cache, "r2-isr");
+});
+
 test("write methods and private routes never reach Next or the WordPress probe", async () => {
   let delegated = 0;
   let probed = 0;

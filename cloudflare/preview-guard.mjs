@@ -4,7 +4,7 @@ const NOINDEX = "noindex, nofollow, noarchive";
 const PUBLIC_WP_PROBE =
   "https://xemiennam.datxesaigon.com/wp-json/wp/v2/route?per_page=1&_fields=id";
 
-function previewResponse(response, request, startedAt) {
+function previewResponse(response, request, startedAt, cacheMode) {
   const headers = new Headers(response.headers);
   headers.set("X-Robots-Tag", NOINDEX);
   // Only versioned JS/CSS/fonts may be reused in the signed-in browser.
@@ -15,7 +15,7 @@ function previewResponse(response, request, startedAt) {
     ? "private, max-age=31536000, immutable"
     : "private, no-store");
   headers.set("X-AloDatXe-Preview", "readonly-20261006");
-  headers.set("X-AloDatXe-Cache", "build-snapshot");
+  headers.set("X-AloDatXe-Cache", cacheMode);
   // Measures time until handler response headers, not full stream/image transfer.
   headers.append("Server-Timing", `preview;dur=${(performance.now() - startedAt).toFixed(1)}`);
   return new Response(request.method === "HEAD" ? null : response.body, {
@@ -42,7 +42,9 @@ function normalizedPath(url) {
     .toLowerCase();
 }
 
-export function createPreviewWorker(handler, probeFetch = globalThis.fetch) {
+export function createPreviewWorker(handler, probeFetch = globalThis.fetch, options = {}) {
+  // This label describes the configured adapter, not a measured cache hit.
+  const cacheMode = options.cacheMode === "r2-isr" ? "r2-isr" : "build-snapshot";
   return {
     async fetch(request, env, ctx) {
       const startedAt = performance.now();
@@ -64,7 +66,7 @@ export function createPreviewWorker(handler, probeFetch = globalThis.fetch) {
             headers: { "Content-Type": "text/plain; charset=utf-8" },
           });
         } else if (path === "/__migration/health") {
-          response = json({ mode: "read-only", guard: "readonly-20261006", cache: "build-snapshot" });
+          response = json({ mode: "read-only", guard: "readonly-20261006", cache: cacheMode });
         } else if (path === "/__migration/wordpress") {
           // Fixed public URL, GET only, no credentials, no booking/customer data.
           const upstream = await probeFetch(PUBLIC_WP_PROBE, {
@@ -86,7 +88,7 @@ export function createPreviewWorker(handler, probeFetch = globalThis.fetch) {
         // Do not expose backend responses, credentials, or request bodies.
         response = json({ error: "Không thể tải dữ liệu trên bản thử nghiệm." }, 502);
       }
-      return previewResponse(response, request, startedAt);
+      return previewResponse(response, request, startedAt, cacheMode);
     },
   };
 }

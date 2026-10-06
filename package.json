@@ -36,7 +36,11 @@
     "cf:preview": "opennextjs-cloudflare preview --port 8787",
     "cf:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run",
     "cf:deploy:preview": "opennextjs-cloudflare deploy",
-    "test:cf-preview": "node --test scripts/cloudflare-preview.test.mjs"
+    "test:cf-preview": "node --test scripts/cloudflare-preview.test.mjs",
+    "cf:isr:build": "opennextjs-cloudflare build --config wrangler.isr.jsonc --openNextConfigPath open-next.isr.config.ts",
+    "cf:isr:preview": "opennextjs-cloudflare preview --config wrangler.isr.jsonc --port 8788",
+    "cf:isr:dry-run": "wrangler deploy --config wrangler.isr.jsonc --dry-run --outdir .wrangler/isr-dry-run",
+    "cf:isr:deploy:preview": "node scripts/cloudflare-isr-preflight.mjs && opennextjs-cloudflare deploy --config wrangler.isr.jsonc"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
