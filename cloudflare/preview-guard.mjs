@@ -59,7 +59,8 @@ export function createPreviewWorker(handler, probeFetch = globalThis.fetch, opti
           typeof env.REVALIDATE_SECRET === "string" &&
           env.REVALIDATE_SECRET.length >= 32 &&
           env.REVALIDATE_SECRET !== "THAY-SECRET-NAY";
-        if (method === "POST" && path === "/api/revalidate" && webhookReady) {
+        if (method === "POST" && path === "/api/revalidate" &&
+            new URL(request.url).pathname === "/api/revalidate" && webhookReady) {
           response = await handler.fetch(request, env, ctx);
         } else if (method !== "GET" && method !== "HEAD") {
           response = json({ error: "Bản thử nghiệm chỉ cho phép xem dữ liệu." }, 403);
