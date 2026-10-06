@@ -237,3 +237,67 @@
   .home-route-bottom a { min-height: 28px; }
   .home-redesign .footer-main .phone-link { font-size: 11px; }
 }
+
+/* Compact homepage introduction; the shared header and other forms keep their layout. */
+.home-first-screen-intro { padding-bottom: 24px; background: linear-gradient(180deg, #e7f5ff, #f4f9ff); }
+.home-first-screen .home-hero { min-height: 0; height: 220px; background: #e7f5ff; }
+.home-first-screen .home-hero-photo { z-index: -2; object-fit: cover; object-position: center 64%; }
+.home-first-screen .home-hero::before { z-index: -1; background: linear-gradient(90deg, #f1f9ff 7%, #f1f9ffed 35%, #f1f9ff00 68%); }
+.home-first-screen .home-hero-inner { padding: 28px 0 34px; }
+.home-first-screen .home-hero h1 { margin: 0; font-size: clamp(28px, 3vw, 40px); line-height: 1.15; }
+.home-first-screen .home-hero-tagline { margin: 5px 0 0; font-size: 23px; font-weight: 700; line-height: 1.2; }
+.home-first-screen .home-hero-lede { max-width: none; margin: 8px 0 12px; font-size: 14px; }
+.home-first-screen .home-hero-actions .home-button { min-height: 40px; padding: 6px 14px; border-radius: 24px; }
+.home-first-screen .home-booking-wrap { margin-top: -16px; border-radius: 18px; }
+.home-first-screen .home-booking-wrap #booking form { padding: 18px 22px 12px; border-radius: 18px; }
+.home-first-screen .home-booking-wrap #booking form > div:first-child { margin-bottom: 10px; }
+.home-first-screen .home-booking-wrap #booking h2 { font-size: 26px; }
+.home-first-screen .home-booking-wrap #booking h2::before { display: none; }
+.home-first-screen .home-booking-wrap #booking form > div:first-child > p:last-child { display: block; margin: 2px 0 0; font-size: 13px; line-height: 1.3; }
+.home-first-screen .home-booking-wrap #booking [role="tablist"] { margin-bottom: 10px; }
+.home-first-screen .home-booking-wrap #booking [role="tab"] { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; }
+.home-first-screen .home-booking-wrap #booking form > .mt-4 { margin-top: 10px; }
+.home-first-screen .home-booking-wrap #booking form > .mt-4 button { width: 100%; height: 44px; }
+.home-first-screen .home-booking-wrap #booking form > .mt-4 > div { max-width: none; text-align: center; }
+.home-first-screen .home-benefits { margin-top: 0; border-radius: 14px; }
+@media (max-width: 800px) {
+  .home-first-screen-intro { padding-bottom: 16px; }
+  .home-first-screen .home-hero { height: 158px; }
+  .home-first-screen .home-hero-photo { object-position: 74% 65%; }
+  .home-first-screen .home-hero::before { background: linear-gradient(90deg, #edf8ff 0%, #edf8ffed 27%, #edf8ff00 78%); }
+  .home-first-screen .home-hero-inner { width: calc(100% - 32px); padding: 14px 0 0; }
+  .home-first-screen .home-hero h1 { max-width: none; font-size: clamp(24px, 6vw, 30px); line-height: 1.15; }
+  .home-first-screen .home-hero-tagline { margin-top: 3px; font-size: 18px; }
+  .home-first-screen .home-hero-lede { max-width: none; margin: 5px 0 10px; font-size: 11px; }
+  .home-first-screen .home-hero-actions .home-button { min-height: 36px; padding: 5px 10px; font-size: 12px; }
+  .home-first-screen .home-booking-wrap { width: min(100% - 24px, 620px); margin-top: -6px; }
+  .home-first-screen .home-booking-wrap #booking form { padding: 12px 12px 8px; }
+  .home-first-screen .home-booking-wrap #booking h2 { font-size: 23px; line-height: 1.15; }
+  .home-first-screen .home-booking-wrap #booking form > div:first-child { margin-bottom: 8px; }
+  .home-first-screen .home-booking-wrap #booking form > div:first-child > p:last-child { font-size: 12px; }
+  .home-first-screen .home-booking-wrap #booking [role="tablist"] { margin-bottom: 8px; }
+  .home-first-screen .home-booking-wrap #booking [role="tab"] { min-height: 38px; padding: 7px 5px; gap: 6px; font-size: 12px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] > .grid { gap: 8px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child { gap: 8px; padding-right: 36px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child > button { right: 0; top: calc(50% + 9px); width: 32px; height: 44px; background: #edf5ff; border-radius: 22px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] label { font-size: 12px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] input,
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] select { height: 40px; padding-right: 8px; font-size: 16px; border-radius: 8px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] .booking-date-field input { padding-left: 34px; padding-right: 3px; font-size: 13px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] .booking-trip-field select { padding-left: 34px; font-size: 14px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] [aria-label="Chiều chuyến sân bay"] { margin-bottom: 8px; padding: 3px; }
+  .home-first-screen .home-booking-wrap #booking form > .mt-4 { margin-top: 8px; gap: 4px; }
+  .home-first-screen .home-booking-wrap #booking form > .mt-4 p { font-size: 11px; line-height: 1.3; }
+}
+@media (max-width: 360px) {
+  .home-first-screen .home-hero { height: 144px; }
+  .home-first-screen .home-hero-inner { width: calc(100% - 24px); padding-top: 10px; }
+  .home-first-screen .home-hero h1 { font-size: 24px; }
+  .home-first-screen .home-hero-tagline { font-size: 17px; }
+  .home-first-screen .home-hero-lede { font-size: 10px; }
+  .home-first-screen .home-booking-wrap #booking [role="tab"] { font-size: 11px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] .booking-date-field input { padding-left: 28px; font-size: 12px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] .booking-trip-field select { padding-left: 28px; font-size: 13px; }
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] .booking-date-field svg,
+  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] .booking-trip-field svg { left: 8px; width: 16px; }
+}

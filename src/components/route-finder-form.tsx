@@ -4,7 +4,7 @@ import { RequiredMark } from "@/components/required-mark";
 
 import { useEffect, useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, LoaderCircle, MapPin, Plane, Repeat2, X } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, CarFront, LoaderCircle, MapPin, Plane, Repeat2, Search, X } from "lucide-react";
 
 import { LocationField } from "@/components/location-field";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ export type BookingSearchFormProps = {
   id?: string;
   variant?: BookingSearchVariant;
   mobileStacked?: boolean;
+  firstScreen?: boolean;
   initialPickup?: string;
   initialDestination?: string;
   initialMode?: BookingSearchMode;
@@ -473,6 +474,7 @@ export function BookingSearchForm({
   id,
   variant = "default",
   mobileStacked = false,
+  firstScreen = false,
   initialPickup = "",
   initialDestination = "",
   initialMode = "standard",
@@ -680,7 +682,7 @@ export function BookingSearchForm({
               Bạn muốn đi đâu?
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-              Chọn chuyến đi tỉnh hoặc chế độ đưa đón sân bay. Cả hai đều dùng chung hệ thống giá và yêu cầu báo giá của Alo Đặt Xe.
+              {firstScreen ? "Tìm tuyến và xem giá" : "Chọn chuyến đi tỉnh hoặc chế độ đưa đón sân bay. Cả hai đều dùng chung hệ thống giá và yêu cầu báo giá của Alo Đặt Xe."}
             </p>
           </div>
         )}
@@ -700,6 +702,7 @@ export function BookingSearchForm({
             onClick={() => changeSearchMode("standard")}
             className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition ${searchMode === "standard" ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
+            {firstScreen && <CarFront size={18} aria-hidden="true" />}
             Đi tỉnh / Thuê xe
           </button>
           <button
@@ -907,14 +910,16 @@ export function BookingSearchForm({
 
         <div className="mt-4 flex flex-col gap-3">
           <Button size="lg" type="submit" className="w-full">
-            {needsQuote ? "Yêu cầu báo giá" : "Xem giá chuyến xe"} <ArrowRight data-icon="inline-end" />
+            {firstScreen && <Search aria-hidden="true" data-icon="inline-start" />}
+            {needsQuote ? "Yêu cầu báo giá" : firstScreen ? "Tìm tuyến và giá" : "Xem giá chuyến xe"}
+            {!firstScreen && <ArrowRight data-icon="inline-end" />}
           </Button>
 
           <div className="min-h-5 text-sm" aria-live="polite">
             {error ? (
               <p className="m-0 text-destructive">{error}</p>
             ) : (
-              <p className="m-0 text-muted-foreground">{helperText}</p>
+              <p className="m-0 text-muted-foreground">{firstScreen && !needsQuote ? "Giá theo tuyến và loại xe bạn chọn." : helperText}</p>
             )}
           </div>
         </div>

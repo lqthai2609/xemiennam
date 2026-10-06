@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { ZaloIcon } from "@/components/zalo-icon";
 import { Suspense } from "react";
 import { ArrowRight, CalendarDays, CarFront, ClipboardCheck, Phone, Search } from "lucide-react";
@@ -24,7 +25,7 @@ export const metadata: Metadata = buildPageMetadata({
 
 async function HeroBooking() {
   const routes = await fetchRoutes();
-  return <RouteFinderForm id="booking" routes={routes} variant="hero" mobileStacked />;
+  return <RouteFinderForm id="booking" routes={routes} variant="hero" mobileStacked firstScreen />;
 }
 
 const steps = [
@@ -37,32 +38,35 @@ export default function Home() {
   const zaloLink = getZaloChatLink();
 
   return (
-    <main className="site-shell home-redesign">
+    <main className="site-shell home-redesign home-first-screen">
       <JsonLd data={buildLocalBusinessSchema()} />
       <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
 
-      <section className="home-hero" aria-labelledby="home-title">
-        <div className="home-hero-inner">
-          <p className="home-eyebrow">ALO ĐẶT XE</p>
-          <h1 id="home-title">Xe riêng có tài xế<br />cho hành trình của bạn</h1>
-          <p className="home-hero-lede">Chọn tuyến, xem giá và chủ động lịch đón cùng Alo Đặt Xe.</p>
-          <div className="home-hero-actions">
-            <a className="home-button home-button-primary" href="#booking">Xem tuyến và giá <ArrowRight size={18} /></a>
-            {zaloLink && <a className="home-button home-button-outline zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon /> Nhắn Zalo tư vấn</a>}
+      <div className="home-first-screen-intro">
+        <section className="home-hero" aria-labelledby="home-title">
+          <Image className="home-hero-photo" src="/images/home-coastal-fleet.webp" alt="Xe riêng có tài xế trên cung đường ven biển" fill sizes="(max-width: 800px) 100vw, 1160px" preload />
+          <div className="home-hero-inner">
+            <h1 id="home-title">Xe riêng có tài xế</h1>
+            <p className="home-hero-tagline">Đặt nhanh, đi chủ động.</p>
+            <p className="home-hero-lede">Đi tỉnh và đưa đón sân bay · Xe 4, 7, 16 chỗ</p>
+            <div className="home-hero-actions">
+              {zaloLink && <a className="home-button home-button-outline zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon /> Tư vấn qua Zalo</a>}
+            </div>
           </div>
-        </div>
-      </section>
-
-      <div className="home-booking-wrap">
-        <Suspense fallback={<div className="home-booking-skeleton" aria-label="Đang tải công cụ tìm chuyến" />}>
-          <HeroBooking />
-        </Suspense>
-        <section className="home-benefits" aria-label="Lợi ích của dịch vụ">
-          <div><span><CarFront /></span><p><strong>Xe riêng có tài xế</strong><small>Chủ động, thoải mái cho hành trình của bạn.</small></p></div>
-          <div><span><CalendarDays /></span><p><strong>Chọn lịch đón</strong><small>Linh hoạt thời gian theo kế hoạch.</small></p></div>
-          <div><span><ClipboardCheck /></span><p><strong>Xác nhận giá trước chuyến đi</strong><small>Biết rõ chi phí, yên tâm đặt xe.</small></p></div>
         </section>
+
+        <div className="home-booking-wrap">
+          <Suspense fallback={<div className="home-booking-skeleton" aria-label="Đang tải công cụ tìm chuyến" />}>
+            <HeroBooking />
+          </Suspense>
+        </div>
       </div>
+
+      <section className="home-benefits home-container" aria-label="Lợi ích của dịch vụ">
+        <div><span><CarFront /></span><p><strong>Xe riêng có tài xế</strong><small>Chủ động, thoải mái cho hành trình của bạn.</small></p></div>
+        <div><span><CalendarDays /></span><p><strong>Chọn lịch đón</strong><small>Linh hoạt thời gian theo kế hoạch.</small></p></div>
+        <div><span><ClipboardCheck /></span><p><strong>Xác nhận giá trước chuyến đi</strong><small>Biết rõ chi phí, yên tâm đặt xe.</small></p></div>
+      </section>
 
       <Suspense fallback={<div className="home-content-skeleton" aria-hidden="true" />}>
         <HomeFeaturedRoutes />
