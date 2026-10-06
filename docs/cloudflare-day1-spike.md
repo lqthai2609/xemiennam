@@ -54,6 +54,34 @@ Sources:
 - https://opennext.js.org/cloudflare/get-started
 - https://developers.cloudflare.com/changelog/post/2026-09-04-increased-worker-size-limit/
 
-Next action: obtain Cloudflare account access, then test the same branch against
-an isolated backend online. Keep Vercel deployment dpl_BFFRuhmGE5LVA2ZVx6TF4pANj2dr
+Next action: verify the connected Cloudflare packaging-only build, then prepare
+a protected online test against an isolated backend. Keep Vercel deployment dpl_BFFRuhmGE5LVA2ZVx6TF4pANj2dr
 as the migration baseline. Do not merge or cut over this spike.
+
+## Dashboard connection, 2026-10-06
+
+Evidence: project owner's Cloudflare Settings screenshot, after connecting GitHub.
+This is dashboard configuration evidence, not a successful application build or
+runtime test.
+
+- Worker `alodatxe-migration-spike` was created using the Hello World template.
+  Its public endpoint currently serves that template, not the migrated website.
+- Git repository: `lqthai2609/xemiennam`.
+- Production branch for this dedicated test Worker: `chore/cloudflare-day1-spike`.
+- Build command: `npm run cf:build`.
+- Deploy command and Version command: `npm run cf:dry-run`.
+- Root directory: `/`.
+- No runtime or build variables/secrets, and no bindings, appear in the screenshot.
+- Builds for non-production branches is checked in the screenshot. Disable this
+  setting to keep migration builds limited to the spike branch.
+- Do not select Set up Worker Previews yet; that is a separate configuration step.
+
+This documentation commit triggers the first packaging-only build through the
+connected branch. The result must be checked in Cloudflare build history.
+A successful dry run does not replace Hello World, validate WordPress runtime
+connectivity, or establish production readiness.
+
+Remaining before an online application test: preview access protection and
+noindex, backend write isolation, and review of image bindings and cache behavior.
+Do not add production credentials or switch the deploy command to a real deploy
+until that test scope is prepared.
