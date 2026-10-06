@@ -2,7 +2,7 @@
 
 Nhánh: `chore/cloudflare-day2-isr`, phát triển từ Ngày 1 `e974e5a`.
 Worker hiện có: `alodatxe-migration-spike`. Giữ Access All traffic.
-Chưa thay nhánh build trên Cloudflare, chưa triển khai cấu hình ISR.
+R2 `alodatxe-migration-cache` (Standard, Private) và D1 `alodatxe-migration-tags` đã tạo ngày 06/10/2026. Database ID đã điền vào `wrangler.isr.jsonc`. Chủ dự án đã nhập cấu hình build và nhánh Ngày 2; chưa thấy build mới hoặc bằng chứng triển khai ISR trực tuyến.
 
 ## Phạm vi
 
