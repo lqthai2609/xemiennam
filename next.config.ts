@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
+    // Migration spike only: use original images until CF-08 evaluates optimization.
+    unoptimized: true,
     // Trang /dich-vu (Ngày 25b) dùng next/image cho ảnh dịch vụ — service.image có thể là
     // featured image thật từ WordPress (embeddedFeaturedImage(), xem lib/api/services.ts),
     // không chỉ ảnh demo tĩnh trong /public. Domain media đã ổn định từ Ngày 3-4 nên khai báo

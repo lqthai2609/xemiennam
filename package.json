@@ -34,7 +34,9 @@
     "test:public-pricing": "node --test scripts/public-cms-pricing.test.mjs",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview --port 8787",
-    "cf:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run"
+    "cf:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run",
+    "cf:deploy:preview": "opennextjs-cloudflare deploy",
+    "test:cf-preview": "node --test scripts/cloudflare-preview.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

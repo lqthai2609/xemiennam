@@ -1,6 +1,7 @@
 # Cloudflare migration: Day 1 compatibility spike
 
-Status: preliminary build succeeds; not a deployable production candidate.
+Status: protected read-only preview prepared and locally packaged; online
+application runtime remains unverified. Not a production candidate.
 Baseline: main at 5a446a0cb5af384c9da97d8da9e124aa263e77dc.
 Branch: chore/cloudflare-day1-spike. Production remains on Vercel.
 
@@ -11,6 +12,7 @@ Use Node 24 and `npm ci`. No production credentials are required for this spike.
 1. `GOCAR_ENABLE_MOCK_FALLBACK=false npm run cf:build`
 2. `npm run cf:dry-run` (packages only; does not deploy)
 3. `npm run cf:preview -- --ip 127.0.0.1 --inspector-port 9229`
+4. `npm run test:cf-preview`
 
 Pinned versions: Next.js and eslint-config-next 16.3.8,
 @opennextjs/cloudflare 1.20.8, Wrangler 4.147.0. React stays 19.2.8.
@@ -37,32 +39,31 @@ OpenNext 1.20.8 refuses Next.js 16.3.4; its release notes require the patched
   error. agent-browser's daemon also fails to start in this environment, so
   there is no browser acceptance or performance measurement.
 
-## Required before deployment
+## Full migration release gates
 
-CF-03 account/access; CF-06 isolated backend and server secrets; CF-07 persistent
-cache, queue/tag invalidation; CF-08 image plan; CF-09 successful full runtime
-checks. This config deliberately has no persistent cache or real credentials.
-The IMAGES binding here is a local capability declaration; its online use and
-cost still need evaluation. Do not deploy it against real booking data.
+CF-06 isolated backend and server secrets for booking/admin tests; CF-07
+persistent cache, queue/tag invalidation; CF-08 image optimization; CF-09
+successful full runtime checks. This config deliberately has no persistent
+cache or production credentials. The read-only preview below is a narrower
+compatibility test and does not complete these tasks.
 
 Workers Free suitability is unproven: local packaging is not CPU/quota evidence.
-There is no deployment command or Cloudflare provisioning in the npm scripts.
-No domain, DNS, canonical, WordPress, analytics, pricing or business-code changes.
+No domain, DNS, canonical, WordPress writes, analytics, pricing or business-code
+changes. Images use their original sources only on this spike branch; image
+optimization and its performance/cost assessment remain deferred.
 
 Sources:
 - https://github.com/opennextjs/opennextjs-cloudflare/releases
 - https://opennext.js.org/cloudflare/get-started
 - https://developers.cloudflare.com/changelog/post/2026-09-04-increased-worker-size-limit/
 
-Next action: verify the connected Cloudflare packaging-only build, then prepare
-a protected online test against an isolated backend. Keep Vercel deployment dpl_BFFRuhmGE5LVA2ZVx6TF4pANj2dr
+Keep Vercel deployment dpl_BFFRuhmGE5LVA2ZVx6TF4pANj2dr
 as the migration baseline. Do not merge or cut over this spike.
 
 ## Dashboard connection, 2026-10-06
 
-Evidence: project owner's Cloudflare Settings screenshot, after connecting GitHub.
-This is dashboard configuration evidence, not a successful application build or
-runtime test.
+Evidence: project owner's Cloudflare Settings and build-result screenshots,
+plus the Access checks described below.
 
 - Worker `alodatxe-migration-spike` was created using the Hello World template.
   Its public endpoint currently serves that template, not the migrated website.
@@ -71,17 +72,78 @@ runtime test.
 - Build command: `npm run cf:build`.
 - Deploy command and Version command: `npm run cf:dry-run`.
 - Root directory: `/`.
-- No runtime or build variables/secrets, and no bindings, appear in the screenshot.
+- No runtime or build variables/secrets, and no bindings, appeared in the initial
+  connection screenshot. The committed configuration supplies two non-secret
+  false flags, ASSETS and WORKER_SELF_REFERENCE when actually deployed.
 - Builds for non-production branches is checked in the screenshot. Disable this
   setting to keep migration builds limited to the spike branch.
 - Do not select Set up Worker Previews yet; that is a separate configuration step.
 
-This documentation commit triggers the first packaging-only build through the
-connected branch. The result must be checked in Cloudflare build history.
-A successful dry run does not replace Hello World, validate WordPress runtime
-connectivity, or establish production readiness.
+Cloudflare build #ef075761 for commit
+`9200d899233664f1359b7034c6152d657cecb7a0` succeeded in approximately 1m38s.
+Its log shows 556 generated pages and a successful packaging-only dry run.
+Hello World remains the online application until the real deploy command is used.
 
-Remaining before an online application test: preview access protection and
-noindex, backend write isolation, and review of image bindings and cache behavior.
-Do not add production credentials or switch the deploy command to a real deploy
-until that test scope is prepared.
+## Access and read-only preview, 2026-10-06
+
+- The owner activated Zero Trust Free and applied Worker Access to **All traffic**.
+  The Allow policy is **Cloudflare account members**, not a verified single-user
+  restriction. The owner's screenshot confirms production and preview coverage.
+- An independent anonymous browser request redirected to Cloudflare Access login
+  without showing application content. The owner subsequently confirmed successful
+  sign-in and access to Hello World. This confirms access to the template, not yet
+  the migrated application.
+- `cloudflare/preview-worker.mjs` delegates public page reads to generated OpenNext
+  code. Its guard denies every method except GET/HEAD and denies every `/api`
+  and `/quan-tri` route before delegation, including booking, lead management,
+  admin authentication and revalidation. No real booking/notification was tested.
+- Every response, including assets, carries `X-Robots-Tag: noindex, nofollow,
+  noarchive` and `Cache-Control: private, no-store`. `/robots.txt` disallows all
+  crawling. `assets.run_worker_first` is true so assets also pass through the guard.
+  This invokes the Worker for asset reads; production cost/performance is untested.
+- Images use original sources with `images.unoptimized: true`; the IMAGES binding
+  was removed. Do not treat this temporary image configuration as CF-08 completion.
+- Only public WordPress reads are permitted by the application test scope. No
+  production credentials are supplied. This is not an isolated WordPress backend
+  and does not authorize booking/admin write tests.
+- `/__migration/health` returns the marker `readonly-20261006` and mode `read-only`.
+  `/__migration/wordpress` performs a fixed, credential-free GET for at most one
+  public route and returns connectivity status/count only, not source records.
+
+### Verification of the prepared preview
+
+- Five guard tests passed, including encoded private paths and no delegation of
+  blocked requests. Typecheck, focused ESLint and `git diff --check` passed.
+- Full OpenNext build succeeded with 556 generated pages. Wrangler dry run
+  succeeded: 10337.54 KiB total upload, 1945.34 KiB gzip and 108 assets.
+- Local workerd HTTP checks: health/robots/favicon return 200; HEAD robots has
+  no body; booking POST, admin session, revalidation, admin page and lead DELETE
+  return 403. Every checked response carries noindex, including the actual asset.
+- Local homepage still returns 500 and the WordPress connectivity probe returns
+  502. Build-time reads succeed. The cause remains unresolved until a real
+  Cloudflare runtime test; do not claim it is proven to be only a local-network
+  limitation. No browser visual or performance acceptance has been completed.
+
+### Next dashboard action after this commit is available
+
+1. Keep Build command `npm run cf:build`, root `/`, and branch
+   `chore/cloudflare-day1-spike`. Disable builds for non-production branches.
+2. In Settings > Builds, change only Deploy command to
+   `npm run cf:deploy:preview` and save. Keep Version command `npm run cf:dry-run`.
+3. Once the automatic packaging-only build has finished, retry the build for the
+   latest commit through Deployments > View build history. Retry uses the current
+   saved build settings. This deploys only the dedicated migration Worker.
+4. After successful deployment, sign in through Access and check health, the
+   WordPress probe, homepage and representative public route pages. Confirm the
+   marker and actual runtime results before marking online compatibility passed.
+   Never submit a real booking on this preview.
+
+If the preview fails, use the previous Hello World Worker version as rollback;
+Vercel production stays unchanged. Access must remain enabled for all traffic.
+No production cutover, DNS change, isolated-backend acceptance, persistent ISR
+cache acceptance, Free CPU suitability or Day 1 closure is claimed here.
+
+Implementation references:
+- https://opennext.js.org/cloudflare/howtos/custom-worker
+- https://developers.cloudflare.com/workers/static-assets/binding/
+- https://developers.cloudflare.com/workers/ci-cd/builds/configuration/
