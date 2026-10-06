@@ -49,7 +49,7 @@ test("ISR webhook requires explicit opt-in and a non-placeholder secret", async 
   ]) assert.equal((await post("/api/revalidate", env)).status, 403);
 
   const enabled = { CF_ISR_WEBHOOK_ENABLED: "true", REVALIDATE_SECRET: secret };
-  for (const path of ["/api/booking", "/api/admin/session", "/%61pi%2frevalidate/other"]) {
+  for (const path of ["/api/booking", "/api/admin/session", "/%61pi%2frevalidate", "/%61pi%2frevalidate/other"]) {
     assert.equal((await post(path, enabled)).status, 403);
   }
   assert.equal((await post("/api/revalidate", enabled)).status, 200);
