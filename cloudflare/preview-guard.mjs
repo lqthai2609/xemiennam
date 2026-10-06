@@ -52,7 +52,16 @@ export function createPreviewWorker(handler, probeFetch = globalThis.fetch, opti
       let response;
       try {
         const path = normalizedPath(request.url);
-        if (method !== "GET" && method !== "HEAD") {
+        // The ISR webhook is opt-in and remains behind Cloudflare Access.
+        // Never open another API route or any write method on a public page.
+        const webhookReady = cacheMode === "r2-isr" &&
+          env?.CF_ISR_WEBHOOK_ENABLED === "true" &&
+          typeof env.REVALIDATE_SECRET === "string" &&
+          env.REVALIDATE_SECRET.length >= 32 &&
+          env.REVALIDATE_SECRET !== "THAY-SECRET-NAY";
+        if (method === "POST" && path === "/api/revalidate" && webhookReady) {
+          response = await handler.fetch(request, env, ctx);
+        } else if (method !== "GET" && method !== "HEAD") {
           response = json({ error: "Bản thử nghiệm chỉ cho phép xem dữ liệu." }, 403);
         } else if (
           path === "/api" || path.startsWith("/api/") ||
