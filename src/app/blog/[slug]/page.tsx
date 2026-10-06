@@ -4,8 +4,13 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { BlogCard } from "@/components/blog-card";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-import { UnifiedHero } from "@/components/unified-hero";
+import { SiteFooter } from "@/components/site-footer";
+import Image from "next/image";
+import { BlogContactBanner } from "@/components/blog-design-shared";
+import { BlogTableOfContents } from "@/components/blog-table-of-contents";
+import { buildBlogOutline } from "@/lib/blog-outline";
+import { formatVNDate } from "@/lib/wp";
+import "@/components/blog-redesign.css";
 import { getVehicleCategory } from "@/data/vehicle-categories";
 import { navItems } from "@/data/nav";
 import { fetchPostBySlug, fetchPosts, fetchRelatedPosts } from "@/lib/api/blog";
@@ -14,7 +19,7 @@ import { fetchRoutes } from "@/lib/api/routes";
 import { airportDisplayName, airportHubHref } from "@/lib/airport-seo";
 import { buildPageMetadata } from "@/lib/metadata";
 import { buildFaqPageSchema } from "@/lib/schema";
-import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL } from "@/lib/site-config";
 import { decodeHtmlEntities } from "@/lib/wp";
 import type { BlogPost } from "@/types/blog";
 import type { Route } from "@/types/route";
@@ -91,23 +96,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       });
 }
 
-const footerLinkGroups = [
-  {
-    title: "KHÁM PHÁ",
-    links: [
-      { label: "Tuyến đường", href: "/tuyen-duong" },
-      { label: "Khuyến mãi", href: "/khuyen-mai" },
-    ],
-  },
-  {
-    title: "HỖ TRỢ",
-    links: [
-      { label: "Câu hỏi thường gặp", href: "#" },
-      { label: "Liên hệ", href: "/lien-he" },
-    ],
-  },
-];
-
 /**
  * Day 25 — internal graph dùng structured relations từ Day 24.
  * Related Blog được xếp hạng bằng fetchRelatedPosts(); Blog → Hub chỉ resolve từ
@@ -125,9 +113,11 @@ export default async function BlogDetailPage({ params }: Props) {
   ]);
   const relatedHubLinks = buildRelatedHubLinks(post, routes, locations);
   const faqItems = post.faqItems ?? [];
+  const outline = buildBlogOutline(formatPublicLocationText(post.contentHtml));
+  const wasUpdated = post.modifiedDate && post.modifiedDate !== post.publishedDate;
 
   return (
-    <main className="site-shell">
+    <main className="site-shell blog-redesign">
       {faqItems.length > 0 && (
         <JsonLd data={buildFaqPageSchema(faqItems.map((f) => ({ question: formatPublicLocationText(f.question), answer: formatPublicLocationText(f.answer) })))} />
       )}
@@ -139,10 +129,21 @@ export default async function BlogDetailPage({ params }: Props) {
         ctaHref="/#booking"
       />
 
-      <UnifiedHero eyebrow={post.category} title={formatPublicLocationText(post.title)} description={formatPublicLocationText(post.excerpt)} backgroundImage={post.featuredImageUrl || "/images/services/city-tour.png"} backHref="/blog" backLabel="Tất cả bài viết" />
+      <section className="journal-hero journal-detail-hero">
+        <div className="journal-hero-image"><Image src={post.featuredImageUrl || "/images/contact-coast-hero.webp"} alt={formatPublicLocationText(post.title)} fill sizes="100vw" preload /></div>
+        <div className="journal-container journal-hero-inner"><div className="journal-hero-copy">
+          <nav className="journal-breadcrumb" aria-label="Đường dẫn"><Link href="/blog">Blog</Link>{post.category && <><span aria-hidden="true">/</span><span>{post.category}</span></>}</nav>
+          <p className="journal-eyebrow">{post.category || "CẨM NANG HÀNH TRÌNH"}</p>
+          <h1>{formatPublicLocationText(post.title)}</h1>
+          {post.excerpt && <p>{formatPublicLocationText(post.excerpt)}</p>}
+          <div className="journal-post-meta"><time dateTime={post.publishedDate}>{formatVNDate(post.publishedDate)}</time>{wasUpdated && <span>Cập nhật: <time dateTime={post.modifiedDate}>{formatVNDate(post.modifiedDate)}</time></span>}</div>
+        </div></div>
+      </section>
 
-      <section className="section-wrap blog-detail-content">
-        <article className="blog-detail-body" dangerouslySetInnerHTML={{ __html: formatPublicLocationText(post.contentHtml) }} />
+      <div className="journal-container journal-detail-grid">
+        <BlogTableOfContents items={outline.items} />
+        <div className="journal-article-column">
+        <article className="blog-detail-body journal-article" dangerouslySetInnerHTML={{ __html: outline.html }} />
 
         {faqItems.length > 0 && (
           <section className="blog-detail-faq">
@@ -170,41 +171,27 @@ export default async function BlogDetailPage({ params }: Props) {
             </div>
           </aside>
         )}
-      </section>
+        </div>
+      </div>
+      <div className="journal-container"><BlogContactBanner detail /></div>
 
       {relatedPosts.length > 0 && (
-        <section className="related-section section-wrap post-related-posts">
+        <section className="journal-container journal-related-posts">
           <div className="section-heading">
             <div>
-              <p className="section-label">BÀI VIẾT LIÊN QUAN</p>
-              <h2>Đọc tiếp theo chủ đề.</h2>
+              <h2 className="journal-heading">Bài viết liên quan</h2>
             </div>
             <Link className="text-link" href="/blog">
               Xem tất cả bài viết <ArrowRight size={17} aria-hidden="true" />
             </Link>
           </div>
-          <div className="route-grid blog-grid">
-            {relatedPosts.map((related) => <BlogCard post={related} key={related.id} />)}
+          <div className="journal-post-grid">
+            {relatedPosts.map((related) => <BlogCard post={related} key={related.id} editorial />)}
           </div>
         </section>
       )}
 
-      <SiteFooter
-        tagline={
-          <>
-            Đi đâu cũng có {SITE_NAME}.
-            <br />
-            Kết nối những hành trình tử tế.
-          </>
-        }
-        phone={SITE_HOTLINE}
-        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
-        linkGroups={footerLinkGroups}
-        socialLinks={defaultSocialLinks}
-        copyright={`© 2026 ${SITE_NAME}`}
-        madeFor="Made for the road."
-        brandName={SITE_NAME}
-      />
+      <SiteFooter />
     </main>
   );
 }

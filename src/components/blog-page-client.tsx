@@ -1,167 +1,44 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { BookOpen, Compass, MapPin, Newspaper, RotateCcw } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-import { formatVNDate } from "@/lib/wp";
-import { navItems } from "@/data/nav";
-import type { BlogPost } from "@/types/blog";
-import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { useMemo, useState, type FormEvent } from "react";
+import Image from "next/image";
+import { BookOpen, Search, ArrowRight, RotateCcw } from "lucide-react";
+import { BlogCard, type BlogSummary } from "@/components/blog-card";
+import { BlogContactBanner, BlogDiscovery } from "@/components/blog-design-shared";
 import { formatPublicLocationText } from "@/lib/public-location-label";
 
-const footerLinkGroups = [
-  {
-    title: "KHÁM PHÁ",
-    links: [
-      { label: "Tuyến đường", href: "/tuyen-duong" },
-      { label: "Cẩm nang đi đường", href: "/blog" },
-    ],
-  },
-  {
-    title: "HỖ TRỢ",
-    links: [
-      { label: "Câu hỏi thường gặp", href: "#" },
-      { label: "Chính sách huỷ chuyến", href: "#" },
-      { label: "Liên hệ", href: "/lien-he" },
-    ],
-  },
-];
-
-/** Icon thay ảnh đại diện khi bài chưa có featured image (nhập ảnh thật dời tới Ngày 25–26). */
-function CategoryIcon({ category, size = 26 }: { category: string; size?: number }) {
-  switch (category) {
-    case "Kinh nghiệm":
-      return <Compass size={size} />;
-    case "Cẩm nang":
-      return <BookOpen size={size} />;
-    case "Review":
-      return <MapPin size={size} />;
-    case "Tin tức":
-      return <Newspaper size={size} />;
-    default:
-      return <BookOpen size={size} />;
-  }
+function normalizeSearch(value: string) {
+  return value.toLocaleLowerCase("vi").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").trim();
 }
 
-function BlogCard({ post }: { post: BlogPost }) {
-  return (
-    <Link className="blog-card" href={`/blog/${post.slug}`}>
-      <div className="blog-thumb">
-        {post.featuredImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- ảnh đến từ WordPress (domain động), chưa cấu hình next/image remotePatterns; nhập ảnh thật dời tới Ngày 25–26
-          <img src={post.featuredImageUrl} alt={formatPublicLocationText(post.title)} />
-        ) : (
-          <CategoryIcon category={post.category} />
-        )}
-      </div>
-      <div className="blog-body">
-        {post.category && <span className="blog-cat">{post.category}</span>}
-        <h3>{formatPublicLocationText(post.title)}</h3>
-        <p className="blog-excerpt">{formatPublicLocationText(post.excerpt)}</p>
-        <span className="blog-date">{formatVNDate(post.publishedDate)}</span>
-      </div>
-    </Link>
-  );
-}
-
-/** Nhận `posts` qua props — dữ liệu đã được fetchPosts() lấy từ WP REST API (Ngày 17) ở Server Component cha. */
-export function BlogPageClient({ posts }: { posts: BlogPost[] }) {
+export function BlogPageClient({ posts }: { posts: BlogSummary[] }) {
   const [category, setCategory] = useState("");
+  const [input, setInput] = useState("");
+  const [query, setQuery] = useState("");
+  const categories = useMemo(() => [...new Set(posts.map((post) => post.category).filter(Boolean))], [posts]);
+  const filtered = useMemo(() => {
+    const search = normalizeSearch(query);
+    return posts.filter((post) => (!category || post.category === category) && (!search || normalizeSearch(formatPublicLocationText(`${post.title} ${post.excerpt} ${post.category}`)).includes(search)));
+  }, [category, posts, query]);
+  const isFiltering = Boolean(category || query);
+  const featured = !isFiltering ? filtered[0] : undefined;
+  const latest = featured ? filtered.slice(1) : filtered;
+  function search(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setQuery(input.trim()); }
+  function clear() { setCategory(""); setInput(""); setQuery(""); }
 
-  const categories = useMemo(
-    () => [...new Set(posts.map((post) => post.category).filter(Boolean))],
-    [posts],
-  );
-  const filteredPosts = useMemo(
-    () => (category ? posts.filter((post) => post.category === category) : posts),
-    [category, posts],
-  );
-
-  return (
-    <main className="site-shell">
-      <SiteHeader
-        menuItems={navItems}
-        hotline={SITE_HOTLINE}
-        hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
-        ctaLabel="Đặt xe ngay"
-        ctaHref="/#booking"
-      />
-      <section className="routes-hero">
-        <div>
-          <p className="eyebrow">
-            <span className="eyebrow-line" /> CẨM NANG
-          </p>
-          <h1>
-            Đọc trước,
-            <br />
-            <em>đi chắc tay hơn.</em>
-          </h1>
-          <p>Kinh nghiệm đi đường, cẩm nang thuê xe và vài điểm dừng chân đáng ghé — góp nhặt từ những chuyến đi thật.</p>
-        </div>
-        <div className="routes-hero-sign">
-          <span>{SITE_NAME.toLocaleUpperCase("vi")}</span>
-          <strong>{posts.length}</strong>
-          <small>BÀI VIẾT</small>
-        </div>
+  return <>
+    <section className="journal-hero journal-archive-hero">
+      <div className="journal-hero-image"><Image src="/images/contact-coast-hero.webp" alt="" fill sizes="100vw" preload /></div>
+      <div className="journal-container journal-hero-inner"><div className="journal-hero-copy"><p className="journal-eyebrow">CẨM NANG HÀNH TRÌNH</p><h1>Cẩm nang<br />trước khi lên xe</h1><p>Kinh nghiệm chọn xe, chuẩn bị chuyến đi và khám phá điểm đến.</p></div></div>
+    </section>
+    <div className="journal-container journal-archive-content">
+      <section className="journal-filters" aria-label="Tìm và lọc bài viết">
+        <form className="journal-search" onSubmit={search} role="search"><Search aria-hidden="true" /><label className="sr-only" htmlFor="journal-search-input">Tìm bài viết theo chủ đề hoặc điểm đến</label><input id="journal-search-input" type="search" placeholder="Tìm bài viết theo chủ đề hoặc điểm đến..." value={input} onChange={(event) => { setInput(event.target.value); if (!event.target.value) setQuery(""); }} /><button className="journal-button" type="submit">Tìm kiếm <ArrowRight size={18} aria-hidden="true" /></button></form>
+        <div className="journal-filter-chips"><button type="button" aria-pressed={!category} className={!category ? "is-active" : ""} onClick={() => setCategory("")}>Tất cả</button>{categories.map((cat) => <button type="button" key={cat} aria-pressed={category === cat} className={category === cat ? "is-active" : ""} onClick={() => setCategory(cat)}><BookOpen size={18} aria-hidden="true" />{cat}</button>)}{isFiltering && <button type="button" onClick={clear}><RotateCcw size={16} aria-hidden="true" />Xóa lọc</button>}</div>
       </section>
-
-      <section className="section-wrap blog-page-content">
-        {categories.length > 0 && (
-          <div className="blog-filter">
-            <button type="button" className={`vehicle-chip blog-filter-pill ${category === "" ? "is-active" : ""}`} onClick={() => setCategory("")}>
-              Tất cả
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                className={`vehicle-chip blog-filter-pill ${category === cat ? "is-active" : ""}`}
-                onClick={() => setCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-            {category && (
-              <button type="button" className="vehicle-chip blog-filter-pill blog-filter-clear" onClick={() => setCategory("")}>
-                <RotateCcw size={13} /> Xóa lọc
-              </button>
-            )}
-          </div>
-        )}
-
-        {filteredPosts.length > 0 ? (
-          <div className="route-grid blog-grid">
-            {filteredPosts.map((post) => (
-              <BlogCard post={post} key={post.id} />
-            ))}
-          </div>
-        ) : (
-          <div className="route-empty">
-            <BookOpen size={30} />
-            <h2>Chưa có bài nào trong danh mục này</h2>
-            <p>Thử chọn danh mục khác hoặc xem tất cả bài viết.</p>
-          </div>
-        )}
-      </section>
-
-      <SiteFooter
-        tagline={
-          <>
-            Đi đâu cũng có {SITE_NAME}.
-            <br />
-            Kết nối những hành trình tử tế.
-          </>
-        }
-        phone={SITE_HOTLINE}
-        phoneHref={`tel:${SITE_HOTLINE_TEL}`}
-        linkGroups={footerLinkGroups}
-        socialLinks={defaultSocialLinks}
-        copyright={`© 2026 ${SITE_NAME}`}
-        madeFor="Made for the road."
-        brandName={SITE_NAME}
-      />
-    </main>
-  );
+      {featured && <section className="journal-featured"><h2 className="journal-heading">Bài viết nổi bật</h2><BlogCard post={featured} editorial featured /></section>}
+      <section className="journal-latest"><h2 className="journal-heading">{isFiltering ? "Kết quả tìm kiếm" : "Bài viết mới"}</h2>{isFiltering && <p className="journal-result-count" role="status">{filtered.length} bài viết phù hợp{query ? ` với “${query}”` : ""}</p>}{latest.length > 0 ? <div className="journal-post-grid">{latest.map((post) => <BlogCard key={post.id} post={post} editorial />)}</div> : <div className="journal-empty"><BookOpen size={32} aria-hidden="true" /><h3>{isFiltering ? "Không tìm thấy bài viết phù hợp" : "Chưa có bài viết mới"}</h3><p>{isFiltering ? "Thử từ khóa khác hoặc xem tất cả bài viết." : "Các bài viết mới sẽ được cập nhật tại đây."}</p>{isFiltering && <button className="journal-button" type="button" onClick={clear}>Xem tất cả bài viết</button>}</div>}</section>
+      <BlogDiscovery /><BlogContactBanner />
+    </div>
+  </>;
 }
