@@ -10,7 +10,7 @@
   "d1_databases": [{
     "binding": "NEXT_TAG_CACHE_D1",
     "database_name": "alodatxe-migration-tags",
-    "database_id": "00000000-0000-0000-0000-000000000000"
+    "database_id": "9e3d02d3-73cf-4637-9535-80ae72f96b0a"
   }],
   "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
   "migrations": [{ "tag": "cf-day2-queue-v1", "new_sqlite_classes": ["DOQueueHandler"] }],
