@@ -2,7 +2,7 @@
 
 Nhánh: `chore/cloudflare-day2-isr`, phát triển từ Ngày 1 `e974e5a`.
 Worker hiện có: `alodatxe-migration-spike`. Giữ Access All traffic.
-R2 `alodatxe-migration-cache` (Standard, Private) và D1 `alodatxe-migration-tags` đã tạo ngày 06/10/2026. Database ID đã điền vào `wrangler.isr.jsonc`. Chủ dự án đã nhập cấu hình build và nhánh Ngày 2; chưa thấy build mới hoặc bằng chứng triển khai ISR trực tuyến.
+R2 `alodatxe-migration-cache` (Standard, Private) và D1 `alodatxe-migration-tags` đã tạo ngày 06/10/2026. Database ID đã điền vào `wrangler.isr.jsonc`. Worker thử đã chạy cấu hình `r2-isr` sau build `6182b62`.
 
 ## Phạm vi
 
@@ -90,3 +90,12 @@ Nếu cần quay lại sau thử ISR: chọn nhánh `chore/cloudflare-day1-spike
 build `npm run cf:build`, deploy `npm run cf:deploy:preview`.
 Giữ Access All traffic, Vercel và các tài nguyên thử; không xóa D1/R2/DO tự động.
 Không triển khai production hoặc đổi DNS/domain/canonical trong Ngày 2.
+
+## Biên nhận trực tuyến Ngày 2 (06/10/2026)
+
+- `/__migration/health` trả `read-only`, `readonly-20261006`, `r2-isr` theo kết quả chủ dự án cung cấp.
+- R2 có 675 đối tượng, 236,44 MB; D1 có 1 bảng và đã ghi/đọc truy vấn (ảnh chủ dự án).
+- Trang tuyến Sài Gòn đi Vũng Tàu hiển thị hero, ảnh xe, bản đồ và các giá 4/7/16 chỗ; đây là xác nhận hiển thị, chưa phải đối soát giá nguồn.
+- Probe ISR 60 giây trên Worker thử đổi thời điểm tạo trang từ `2026-10-06T10:07:15.373Z` sang `2026-10-06T10:10:56.148Z` sau các lượt tải mới. Đây là bằng chứng tái tạo trang theo thời gian, chưa chứng minh giá WordPress tự cập nhật. Probe được gỡ khỏi source trong commit biên nhận này.
+- WordPress thử Day 38 chỉ có yêu cầu thử nghiệm, chưa có danh mục route/vehicle/pricing. Không sửa giá WordPress đang bán để làm thử nghiệm. CF-07 về giá/nội dung nguồn và webhook WordPress còn mở.
+- Worker vẫn là bản thử Access All traffic, chỉ đọc và noindex. Vercel production, domain, DNS, canonical và sitemap không đổi.
