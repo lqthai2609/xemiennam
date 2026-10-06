@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import Image from "next/image";
 import { BlogContactBanner } from "@/components/blog-design-shared";
 import { BlogTableOfContents } from "@/components/blog-table-of-contents";
+import { blogIllustration } from "@/lib/blog-presentation";
 import { buildBlogOutline } from "@/lib/blog-outline";
 import { formatVNDate } from "@/lib/wp";
 import "@/components/blog-redesign.css";
@@ -130,7 +131,7 @@ export default async function BlogDetailPage({ params }: Props) {
       />
 
       <section className="journal-hero journal-detail-hero">
-        <div className="journal-hero-image"><Image src={post.featuredImageUrl || "/images/contact-coast-hero.webp"} alt={formatPublicLocationText(post.title)} fill sizes="100vw" preload /></div>
+        <div className="journal-hero-image"><Image src={blogIllustration(post)} alt={post.featuredImageUrl ? formatPublicLocationText(post.title) : ""} fill sizes="100vw" preload /></div>
         <div className="journal-container journal-hero-inner"><div className="journal-hero-copy">
           <nav className="journal-breadcrumb" aria-label="Đường dẫn"><Link href="/blog">Blog</Link>{post.category && <><span aria-hidden="true">/</span><span>{post.category}</span></>}</nav>
           <p className="journal-eyebrow">{post.category || "CẨM NANG HÀNH TRÌNH"}</p>
