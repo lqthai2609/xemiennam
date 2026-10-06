@@ -77,7 +77,7 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
 
     <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign hero={<>
       <nav className="route-detail-design-breadcrumb" aria-label="Đường dẫn trang"><Link href="/">Trang chủ</Link><span aria-hidden="true">/</span><Link href="/tuyen-duong">Tuyến đường</Link></nav>
-      <div className="route-detail-design-hero-media"><Image src={heroImage} alt={`Điểm đến ${to}`} fill preload sizes="(max-width: 800px) 100vw, 1160px" className="route-detail-design-hero-image" /></div>
+      <div className="route-detail-design-hero-media"><Image src={heroImage} alt={`Ảnh tuyến ${getPublicLocationLabel(route.from)} đi ${getPublicLocationLabel(route.to)}`} fill preload sizes="(max-width: 800px) 100vw, 1160px" className="route-detail-design-hero-image" /></div>
       <div className="route-detail-design-hero-inner"><p className="home-eyebrow">{prelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : "XE RIÊNG CÓ TÀI XẾ"}</p>
         <h1 id="route-detail-title">{from} đi {to}</h1>
         <p>{prelaunch ? "Liên hệ để được tư vấn; tuyến đang chuẩn bị, chưa nhận đặt chuyến." : <>Đón tận nơi{vehicleLabel && <> · {vehicleLabel}</>}</>}</p>
