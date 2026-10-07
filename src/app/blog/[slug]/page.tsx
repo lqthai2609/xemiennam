@@ -11,6 +11,8 @@ import { BlogTableOfContents } from "@/components/blog-table-of-contents";
 import { blogIllustration } from "@/lib/blog-presentation";
 import { buildBlogOutline } from "@/lib/blog-outline";
 import { formatVNDate } from "@/lib/wp";
+import { getZaloChatLink } from "@/lib/zalo";
+import "@/app/home-redesign.css";
 import "@/components/blog-redesign.css";
 import { getVehicleCategory } from "@/data/vehicle-categories";
 import { navItems } from "@/data/nav";
@@ -118,7 +120,7 @@ export default async function BlogDetailPage({ params }: Props) {
   const wasUpdated = post.modifiedDate && post.modifiedDate !== post.publishedDate;
 
   return (
-    <main className="site-shell blog-redesign">
+    <main className="site-shell home-redesign blog-redesign">
       {faqItems.length > 0 && (
         <JsonLd data={buildFaqPageSchema(faqItems.map((f) => ({ question: formatPublicLocationText(f.question), answer: formatPublicLocationText(f.answer) })))} />
       )}
@@ -126,8 +128,9 @@ export default async function BlogDetailPage({ params }: Props) {
         menuItems={navItems}
         hotline={SITE_HOTLINE}
         hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
-        ctaLabel="Đặt xe ngay"
-        ctaHref="/#booking"
+        ctaLabel="Nhắn Zalo"
+        ctaHref={getZaloChatLink() || "/lien-he"}
+        homeDesign
       />
 
       <section className="journal-hero journal-detail-hero">
