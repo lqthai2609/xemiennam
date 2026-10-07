@@ -1,111 +1,65 @@
-import { revalidatePath } from "next/cache";
+import { timingSafeEqual } from "node:crypto";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
+import { WP_CACHE_TAG } from "@/lib/wp";
 
-/**
- * POST /api/revalidate (Ngày 20) — nhận webhook từ WordPress mỗi khi 1 bài
- * route/vehicle/dich_vu/promotion/testimonial/post được publish/lưu (snippet WPCode
- * "ISR — Webhook revalidate Next.js khi save_post", ID 16). Giúp trang cập nhật ngay thay
- * vì đợi hết REVALIDATE_SECONDS (mặc định 3600s/1h, xem lib/wp.ts).
- *
- * Xác thực bằng `secret` gửi trong BODY JSON (không phải header) — đúng cách snippet ID 16
- * đang gửi (wp_remote_post với body JSON, không có Authorization header). Giá trị secret
- * phải khớp với hằng số XMN_REVALIDATE_SECRET định nghĩa trong wp-config.php bên WordPress —
- * đặt cùng giá trị vào biến môi trường REVALIDATE_SECRET ở Vercel (xem .env.example). Snippet
- * ID 16 hiện đang dùng giá trị mặc định "THAY-SECRET-NAY" — nhớ đổi cả 2 bên trước khi coi
- * endpoint này production-ready, nếu không secret sẽ luôn khớp với giá trị mặc định công khai.
- */
-
-type RevalidateTarget = string | { path: string; type: "page" };
-
-const dynamicPage = (path: string): RevalidateTarget => ({ path, type: "page" });
-
-const PATHS_BY_POST_TYPE: Record<string, (slug: string) => RevalidateTarget[]> = {
-  // Payload webhook (snippet ID 16) chỉ gửi slug của route, không có regionSlug, nên không thể
-  // dựng URL cụ thể. Invalidate các pattern động để cả hub tỉnh (nơi hiển thị card tuyến), trang
-  // chi tiết và trang combo đều đọc lại giá/thời gian mới nhất từ CMS ngay sau khi lưu route.
-  route: () => [
-    "/",
-    "/tuyen-duong",
-    "/bang-gia",
-    dynamicPage("/tuyen-duong/[tinh]"),
-    dynamicPage("/tuyen-duong/[tinh]/[tuyen]"),
-    dynamicPage("/tuyen-duong/[tinh]/[tuyen]/[loai-xe]"),
-  ],
-  // Ngày 25: /doi-xe đã gỡ (gộp vào /loai-xe) — 1 bài vehicle giờ chỉ ảnh hưởng trang chủ,
-  // trang danh sách/chi tiết loại xe và bảng giá. Không biết trước type slug nào bị ảnh
-  // hưởng từ payload này nên revalidate rộng "/loai-xe" (không phải "/loai-xe/[slug]" riêng).
-  vehicle: () => [
-    "/",
-    "/loai-xe",
-    "/bang-gia",
-    dynamicPage("/tuyen-duong/[tinh]"),
-    dynamicPage("/tuyen-duong/[tinh]/[tuyen]"),
-    dynamicPage("/tuyen-duong/[tinh]/[tuyen]/[loai-xe]"),
-  ],
-  dich_vu: (slug) => ["/dich-vu", `/dich-vu/${slug}`],
-  promotion: () => ["/khuyen-mai"],
-  testimonial: () => ["/danh-gia"],
-  post: (slug) => ["/", "/blog", `/blog/${slug}`],
-  // Ngày 25 — hub tỉnh: slug bài `diem_den` trùng slug term `province` (= "tinh" trên URL),
-  // nên revalidate được chính xác trang hub, không như `route` ở trên.
-  diem_den: (slug) => [`/tuyen-duong/${slug}`],
+// WordPress sends at shutdown after post fields, meta and terms are committed.
+// PHP source: wordpress/snippets/frontend-sync.php. No secret defaults are accepted.
+const RESOURCES: Record<string, string[]> = {
+  route: ["route"], vehicle: ["vehicle", "media"], location: ["location"],
+  diem_den: ["diem-den"], dich_vu: ["dich_vu"], promotion: ["promotion"],
+  testimonial: ["testimonial"], post: ["posts"],
+  attachment: ["media", "route", "vehicle", "posts", "diem-den"],
+  taxonomy: [], // Embedded terms can appear in any WordPress collection.
 };
-
-type RevalidatePayload = {
-  secret?: string;
-  post_type?: string;
-  post_id?: number;
-  slug?: string;
+const ROUTE_PAGES = [
+  "/tuyen-duong/[tinh]", "/tuyen-duong/[tinh]/[tuyen]",
+  "/tuyen-duong/[tinh]/[tuyen]/[loai-xe]", "/san-bay/[airportSlug]",
+];
+const PAGES: Record<string, string[]> = {
+  route: ROUTE_PAGES, vehicle: [...ROUTE_PAGES, "/loai-xe/[slug]"],
+  location: ROUTE_PAGES, diem_den: ["/tuyen-duong/[tinh]"],
+  dich_vu: ["/dich-vu/[slug]"], post: ["/blog/[slug]"],
+};
+const LISTINGS: Record<string, string[]> = {
+  route: ["/", "/tuyen-duong", "/bang-gia", "/diem-den"],
+  vehicle: ["/", "/loai-xe", "/bang-gia", "/tuyen-duong"],
+  location: ["/", "/tuyen-duong", "/bang-gia", "/diem-den"],
+  diem_den: ["/diem-den", "/tuyen-duong"], dich_vu: ["/dich-vu"],
+  promotion: ["/khuyen-mai"], testimonial: ["/danh-gia"], post: ["/", "/blog"],
 };
 
 export async function POST(request: Request) {
-  let body: RevalidatePayload | null = null;
-  try {
-    body = (await request.json()) as RevalidatePayload;
-  } catch {
+  let body: unknown;
+  try { body = await request.json(); }
+  catch {
     return NextResponse.json({ revalidated: false, error: "Body không phải JSON hợp lệ." }, { status: 400 });
   }
-
   const expectedSecret = process.env.REVALIDATE_SECRET;
-  if (!expectedSecret) {
-    console.error("[api/revalidate] Thiếu biến môi trường REVALIDATE_SECRET trên Next.js.");
-    return NextResponse.json(
-      { revalidated: false, error: "Server chưa cấu hình REVALIDATE_SECRET." },
-      { status: 500 },
-    );
+  if (!expectedSecret || expectedSecret === "THAY-SECRET-NAY") {
+    return NextResponse.json({ revalidated: false, error: "Server chưa cấu hình khóa riêng." }, { status: 503 });
   }
-  if (!body?.secret || body.secret !== expectedSecret) {
-    return NextResponse.json({ revalidated: false, error: "Secret không đúng." }, { status: 401 });
+  const payload = body && typeof body === "object" && !Array.isArray(body)
+    ? body as Record<string, unknown> : {};
+  const supplied = typeof payload.secret === "string" ? Buffer.from(payload.secret) : Buffer.alloc(0);
+  const expected = Buffer.from(expectedSecret);
+  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+    return NextResponse.json({ revalidated: false, error: "Khóa kết nối không đúng." }, { status: 401 });
   }
-
-  const postType = body.post_type ?? "";
-  const slug = body.slug ?? "";
-  const pathsForType = PATHS_BY_POST_TYPE[postType];
-  // post_type lạ (chưa liệt kê ở trên) — chỉ làm mới trang chủ, an toàn hơn là bỏ qua hẳn.
-  const paths = pathsForType ? pathsForType(slug) : ["/"];
-
-  for (const target of paths) {
-    if (typeof target === "string") {
-      revalidatePath(target);
-    } else {
-      revalidatePath(target.path, target.type);
-    }
+  const postType = typeof payload.post_type === "string" ? payload.post_type : "";
+  if (!Object.hasOwn(RESOURCES, postType)) {
+    return NextResponse.json({ revalidated: false, error: "Loại dữ liệu không được hỗ trợ." }, { status: 400 });
   }
-
-  // Trang kết hợp /tuyen-duong/[slug]/[loai-xe] (Ngày 14) không revalidate riêng được ở đây
-  // vì không biết trước slug loại xe nào đang kết hợp với route này — revalidatePath kiểu
-  // "layout" cần 1 layout.tsx thật đặt tại app/tuyen-duong/, hiện chưa có (chỉ có layout gốc
-  // app/layout.tsx). Chấp nhận: trang kết hợp tự làm mới theo REVALIDATE_SECONDS mặc định (1h)
-  // như bình thường — có thể bổ sung layout.tsx riêng cho /tuyen-duong sau nếu cần tức thời.
-
-  return NextResponse.json({ revalidated: true, postType, slug, paths, now: Date.now() });
+  const tags = postType === "taxonomy" ? [WP_CACHE_TAG]
+    : RESOURCES[postType].map((resource) => `${WP_CACHE_TAG}:${resource}`);
+  // Prices expire immediately; 'max' would serve one stale response first.
+  for (const tag of tags) revalidateTag(tag, { expire: 0 });
+  for (const path of PAGES[postType] ?? []) revalidatePath(path, "page");
+  for (const path of LISTINGS[postType] ?? []) revalidatePath(path);
+  revalidatePath("/sitemap.xml");
+  return NextResponse.json({ revalidated: true, postType, tags, now: Date.now() });
 }
 
-// Cho phép kiểm tra nhanh endpoint còn sống bằng cách mở URL trực tiếp trên trình duyệt —
-// không xác thực gì (không trigger revalidate), chỉ để debug.
 export async function GET() {
-  return NextResponse.json({
-    ok: true,
-    message: "Endpoint này nhận POST từ webhook WordPress (snippet WPCode ID 16), không dùng GET để revalidate.",
-  });
+  return NextResponse.json({ ok: true, version: 2, message: "POST từ WordPress làm mới dữ liệu; GET chỉ kiểm tra kết nối." });
 }

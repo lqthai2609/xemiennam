@@ -7,7 +7,7 @@ const source = await readFile(new URL("../src/lib/wp.ts", import.meta.url), "utf
 const js = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
-const { wpFetch } = await import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`);
+const { wpFetch, wpCacheTags, REVALIDATE_SECONDS } = await import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`);
 
 function stubFetch(t, responses) {
   const calls = [];
@@ -31,8 +31,8 @@ test("transient 500 retries once and returns real CMS data with ISR intact", asy
   const calls = stubFetch(t, [new Response("", { status: 500 }), Response.json([{ id: 41 }])]);
   assert.deepEqual(await wpFetch("/route", 3600), [{ id: 41 }]);
   assert.equal(calls.length, 2);
-  assert.deepEqual(calls[0][1].next, { revalidate: 3600 });
-  assert.deepEqual(calls[1][1].next, { revalidate: 3600 });
+  assert.deepEqual(calls[0][1].next, { revalidate: 3600, tags: ["alo-wp-v2", "alo-wp-v2:route"] });
+  assert.deepEqual(calls[1][1].next, { revalidate: 3600, tags: ["alo-wp-v2", "alo-wp-v2:route"] });
   assert.notDeepEqual(calls[0][1].headers, calls[1][1].headers);
 });
 
@@ -72,4 +72,10 @@ test("a genuine missing resource still returns null without retrying", async (t)
 test("malformed success responses throw instead of becoming empty data", async (t) => {
   stubFetch(t, [new Response("<html>upstream failure</html>", { status: 200 })]);
   await assert.rejects(wpFetch("/route"), /không phải JSON hợp lệ/);
+});
+
+ test("resource tags join list, detail and pagination without query-dependent tags", () => {
+  assert.deepEqual(wpCacheTags("/route?per_page=100"), wpCacheTags("/route/41"));
+  assert.deepEqual(wpCacheTags("/location?page=2"), ["alo-wp-v2", "alo-wp-v2:location"]);
+  assert.equal(REVALIDATE_SECONDS, 300);
 });

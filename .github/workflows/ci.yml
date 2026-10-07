@@ -133,7 +133,7 @@ jobs:
         run: npm run test:public-pricing
 
       - name: WordPress API failure and recovery
-        run: node --test scripts/wp-fetch-resilience.test.mjs
+        run: node --test scripts/wp-fetch-resilience.test.mjs scripts/wp-revalidate.test.mjs
 
       - name: Production build
         run: npm run build
