@@ -304,7 +304,7 @@
 
 /* Saigon skyline hero: keep the first-screen booking form and shared header intact. */
 .home-first-screen .home-hero { background: #07165d; }
-.home-first-screen .home-hero-photo { object-position: center 52%; }
+.home-first-screen .home-hero-photo { object-position: center 20%; }
 .home-first-screen .home-hero::before {
   background: linear-gradient(90deg, rgba(5, 18, 66, .93) 0%, rgba(5, 18, 66, .81) 28%, rgba(5, 18, 66, .30) 58%, rgba(5, 18, 66, .05) 100%);
 }
