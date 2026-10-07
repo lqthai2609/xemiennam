@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
   }
 
-  const regionName = routes[0]?.region || hub?.title || tinh;
+  const regionName = tinh === "ba-ria-vung-tau" ? "Bà Rịa - Vũng Tàu" : routes[0]?.region || hub?.title || tinh;
   const publicRegionName = getPublicLocationLabel(regionName);
   return buildPageMetadata({
     title: formatPublicLocationText(hub?.rankMathTitle || `Thuê xe nguyên chiếc đi ${publicRegionName} | ${SITE_NAME}`),
@@ -54,7 +54,7 @@ export default async function Page({ params }: Props) {
   const routes = regionRoutes.filter(canSuggestRelatedRoute);
   if (routes.length === 0 && !hub) notFound();
 
-  const regionName = routes[0]?.region || hub?.title || tinh;
+  const regionName = tinh === "ba-ria-vung-tau" ? "Bà Rịa - Vũng Tàu" : routes[0]?.region || hub?.title || tinh;
   const publicRegionName = getPublicLocationLabel(regionName);
   const canonicalPath = `/tuyen-duong/${tinh}`;
   const description = hub

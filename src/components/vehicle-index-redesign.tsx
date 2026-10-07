@@ -1,5 +1,7 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { useMemo, useState, type FormEvent } from "react";
 import { ZaloIcon } from "@/components/zalo-icon";
 import Link from "next/link";
@@ -79,9 +81,9 @@ function RouteFinder({ routes, categories }: { routes: Route[]; categories: Vehi
   return <section className="vehicle-index-finder" aria-labelledby="vehicle-index-finder-title">
     <div className="vehicle-index-heading"><h2 id="vehicle-index-finder-title">Đã chọn xe, tìm tuyến phù hợp</h2><p>Nhập thông tin để xem giá và tư vấn tuyến đường phù hợp.</p></div>
     <form onSubmit={submit}>
-      <label className="vehicle-index-field"><MapPin size={20} /><span><strong>Điểm đón</strong><select required value={from} onChange={(event) => { setFrom(event.target.value); setError(""); }}><option value="">Chọn điểm đón</option>{locations.map((item) => <option key={item}>{item}</option>)}</select></span><ChevronDown size={16} /></label>
+      <label className="vehicle-index-field"><MapPin size={20} /><span><strong className="form-field-label">Điểm đón <RequiredMark /></strong><select required value={from} onChange={(event) => { setFrom(event.target.value); setError(""); }}><option value="">Chọn điểm đón</option>{locations.map((item) => <option key={item}>{item}</option>)}</select></span><ChevronDown size={16} /></label>
       <button type="button" className="vehicle-index-swap" aria-label="Đổi chiều điểm đón và điểm đến" onClick={() => { setFrom(to); setTo(from); setError(""); }}><ArrowRightLeft size={21} /></button>
-      <label className="vehicle-index-field"><MapPin size={20} /><span><strong>Điểm đến</strong><select required value={to} onChange={(event) => { setTo(event.target.value); setError(""); }}><option value="">Chọn điểm đến</option>{locations.map((item) => <option key={item}>{item}</option>)}</select></span><ChevronDown size={16} /></label>
+      <label className="vehicle-index-field"><MapPin size={20} /><span><strong className="form-field-label">Điểm đến <RequiredMark /></strong><select required value={to} onChange={(event) => { setTo(event.target.value); setError(""); }}><option value="">Chọn điểm đến</option>{locations.map((item) => <option key={item}>{item}</option>)}</select></span><ChevronDown size={16} /></label>
       <label className="vehicle-index-field"><CarFront size={20} /><span><strong>Loại chuyến</strong><select value={tripType} onChange={(event) => setTripType(event.target.value)}><option value="one_way">Một chiều</option><option value="round_trip">Khứ hồi</option></select></span><ChevronDown size={16} /></label>
       <label className="vehicle-index-field"><CarFront size={20} /><span><strong>Loại xe</strong><select value={vehicle} onChange={(event) => setVehicle(event.target.value)}><option value="">Chọn loại xe</option>{categories.map((item) => <option key={item.slug} value={item.slug}>Xe {item.type}</option>)}</select></span><ChevronDown size={16} /></label>
       <button className="home-button home-button-primary vehicle-index-submit" type="submit">Xem giá chuyến xe <ArrowRight size={16} /></button>
@@ -102,7 +104,7 @@ export function VehicleIndexRedesign({ categories, routes }: { categories: Vehic
     { question: "Hành lý có ảnh hưởng đến việc chọn loại xe không?", answer: "Có. Số hành khách, lượng hành lý và kích thước đồ mang theo đều ảnh hưởng đến xe phù hợp. Vui lòng cho biết nhu cầu thực tế khi liên hệ." },
   ];
   return <main className="site-shell home-redesign vehicle-index-redesign">
-    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Blog", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink} homeDesign />
+    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink} homeDesign />
     <section className="vehicle-index-hero" aria-labelledby="vehicle-index-title"><div className="vehicle-index-hero-photo" aria-hidden="true" /><div className="vehicle-index-width vehicle-index-hero-inner"><div className="vehicle-index-hero-copy"><p className="home-eyebrow">CHỌN LOẠI XE</p><h1 id="vehicle-index-title">Chọn xe vừa<br />với hành trình</h1><p>Xe riêng có tài xế cho cặp đôi, gia đình và nhóm đông.</p><div className="vehicle-index-hero-pills"><span><CarFront size={22} /><strong>Xe riêng<small>Chủ động, thoải mái</small></strong></span><span><UsersRound size={22} /><strong>Có tài xế<small>An toàn, đúng giờ</small></strong></span></div></div></div></section>
     <div className="vehicle-index-width vehicle-index-body">
       <section className="vehicle-index-selector" aria-labelledby="vehicle-index-selector-title"><h2 id="vehicle-index-selector-title">Bạn đi cùng bao nhiêu người?</h2><div className="vehicle-index-selector-row">{groups.map((group, index) => <button type="button" className={selectedGroup === group.slug ? "is-selected" : ""} aria-pressed={selectedGroup === group.slug} key={group.slug} onClick={() => { setSelectedGroup(group.slug); document.getElementById(index < 3 ? `vehicle-card-${group.slug}` : "vehicle-index-other")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}><group.icon size={23} /><span><strong>{group.label}</strong><small>{group.hint}</small></span>{group.slug === "7-cho" && <em>Phổ biến nhất</em>}</button>)}<p><Info size={18} /> Số hành khách thực tế và hành lý được xác nhận khi tư vấn.</p></div></section>

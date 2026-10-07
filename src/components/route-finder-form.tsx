@@ -1,19 +1,17 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { useEffect, useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, LoaderCircle, MapPin, Plane, Repeat2, X } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, CarFront, LoaderCircle, MapPin, Plane, Repeat2, Search, X } from "lucide-react";
 
+import { LocationField } from "@/components/location-field";
 import { Button } from "@/components/ui/button";
-import { MultiStopFields } from "@/components/multi-stop-fields";
-import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
 import { fetchBookingWithIdempotency } from "@/lib/booking-submit";
 import {
   canonicalLocationKey,
   canonicalLocationLabel,
-  locationMatchesQuery,
-  normalizeSearch,
-  resolveLocationAlias,
 } from "@/lib/location-search";
 import {
   HO_CHI_MINH_CANONICAL_NAME,
@@ -48,6 +46,7 @@ export type BookingSearchFormProps = {
   id?: string;
   variant?: BookingSearchVariant;
   mobileStacked?: boolean;
+  firstScreen?: boolean;
   initialPickup?: string;
   initialDestination?: string;
   initialMode?: BookingSearchMode;
@@ -183,148 +182,6 @@ function vehicleTypesForJourney(journey: BookingJourney) {
   );
 }
 
-function LocationField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  listId,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  listId: string;
-  options: string[];
-}) {
-  const inputId = `${listId}-input`;
-  const suggestionsId = `${listId}-suggestions`;
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const aliasResolution = useMemo(() => resolveLocationAlias(value), [value]);
-
-  const suggestions = useMemo(() => {
-    const query = normalizeSearch(value);
-    const filtered = query
-      ? options.filter((option) => locationMatchesQuery(option, value))
-      : options;
-    return filtered.slice(0, 8);
-  }, [options, value]);
-
-  function selectSuggestion(option: string) {
-    onChange(
-      aliasResolution && canonicalLocationKey(option) === aliasResolution.canonicalKey
-        ? value.trim()
-        : option,
-    );
-    setSuggestionsOpen(false);
-    setActiveIndex(-1);
-  }
-
-  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "ArrowDown") {
-      if (!suggestions.length) return;
-      event.preventDefault();
-      setSuggestionsOpen(true);
-      setActiveIndex((current) => (current + 1) % suggestions.length);
-      return;
-    }
-    if (event.key === "ArrowUp") {
-      if (!suggestions.length) return;
-      event.preventDefault();
-      setSuggestionsOpen(true);
-      setActiveIndex((current) => (current <= 0 ? suggestions.length - 1 : current - 1));
-      return;
-    }
-    if (event.key === "Enter" && suggestionsOpen && activeIndex >= 0 && suggestions[activeIndex]) {
-      event.preventDefault();
-      selectSuggestion(suggestions[activeIndex]);
-      return;
-    }
-    if (event.key === "Escape") {
-      setSuggestionsOpen(false);
-      setActiveIndex(-1);
-    }
-  }
-
-  const showSuggestions = suggestionsOpen && suggestions.length > 0;
-
-  return (
-    <div className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-      <label htmlFor={inputId}>{label}</label>
-      <div className="relative">
-        <MapPin
-          aria-hidden="true"
-          className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-primary"
-          size={18}
-        />
-        <input
-          id={inputId}
-          value={value}
-          onChange={(event) => {
-            onChange(event.target.value);
-            setSuggestionsOpen(true);
-            setActiveIndex(-1);
-          }}
-          onFocus={() => setSuggestionsOpen(true)}
-          onBlur={() => window.setTimeout(() => {
-            setSuggestionsOpen(false);
-            setActiveIndex(-1);
-          }, 120)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          autoComplete="off"
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded={showSuggestions}
-          aria-controls={suggestionsId}
-          aria-activedescendant={activeIndex >= 0 ? `${suggestionsId}-${activeIndex}` : undefined}
-          className="h-12 w-full rounded-xl border border-border bg-background pl-10 pr-3 text-base font-medium text-foreground outline-none transition placeholder:font-normal placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
-          required
-        />
-
-        {showSuggestions && (
-          <div
-            id={suggestionsId}
-            role="listbox"
-            className="absolute left-0 right-0 top-full z-40 mt-1 max-h-64 overflow-y-auto rounded-xl border border-border bg-card p-1.5 text-foreground shadow-lg"
-          >
-            {suggestions.map((option, index) => (
-              <button
-                id={`${suggestionsId}-${index}`}
-                type="button"
-                role="option"
-                aria-selected={index === activeIndex}
-                key={option}
-                onMouseDown={(event) => event.preventDefault()}
-                onMouseEnter={() => setActiveIndex(index)}
-                onClick={() => selectSuggestion(option)}
-                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition ${index === activeIndex ? "bg-secondary text-foreground" : "hover:bg-muted"}`}
-              >
-                <MapPin aria-hidden="true" size={15} className="shrink-0 text-primary" />
-                {aliasResolution && canonicalLocationKey(option) === aliasResolution.canonicalKey ? (
-                  <span className="min-w-0">
-                    <span className="block font-semibold">{aliasResolution.displayLabel}</span>
-                    <span className="block text-xs font-normal text-muted-foreground">
-                      {getPublicLocationLabel(aliasResolution.canonical)} · Áp dụng giá tuyến {HO_CHI_MINH_PUBLIC_LABEL}
-                    </span>
-                  </span>
-                ) : <span>{option}</span>}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      {aliasResolution && (
-        <p className="m-0 flex items-start gap-1.5 text-xs font-medium leading-5 text-primary" role="status">
-          <span aria-hidden="true">✓</span>
-          <span>Đã quy đổi về {getPublicLocationLabel(aliasResolution.canonical)} · Áp dụng giá tuyến {HO_CHI_MINH_PUBLIC_LABEL}</span>
-        </p>
-      )}
-    </div>
-  );
-}
 
 function JourneyQuoteDialog({
   pickup,
@@ -354,8 +211,6 @@ function JourneyQuoteDialog({
   const [pickupAddress, setPickupAddress] = useState("");
   const [dropoffAddress, setDropoffAddress] = useState("");
   const [pickupNote, setPickupNote] = useState("");
-  const [intermediateStops, setIntermediateStops] = useState<IntermediateStopInput[]>([]);
-  const [intermediateStopErrors, setIntermediateStopErrors] = useState<MultiStopFieldsError[]>([]);
   const [pickupAddressError, setPickupAddressError] = useState("");
   const [dropoffAddressError, setDropoffAddressError] = useState("");
   const [pickupNoteError, setPickupNoteError] = useState("");
@@ -388,7 +243,6 @@ function JourneyQuoteDialog({
     setPickupAddressError("");
     setDropoffAddressError("");
     setPickupNoteError("");
-    setIntermediateStopErrors([]);
 
     const normalizedPickupAddress = pickupAddress.trim();
     const normalizedDropoffAddress = dropoffAddress.trim();
@@ -421,20 +275,7 @@ function JourneyQuoteDialog({
       setPickupNoteError("Lưu ý điểm đón tối đa 300 ký tự.");
       hasAddressError = true;
     }
-    const parsedStops = intermediateStopsInputSchema.safeParse(intermediateStops);
-    if (!parsedStops.success) {
-      const nextErrors: MultiStopFieldsError[] = [];
-      for (const issue of parsedStops.error.issues) {
-        const index = typeof issue.path[0] === "number" ? issue.path[0] : -1;
-        const field = issue.path[1];
-        if (index < 0 || (field !== "address" && field !== "waitingMinutes")) continue;
-        nextErrors[index] ??= {};
-        nextErrors[index][field] = { message: issue.message };
-      }
-      setIntermediateStopErrors(nextErrors);
-      hasAddressError = true;
-    }
-    if (hasAddressError || !parsedStops.success) return;
+    if (hasAddressError) return;
 
     setIsSubmitting(true);
     try {
@@ -461,7 +302,7 @@ function JourneyQuoteDialog({
           pickupAddress: normalizedPickupAddress,
           dropoffAddress: normalizedDropoffAddress,
           pickupNote: normalizedPickupNote,
-          intermediateStops: parsedStops.data,
+          intermediateStops: [],
           direction: journey?.direction,
           pricingMode: "contact",
           note: noteParts.join(" "),
@@ -520,7 +361,7 @@ function JourneyQuoteDialog({
 
             <form className="quick-booking-form" onSubmit={submitQuote} noValidate>
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Họ tên <span className="text-destructive">*</span></span>
+                <span className="form-field-label">Họ tên <RequiredMark /></span>
                 <input
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
@@ -530,7 +371,7 @@ function JourneyQuoteDialog({
                 />
               </label>
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Số điện thoại <span className="text-destructive">*</span></span>
+                <span className="form-field-label">Số điện thoại <RequiredMark /></span>
                 <input
                   value={phone}
                   onChange={(event) => setPhone(event.target.value)}
@@ -552,7 +393,7 @@ function JourneyQuoteDialog({
                 </div>
               ) : (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                  <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+                  <span className="form-field-label">Điểm đón cụ thể <RequiredMark /></span>
                   <input
                     value={pickupAddress}
                     onChange={(event) => {
@@ -580,7 +421,7 @@ function JourneyQuoteDialog({
                 </div>
               ) : (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                  <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+                  <span className="form-field-label">Điểm trả cụ thể <RequiredMark /></span>
                   <input
                     value={dropoffAddress}
                     onChange={(event) => {
@@ -596,7 +437,7 @@ function JourneyQuoteDialog({
                 </label>
               )}
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-                <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+                <span>Lưu ý điểm đón</span>
                 <textarea
                   value={pickupNote}
                   onChange={(event) => {
@@ -610,14 +451,6 @@ function JourneyQuoteDialog({
                 />
                 {pickupNoteError && <p className="m-0 text-sm text-destructive" role="alert">{pickupNoteError}</p>}
               </label>
-              <MultiStopFields
-                stops={intermediateStops}
-                onChange={(stops) => {
-                  setIntermediateStops(stops);
-                  if (intermediateStopErrors.length) setIntermediateStopErrors([]);
-                }}
-                errors={intermediateStopErrors}
-              />
               {error && <p className="m-0 text-sm text-destructive" role="alert">{error}</p>}
               <Button type="submit" disabled={isSubmitting} className="w-full">
                 {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
@@ -631,11 +464,6 @@ function JourneyQuoteDialog({
   );
 }
 
-type MultiStopFieldsError = {
-  address?: { message?: string };
-  waitingMinutes?: { message?: string };
-};
-
 /**
  * Entry point chung cho booking funnel.
  * Hai tab chỉ thay đổi cách nhập hành trình; cả chuyến thường và sân bay đều dùng chung
@@ -646,6 +474,7 @@ export function BookingSearchForm({
   id,
   variant = "default",
   mobileStacked = false,
+  firstScreen = false,
   initialPickup = "",
   initialDestination = "",
   initialMode = "standard",
@@ -818,7 +647,7 @@ export function BookingSearchForm({
 
   const vehicleField = (
     <label className="booking-vehicle-field flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2 xl:col-span-1">
-      <span>Loại xe <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+      <span>Loại xe</span>
       <span className="relative block">
         <BusFront
           aria-hidden="true"
@@ -853,7 +682,7 @@ export function BookingSearchForm({
               Bạn muốn đi đâu?
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-              Chọn chuyến đi tỉnh hoặc chế độ đưa đón sân bay. Cả hai đều dùng chung hệ thống giá và yêu cầu báo giá của Alo Đặt Xe.
+              {firstScreen ? "Tìm tuyến và xem giá" : "Chọn chuyến đi tỉnh hoặc chế độ đưa đón sân bay. Cả hai đều dùng chung hệ thống giá và yêu cầu báo giá của Alo Đặt Xe."}
             </p>
           </div>
         )}
@@ -873,6 +702,7 @@ export function BookingSearchForm({
             onClick={() => changeSearchMode("standard")}
             className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition ${searchMode === "standard" ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
+            {firstScreen && <CarFront size={18} aria-hidden="true" />}
             Đi tỉnh / Thuê xe
           </button>
           <button
@@ -920,6 +750,7 @@ export function BookingSearchForm({
                 <>
                   <LocationField
                     label="Điểm đón"
+                    required
                     value={standardPickup}
                     onChange={(value) => {
                       setStandardPickup(value);
@@ -953,6 +784,7 @@ export function BookingSearchForm({
 
                   <LocationField
                     label="Điểm đến"
+                    required
                     value={standardDestination}
                     onChange={(value) => {
                       setStandardDestination(value);
@@ -966,7 +798,7 @@ export function BookingSearchForm({
               ) : (
                 <>
                   <label className="flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-                    <span>{airportDirection === "pickup" ? "Điểm đón · Sân bay" : "Điểm đến · Sân bay"}</span>
+                    <span className="form-field-label">{airportDirection === "pickup" ? "Điểm đón · Sân bay" : "Điểm đến · Sân bay"} <RequiredMark /></span>
                     <span className="relative block">
                       <Plane
                         aria-hidden="true"
@@ -1013,6 +845,7 @@ export function BookingSearchForm({
 
                   <LocationField
                     label={airportDirection === "pickup" ? "Điểm đến" : "Điểm đón"}
+                    required
                     value={airportPlace}
                     onChange={(value) => {
                       setAirportPlace(value);
@@ -1029,7 +862,7 @@ export function BookingSearchForm({
             {mobileStacked && vehicleField}
 
             <label className="booking-date-field flex min-w-0 flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span className="booking-date-label">Ngày đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+              <span className="booking-date-label">Ngày đi</span>
               <span className="relative block">
                 <CalendarDays
                   aria-hidden="true"
@@ -1077,14 +910,16 @@ export function BookingSearchForm({
 
         <div className="mt-4 flex flex-col gap-3">
           <Button size="lg" type="submit" className="w-full">
-            {needsQuote ? "Yêu cầu báo giá" : "Xem giá chuyến xe"} <ArrowRight data-icon="inline-end" />
+            {firstScreen && <Search aria-hidden="true" data-icon="inline-start" />}
+            {needsQuote ? "Yêu cầu báo giá" : firstScreen ? "Tìm tuyến và giá" : "Xem giá chuyến xe"}
+            {!firstScreen && <ArrowRight data-icon="inline-end" />}
           </Button>
 
           <div className="min-h-5 text-sm" aria-live="polite">
             {error ? (
               <p className="m-0 text-destructive">{error}</p>
             ) : (
-              <p className="m-0 text-muted-foreground">{helperText}</p>
+              <p className="m-0 text-muted-foreground">{firstScreen && !needsQuote ? "Giá theo tuyến và loại xe bạn chọn." : helperText}</p>
             )}
           </div>
         </div>

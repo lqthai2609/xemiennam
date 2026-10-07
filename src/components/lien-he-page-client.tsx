@@ -41,10 +41,10 @@ const footerLinkGroups = [
  * không tự nói chuyện với WordPress.
  */
 export function LienHePageClient({
-  routeOptions,
+  locationOptions,
   vehicleTypeOptions,
 }: {
-  routeOptions: string[];
+  locationOptions: string[];
   vehicleTypeOptions: string[];
 }) {
   const [defaultRoute, setDefaultRoute] = useState("");
@@ -73,7 +73,7 @@ export function LienHePageClient({
   return (
     <main className="site-shell home-redesign contact-redesign">
       <SiteHeader
-        menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Bảng giá", "Dịch vụ", "Liên hệ"].includes(item.label))}
+        menuItems={navItems}
         hotline={SITE_HOTLINE}
         hotlineHref={`tel:${SITE_HOTLINE_TEL}`}
         ctaLabel="Nhắn Zalo"
@@ -103,7 +103,7 @@ export function LienHePageClient({
         <div className="lien-he-form-card">
           <div className="contact-form-intro"><span><ClipboardPenLine aria-hidden="true" /></span><div><h2>Gửi yêu cầu đặt xe</h2><p>Điền thông tin chuyến đi; Alo Đặt Xe sẽ liên hệ xác nhận trước khi sắp xếp xe.</p></div></div>
           <ContactBookingForm
-            routeOptions={routeOptions}
+            locationOptions={locationOptions}
             vehicleTypeOptions={vehicleTypeOptions}
             defaultRoute={defaultRoute}
             onSubmit={handleSubmit}

@@ -1,18 +1,18 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ZaloIcon } from "@/components/zalo-icon";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle, Phone, Plane, X } from "lucide-react";
+import { ClipboardList, LoaderCircle, Phone, Plane, X } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { MultiStopFields } from "@/components/multi-stop-fields";
 import { getZaloChatLink } from "@/lib/zalo";
 import { trackBookingLead } from "@/lib/analytics";
-import { intermediateStopsInputSchema, type IntermediateStopInput } from "@/lib/booking-stops";
 import { fetchBookingWithIdempotency } from "@/lib/booking-submit";
 import { readCreatedLead } from "@/lib/lead-response";
 import { SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
@@ -36,7 +36,6 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
         .trim()
         .max(240, "Điểm trả tối đa 240 ký tự."),
       pickupNote: z.string().trim().max(300, "Lưu ý điểm đón tối đa 300 ký tự.").optional(),
-      intermediateStops: intermediateStopsInputSchema,
       departureAt: z.string().optional(),
       flightNumber: z.string().trim().max(40, "Số hiệu chuyến bay tối đa 40 ký tự.").optional(),
       landingAt: z.string().optional(),
@@ -150,7 +149,6 @@ function QuickBookingDialog({
   const {
     register,
     handleSubmit,
-    setValue,
     control,
     formState: { errors, isSubmitting },
   } = useForm<QuickBookingData>({
@@ -161,7 +159,6 @@ function QuickBookingDialog({
       passengerCount: airportContext ? "1" : "",
       luggageCount: airportContext ? "0" : "",
       requestNameplate: false,
-      intermediateStops: [],
     },
   });
 
@@ -169,7 +166,6 @@ function QuickBookingDialog({
   const isQuote = pricingMode === "contact";
   const visiblePrice = isQuote ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
   const requestNameplate = useWatch({ control, name: "requestNameplate" });
-  const intermediateStops = useWatch({ control, name: "intermediateStops" }) ?? [];
   const fixedAirportName = airportName || "Sân bay theo tuyến đã chọn";
 
   useEffect(() => {
@@ -225,7 +221,7 @@ function QuickBookingDialog({
           pickupAddress: data.pickupAddress,
           dropoffAddress: data.dropoffAddress,
           pickupNote: data.pickupNote || "",
-          intermediateStops: data.intermediateStops,
+          intermediateStops: [],
           departureDate,
           direction,
           packageKey,
@@ -286,9 +282,8 @@ function QuickBookingDialog({
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-2 text-sm font-semibold text-foreground">Thông tin khách hàng</legend>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span>
-                Họ tên <span className="text-destructive">*</span>
-              </span>
+              <span className="form-field-label">
+                Họ tên <RequiredMark /></span>
               <input
                 {...register("fullName")}
                 aria-invalid={!!errors.fullName}
@@ -299,9 +294,8 @@ function QuickBookingDialog({
               <FieldError message={errors.fullName?.message} />
             </label>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span>
-                Số điện thoại <span className="text-destructive">*</span>
-              </span>
+              <span className="form-field-label">
+                Số điện thoại <RequiredMark /></span>
               <input
                 {...register("phone")}
                 aria-invalid={!!errors.phone}
@@ -321,7 +315,7 @@ function QuickBookingDialog({
               </div>
             ) : (
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Điểm đón cụ thể <span className="text-destructive">*</span></span>
+                <span className="form-field-label">Điểm đón cụ thể <RequiredMark /></span>
                 <input {...register("pickupAddress")} maxLength={240} aria-invalid={!!errors.pickupAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
                 <FieldError message={errors.pickupAddress?.message} />
               </label>
@@ -336,27 +330,22 @@ function QuickBookingDialog({
               </div>
             ) : (
               <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                <span>Điểm trả cụ thể <span className="text-destructive">*</span></span>
+                <span className="form-field-label">Điểm trả cụ thể <RequiredMark /></span>
                 <input {...register("dropoffAddress")} maxLength={240} aria-invalid={!!errors.dropoffAddress} className="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
                 <FieldError message={errors.dropoffAddress?.message} />
               </label>
             )}
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-              <span>Lưu ý điểm đón <span className="font-normal text-muted-foreground">(không bắt buộc)</span></span>
+              <span>Lưu ý điểm đón</span>
               <textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />
               <FieldError message={errors.pickupNote?.message} />
             </label>
-            <MultiStopFields
-              stops={intermediateStops as IntermediateStopInput[]}
-              onChange={(stops) => setValue("intermediateStops", stops, { shouldDirty: true, shouldValidate: true })}
-              errors={errors.intermediateStops as MultiStopFieldsError[] | undefined}
-            />
           </fieldset>
 
           {!airportContext && (
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
               <span>
-                Ngày giờ đi <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                Ngày giờ đi
               </span>
               <input {...register("departureAt")} type="datetime-local" className="form-control" />
             </label>
@@ -368,7 +357,7 @@ function QuickBookingDialog({
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Số hiệu chuyến bay <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Số hiệu chuyến bay
                   </span>
                   <input
                     {...register("flightNumber")}
@@ -380,13 +369,13 @@ function QuickBookingDialog({
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Giờ hạ cánh dự kiến <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Giờ hạ cánh dự kiến
                   </span>
                   <input {...register("landingAt")} type="datetime-local" className="form-control" />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                   <span>
-                    Nhà ga <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Nhà ga
                   </span>
                   <input
                     {...register("airportTerminal")}
@@ -397,9 +386,8 @@ function QuickBookingDialog({
                   <FieldError message={errors.airportTerminal?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>
-                    Số khách <span className="text-destructive">*</span>
-                  </span>
+                  <span className="form-field-label">
+                    Số khách <RequiredMark /></span>
                   <input
                     {...register("passengerCount")}
                     type="number"
@@ -413,7 +401,7 @@ function QuickBookingDialog({
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Số kiện hành lý <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Số kiện hành lý
                   </span>
                   <input
                     {...register("luggageCount")}
@@ -435,9 +423,8 @@ function QuickBookingDialog({
 
               {requestNameplate && (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>
-                    Tên hiển thị trên bảng <span className="text-destructive">*</span>
-                  </span>
+                  <span className="form-field-label">
+                    Tên hiển thị trên bảng <RequiredMark /></span>
                   <input
                     {...register("nameplateName")}
                     aria-invalid={!!errors.nameplateName}
@@ -459,20 +446,19 @@ function QuickBookingDialog({
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Giờ bay dự kiến <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Giờ bay dự kiến
                   </span>
                   <input {...register("flightAt")} type="datetime-local" className="form-control" />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Giờ cần có mặt tại sân bay <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Giờ cần có mặt tại sân bay
                   </span>
                   <input {...register("airportArrivalAt")} type="datetime-local" className="form-control" />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-                  <span>
-                    Số khách <span className="text-destructive">*</span>
-                  </span>
+                  <span className="form-field-label">
+                    Số khách <RequiredMark /></span>
                   <input
                     {...register("passengerCount")}
                     type="number"
@@ -486,7 +472,7 @@ function QuickBookingDialog({
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
-                    Số kiện hành lý <span className="font-normal text-muted-foreground">(không bắt buộc)</span>
+                    Số kiện hành lý
                   </span>
                   <input
                     {...register("luggageCount")}
@@ -513,11 +499,6 @@ function QuickBookingDialog({
   );
 }
 
-type MultiStopFieldsError = {
-  address?: { message?: string };
-  waitingMinutes?: { message?: string };
-};
-
 export function RouteBookingActions({
   route,
   routeId,
@@ -530,10 +511,12 @@ export function RouteBookingActions({
   pricingMode = "fixed",
   airportContext,
   airportName,
+  compactLabels = false,
 }: {
   route: string;
   vehicleType: string;
   price?: string;
+  compactLabels?: boolean;
 } & BookingPricingContext) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -560,8 +543,8 @@ export function RouteBookingActions({
           </Button>
         )}
         <div className="route-booking-secondary">
-          <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" onClick={() => setOpen(true)}>
-            {isQuote ? "Gửi yêu cầu báo giá" : "Gửi yêu cầu đặt xe"}
+          <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" aria-label={compactLabels ? `Gửi yêu cầu ${vehicleType}` : undefined} onClick={() => setOpen(true)}>
+            {compactLabels && <ClipboardList aria-hidden="true" size={20} />}{compactLabels ? "Gửi yêu cầu" : isQuote ? "Gửi yêu cầu báo giá" : "Gửi yêu cầu đặt xe"}
           </Button>
           <Button size="sm" variant="outline" asChild>
             <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`${isQuote ? "Gọi báo giá" : "Gọi đặt xe"} ${vehicleType}`}>

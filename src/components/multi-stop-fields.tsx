@@ -1,5 +1,7 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -38,8 +40,9 @@ export function MultiStopFields({ stops, onChange, errors = [], compact = false 
       {stops.map((stop, index) => (
         <div key={index} className="grid gap-3 rounded-lg border border-border bg-card p-3 sm:grid-cols-[1fr_9rem_auto]">
           <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-            Điểm dừng {index + 1}
+            <span className="form-field-label">Điểm dừng {index + 1} <RequiredMark /></span>
             <input
+              required
               value={stop.address}
               onChange={(event) => updateStop(index, { address: event.target.value })}
               maxLength={MAX_STOP_ADDRESS_LENGTH}

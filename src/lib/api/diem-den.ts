@@ -4,6 +4,10 @@ import { fetchRawDiemDen } from "./raw";
 import { parseFaqItems, stripHtml } from "@/lib/wp";
 import { fetchRoutes } from "./routes";
 
+function publicDestinationText(value: string): string {
+  return value.split(/(<[^>]*>)/g).map((part, index) => index % 2 ? part : part.replace(/Gocar\s*VN/gi, "Alo Đặt Xe")).join("");
+}
+
 const destinationImageBySlug: Record<string, string> = {
   "ba-ria-vung-tau": "/images/destinations/ba-ria-vung-tau.webp",
   "ben-tre": "/images/destinations/ben-tre.webp",
@@ -50,10 +54,10 @@ function mapWPDiemDenToDiemDen(wp: WPDiemDen): DiemDen {
   return {
     id: String(wp.id),
     slug: wp.slug,
-    title: stripHtml(wp.title.rendered),
-    contentHtml: wp.content.rendered,
+    title: wp.slug === "ba-ria-vung-tau" ? "Bà Rịa - Vũng Tàu" : publicDestinationText(stripHtml(wp.title.rendered)),
+    contentHtml: publicDestinationText(wp.content.rendered),
     featuredImageUrl: embeddedFeaturedImage(wp._embedded),
-    faqItems: parseFaqItems(getRawDiemDenFaqItems(wp)),
+    faqItems: parseFaqItems(getRawDiemDenFaqItems(wp)).map((item) => ({ question: publicDestinationText(item.question), answer: publicDestinationText(item.answer) })),
     modifiedDate: wp.modified,
     rankMathTitle: wp.rank_math_title || undefined,
     rankMathDescription: wp.rank_math_description || undefined,
@@ -97,9 +101,9 @@ export async function fetchDestinationCards(): Promise<DestinationCard[]> {
       const hub = hubBySlug.get(slug);
       return {
         slug,
-        name: hub ? stripHtml(hub.title.rendered) : info.name,
+        name: slug === "ba-ria-vung-tau" ? "Bà Rịa - Vũng Tàu" : publicDestinationText(hub ? stripHtml(hub.title.rendered) : info.name),
         routeCount: info.count,
-        blurb: hub ? stripHtml(hub.content.rendered).slice(0, 110) : `${info.count} tuyến đang chạy trong khu vực này.`,
+        blurb: hub ? publicDestinationText(stripHtml(hub.content.rendered)).slice(0, 110) : `${info.count} tuyến đang chạy trong khu vực này.`,
         imageUrl: getDestinationImageUrl(slug, embeddedFeaturedImage(hub?._embedded)),
       };
     })

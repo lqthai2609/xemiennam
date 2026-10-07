@@ -1,5 +1,7 @@
 "use client";
 
+import { RequiredMark } from "@/components/required-mark";
+
 import { LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -40,11 +42,11 @@ export function AdminLogin() {
         </p>
         <form onSubmit={submit} className={styles.loginForm}>
           <label>
-            <span>Tên đăng nhập WordPress</span>
+            <span className="form-field-label">Tên đăng nhập WordPress <RequiredMark /></span>
             <input name="username" autoComplete="username" required maxLength={128} />
           </label>
           <label>
-            <span>Mật khẩu</span>
+            <span className="form-field-label">Mật khẩu <RequiredMark /></span>
             <input name="password" type="password" autoComplete="current-password" required maxLength={1024} />
           </label>
           {message && <p className={styles.loginError}>{message}</p>}

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { ServicesPage } from "@/components/services-page";
 import { fetchServices } from "@/lib/api/services";
+import { fetchVehicles } from "@/lib/api/vehicles";
+import { vehicleTypeSlug } from "@/types/route";
 import { fetchRoutes } from "@/lib/api/routes";
 import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
@@ -13,6 +15,11 @@ export const metadata: Metadata = buildPageMetadata({
 
 /** Server Component — production dùng WordPress REST; mock chỉ theo policy môi trường. */
 export default async function Page() {
-  const [services, routes] = await Promise.all([fetchServices(), fetchRoutes()]);
-  return <ServicesPage services={services} routes={routes} />;
+  const [services, routes, vehicles] = await Promise.all([fetchServices(), fetchRoutes(), fetchVehicles()]);
+  const vehicleImages: Record<string, string> = {};
+  for (const vehicle of vehicles) {
+    const type = vehicleTypeSlug(vehicle.type);
+    if (!vehicleImages[type] && vehicle.images[0]) vehicleImages[type] = vehicle.images[0];
+  }
+  return <ServicesPage services={services} routes={routes} vehicleImages={vehicleImages} />;
 }

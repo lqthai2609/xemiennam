@@ -18,6 +18,7 @@ import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
 import { getZaloChatLink } from "@/lib/zalo";
+import { findVehiclePackage } from "@/lib/route-package-capability";
 
 const regionImages: Record<string, string> = {
   "Bà Rịa - Vũng Tàu": "/images/destinations/ba-ria-vung-tau.webp",
@@ -68,35 +69,42 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
   const distance = route.distance.trim() && route.distance !== "0 km" ? route.distance : "";
   const time = route.time.trim() && route.time !== "0" ? route.time : "";
   const zaloLink = getZaloChatLink();
-  const description = prelaunch
-    ? `Tuyến ${from} đi ${to} đang chuẩn bị. Liên hệ để được tư vấn; chưa nhận đặt chuyến.`
-    : inbound
-      ? `Xe riêng có tài xế từ ${from} đến ${to}, chủ động thời gian và điểm đón.`
-      : formatPublicLocationText(route.summary || `Xe riêng có tài xế từ ${from} đến ${to}, chủ động thời gian và điểm đón.`);
-  const heroImage = route.regionSlug === "ba-ria-vung-tau" ? "/images/home-coastal-fleet.webp" : route.featuredImage || "/images/home-coastal-fleet.webp";
+  const vehicleLabel = route.vehicleTypes.map((type) => type.replace(/^Xe\s+/i, "")).join(", ");
+  const heroImage = route.featuredImage || regionImages[route.region] || "/images/home-coastal-fleet.webp";
   const reverseAvailable = Boolean(route.pricingV2?.outbound.enabled && route.pricingV2?.inbound.enabled);
+  const heroPrices = !prelaunch && route.pricingV2?.[direction].enabled
+    ? ["Xe 4 chỗ", "Xe 7 chỗ"].flatMap((vehicleType) => {
+        const pkg = findVehiclePackage(route.pricingV2![direction].packages, vehicleType, "oneWay");
+        if (!pkg || pkg.mode === "disabled") return [];
+        const fixed = pkg.mode === "fixed" && typeof pkg.price === "number" && Number.isFinite(pkg.price) && pkg.price > 0;
+        return [{ vehicleType, price: fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : "Liên hệ báo giá", fixed }];
+      })
+    : [];
 
   return <main className="site-shell home-redesign route-detail-redesign">
-    <SiteHeader menuItems={navItems.filter((item) => ["Tuyến đường", "Điểm đến", "Loại xe", "Blog", "Liên hệ"].includes(item.label))} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
+    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
 
-    <section className="route-detail-design-hero" aria-labelledby="route-detail-title">
-      <Image src={heroImage} alt="" fill priority sizes="100vw" className="route-detail-design-hero-image" />
-      <div className="route-detail-design-hero-inner"><p className="home-eyebrow">{prelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : "TUYẾN ĐƯỜNG"}</p>
-        <h1 id="route-detail-title">{prelaunch ? "Thông tin tuyến" : "Xe riêng"} {from}<br />đi {to}</h1>
-        <p>{description}</p>
+    <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign hero={<div className="route-detail-design-hero-banner">
+      <Image src={heroImage} alt={`Ảnh tuyến ${getPublicLocationLabel(route.from)} đi ${getPublicLocationLabel(route.to)}`} fill preload sizes="100vw" className="route-detail-design-hero-image" />
+      <div className="route-detail-design-hero-inner">
+        <nav className="route-detail-design-breadcrumb" aria-label="Đường dẫn trang"><Link href="/tuyen-duong">Tuyến đường</Link><span aria-hidden="true">/</span><Link href={`/tuyen-duong/${route.regionSlug}`}>{getPublicLocationLabel(route.region)}</Link></nav>
+        <p className="home-eyebrow">{prelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : "XE RIÊNG CÓ TÀI XẾ"}</p>
+        <h1 id="route-detail-title">{from} đi {to}</h1>
+        <p>{prelaunch ? "Liên hệ để được tư vấn; tuyến đang chuẩn bị, chưa nhận đặt chuyến." : <>Đón tận nơi{vehicleLabel && <> · {vehicleLabel}</>}</>}</p>
         {(distance || time) && <div className="route-detail-design-hero-meta">
-          {distance && <span><MapPin aria-hidden="true" />{distance}</span>}
-          {time && <span><Clock3 aria-hidden="true" />{time}</span>}
-          <small>Thời gian di chuyển dự kiến tùy tình hình giao thông.</small>
+          {distance && <span><MapPin aria-hidden="true" /><strong>{distance}<small>Quãng đường tham khảo</small></strong></span>}
+          {time && <span><Clock3 aria-hidden="true" /><strong>{time}<small>Thời gian dự kiến tùy giao thông</small></strong></span>}
         </div>}
+        {heroPrices.length > 0 && <div className="route-detail-design-hero-prices" role="group" aria-label={`Giá một chiều từ ${from} đến ${to}`}>
+          {heroPrices.map(({ vehicleType, price, fixed }) => <div key={vehicleType}>
+            <span>{vehicleType}</span><strong className={fixed ? "is-fixed" : ""}>{price}</strong><small>Một chiều / chuyến</small>
+          </div>)}
+        </div>}
+        {zaloLink && <a className="home-button home-button-primary route-detail-design-hero-cta zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon />{prelaunch ? "Nhắn Zalo tư vấn" : "Nhắn Zalo đặt xe"}<ArrowRight size={17} aria-hidden="true" /></a>}
       </div>
-    </section>
+    </div>} />
 
     <div className="route-detail-design-main">
-      <section className="route-detail-design-pricing" id="booking" aria-label="Chọn gói và xe cho tuyến">
-        <div id="pricing"><RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign /></div>
-      </section>
-
       <section className="route-detail-design-journey" aria-labelledby="route-journey-title">
         <div className="route-detail-design-section-heading"><h2 id="route-journey-title">Hành trình {from} – {to}</h2><p>{prelaunch ? "Lộ trình và lịch phục vụ sẽ được xác nhận khi tuyến sẵn sàng." : "Lộ trình tham khảo; điểm đón và trả được xác nhận theo lịch trình của bạn."}</p></div>
         <div className="route-detail-design-journey-grid">

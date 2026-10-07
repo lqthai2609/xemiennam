@@ -560,3 +560,7 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 
 /* Bỏ qua layout/paint các section ngoài viewport đầu; kích thước nội tại tránh CLS. */
 .home-usp-section ~ section { content-visibility: auto; contain-intrinsic-size: auto 700px; }
+
+/* Keep required markers on the same line as their field label. */
+form .form-field-label { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+form .required-mark { display: inline-block; flex: none; color: #ff5122; font-size: inherit; line-height: inherit; white-space: nowrap; }
