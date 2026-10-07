@@ -301,3 +301,22 @@
   .home-first-screen .home-booking-wrap #booking [role="tabpanel"] .booking-date-field svg,
   .home-first-screen .home-booking-wrap #booking [role="tabpanel"] .booking-trip-field svg { left: 8px; width: 16px; }
 }
+
+/* Saigon skyline hero: keep the first-screen booking form and shared header intact. */
+.home-first-screen .home-hero { background: #07165d; }
+.home-first-screen .home-hero-photo { object-position: center 52%; }
+.home-first-screen .home-hero::before {
+  background: linear-gradient(90deg, rgba(5, 18, 66, .93) 0%, rgba(5, 18, 66, .81) 28%, rgba(5, 18, 66, .30) 58%, rgba(5, 18, 66, .05) 100%);
+}
+.home-first-screen .home-hero h1,
+.home-first-screen .home-hero-tagline { color: #fff; }
+.home-first-screen .home-hero-lede { color: #f2f5ff; }
+.home-first-screen .home-hero-actions .zalo-cta { border-color: #ff5122; color: #ff5122; background: #fff; }
+@media (max-width: 800px) {
+  .home-first-screen .home-hero-photo { object-position: center 48%; }
+  .home-first-screen .home-hero::before {
+    background: linear-gradient(90deg, rgba(5, 18, 66, .94) 0%, rgba(5, 18, 66, .76) 48%, rgba(5, 18, 66, .30) 100%);
+  }
+  .home-first-screen .home-hero-inner { position: relative; z-index: 1; }
+  .home-first-screen .home-hero-lede { max-width: 280px; }
+}

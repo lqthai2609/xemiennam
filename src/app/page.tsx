@@ -44,7 +44,7 @@ export default function Home() {
 
       <div className="home-first-screen-intro">
         <section className="home-hero" aria-labelledby="home-title">
-          <Image className="home-hero-photo" src="/images/home-coastal-fleet.webp" alt="Xe riêng có tài xế trên cung đường ven biển" fill sizes="(max-width: 800px) 100vw, 1160px" preload />
+          <Image className="home-hero-photo" src="/images/home-saigon-skyline.jpg" alt="" aria-hidden="true" fill sizes="100vw" preload />
           <div className="home-hero-inner">
             <h1 id="home-title">Xe riêng có tài xế</h1>
             <p className="home-hero-tagline">Đặt nhanh, đi chủ động.</p>
