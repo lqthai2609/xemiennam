@@ -3,7 +3,7 @@
  *
  * - WP_API_BASE_URL: đọc từ biến môi trường server-side (không cần NEXT_PUBLIC_
  *   vì mọi lời gọi đều chạy ở Server Component/generateStaticParams, không lộ ra client).
- * - REVALIDATE_SECONDS: mặc định 3600s (1h) — nằm trong khoảng 1–6h theo kế hoạch.
+ * - REVALIDATE_SECONDS: mặc định 300s; webhook làm mới ngay khi CMS lưu xong.
  *   Next.js App Router dùng `fetch(url, { next: { revalidate } })` để bật ISR cho
  *   đúng lời gọi đó; không cần khai báo gì thêm ở route segment.
  * - Chỉ 404 được xem là không có dữ liệu. Lỗi kết nối/API phải throw để ISR giữ
@@ -13,7 +13,18 @@
 export const WP_API_BASE =
   process.env.WP_API_BASE_URL ?? "https://xemiennam.datxesaigon.com/wp-json/wp/v2";
 
-export const REVALIDATE_SECONDS = Number(process.env.WP_REVALIDATE_SECONDS ?? 3600);
+const configuredRevalidate = Number(process.env.WP_REVALIDATE_SECONDS ?? 300);
+export const REVALIDATE_SECONDS = Number.isFinite(configuredRevalidate) && configuredRevalidate > 0
+  ? configuredRevalidate
+  : 300;
+
+export const WP_CACHE_TAG = "alo-wp-v2";
+
+/** List, detail, pagination and embedded terms share the same resource tag. */
+export function wpCacheTags(path: string): string[] {
+  const resource = path.split(/[/?]/).filter(Boolean)[0];
+  return resource ? [WP_CACHE_TAG, `${WP_CACHE_TAG}:${resource}`] : [WP_CACHE_TAG];
+}
 
 export async function wpFetch<T>(
   path: string,
@@ -23,11 +34,13 @@ export async function wpFetch<T>(
     let res: Response;
     try {
       res = await fetch(`${WP_API_BASE}${path}`, {
-        next: { revalidate },
+        next: { revalidate, tags: wpCacheTags(path) },
         // A different retry header prevents React request memoization from
         // replaying the first failed response, while retaining normal ISR.
         headers: {
           Accept: "application/json",
+          // Replace untagged pre-Day41 entries with a fresh cache identity on rollout.
+          "X-Alo-Dat-Xe-Cache-Version": "2",
           ...(attempt > 0 ? { "X-Alo-Dat-Xe-Retry": "1" } : {}),
         },
       });

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import {
   ADMIN_CSRF_COOKIE,
@@ -8,6 +8,7 @@ import {
   fetchAdminSession,
   isSameOriginMutation,
 } from "@/lib/admin-session";
+import { WP_CACHE_TAG } from "@/lib/wp";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,7 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
   const data = await upstream.json().catch(() => ({ message: `WordPress HTTP ${upstream.status}` }));
 
   if (upstream.ok && mutating && /(?:apply|publish|archive|rollback)$/.test(path)) {
+    revalidateTag(WP_CACHE_TAG, { expire: 0 });
     revalidatePath("/", "layout");
   }
 

@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "wordpress/gocar-core/**"
+      - "wordpress/snippets/**"
+      - "scripts/wp-frontend-sync-php.test.php"
       - "scripts/gocar-price-conditions-php.test.php"
       - "scripts/gocar-admin-api-php.test.php"
       - "scripts/gocar-lead-lifecycle-php.test.php"
@@ -13,6 +15,8 @@ on:
       - main
     paths:
       - "wordpress/gocar-core/**"
+      - "wordpress/snippets/**"
+      - "scripts/wp-frontend-sync-php.test.php"
       - "scripts/gocar-price-conditions-php.test.php"
       - "scripts/gocar-admin-api-php.test.php"
       - "scripts/gocar-lead-lifecycle-php.test.php"
@@ -42,7 +46,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          find wordpress/gocar-core -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          find wordpress/gocar-core wordpress/snippets -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Frontend sync behavioral tests
+        run: php scripts/wp-frontend-sync-php.test.php
 
       - name: Condition sanitizer behavioral tests
         run: php scripts/gocar-price-conditions-php.test.php
