@@ -9,7 +9,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME, SITE_CONTACT_PHONE_TEL } from "@/lib/site-config";
-import { getAirportHubReadiness, type AirportReadinessPhase } from "@/lib/airport-readiness";
+import { getAirportHubReadiness, isPrelaunchAirportRoute, type AirportReadinessPhase } from "@/lib/airport-readiness";
 import { airportDisplayName } from "@/lib/airport-seo";
 import type { AirportHubData, AirportHubRoute } from "@/lib/api/airport-routes";
 import type { BlogPost } from "@/types/blog";
@@ -60,7 +60,8 @@ function buildAirportFaqs(airportName: string, phase: AirportReadinessPhase = "l
 function RouteCard({ item }: { item: AirportHubRoute }) {
   const distance = item.route.distance;
   const time = item.route.time;
-  const priceKicker = item.featuredPrice?.mode === "fixed" ? "Giá từ" : "Báo giá";
+  const prelaunch = isPrelaunchAirportRoute(item.route);
+  const priceKicker = prelaunch ? "Trạng thái" : item.featuredPrice?.mode === "fixed" ? "Giá từ" : "Báo giá";
 
   return (
     <article className="airport-route-card">
@@ -82,7 +83,8 @@ function RouteCard({ item }: { item: AirportHubRoute }) {
       <div className="airport-route-footer">
         <div>
           <span>{priceKicker}</span>
-          <strong>{item.priceLabel}</strong>
+          <strong>{prelaunch ? "Đang chuẩn bị" : item.priceLabel}</strong>
+          {prelaunch && <small>Chưa nhận đặt chuyến · Liên hệ tư vấn trước</small>}
         </div>
         <Button asChild>
           <Link href={item.href}>Xem tuyến <ArrowRight data-icon="inline-end" /></Link>

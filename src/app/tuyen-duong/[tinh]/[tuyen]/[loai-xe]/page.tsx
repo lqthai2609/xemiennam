@@ -20,8 +20,9 @@ import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDa
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
+import { resolveRouteJourneySelection, type JourneyQuery } from "@/lib/route-journey-selection";
 
-type Props = { params: Promise<{ tinh: string; tuyen: string; "loai-xe": string }> };
+type Props = { params: Promise<{ tinh: string; tuyen: string; "loai-xe": string }>; searchParams: Promise<JourneyQuery> };
 
 export async function generateStaticParams() {
   const routes = await fetchRoutes();
@@ -65,13 +66,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function Page({ params }: Props) {
+export default async function Page({ params, searchParams }: Props) {
   const { tinh, tuyen, "loai-xe": loaiXe } = await params;
   const route = await fetchRouteBySlug(tuyen);
   if (!route || route.regionSlug !== tinh) notFound();
   const vp = findComboVehiclePrice(route, loaiXe);
   const category = getVehicleCategory(loaiXe);
   if (!vp || !category) notFound();
+  const selection = resolveRouteJourneySelection(route, await searchParams, category.type);
 
   const [allRoutes, vehicles] = await Promise.all([fetchRoutes(), fetchVehicles()]);
   const similarRoutes = allRoutes
@@ -117,6 +119,8 @@ export default async function Page({ params }: Props) {
       {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <ComboLandingPage
+        key={`${route.id}:${category.slug}:${selection.direction}:${selection.journey}`}
+        initialSelection={selection}
         route={route}
         vehiclePrice={vp}
         category={category}

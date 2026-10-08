@@ -42,11 +42,11 @@ export function PromotionsPage({ promotions }: { promotions: Promotion[] }) {
         ctaHref="/#booking"
       />
 
-      <UnifiedHero eyebrow="KHUYẾN MÃI" title={<>Ưu đãi<br /><em>đang chờ bạn.</em></>} description="Các chương trình giảm giá theo tuyến và loại xe, cập nhật thường xuyên." />
+      <UnifiedHero eyebrow="KHUYẾN MÃI" title={activeCount > 0 ? <>Thông tin<br /><em>khuyến mãi.</em></> : <>Hiện chưa có<br /><em>chương trình đang áp dụng.</em></>} description="Chương trình và điều kiện áp dụng được công bố khi có thông tin đã xác nhận." />
 
       <section className="section-wrap khuyen-mai-content">
         {promotions.length === 0 ? (
-          <p className="promo-empty">Hiện chưa có chương trình khuyến mãi nào. Quay lại sau nhé!</p>
+          <p className="promo-empty">Hiện chưa có chương trình khuyến mãi đang áp dụng. Bạn có thể xem bảng giá hiện hành hoặc liên hệ để được tư vấn.</p>
         ) : (
           <div className="promo-grid">
             {promotions.map((promotion) => (

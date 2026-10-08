@@ -57,9 +57,8 @@ test("date and vehicle are optional and select the correct destination page", ()
 test("route vehicle combo preserves the requested pricing direction", () => {
   assert.match(comboLogic, /findComboVehiclePriceForDirection/);
   assert.match(comboLogic, /route\.pricingV2\?\.\[direction\]/);
-  assert.match(comboPage, /new URLSearchParams\(window\.location\.search\)\.get\("direction"\)/);
-  assert.match(comboPage, /requested !== "inbound" \|\| !findComboVehiclePriceForDirection\(route, category\.slug, "inbound"\)/);
-  assert.match(comboPage, /setDirection\("inbound"\)/);
+  assert.match(comboPage, /useState<RoutePricingDirectionKey>\(initial.direction\)/);
+  assert.doesNotMatch(comboPage, /window\.location\.search/);
   assert.match(comboPage, /const activeDirection: RoutePricingDirectionKey = inbound \? "inbound" : "outbound"/);
   assert.match(comboPage, /route\.pricingV2\?\.\[activeDirection\]/);
   assert.match(comboPage, /findComboVehiclePriceForDirection\(route, category\.slug, activeDirection\)/);
