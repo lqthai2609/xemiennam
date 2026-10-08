@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +18,8 @@ import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
 import { getZaloChatLink } from "@/lib/zalo";
-import { findVehiclePackage } from "@/lib/route-package-capability";
+import { findVehiclePackage, type JourneyPackage } from "@/lib/route-package-capability";
+import { resolveRouteJourneySelection, routeJourneyHref, type RouteJourneySelection } from "@/lib/route-journey-selection";
 
 const regionImages: Record<string, string> = {
   "Bà Rịa - Vũng Tàu": "/images/destinations/ba-ria-vung-tau.webp",
@@ -27,12 +28,6 @@ const regionImages: Record<string, string> = {
   "Đồng Nai": "/images/destinations/dong-nai.webp",
   "Phan Thiết": "/images/destinations/phan-thiet.webp",
 };
-
-function defaultDirection(route: Route): RoutePricingDirectionKey {
-  if (route.pricingV2?.outbound.enabled) return "outbound";
-  if (route.pricingV2?.inbound.enabled) return "inbound";
-  return "outbound";
-}
 
 function RelatedCard({ route }: { route: Route }) {
   const href = routeHref(route);
@@ -44,22 +39,17 @@ function RelatedCard({ route }: { route: Route }) {
   </Link>;
 }
 
-export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPosts, vehicleImageByType = {} }: {
+export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPosts, vehicleImageByType = {}, initialSelection }: {
   route: Route;
   relatedRoutes: Route[];
   testimonials: Testimonial[];
   relatedPosts: BlogPost[];
   vehicleImageByType?: Record<string, string>;
+  initialSelection?: RouteJourneySelection;
 }) {
-  const [direction, setDirection] = useState<RoutePricingDirectionKey>(() => defaultDirection(route));
-
-  useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("direction");
-    if (requested !== "outbound" && requested !== "inbound") return;
-    if (route.pricingV2 ? !route.pricingV2[requested].enabled : requested !== "outbound") return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDirection(requested);
-  }, [route]);
+  const initial = initialSelection ?? resolveRouteJourneySelection(route);
+  const [direction, setDirection] = useState<RoutePricingDirectionKey>(initial.direction);
+  const [journey, setJourney] = useState<JourneyPackage>(initial.journey);
 
   const prelaunch = isPrelaunchAirportRoute(route);
   const inbound = direction === "inbound";
@@ -84,7 +74,7 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
   return <main className="site-shell home-redesign route-detail-redesign">
     <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
 
-    <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign hero={<div className="route-detail-design-hero-banner">
+    <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} journey={journey} onJourneyChange={setJourney} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign hero={<div className="route-detail-design-hero-banner">
       <Image src={heroImage} alt={`Ảnh tuyến ${getPublicLocationLabel(route.from)} đi ${getPublicLocationLabel(route.to)}`} fill preload sizes="100vw" className="route-detail-design-hero-image" />
       <div className="route-detail-design-hero-inner">
         <nav className="route-detail-design-breadcrumb" aria-label="Đường dẫn trang"><Link href="/tuyen-duong">Tuyến đường</Link><span aria-hidden="true">/</span><Link href={`/tuyen-duong/${route.regionSlug}`}>{getPublicLocationLabel(route.region)}</Link></nav>
@@ -117,7 +107,7 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
             <div><RouteIcon /><p><strong>Điểm đón / trả</strong><span>Xác nhận khi tư vấn<br />phù hợp với lịch trình của bạn</span></p></div>
           </div>
         </div>
-        {route.vehicleTypes.length > 0 && <div className="route-detail-design-vehicle-links"><strong>Loại xe trên tuyến</strong>{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeComboHref(route, vehicleTypeSlug(vehicle))}>{vehicle} <ArrowRight size={14} /></Link>)}</div>}
+        {route.vehicleTypes.length > 0 && <div className="route-detail-design-vehicle-links"><strong>Loại xe trên tuyến</strong>{route.vehicleTypes.map((vehicle) => <Link key={vehicle} href={routeJourneyHref(routeComboHref(route, vehicleTypeSlug(vehicle)), direction, findVehiclePackage(route.pricingV2?.[direction].packages ?? [], vehicle, journey)?.packageKey)}>{vehicle} <ArrowRight size={14} /></Link>)}</div>}
         {route.departures.length > 0 && <div className="route-detail-design-vehicle-links"><strong>Khung giờ tham khảo</strong>{route.departures.map((time) => <span className="route-detail-design-time" key={time}>{time}</span>)}</div>}
         {route.notes.length > 0 && <ul className="route-detail-design-notes">{route.notes.map((note) => <li key={note}>{formatPublicLocationText(note)}</li>)}</ul>}
       </section>
@@ -135,8 +125,8 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
     <div className="route-detail-design-main route-detail-design-lower">
       <section className="route-detail-design-faq" aria-labelledby="route-faq-title"><div className="route-detail-design-section-heading"><h2 id="route-faq-title">Câu hỏi thường gặp</h2></div>
         <details><summary><span>1</span>{prelaunch ? `Tuyến ${to} đã nhận đặt xe chưa?` : `Làm thế nào để đặt xe đi ${to}?`}</summary><p>{prelaunch ? "Tuyến đang chuẩn bị và chưa nhận đặt chuyến. Bạn có thể liên hệ để được tư vấn trước." : `Chọn loại xe và gói hành trình ở trên, sau đó nhắn Zalo, gửi yêu cầu hoặc gọi ${SITE_HOTLINE}. ${SITE_NAME} sẽ xác nhận lịch và điều kiện chuyến đi.`}</p></details>
-        <details><summary><span>2</span>Có thể đặt xe khứ hồi {from} – {to} không?</summary><p>{reverseAvailable ? "Bạn có thể chọn chiều về hoặc gói khứ hồi nếu gói này đang hiển thị trong phần chọn xe và giá. Giá được xác nhận theo gói và loại xe đã chọn." : "Vui lòng liên hệ để được tư vấn hành trình chiều về theo dữ liệu tuyến và lịch xe hiện có."}</p></details>
-        <details><summary><span>3</span>Giá xe có được xác nhận trước chuyến đi không?</summary><p>Giá hiển thị áp dụng cho đúng chiều, loại xe và gói đã chọn. {SITE_NAME} xác nhận chi phí cuối cùng trước khi nhận chuyến; tổ hợp chưa có giá sẽ được báo giá riêng.</p></details>
+        <details><summary><span>2</span>Có thể đặt xe khứ hồi {from} – {to} không?</summary><p>{prelaunch ? "Tuyến chưa nhận đặt chuyến, bao gồm chiều về và gói khứ hồi. Bạn có thể liên hệ để được tư vấn trước." : reverseAvailable ? "Bạn có thể chọn chiều về hoặc gói khứ hồi nếu gói này đang hiển thị trong phần chọn xe và giá. Giá được xác nhận theo gói và loại xe đã chọn." : "Vui lòng liên hệ để được tư vấn hành trình chiều về theo dữ liệu tuyến và lịch xe hiện có."}</p></details>
+        <details><summary><span>3</span>Giá xe có được xác nhận trước chuyến đi không?</summary><p>{prelaunch ? "Chưa có giá nhận chuyến cho tuyến đang chuẩn bị. Thông tin phục vụ và chi phí chỉ được xác nhận khi tuyến đủ điều kiện vận hành." : <>Giá hiển thị áp dụng cho đúng chiều, loại xe và gói đã chọn. {SITE_NAME} xác nhận chi phí cuối cùng trước khi nhận chuyến; tổ hợp chưa có giá sẽ được báo giá riêng.</>}</p></details>
       </section>
 
       {relatedRoutes.length > 0 && <section className="route-detail-design-related" aria-labelledby="route-related-title"><div className="route-detail-design-section-heading"><h2 id="route-related-title">Tuyến đường liên quan</h2><Link href={`/tuyen-duong/${route.regionSlug}`}>Khám phá thêm các tuyến xe <ArrowRight size={16} /></Link></div><div className="route-detail-design-related-grid">{relatedRoutes.slice(0, 3).map((item) => <RelatedCard route={item} key={item.id} />)}</div></section>}

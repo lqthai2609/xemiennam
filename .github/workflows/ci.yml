@@ -114,6 +114,9 @@ jobs:
       - name: Booking search regression guard
         run: npm run test:booking-search
 
+      - name: Route direction and package navigation
+        run: node --test scripts/route-journey-selection.test.mjs
+
       - name: Day 36B brand, pricing UI and Content Readiness guard
         run: npm run test:day36b
 
@@ -138,8 +141,16 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: SEO-006B commercial listing and structured price HTML
-        run: node --test scripts/seo006b-listing-html.test.mjs scripts/gocar-public-price-html.test.mjs
-
-      - name: Built HTML public location display audit
-        run: npm run test:location-display-output
+      - name: Built and request-rendered public HTML
+        env:
+          HTML_AUDIT_BASE_URL: http://127.0.0.1:3100
+        shell: bash
+        run: |
+          node node_modules/next/dist/bin/next start --port 3100 &
+          app_pid=$!
+          trap 'kill "$app_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:3100/api/revalidate >/dev/null; then break; fi
+            sleep 1
+          done
+          node --test scripts/seo006b-listing-html.test.mjs scripts/gocar-public-price-html.test.mjs scripts/gocar-location-display-output.test.mjs

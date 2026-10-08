@@ -46,6 +46,10 @@ export function getPublicLocationLabel(location: LocationLike): string {
   if (!location) return "";
   const name = typeof location === "string" ? location : location.name ?? "";
   const slug = typeof location === "string" ? "" : location.slug ?? "";
+  // The group is a display label, not a renamed Location or province slug.
+  if (["tphcm noi thanh", "sai gon noi thanh"].includes(publicLocationKey(name.replace(/&amp;|&/gi, " ")))) {
+    return "Sài Gòn & Nội thành";
+  }
 
   if (
     HO_CHI_MINH_ALIAS_KEYS.has(publicLocationKey(name)) ||

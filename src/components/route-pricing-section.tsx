@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
@@ -9,6 +9,7 @@ import { MediaPhoto } from "@/components/media-photo";
 import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
 import { getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 import { availablePackages, findVehiclePackage, type JourneyPackage } from "@/lib/route-package-capability";
+import { routeJourneyHref } from "@/lib/route-journey-selection";
 import {
   priceTypeLabel,
   routeComboHref,
@@ -68,17 +69,8 @@ const vehicleCards = [
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
 
-export function RoutePricingSection({ route, direction, onDirectionChange, vehicleImageByType = {}, prelaunch = false, redesign = false, hero }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean; redesign?: boolean; hero?: ReactNode }) {
-  const [journey, setJourney] = useState<Exclude<JourneyPackage, "threeDays">>("oneWay");
-  const [days, setDays] = useState<"twoDays" | "threeDays">("twoDays");
+export function RoutePricingSection({ route, direction, onDirectionChange, journey, onJourneyChange, vehicleImageByType = {}, prelaunch = false, redesign = false, hero }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; journey: JourneyPackage; onJourneyChange: (journey: JourneyPackage) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean; redesign?: boolean; hero?: ReactNode }) {
   const [showAllVehicles, setShowAllVehicles] = useState(false);
-  useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("trip_type");
-    if (requested === "round_trip") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setJourney("roundTrip");
-    }
-  }, []);
   const pricing = route.pricingV2;
   const activeDirection = pricing?.[direction]?.enabled ? direction : pricing?.outbound.enabled ? "outbound" : "inbound";
   const active = activeDirection ? pricing?.[activeDirection] : undefined;
@@ -92,8 +84,9 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
   const availableJourneys = (["oneWay", "roundTrip", "twoDays"] as const).filter((item) =>
     item === "twoDays" ? available.includes("twoDays") || available.includes("threeDays") : available.includes(item),
   );
-  const visibleJourney = availableJourneys.includes(journey) ? journey : availableJourneys[0];
-  const visibleDays = available.includes(days) ? days : available.includes("twoDays") ? "twoDays" : "threeDays";
+  const requestedJourney = journey === "threeDays" ? "twoDays" : journey;
+  const visibleJourney = availableJourneys.includes(requestedJourney) ? requestedJourney : availableJourneys[0];
+  const visibleDays = journey === "threeDays" && available.includes("threeDays") ? "threeDays" : available.includes("twoDays") ? "twoDays" : "threeDays";
   const selectedPackage = visibleJourney === "twoDays" ? visibleDays : visibleJourney;
   const hasTravelTime = Boolean(route.time.trim() && route.time.trim() !== "0");
   const hasDistance = Boolean(route.distance.trim() && route.distance.trim() !== "0 km");
@@ -113,9 +106,9 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
     : <LegacyPricingGrid route={route} vehicleImageByType={vehicleImageByType} />;
   const journeyControls = <>
     {availableJourneys.length > 0 ? <div className="route-direction-tabs" role="tablist" aria-label="Chọn loại hành trình">
-      {[{ key: "oneWay" as const, label: "Một chiều", icon: ArrowRightLeft }, { key: "roundTrip" as const, label: "Khứ hồi", icon: ArrowRightLeft }, { key: "twoDays" as const, label: "Theo ngày", icon: CalendarDays }].filter((tab) => availableJourneys.includes(tab.key)).map((tab) => <button key={tab.key} type="button" role="tab" aria-selected={visibleJourney === tab.key} className={visibleJourney === tab.key ? "is-selected" : ""} onClick={() => setJourney(tab.key)}>{redesign && <tab.icon size={17} aria-hidden="true" />}{tab.label}</button>)}
+      {[{ key: "oneWay" as const, label: "Một chiều", icon: ArrowRightLeft }, { key: "roundTrip" as const, label: "Khứ hồi", icon: ArrowRightLeft }, { key: "twoDays" as const, label: "Theo ngày", icon: CalendarDays }].filter((tab) => availableJourneys.includes(tab.key)).map((tab) => <button key={tab.key} type="button" role="tab" aria-selected={visibleJourney === tab.key} className={visibleJourney === tab.key ? "is-selected" : ""} onClick={() => onJourneyChange(tab.key)}>{redesign && <tab.icon size={17} aria-hidden="true" />}{tab.label}</button>)}
     </div> : <p>Chưa có gói được xác nhận cho chiều này. Liên hệ để được tư vấn.</p>}
-    {visibleJourney === "twoDays" && <div className="route-day-tabs" role="group" aria-label="Chọn gói theo ngày">{(["twoDays", "threeDays"] as const).filter((key) => available.includes(key)).map((key) => <button key={key} type="button" aria-pressed={visibleDays === key} className={visibleDays === key ? "is-selected" : ""} onClick={() => setDays(key)}>{packageLabels[key]}</button>)}</div>}
+    {visibleJourney === "twoDays" && <div className="route-day-tabs" role="group" aria-label="Chọn gói theo ngày">{(["twoDays", "threeDays"] as const).filter((key) => available.includes(key)).map((key) => <button key={key} type="button" aria-pressed={visibleDays === key} className={visibleDays === key ? "is-selected" : ""} onClick={() => onJourneyChange(key)}>{packageLabels[key]}</button>)}</div>}
     {hero ? <div className="route-detail-design-endpoints" aria-label="Chiều hành trình">
       <div><small>Điểm đi</small><strong>{getPublicLocationLabel(activeDirection === "inbound" ? route.to : route.from)}</strong></div>
       <button type="button" aria-label="Đổi chiều hành trình" disabled={!pricing?.outbound.enabled || !pricing?.inbound.enabled} onClick={() => onDirectionChange(activeDirection === "inbound" ? "outbound" : "inbound")}><ArrowRightLeft size={18} aria-hidden="true" /></button>
@@ -137,7 +130,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, vehic
     <div className="route-vehicle-grid">{displayedVehicles.map(({ vehicle, pkg }) => {
       const fixed = pkg.mode === "fixed" && typeof pkg.price === "number" && Number.isFinite(pkg.price) && pkg.price > 0;
       const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback;
-      const vehicleHref = routeComboHref(route, vehicleTypeSlug(pkg.vehicleType));
+      const vehicleHref = routeJourneyHref(routeComboHref(route, vehicleTypeSlug(pkg.vehicleType)), activeDirection, pkg.packageKey);
       const price = fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined;
       const priceBlock = <div className="route-vehicle-price" data-pricing-mode={prelaunch ? "prelaunch" : fixed ? "fixed" : "contact"}>{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{price}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>;
       return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
+import { dynamicRouteSamples, readPublicHtml } from "./public-html-evidence.mjs";
 
 async function htmlFiles(directory) {
   const items = await readdir(directory, { withFileTypes: true });
@@ -13,10 +14,10 @@ async function htmlFiles(directory) {
 
 test("built route and vehicle pages emit only positive numeric structured Offers", async () => {
   const app = new URL("../.next/server/app", import.meta.url).pathname;
-  const files = [...await htmlFiles(`${app}/tuyen-duong`), ...await htmlFiles(`${app}/loai-xe`)];
+  const files = [...await htmlFiles(`${app}/tuyen-duong`), ...await htmlFiles(`${app}/loai-xe`), ...(process.env.HTML_AUDIT_BASE_URL ? dynamicRouteSamples : [])];
   assert.ok(files.length > 0, "production build must generate representative public pages");
   for (const file of files) {
-    const html = await readFile(file, "utf8");
+    const html = file.startsWith("tuyen-duong/") ? await readPublicHtml(file) : await readFile(file, "utf8");
     for (const [, json] of html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>(.*?)<\/script>/gis)) {
       const visit = (node) => {
         if (Array.isArray(node)) return node.forEach(visit);
@@ -33,10 +34,10 @@ test("built route and vehicle pages emit only positive numeric structured Offers
 });
 
 test("built Long Thanh commercial Route pages omit all JSON-LD while prelaunch", async () => {
-  const files = (await htmlFiles(new URL("../.next/server/app/tuyen-duong", import.meta.url).pathname))
+  const files = [...await htmlFiles(new URL("../.next/server/app/tuyen-duong", import.meta.url).pathname), ...(process.env.HTML_AUDIT_BASE_URL ? dynamicRouteSamples : [])]
     .filter((file) => file.includes("san-bay-long-thanh"));
   for (const file of files) {
-    const html = await readFile(file, "utf8");
+    const html = file.startsWith("tuyen-duong/") ? await readPublicHtml(file) : await readFile(file, "utf8");
     assert.doesNotMatch(html, /type="application\/ld\+json"/, `Prelaunch structured data in ${file}`);
   }
 });
@@ -59,13 +60,15 @@ test("SEO-006A representative built Route HTML has explicit AC15 evidence", asyn
     { id: 9055, slug: "tp-hcm-tp-vung-tau-2-ngay-1-dem", kind: "d35_10_observation" },
   ];
   for (const route of cases) {
-    const file = files.find((item) => item.endsWith("/" + route.slug + ".html"));
+    const file = files.find((item) => item.endsWith("/" + route.slug + ".html")) || (process.env.HTML_AUDIT_BASE_URL ? "tuyen-duong/ba-ria-vung-tau/" + route.slug + ".html" : undefined);
     if (!file && route.kind === "d35_10_observation") {
       console.log(JSON.stringify({ routeId: route.id, result: "NOT_BUILT", verification: "PENDING" }));
       continue;
     }
     assert.ok(file, "Missing representative built Route " + route.id);
-    const html = await readFile(file, "utf8");
+    let html;
+    try { html = file.startsWith("tuyen-duong/") ? await readPublicHtml(file) : await readFile(file, "utf8"); }
+    catch (error) { if (route.kind !== "d35_10_observation") throw error; console.log(JSON.stringify({routeId:route.id,result:"NOT_AVAILABLE",verification:"PENDING"})); continue; }
     const jsonLdCount = [...html.matchAll(/<script\b[^>]*type=(?:"application\/ld\+json"|'application\/ld\+json')[^>]*>/gi)].length;
     const robots = attributeValue(extractTag(html, "meta", "name", "robots"), "content");
     const canonical = attributeValue(extractTag(html, "link", "rel", "canonical"), "href");

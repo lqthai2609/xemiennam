@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,6 +20,7 @@ import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 import { getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 import { getZaloChatLink } from "@/lib/zalo";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
+import { resolveRouteJourneySelection, type RouteJourneySelection } from "@/lib/route-journey-selection";
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
 const passengerLabels: Record<string, string> = { "4 chỗ": "1–3 hành khách", "7 chỗ": "3–6 hành khách", "16 chỗ": "7–14 hành khách", "29 chỗ": "Nhóm và đoàn", "45 chỗ": "Đoàn lớn", Limousine: "Không gian cao cấp" };
@@ -31,26 +32,11 @@ function SimilarRouteCard({ route, vehicleSlug }: { route: Route; vehicleSlug: s
   </Link>;
 }
 
-export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes, vehicle }: { route: Route; vehiclePrice: VehiclePrice; category: VehicleCategory; similarRoutes: Route[]; vehicle?: Vehicle }) {
-  const [direction, setDirection] = useState<RoutePricingDirectionKey>("outbound");
-  const [journey, setJourney] = useState<"oneWay" | "roundTrip" | "twoDays">("oneWay");
-  const [days, setDays] = useState<"twoDays" | "threeDays">("twoDays");
-  useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("direction");
-    if (requested !== "inbound" || !findComboVehiclePriceForDirection(route, category.slug, "inbound")) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDirection("inbound");
-  }, [category.slug, route]);
-  useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("package");
-    if (requested === "round_trip_day") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setJourney("roundTrip");
-    } else if (requested === "2d1n") {
-      setJourney("twoDays");
-      setDays("twoDays");
-    }
-  }, []);
+export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes, vehicle, initialSelection }: { route: Route; vehiclePrice: VehiclePrice; category: VehicleCategory; similarRoutes: Route[]; vehicle?: Vehicle; initialSelection?: RouteJourneySelection }) {
+  const initial = initialSelection ?? resolveRouteJourneySelection(route, {}, category.type);
+  const [direction, setDirection] = useState<RoutePricingDirectionKey>(initial.direction);
+  const [journey, setJourney] = useState<"oneWay" | "roundTrip" | "twoDays">(initial.journey === "threeDays" ? "twoDays" : initial.journey);
+  const [days, setDays] = useState<"twoDays" | "threeDays">(initial.journey === "threeDays" ? "threeDays" : "twoDays");
 
   const prelaunch = isPrelaunchAirportRoute(route);
   const inboundAvailable = Boolean(findComboVehiclePriceForDirection(route, category.slug, "inbound"));

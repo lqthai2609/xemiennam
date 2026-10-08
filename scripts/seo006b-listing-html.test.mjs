@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { readPublicHtml } from "./public-html-evidence.mjs";
 
 const app = new URL("../.next/server/app/", import.meta.url);
 const listingPages = [
@@ -21,7 +22,7 @@ test("commercial listings do not link to prelaunch Long Thanh routes", async () 
 });
 
 test("prelaunch route remains accessible for review without indexable markup", async () => {
-  const html = await readFile(new URL("tuyen-duong/ba-ria-vung-tau/san-bay-long-thanh-vung-tau.html", app), "utf8");
+  const html = await readPublicHtml("tuyen-duong/ba-ria-vung-tau/san-bay-long-thanh-vung-tau.html");
   assert.match(html, /<meta\b[^>]*name=["']robots["'][^>]*noindex/i);
   assert.doesNotMatch(html, /type=["']application\/ld\+json["']/i);
 });

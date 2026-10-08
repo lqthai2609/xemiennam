@@ -15,6 +15,7 @@ import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDa
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 import "../../../home-redesign.css";
 import "./route-detail-redesign.css";
+import { resolveRouteJourneySelection, type JourneyQuery } from "@/lib/route-journey-selection";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
 async function buildVehicleImageByType(): Promise<Record<string, string>> {
@@ -69,7 +70,7 @@ function neutralRouteDescription(route: Route): string {
   return `Thuê xe nguyên chiếc tuyến ${getPublicRouteLabel(route, " – ")}. Giá theo chiều, loại xe và gói hành trình đã chọn.`;
 }
 
-type Props = { params: Promise<{ tinh: string; tuyen: string }> };
+type Props = { params: Promise<{ tinh: string; tuyen: string }>; searchParams: Promise<JourneyQuery> };
 
 export async function generateStaticParams() {
   const routes = await fetchRoutes();
@@ -114,10 +115,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function Page({ params }: Props) {
+export default async function Page({ params, searchParams }: Props) {
   const { tinh, tuyen } = await params;
   const route = await fetchRouteBySlug(tuyen);
   if (!route || route.regionSlug !== tinh) notFound();
+  const selection = resolveRouteJourneySelection(route, await searchParams);
   const readiness = resolveRouteContentReadiness(route);
   const publicFrom = getPublicLocationLabel(route.from);
   const publicTo = getPublicLocationLabel(route.to);
@@ -157,7 +159,7 @@ export default async function Page({ params }: Props) {
     <>
       {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
       {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
-      <RouteDetailPage route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
+      <RouteDetailPage key={`${route.id}:${selection.direction}:${selection.journey}`} initialSelection={selection} route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
     </>
   );
 }

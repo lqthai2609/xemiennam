@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
+import { dynamicRouteSamples, readPublicHtml } from "./public-html-evidence.mjs";
 
 const buildRoot = path.resolve(new URL("../.next/server/app", import.meta.url).pathname);
 const FORBIDDEN_DISPLAY_PATTERN = /TP\.HCM|TP HCM|TP\. HCM|TP Hồ Chí Minh|TP\. Hồ Chí Minh|Hồ Chí Minh/iu;
@@ -89,6 +90,7 @@ test("built public HTML uses Sài Gòn in visible text and metadata", async () =
   assert.ok(files.length > 0, "No generated HTML found; run npm run build first.");
   const findings = [];
   for (const file of files) findings.push(...inspectHtml(path.relative(buildRoot, file), await readFile(file, "utf8")));
+  if (process.env.HTML_AUDIT_BASE_URL) for (const sample of dynamicRouteSamples) findings.push(...inspectHtml(sample,await readPublicHtml(sample)));
   assert.deepEqual(findings, []);
 });
 
@@ -98,5 +100,7 @@ test("representative public outputs were generated", async () => {
     assert.ok(files.includes(expected), `Missing ${expected}`);
   }
   assert.ok(files.some((file) => /^tuyen-duong\/[^/]+\.html$/.test(file)), "Missing destination output");
-  assert.ok(files.some((file) => /^tuyen-duong\/[^/]+\/[^/]+\.html$/.test(file)), "Missing route detail output");
+  if (files.some((file) => /^tuyen-duong\/[^/]+\/[^/]+\.html$/.test(file))) return;
+  assert.ok(process.env.HTML_AUDIT_BASE_URL,"Request-rendered routes require a running production server");
+  assert.match(await readPublicHtml(dynamicRouteSamples[0]), /id="route-detail-title"/);
 });
