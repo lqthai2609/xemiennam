@@ -4,7 +4,6 @@ import { AirportPickupAdvice } from "@/components/airport-pickup-advice";
 import { AirportQuickConsultation } from "@/components/airport-quick-consultation";
 import { airportConsultationLabel } from "@/lib/airport-consultation";
 import { validateFlightFields } from "@/lib/airport-timing";
-import { VehicleSelector } from "@/components/vehicle-selector";
 import { RequiredMark } from "@/components/required-mark";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -157,7 +156,6 @@ function QuickBookingDialog({
   const {
     register,
     handleSubmit,
-    setValue,
     control,
     formState: { errors, isSubmitting },
   } = useForm<QuickBookingData>({
@@ -174,7 +172,6 @@ function QuickBookingDialog({
   const visibleRoute = displayRoute || route;
   const isQuote = pricingMode === "contact";
   const visiblePrice = isQuote ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
-  const passengerValue = useWatch({ control, name: "passengerCount" }) ?? "";
   const requestNameplate = useWatch({ control, name: "requestNameplate" });
   const [flightNumber, landingAt, flightAt, airportTerminal, flightKind, airportArrivalAt, pickupAddress, dropoffAddress] = useWatch({ control, name: ["flightNumber", "landingAt", "flightAt", "airportTerminal", "flightKind", "airportArrivalAt", "pickupAddress", "dropoffAddress"] });
   const timingInput = {
@@ -300,7 +297,6 @@ function QuickBookingDialog({
           </div>
         </div>
 
-        <VehicleSelector selectedType={vehicleType} passengerValue={passengerValue} onPassengerChange={(value) => setValue("passengerCount", value, { shouldDirty: true })} />
         <form onSubmit={handleSubmit(submitForm)} className="quick-booking-form" noValidate>
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-2 text-sm font-semibold text-foreground">Thông tin khách hàng</legend>

@@ -2,9 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin } from "lucide-react";
 
-import { VehicleSelector } from "@/components/vehicle-selector";
 import { Button } from "@/components/ui/button";
 import { PromotionPrice } from "@/components/promotion-price";
 import { MediaPhoto } from "@/components/media-photo";
@@ -61,12 +60,12 @@ function LegacyPricingGrid({
 }
 
 const vehicleCards = [
-  { type: "Xe 4 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Xe riêng có tài xế", "Xác nhận điểm đón khi báo giá", "Xác nhận điểm trả khi báo giá"], popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
-  { type: "Xe 7 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Xe riêng có tài xế", "Hành lý cần tư vấn", "Xác nhận điểm đón khi báo giá"], popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
-  { type: "Xe 16 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Cấu hình cần tư vấn", "Có tài xế", "Xác nhận điểm đón/trả khi báo giá"], popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
-  { type: "Xe 29 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Cấu hình cần tư vấn", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/long-an.webp" },
-  { type: "Xe 45 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Cấu hình cần tư vấn", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/ben-tre.webp" },
-  { type: "Limousine", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Sức chứa cần tư vấn", "Hành lý cần tư vấn", "Cấp dịch vụ cần tư vấn"], popular: false, fallback: "/images/services/city-tour.png" },
+  { type: "Xe 4 chỗ", popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
+  { type: "Xe 7 chỗ", popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
+  { type: "Xe 16 chỗ", popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
+  { type: "Xe 29 chỗ", popular: false, fallback: "/images/destinations/long-an.webp" },
+  { type: "Xe 45 chỗ", popular: false, fallback: "/images/destinations/ben-tre.webp" },
+  { type: "Limousine", popular: false, fallback: "/images/services/city-tour.png" },
 ] as const;
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
@@ -119,7 +118,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
   </>;
   const picker = !pricing ? legacy : <div className="route-vehicle-picker">
     {!hero && journeyControls}
-    {redesign && <div className="route-detail-price-heading"><h2>{prelaunch ? "Thông tin xe cho hành trình" : <>Chọn xe phù hợp<span className="route-price-title-desktop"> với hành trình</span></>}</h2><p>{prelaunch ? "Tuyến đang chuẩn bị, chưa nhận đặt chuyến." : selectedPackage ? `Giá cho chuyến ${packageLabels[selectedPackage].toLowerCase()}` : "Liên hệ để được tư vấn gói chuyến phù hợp."}</p></div>}
+    {redesign && <div className="route-detail-price-heading"><h2>{prelaunch ? "Thông tin xe cho hành trình" : <>Giá theo loại xe</>}</h2><p>{prelaunch ? "Tuyến đang chuẩn bị, chưa nhận đặt chuyến." : selectedPackage ? `Giá cho chuyến ${packageLabels[selectedPackage].toLowerCase()}` : "Liên hệ để được tư vấn gói chuyến phù hợp."}</p></div>}
     <section className="mb-4 rounded-lg border border-border bg-card p-4 text-sm" aria-label="Thông tin tuyến đường">
       <h3 className="mb-3 flex items-center gap-2 font-semibold text-foreground"><MapPin aria-hidden="true" size={18} /> Thông tin tuyến đường</h3>
       <dl className="grid gap-3 text-muted-foreground sm:grid-cols-3">
@@ -140,9 +139,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
         <div className="route-vehicle-image"><Link href={vehicleHref} aria-label={`Xem tuyến ${displayRoute} bằng ${vehicle.type}`}><img src={image} alt={`Mẫu xe tham khảo ${vehicle.type.toLowerCase()}`} loading="lazy" /></Link>{!redesign && vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>
         <div className="route-vehicle-body">
           {!redesign && <h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>}
-          <p className="route-vehicle-model">{redesign && <small>Mẫu xe tham khảo</small>}{vehicle.models}</p>
-          <div className="route-vehicle-summary"><p className="route-vehicle-capacity"><UsersRound size={redesign ? 32 : 15} aria-hidden="true" /> {vehicle.capacity}</p>{redesign && priceBlock}</div>
-          {!redesign && <ul>{vehicle.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul>}
+          {redesign && <div className="route-vehicle-summary">{priceBlock}</div>}
           <div className="route-vehicle-bottom">
             {!redesign && priceBlock}
             {prelaunch ? <a className="button button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions compactLabels={redesign} route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={pkg.vehicleType} price={price} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} />}
@@ -157,8 +154,8 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
       {hero}
       {pricing && <div className="route-detail-design-hero-controls"><h2>Chọn chuyến đi</h2>{journeyControls}</div>}
     </section>
-    <div className="route-detail-design-main"><section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến"><div id="pricing">{picker}<VehicleSelector /></div></section></div>
-  </> : <>{picker}<VehicleSelector /></>;
+    <div className="route-detail-design-main"><section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến"><div id="pricing">{picker}</div></section></div>
+  </> : <>{picker}</>;
 }
 
 export default RoutePricingSection;
