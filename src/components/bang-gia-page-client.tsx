@@ -8,7 +8,7 @@ import { ArrowRight, ArrowRightLeft, CalendarDays, CarFront, CheckCircle2, Chevr
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
-import { VEHICLE_TYPE_ORDER } from "@/lib/api/routes";
+import { VEHICLE_TYPE_ORDER } from "@/types/vehicle-order";
 import { routeHref, routeComboHref, vehicleTypeSlug, type Route, type RoutePricingPackage, type VehiclePrice } from "@/types/route";
 import { getPublicLocationLabel, getPublicRouteLocations } from "@/lib/public-location-label";
 import { locationMatchesQuery } from "@/lib/location-search";

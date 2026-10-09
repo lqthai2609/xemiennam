@@ -38,6 +38,8 @@ export interface PromotionResolution {
   comparisonAfter?: number;
   validity?: PromotionModel["window"];
   conditionsSummary?: string[];
+  /** A booking-specific result is never promoted to a public catalog Offer. */
+  requiresTripContext?: boolean;
   publicBenefit?: { title: string; rule: string };
   evaluationTime: string;
   /** Do not cache a claim at or beyond this boundary. UI enforcement belongs to Day 44. */
@@ -212,6 +214,7 @@ export function evaluatePromotionRules(price: PriceRulesResolution, context: Pro
   result.promotion = { ...result.promotion, promotionStatus: discount.kind === "benefit" ? "benefit" : "applied", reason: "applied",
     promotion_id: record.promotion_id, revision: model.revision, target: discount.target, validity: { ...model.window },
     conditionsSummary: summaries(model), discountAmount: amount,
+    requiresTripContext: model.conditions.some((condition) => condition.kind !== "min_eligible_amount"),
     promotionalEstimatedTotal: Number(BigInt(pricing.estimatedTotal!) - BigInt(amount)),
     ...(discount.kind === "benefit" ? { publicBenefit: { title: discount.title, rule: discount.rule } }
       : { priceLayer: discount.target, comparisonBefore: eligible, comparisonAfter: eligible - amount }),

@@ -18,7 +18,7 @@ const ROUTE_PAGES = [
 ];
 const PAGES: Record<string, string[]> = {
   route: ROUTE_PAGES, vehicle: [...ROUTE_PAGES, "/loai-xe/[slug]"],
-  location: ROUTE_PAGES, diem_den: ["/tuyen-duong/[tinh]"],
+  location: ROUTE_PAGES, promotion: ROUTE_PAGES, diem_den: ["/tuyen-duong/[tinh]"],
   dich_vu: ["/dich-vu/[slug]"], post: ["/blog/[slug]"],
 };
 const LISTINGS: Record<string, string[]> = {
@@ -26,7 +26,7 @@ const LISTINGS: Record<string, string[]> = {
   vehicle: ["/", "/loai-xe", "/bang-gia", "/tuyen-duong"],
   location: ["/", "/tuyen-duong", "/bang-gia", "/diem-den"],
   diem_den: ["/diem-den", "/tuyen-duong"], dich_vu: ["/dich-vu"],
-  promotion: ["/khuyen-mai"], testimonial: ["/danh-gia"], post: ["/", "/blog"],
+  promotion: ["/khuyen-mai", "/", "/tuyen-duong", "/bang-gia"], testimonial: ["/danh-gia"], post: ["/", "/blog"],
 };
 
 export async function POST(request: Request) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ExpiringJsonLd, type PromotionServiceSchema } from "@/components/expiring-json-ld";
 import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
 import Link from "next/link";
@@ -39,7 +40,8 @@ function RelatedCard({ route }: { route: Route }) {
   </Link>;
 }
 
-export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPosts, vehicleImageByType = {}, initialSelection }: {
+export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPosts, vehicleImageByType = {}, initialSelection, serviceSchema }: {
+  serviceSchema?: PromotionServiceSchema;
   route: Route;
   relatedRoutes: Route[];
   testimonials: Testimonial[];
@@ -72,6 +74,7 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
     : [];
 
   return <main className="site-shell home-redesign route-detail-redesign">
+      {serviceSchema ? <ExpiringJsonLd data={direction === initial.direction && journey === initial.journey ? serviceSchema.data : serviceSchema.unpriced} fallback={direction === initial.direction && journey === initial.journey ? serviceSchema.fallback : serviceSchema.unpriced} expiresAt={serviceSchema.expiresAt} /> : null}
     <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
 
     <RoutePricingSection route={route} direction={direction} onDirectionChange={setDirection} journey={journey} onJourneyChange={setJourney} vehicleImageByType={vehicleImageByType} prelaunch={prelaunch} redesign hero={<div className="route-detail-design-hero-banner">

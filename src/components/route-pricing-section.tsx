@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PromotionPrice } from "@/components/promotion-price";
 import { MediaPhoto } from "@/components/media-photo";
 import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
 import { getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
@@ -132,7 +133,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
       const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback;
       const vehicleHref = routeJourneyHref(routeComboHref(route, vehicleTypeSlug(pkg.vehicleType)), activeDirection, pkg.packageKey);
       const price = fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined;
-      const priceBlock = <div className="route-vehicle-price" data-pricing-mode={prelaunch ? "prelaunch" : fixed ? "fixed" : "contact"}>{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{price}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>;
+      const priceBlock = <div className="route-vehicle-price" data-pricing-mode={prelaunch ? "prelaunch" : fixed ? "fixed" : "contact"}>{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : pkg.promotionView ? <><PromotionPrice view={pkg.promotionView} /><span>{packageLabels[selectedPackage]} / chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{price}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>;
       return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
         {redesign && <header className="route-vehicle-heading"><h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>{vehicle.popular && <span className="route-vehicle-popular">Được đặt nhiều nhất</span>}</header>}
         <div className="route-vehicle-image"><Link href={vehicleHref} aria-label={`Xem tuyến ${displayRoute} bằng ${vehicle.type}`}><img src={image} alt={`Mẫu xe tham khảo ${vehicle.type.toLowerCase()}`} loading="lazy" /></Link>{!redesign && vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>

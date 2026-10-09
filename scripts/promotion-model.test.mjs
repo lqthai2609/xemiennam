@@ -36,7 +36,7 @@ test("legacy is audit-only even if published, in-date and positive; commerce sta
 });
 test("public list cannot promote legacy or mock fixtures through the commercial gate", async () => {
   let calls = 0;
-  const stubbed = typescriptLoader({"./raw":{fetchRawPromotions:async()=>{calls++; return [{id:1001}];}},"./routes":{},"./vehicles":{},"./mock-fallback":{shouldUseMockFallback:()=>true}});
+  const stubbed = typescriptLoader({"server-only":{},"./raw":{fetchRawPromotions:async()=>{calls++; return [{id:1001}];}},"./routes":{},"./vehicles":{},"./mock-fallback":{shouldUseMockFallback:()=>true}});
   assert.deepEqual(await stubbed("src/lib/api/promotions.ts").fetchPromotions(),[]);
   assert.equal(calls,0);
 });

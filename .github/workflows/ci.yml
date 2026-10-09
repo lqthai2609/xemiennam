@@ -77,6 +77,9 @@ jobs:
           npm run test:promotion-model
           npm run test:promotion-model:php
 
+      - name: Day 44 promotion presentation and expiry
+        run: npm run test:promotion-presentation
+
       - name: Day 43 promotion evaluator
         run: |
           npm run test:promotion-evaluator
@@ -168,4 +171,4 @@ jobs:
             if curl --silent --fail http://127.0.0.1:3100/api/revalidate >/dev/null; then break; fi
             sleep 1
           done
-          node --test scripts/seo006b-listing-html.test.mjs scripts/gocar-public-price-html.test.mjs scripts/gocar-location-display-output.test.mjs
+          node --test scripts/promotion-http.test.mjs scripts/seo006b-listing-html.test.mjs scripts/gocar-public-price-html.test.mjs scripts/gocar-location-display-output.test.mjs
