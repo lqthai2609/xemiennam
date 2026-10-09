@@ -72,6 +72,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 50 private empty-leg model and time/price/reference guards
+        run: |
+          npm run test:empty-leg
+          npm run test:empty-leg:php
+          php -l wordpress/gocar-core/includes/class-gocar-empty-leg.php
+
       - name: Day 49 directional airport consultation and readiness guards
         run: npm run test:airport-consultation
 
