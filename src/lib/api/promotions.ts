@@ -9,6 +9,7 @@ import { fetchVehicles } from "./vehicles";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { stripHtml } from "@/lib/wp";
 import { formatPublicLocationText, getPublicRouteLabel } from "@/lib/public-location-label";
+import { PROMOTION_COMMERCIAL_ENABLED } from "./promotion-model";
 
 const useMockFallback = shouldUseMockFallback();
 
@@ -44,6 +45,8 @@ function mapWPPromotionToPromotion(wp: WPPromotion, routes: Route[], vehicles: V
 }
 
 export async function fetchPromotions(): Promise<Promotion[]> {
+  // Day 42: published legacy records and demo fixtures cannot bypass the rollout gate.
+  if (!PROMOTION_COMMERCIAL_ENABLED) return [];
   const raw = await fetchRawPromotions();
   if (raw.length === 0) {
     if (useMockFallback) {

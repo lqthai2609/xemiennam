@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gocar Core
  * Description: Core WordPress contracts and migration helpers for Alo Đặt Xe.
- * Version: 0.11.1
+ * Version: 0.12.0
  * Author: Alo Đặt Xe
  * Requires at least: 6.5
  * Requires PHP: 8.1
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'GOCAR_CORE_VERSION', '0.11.1' );
+define( 'GOCAR_CORE_VERSION', '0.12.0' );
 define( 'GOCAR_CORE_PATH', plugin_dir_path( __FILE__ ) );
 
 // Phase 1 is intentionally non-mutating: shared normalization only.
@@ -39,6 +39,9 @@ require_once GOCAR_CORE_PATH . 'includes/class-gocar-service-area.php';
 
 // Day 34: version-gated stop/waiting/overtime/extra-distance price rules.
 require_once GOCAR_CORE_PATH . 'includes/class-gocar-price-rules.php';
+
+// Day 42: private promotion model + validation; commercial flag is off.
+require_once GOCAR_CORE_PATH . 'includes/class-gocar-promotion-model.php';
 
 // Day 36B / SEO-005: versioned Content Readiness and indexability contract.
 require_once GOCAR_CORE_PATH . 'includes/class-gocar-content-readiness.php';

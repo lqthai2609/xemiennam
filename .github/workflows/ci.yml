@@ -72,6 +72,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 42 promotion model and private WordPress persistence
+        run: |
+          npm run test:promotion-model
+          npm run test:promotion-model:php
+
       - name: Location migration regression tests
         run: npm run test:location-migration
 
