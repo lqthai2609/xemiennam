@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:promotion-surcharge:php": "php scripts/promotion-surcharge-php.test.php",
+    "test:promotion-evaluator": "node --test scripts/promotion-evaluator.test.mjs",
     "test:promotion-model": "node --test scripts/promotion-model.test.mjs",
     "test:promotion-model:php": "php scripts/promotion-model-php.test.php",
     "dev": "next dev",

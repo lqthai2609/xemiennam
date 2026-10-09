@@ -14,6 +14,7 @@ export type WPTerm = { id: number; taxonomy: string; slug: string; name: string;
 
 export type WPRoute = {
   id: number;
+  status?: string;
   slug: string;
   title: { rendered: string };
   /** Field mặc định của WP REST, luôn có sẵn — dùng cho "Cập nhật lần cuối" thật (Ngày 23, mục 5 kiến trúc kỹ thuật). */
@@ -38,6 +39,7 @@ export type WPRoute = {
     /** Day 32: policy only becomes authoritative when version >= 1. */
     surcharge_policy_version?: number | string;
     zone_surcharge_rules_v2?: {
+      rule_key?: string;
       zone_id?: string;
       applies_to?: "pickup" | "dropoff" | "either";
       direction?: "outbound" | "inbound";
@@ -108,6 +110,7 @@ export type WPRoute = {
 
 export type WPVehicle = {
   id: number;
+  status?: string;
   slug: string;
   title: { rendered: string };
   content: { rendered: string };

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
 import { fetchLocationsV2, locationById } from "@/lib/api/locations";
 import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
-import { resolvePriceRulesV2 } from "@/lib/api/price-rules";
+import { resolvePriceRulesWithPromotion } from "@/lib/api/promotion-pricing";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
 import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
     routeContext.validLocationIds,
   );
 
-  const priceRules = resolvePriceRulesV2({
+  const { pricing: priceRules } = await resolvePriceRulesWithPromotion({
     route: routeContext.route,
     direction,
     vehicleId,

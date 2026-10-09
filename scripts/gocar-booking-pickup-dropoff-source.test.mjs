@@ -67,8 +67,10 @@ test("Gocar Core exposes and sanitizes the Day 31 booking meta contract", () => 
   assert.match(bookingContract, /absint/);
 });
 
-test("Day 31 contract remains isolated while later resolvers delegate pricing logic", () => {
-  assert.match(bookingApi, /resolvePriceRulesV2/);
+test("Day 31 contract remains isolated while later resolvers delegate pricing logic", async () => {
+  assert.match(bookingApi, /resolvePriceRulesWithPromotion/);
+  const adapter = await readFile(new URL("../src/lib/api/promotion-pricing.ts", import.meta.url), "utf8");
+  assert.match(adapter, /resolvePriceRulesV2\(context\)/);
   assert.doesNotMatch(bookingApi, /center|suburb|outskirt/i);
   assert.doesNotMatch(bookingContract, /center|suburb|outskirt|surcharge/i);
 });

@@ -77,6 +77,13 @@ jobs:
           npm run test:promotion-model
           npm run test:promotion-model:php
 
+      - name: Day 43 promotion evaluator
+        run: |
+          npm run test:promotion-evaluator
+          npm run test:promotion-surcharge:php
+          php -l wordpress/gocar-core/includes/class-gocar-service-area.php
+          php -l wordpress/gocar-core/gocar-core.php
+
       - name: Location migration regression tests
         run: npm run test:location-migration
 
