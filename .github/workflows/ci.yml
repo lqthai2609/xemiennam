@@ -72,6 +72,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 51 private dispatch permissions, revision, audit and atomic persistence
+        run: |
+          npm run test:empty-leg-admin
+          npm run test:empty-leg-admin:php
+          php -l wordpress/gocar-core/includes/class-gocar-empty-leg-admin.php
+
       - name: Day 50 private empty-leg model and time/price/reference guards
         run: |
           npm run test:empty-leg

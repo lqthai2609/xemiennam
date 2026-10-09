@@ -187,6 +187,12 @@ final class Gocar_Admin_API {
         return current_user_can( 'publish_posts' );
     }
 
+    /** Shared hard gates for private operational inventory; meta cannot unlock them. */
+    public static function operational_route_blocked( int $id, int $from, int $to ): bool {
+        $pair = min( $from, $to ) . ':' . max( $from, $to );
+        return in_array( $id, self::D35_10_ROUTE_IDS, true ) || in_array( $pair, self::D35_10_ENDPOINT_PAIRS, true );
+    }
+
     public static function session(): WP_REST_Response {
         $user = wp_get_current_user();
         return rest_ensure_response(

@@ -13,6 +13,9 @@ import { WP_CACHE_TAG } from "@/lib/wp";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_PATHS = [
+  /^empty-legs$/,
+  /^empty-legs\/options$/,
+  /^empty-legs\/[1-9]\d*$/,
   /^drafts$/,
   /^drafts\/\d+$/,
   /^drafts\/\d+\/(?:validate|submit|publish)$/,
@@ -35,6 +38,12 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
   const { path: segments } = await context.params;
   const path = segments.join("/");
   if (!allowed(path)) return NextResponse.json({ message: "Endpoint không hợp lệ." }, { status: 404 });
+  if (path.startsWith("empty-legs") && (process.env.NODE_ENV !== "development" && process.env.VERCEL_ENV !== "preview" && process.env.GOCAR_ADMIN_WIZARD_ENABLED !== "true")) {
+    return NextResponse.json({ message: "Chức năng điều phối chưa được bật." }, { status: 404 });
+  }
+  if (path.startsWith("empty-legs") && (request.method === "DELETE" || (path.endsWith("options") && request.method !== "GET"))) {
+    return NextResponse.json({ message: "Thao tác không được phép." }, { status: 405 });
+  }
 
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value ?? "";
   const session = await fetchAdminSession(token);
@@ -70,7 +79,7 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
     revalidatePath("/", "layout");
   }
 
-  return NextResponse.json(data, { status: upstream.status });
+  return NextResponse.json(data, { status: upstream.status, headers: { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex, nofollow" } });
 }
 
 export async function GET(request: NextRequest, context: AdminRouteContext) {

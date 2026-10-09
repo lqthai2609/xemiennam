@@ -1,5 +1,5 @@
 <?php
-/** Day 50: private operational inventory model. Admin writes arrive in Day 51. */
+/** Day 50 model, Day 51 dedicated audited writer; generic writes remain blocked. */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 final class Gocar_Empty_Leg {
@@ -26,7 +26,7 @@ final class Gocar_Empty_Leg {
     }
     public static function guard_meta( $check, $id, $key, $value = null, $extra = null ) {
         unset( $id, $value, $extra );
-        // No generic writes or migration; the dedicated audited writer is Day 51.
+        // The dedicated transactional writer uses SQL; generic writes stay blocked.
         return in_array( $key, array( self::META_KEY, self::HISTORY_KEY ), true ) ? false : $check;
     }
     public static function exclude_sitemap( array $types ): array { unset( $types[ self::POST_TYPE ] ); return $types; }
@@ -108,8 +108,10 @@ final class Gocar_Empty_Leg {
         $ref['exists'] = 1 === count( $matches );
         $ref['originLocationId'] = $from; $ref['destinationLocationId'] = $to;
         $ref['readinessVersion'] = (int) get_post_meta( $id, 'content_readiness_version', true );
-        $ref['prelaunch'] = 'prelaunch' === get_post_meta( $id, 'content_service_state', true ) || in_array( 9102, array( $from, $to ), true ) || 'san-bay-long-thanh' === ( get_post( $from )->post_name ?? '' ) || 'san-bay-long-thanh' === ( get_post( $to )->post_name ?? '' );
+        $ref['prelaunch'] = 'prelaunch' === get_post_meta( $id, 'content_service_state', true ) || array_intersect( array( 9102, 9154 ), array( $from, $to ) ) || in_array( get_post( $from )->post_name ?? '', array( 'san-bay-long-thanh', 'long-thanh' ), true ) || in_array( get_post( $to )->post_name ?? '', array( 'san-bay-long-thanh', 'long-thanh' ), true );
+        $ref['prelaunch'] = (bool) $ref['prelaunch'];
         $ref['mappingBlocked'] = 'clear' !== get_post_meta( $id, 'content_mapping_state', true );
+        if ( class_exists( 'Gocar_Admin_API' ) && Gocar_Admin_API::operational_route_blocked( $id, $from, $to ) ) $ref['mappingBlocked'] = true;
         $ref['activationReady'] = 'live' === get_post_meta( $id, 'content_service_state', true ) && in_array( get_post_meta( $id, $s['direction'] . '_enabled', true ), array( true, 1, '1' ), true ) && 'publish' === get_post_status( $id ) && 'publish' === get_post_status( $vehicle ) && 'publish' === get_post_status( $from ) && 'publish' === get_post_status( $to ) && $ref['readinessVersion'] > 0;
         if ( $ref['exists'] ) {
             $r = $matches[0];

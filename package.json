@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:empty-leg-admin": "node --test scripts/empty-leg-admin.test.mjs",
+    "test:empty-leg-admin:php": "php scripts/empty-leg-admin-php.test.php",
     "test:airport-consultation": "node --test scripts/airport-consultation.test.mjs",
     "test:promotion-surcharge:php": "php scripts/promotion-surcharge-php.test.php",
     "test:promotion-evaluator": "node --test scripts/promotion-evaluator.test.mjs",
