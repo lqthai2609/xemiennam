@@ -72,6 +72,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 48 approved airport timing and flight validation
+        run: |
+          npm run test:airport-timing
+          npm run test:airport-timing:php
+          php -l wordpress/gocar-core/includes/class-gocar-airport-timing.php
+
       - name: Day 47 vehicle selector transport and verified display
         run: npm run test:vehicle-selector
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { AirportPickupAdvice } from "@/components/airport-pickup-advice";
+import { validateFlightFields } from "@/lib/airport-timing";
 import { VehicleSelector } from "@/components/vehicle-selector";
 import { RequiredMark } from "@/components/required-mark";
 
@@ -41,6 +43,7 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
       flightNumber: z.string().trim().max(40, "Số hiệu chuyến bay tối đa 40 ký tự.").optional(),
       landingAt: z.string().optional(),
       airportTerminal: z.string().trim().max(80, "Thông tin nhà ga tối đa 80 ký tự.").optional(),
+      flightKind: z.enum(["", "domestic", "international"]).optional(),
       flightAt: z.string().optional(),
       airportArrivalAt: z.string().optional(),
       passengerCount: z.string().trim().optional(),
@@ -56,6 +59,8 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
         context.addIssue({ code: "custom", path: ["dropoffAddress"], message: "Vui lòng nhập điểm trả cụ thể." });
       }
       if (!airportContext) return;
+      const issues = validateFlightFields({ movement: airportContext === "pickup_from_airport" ? "arrival" : "departure", flight_number: data.flightNumber || null, flight_at: (airportContext === "pickup_from_airport" ? data.landingAt : data.flightAt) || null, airport_arrival_at: data.airportArrivalAt || null }, Date.now());
+      for (const issue of issues) context.addIssue({ code: "custom", path: [issue.field === "flight_number" ? "flightNumber" : issue.field === "airport_arrival_at" ? "airportArrivalAt" : airportContext === "pickup_from_airport" ? "landingAt" : "flightAt"], message: issue.message });
 
       const passengerCount = Number(data.passengerCount);
       if (!data.passengerCount || !Number.isInteger(passengerCount) || passengerCount < 1) {
@@ -169,6 +174,13 @@ function QuickBookingDialog({
   const visiblePrice = isQuote ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
   const passengerValue = useWatch({ control, name: "passengerCount" }) ?? "";
   const requestNameplate = useWatch({ control, name: "requestNameplate" });
+  const [flightNumber, landingAt, flightAt, airportTerminal, flightKind, airportArrivalAt, pickupAddress, dropoffAddress] = useWatch({ control, name: ["flightNumber", "landingAt", "flightAt", "airportTerminal", "flightKind", "airportArrivalAt", "pickupAddress", "dropoffAddress"] });
+  const timingInput = {
+    route_id: Number(routeId), direction, movement: airportContext === "pickup_from_airport" ? "arrival" as const : "departure" as const,
+    flight_kind: flightKind || null, terminal: airportTerminal?.trim() || null,
+    flight_number: flightNumber?.trim() || null, flight_at: (airportContext === "pickup_from_airport" ? landingAt : flightAt) || null,
+    airport_arrival_at: airportArrivalAt || null,
+  };
   const fixedAirportName = airportName || "Sân bay theo tuyến đã chọn";
 
   useEffect(() => {
@@ -205,6 +217,8 @@ function QuickBookingDialog({
         }
       } else if (airportContext === "dropoff_at_airport") {
         noteParts.push("Ngữ cảnh: Tiễn sân bay.");
+        if (data.flightNumber) noteParts.push(`Chuyến bay: ${data.flightNumber}.`);
+        if (data.airportTerminal) noteParts.push(`Nhà ga: ${data.airportTerminal}.`);
         if (data.flightAt) noteParts.push(`Giờ bay: ${formatDateTimeLabel(data.flightAt)}.`);
         if (data.airportArrivalAt) noteParts.push(`Có mặt sân bay: ${formatDateTimeLabel(data.airportArrivalAt)}.`);
         if (data.passengerCount) noteParts.push(`Khách: ${data.passengerCount}.`);
@@ -213,6 +227,8 @@ function QuickBookingDialog({
         noteParts.push(`Ngày giờ đi: ${formatDateTimeLabel(data.departureAt)}.`);
       }
 
+      if (airportContext && data.flightKind) noteParts.push(`Loại chuyến bay khách cung cấp: ${data.flightKind === "domestic" ? "Nội địa" : "Quốc tế"}.`);
+      // Advice remains separate: no inferred pickup date/time or approval in the booking contract.
       const res = await fetchBookingWithIdempotency("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -376,7 +392,8 @@ function QuickBookingDialog({
                   <span>
                     Giờ hạ cánh dự kiến
                   </span>
-                  <input {...register("landingAt")} type="datetime-local" className="form-control" />
+                  <input {...register("landingAt")} type="datetime-local" aria-invalid={!!errors.landingAt} className="form-control" />
+                  <FieldError message={errors.landingAt?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                   <span>
@@ -449,17 +466,21 @@ function QuickBookingDialog({
                 Thông tin này giúp {SITE_NAME} tư vấn giờ đón phù hợp với thời gian di chuyển thực tế.
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground"><span>Số hiệu chuyến bay</span><input {...register("flightNumber")} aria-invalid={!!errors.flightNumber} className="form-control" placeholder="VN123" /><FieldError message={errors.flightNumber?.message} /></label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground"><span>Nhà ga</span><input {...register("airportTerminal")} aria-invalid={!!errors.airportTerminal} className="form-control" placeholder="Nhà ga theo vé của bạn" /><FieldError message={errors.airportTerminal?.message} /></label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
                     Giờ bay dự kiến
                   </span>
-                  <input {...register("flightAt")} type="datetime-local" className="form-control" />
+                  <input {...register("flightAt")} type="datetime-local" aria-invalid={!!errors.flightAt} className="form-control" />
+                  <FieldError message={errors.flightAt?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
                     Giờ cần có mặt tại sân bay
                   </span>
-                  <input {...register("airportArrivalAt")} type="datetime-local" className="form-control" />
+                  <input {...register("airportArrivalAt")} type="datetime-local" aria-invalid={!!errors.airportArrivalAt} className="form-control" />
+                  <FieldError message={errors.airportArrivalAt?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span className="form-field-label">
@@ -493,6 +514,12 @@ function QuickBookingDialog({
               </div>
             </fieldset>
           )}
+
+          {airportContext && <fieldset className="flex flex-col gap-3 rounded-lg border border-border p-3">
+            <legend className="px-1 text-sm font-semibold">Gợi ý giờ đón sân bay</legend>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold"><span>Loại chuyến bay theo vé</span><select {...register("flightKind")} aria-label="Loại chuyến bay theo vé" className="form-control"><option value="">Chưa rõ, cần tư vấn</option><option value="domestic">Nội địa</option><option value="international">Quốc tế</option></select></label>
+            <AirportPickupAdvice key={JSON.stringify([timingInput, pickupAddress, dropoffAddress, vehicleType, packageKey])} input={timingInput} />
+          </fieldset>}
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
