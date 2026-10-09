@@ -45,6 +45,7 @@ function LegacyPricingGrid({
           <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))} className="vehicle-chip">
             {vp.vehicleType}
           </Link>
+          <p className="route-vehicle-model">Mẫu xe tham khảo: {vehicleCards.find((vehicle) => vehicleTypeSlug(vehicle.type.replace(/^Xe /, "")) === vehicleTypeSlug(vp.vehicleType.replace(/^Xe /, "")))?.models || "Dòng xe được xác nhận khi tư vấn"}</p>
           <strong>{vp.price}</strong>
           <small>{priceTypeLabel(vp.priceType)} · Giá tham khảo</small>
           <Button size="sm" variant="outline" asChild>
@@ -60,12 +61,12 @@ function LegacyPricingGrid({
 }
 
 const vehicleCards = [
-  { type: "Xe 4 chỗ", popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
-  { type: "Xe 7 chỗ", popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
-  { type: "Xe 16 chỗ", popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
-  { type: "Xe 29 chỗ", popular: false, fallback: "/images/destinations/long-an.webp" },
-  { type: "Xe 45 chỗ", popular: false, fallback: "/images/destinations/ben-tre.webp" },
-  { type: "Limousine", popular: false, fallback: "/images/services/city-tour.png" },
+  { type: "Xe 4 chỗ", models: "Toyota Vios · Hyundai Accent · Honda City · Kia Cerato", popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
+  { type: "Xe 7 chỗ", models: "Mitsubishi Xpander · Toyota Innova · Toyota Fortuner", popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
+  { type: "Xe 16 chỗ", models: "Ford Transit · Hyundai Solati", popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
+  { type: "Xe 29 chỗ", models: "Thaco / Hyundai hoặc tương đương", popular: false, fallback: "/images/destinations/long-an.webp" },
+  { type: "Xe 45 chỗ", models: "Universe / Samco hoặc tương đương", popular: false, fallback: "/images/destinations/ben-tre.webp" },
+  { type: "Limousine", models: "Dòng limousine cao cấp", popular: false, fallback: "/images/services/city-tour.png" },
 ] as const;
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
@@ -139,6 +140,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
         <div className="route-vehicle-image"><Link href={vehicleHref} aria-label={`Xem tuyến ${displayRoute} bằng ${vehicle.type}`}><img src={image} alt={`Mẫu xe tham khảo ${vehicle.type.toLowerCase()}`} loading="lazy" /></Link>{!redesign && vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>
         <div className="route-vehicle-body">
           {!redesign && <h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>}
+          <p className="route-vehicle-model">{redesign && <small>Mẫu xe tham khảo</small>}{!redesign && "Mẫu xe tham khảo: "}{vehicle.models}</p>
           {redesign && <div className="route-vehicle-summary">{priceBlock}</div>}
           <div className="route-vehicle-bottom">
             {!redesign && priceBlock}
