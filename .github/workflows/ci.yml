@@ -117,6 +117,9 @@ jobs:
       - name: Route direction and package navigation
         run: node --test scripts/route-journey-selection.test.mjs
 
+      - name: Sitemap lastmod date validity
+        run: node --test scripts/sitemap-lastmod.test.mjs
+
       - name: Day 36B brand, pricing UI and Content Readiness guard
         run: npm run test:day36b
 

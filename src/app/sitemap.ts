@@ -8,6 +8,7 @@ import { getIndexableComboVehicleSlugs } from "@/lib/combo";
 import { vehicleCategories } from "@/data/vehicle-categories";
 import { routeHref, routeComboHref } from "@/types/route";
 import { resolveRouteContentReadiness } from "@/lib/content-readiness";
+import { sitemapLastModified } from "@/lib/sitemap-lastmod";
 
 /**
  * Sitemap động (Ngày 23, mục 5 kiến trúc kỹ thuật) — tự sinh từ dữ liệu WP REST thật
@@ -121,7 +122,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [
+  const entries: MetadataRoute.Sitemap = [
     ...staticEntries,
     ...airportHubEntries,
     ...hubEntries,
@@ -131,4 +132,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...serviceEntries,
     ...postEntries,
   ];
+
+  // Normalize every family at the XML boundary; keep source dates in other consumers.
+  return entries.map((entry) => ({
+    ...entry,
+    lastModified: sitemapLastModified(entry.lastModified),
+  }));
 }
