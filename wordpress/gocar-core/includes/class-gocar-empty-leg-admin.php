@@ -17,6 +17,7 @@ final class Gocar_Empty_Leg_Admin {
         return $response;
     }
     public static function register_routes(): void {
+        register_rest_route( 'gocar/v1', '/admin/empty-legs/presentation', array( 'methods' => 'GET', 'callback' => array( self::class, 'presentation' ), 'permission_callback' => array( self::class, 'can_edit' ) ) );
         register_rest_route( 'gocar/v1', '/admin/empty-legs/options', array( 'methods' => 'GET', 'callback' => array( self::class, 'options' ), 'permission_callback' => array( self::class, 'can_edit' ) ) );
         register_rest_route( 'gocar/v1', '/admin/empty-legs', array(
             array( 'methods' => 'GET', 'callback' => array( self::class, 'listing' ), 'permission_callback' => array( self::class, 'can_edit' ) ),
@@ -87,6 +88,23 @@ final class Gocar_Empty_Leg_Admin {
             if ( $stored ) $items[] = array( 'id' => (int) $post->ID, 'model' => $stored['model'], 'assessment' => Gocar_Empty_Leg::assess( $stored['model'] ) );
         }
         return self::private_response( array( 'items' => $items, 'limit' => 50 ) );
+    }
+    /** Read-only projection: source references, actors and history never reach the cards. */
+    public static function presentation() {
+        if ( ! self::can_edit() ) return self::error( 'forbidden', 'Không có quyền xem chuyến.', 403 );
+        $args = array( 'post_type' => Gocar_Empty_Leg::POST_TYPE, 'post_status' => 'private', 'posts_per_page' => 50, 'orderby' => 'ID', 'order' => 'DESC' );
+        if ( ! current_user_can( 'publish_posts' ) ) $args['author'] = get_current_user_id();
+        $items = array();
+        foreach ( get_posts( $args ) as $post ) {
+            if ( ! self::accessible( $post ) ) continue;
+            $stored = self::stored( (int) $post->ID );
+            $scope = $stored['model']['scope'] ?? null;
+            if ( is_array( $scope ) ) foreach ( array( 'route_id', 'vehicle_id', 'origin_location_id', 'destination_location_id' ) as $key ) if ( is_int( $scope[$key] ?? null ) ) clean_post_cache( $scope[$key] );
+            $card = Gocar_Empty_Leg::presentation( (int) $post->ID, $stored );
+            if ( $card ) $items[] = $card;
+        }
+        // Timestamp before processing is conservative for network/SQL latency.
+        return self::private_response( array( 'contract_version' => 1, 'server_now' => gmdate( 'Y-m-d\TH:i:s\Z', $_SERVER['REQUEST_TIME'] ?? time() ), 'lease_ms' => 15000, 'commercial_enabled' => false, 'sellable' => false, 'items' => $items ) );
     }
     private static function safe_text( $text ): bool {
         if ( ! is_string( $text ) || trim( $text ) !== $text || '' === $text || preg_match( '/[<>\x00-\x1f\x7f]/', $text ) ) return false;

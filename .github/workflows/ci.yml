@@ -72,6 +72,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 52 server projection and expiry auto-hide
+        run: |
+          npm run test:empty-leg-presentation
+          npm run test:empty-leg-presentation:php
+
       - name: Day 51 private dispatch permissions, revision, audit and atomic persistence
         run: |
           npm run test:empty-leg-admin

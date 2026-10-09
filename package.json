@@ -48,7 +48,9 @@
     "test:airport-timing": "node --test scripts/airport-timing.test.mjs",
     "test:airport-timing:php": "php scripts/airport-timing-php.test.php",
     "test:empty-leg": "node --test scripts/empty-leg.test.mjs",
-    "test:empty-leg:php": "php scripts/empty-leg-php.test.php"
+    "test:empty-leg:php": "php scripts/empty-leg-php.test.php",
+    "test:empty-leg-presentation": "node --test scripts/empty-leg-presentation.test.mjs",
+    "test:empty-leg-presentation:php": "php scripts/empty-leg-presentation-php.test.php && php scripts/empty-leg-presentation-api-php.test.php"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

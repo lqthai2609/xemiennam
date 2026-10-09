@@ -123,6 +123,17 @@ final class Gocar_Empty_Leg {
         }
         return $ref;
     }
+    public static function presentation( int $id, ?array $stored, ?callable $reference = null, ?int $now = null, ?callable $title = null ): ?array {
+        $now = $now ?? time(); $m = $stored['model'] ?? null; $stamp = $stored['confirmation'] ?? null;
+        if ( $id < 1 || 'eligible' !== self::assess( $m, $reference, $now )['state'] || ! self::object( $stamp, array( 'actor', 'at', 'revision', 'source_ref' ) ) || ! self::integer( $stamp['actor'] ) || $stamp['revision'] !== $m['revision'] || $stamp['source_ref'] !== $m['approval']['source_ref'] || null === self::instant( $stamp['at'] ) || self::instant( $stamp['at'] ) > $now ) return null;
+        $labels = array();
+        foreach ( array( 'origin_location_id', 'destination_location_id', 'vehicle_id' ) as $key ) {
+            $label = $title ? $title( $m['scope'][$key] ) : get_the_title( $m['scope'][$key] );
+            if ( ! self::text( $label ) ) return null;
+            $labels[] = $label;
+        }
+        return array( 'id' => $id, 'revision' => $m['revision'], 'origin' => $labels[0], 'destination' => $labels[1], 'vehicle' => $labels[2], 'direction' => $m['scope']['direction'], 'package_key' => 'one_way', 'departure' => $m['departure'], 'valid_from' => $m['valid_from'], 'expires_at' => $m['expires_at'], 'normal_price_vnd' => $m['prices']['normal_price_vnd'], 'special_price_vnd' => $m['prices']['special_price_vnd'], 'currency' => 'VND', 'basis' => 'base_price' );
+    }
     public static function assess( $input, ?callable $reference = null, ?int $now = null ): array {
         $checked = self::validate( $input, $reference ); $now = $now ?? time(); $state = 'invalid';
         if ( $checked['valid'] ) {

@@ -122,6 +122,6 @@ check(Gocar_Admin_API::operational_route_blocked(1001,9118,9119),'D35 endpoint h
 check(!Gocar_Admin_API::operational_route_blocked(1001,3001,3002),'unrelated routes unaffected');
 foreach(array(9102,9154) as $id) { $wpdb->records[$id]=(object)array('post_type'=>'location','post_status'=>'publish','post_name'=>'synthetic-long-thanh'); $wpdb->refs[1001]['origin_location_id']=$id; check(Gocar_Empty_Leg::reference($base['scope'])['prelaunch']===true,'Long Thanh hard id '.$id); }
 Gocar_Empty_Leg_Admin::register_routes();
-check(count($registrations)===3,'three private admin routes');
+check(count($registrations)===4,'four private admin routes');
 foreach($registrations as $path=>$routes) { check(str_starts_with($path,'/admin/'),'only admin endpoints'); foreach(isset($routes['methods'])?array($routes):$routes as $route) check($route['permission_callback']===array(Gocar_Empty_Leg_Admin::class,'can_edit'),'every route authenticated'); }
 echo "PASS: $checks PHP dispatch policy/persistence/permission/audit checks (isolated doubles)\n";

@@ -103,6 +103,7 @@ export function EmptyLegAdmin({ csrf, canPublish }: { csrf: string; canPublish: 
   return <main className={styles.main}>
     <Link href="/quan-tri">Quản trị tuyến và giá</Link>
     <h1>Điều phối chuyến xe chiều trống</h1>
+    <Link href="/quan-tri/chieu-trong/xem-truoc">Xem trước thẻ chuyến và giá riêng</Link>
     <p className={styles.notice}>Công cụ nội bộ. Chỉ nhập thông tin được Vận hành xác nhận. Chuyến chưa mở bán cho khách; ghi giữ chỗ tại đây không tạo đặt xe hoặc gửi thông báo.</p>
     {error && <p className={styles.error} role="alert">{error}</p>}
     {message && <p className={styles.success} role="status">{message}</p>}
