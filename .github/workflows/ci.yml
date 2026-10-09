@@ -72,6 +72,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 47 vehicle selector transport and verified display
+        run: npm run test:vehicle-selector
+
       - name: Day 46 confirmed vehicle facts and loading suggestions
         run: |
           npm run test:vehicle-facts

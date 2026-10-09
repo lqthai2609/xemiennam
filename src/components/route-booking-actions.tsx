@@ -1,5 +1,6 @@
 "use client";
 
+import { VehicleSelector } from "@/components/vehicle-selector";
 import { RequiredMark } from "@/components/required-mark";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -149,6 +150,7 @@ function QuickBookingDialog({
   const {
     register,
     handleSubmit,
+    setValue,
     control,
     formState: { errors, isSubmitting },
   } = useForm<QuickBookingData>({
@@ -156,8 +158,8 @@ function QuickBookingDialog({
     defaultValues: {
       pickupAddress: "",
       dropoffAddress: "",
-      passengerCount: airportContext ? "1" : "",
-      luggageCount: airportContext ? "0" : "",
+      passengerCount: "",
+      luggageCount: "",
       requestNameplate: false,
     },
   });
@@ -165,6 +167,7 @@ function QuickBookingDialog({
   const visibleRoute = displayRoute || route;
   const isQuote = pricingMode === "contact";
   const visiblePrice = isQuote ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
+  const passengerValue = useWatch({ control, name: "passengerCount" }) ?? "";
   const requestNameplate = useWatch({ control, name: "requestNameplate" });
   const fixedAirportName = airportName || "Sân bay theo tuyến đã chọn";
 
@@ -187,6 +190,7 @@ function QuickBookingDialog({
       const departureDate = datePart(schedulingValue);
       const noteParts: string[] = [isQuote ? "Yêu cầu báo giá online." : "Đặt xe online."];
 
+      if (!airportContext && data.passengerCount) noteParts.push(`Khách: ${data.passengerCount}.`);
       if (packageLabel) noteParts.push(`Gói: ${packageLabel}.`);
 
       if (airportContext === "pickup_from_airport") {
@@ -278,6 +282,7 @@ function QuickBookingDialog({
           </div>
         </div>
 
+        <VehicleSelector selectedType={vehicleType} passengerValue={passengerValue} onPassengerChange={(value) => setValue("passengerCount", value, { shouldDirty: true })} />
         <form onSubmit={handleSubmit(submitForm)} className="quick-booking-form" noValidate>
           <fieldset className="flex flex-col gap-3">
             <legend className="mb-2 text-sm font-semibold text-foreground">Thông tin khách hàng</legend>

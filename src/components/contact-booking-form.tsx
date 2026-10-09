@@ -1,5 +1,6 @@
 "use client";
 
+import { VehicleSelector } from "@/components/vehicle-selector";
 import { RequiredMark } from "@/components/required-mark";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,6 +92,7 @@ export function ContactBookingForm({
       note: "",
     },
   });
+  const selectedVehicleType = useWatch({ control, name: "vehicleType" }) ?? "";
   const pickup = useWatch({ control, name: "pickup" }) ?? "";
   const destination = useWatch({ control, name: "destination" }) ?? "";
   const intermediateStops = useWatch({ control, name: "intermediateStops" }) ?? [];
@@ -141,6 +143,7 @@ export function ContactBookingForm({
         <label className="contact-field contact-full"><span>Lưu ý điểm đón</span><textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} placeholder="Ví dụ: sảnh chung cư, cổng công ty, tên quán cà phê..." className="form-control" /><FieldError message={errors.pickupNote?.message} /></label>
         <label className="contact-field contact-full"><span>Ghi chú</span><textarea {...register("note")} maxLength={500} aria-invalid={!!errors.note} placeholder="Nhập thêm thông tin về chuyến đi, số người, hành lý..." className="form-control" /><FieldError message={errors.note?.message} /></label>
       </div>
+      <VehicleSelector selectedType={selectedVehicleType} onSelectType={(type) => { if (vehicleTypes.includes(type)) setValue("vehicleType", type, { shouldDirty: true, shouldValidate: true }); }} />
       <Button type="submit" disabled={isSubmitting} className="contact-form-submit">{isSubmitting ? <LoaderCircle aria-hidden="true" className="animate-spin" /> : <Send aria-hidden="true" />}{isSubmitting ? "Đang gửi thông tin..." : "Gửi yêu cầu đặt xe"}</Button>
       <p className="contact-form-assurance"><Info aria-hidden="true" /> Chúng tôi xác nhận thông tin và giá trước chuyến đi.</p>
     </form>

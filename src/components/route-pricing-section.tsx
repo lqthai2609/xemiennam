@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
+import { VehicleSelector } from "@/components/vehicle-selector";
 import { Button } from "@/components/ui/button";
 import { PromotionPrice } from "@/components/promotion-price";
 import { MediaPhoto } from "@/components/media-photo";
@@ -60,12 +61,12 @@ function LegacyPricingGrid({
 }
 
 const vehicleCards = [
-  { type: "Xe 4 chỗ", models: "Toyota Vios · Hyundai Accent · Honda City · Kia Cerato", capacity: "1–3 hành khách", benefits: ["Xe riêng có tài xế", "Xác nhận điểm đón khi báo giá", "Xác nhận điểm trả khi báo giá"], popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
-  { type: "Xe 7 chỗ", models: "Mitsubishi Xpander · Toyota Innova · Toyota Fortuner", capacity: "3–6 hành khách", benefits: ["Xe riêng có tài xế", "Hành lý thoải mái", "Xác nhận điểm đón khi báo giá"], popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
-  { type: "Xe 16 chỗ", models: "Ford Transit · Hyundai Solati", capacity: "7–14 hành khách", benefits: ["Phù hợp nhóm đông", "Có tài xế", "Xác nhận điểm đón/trả khi báo giá"], popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
-  { type: "Xe 29 chỗ", models: "Thaco / Hyundai hoặc tương đương", capacity: "Nhóm / đoàn", benefits: ["Phù hợp đoàn đông", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/long-an.webp" },
-  { type: "Xe 45 chỗ", models: "Universe / Samco hoặc tương đương", capacity: "Đoàn lớn", benefits: ["Không gian rộng", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/ben-tre.webp" },
-  { type: "Limousine", models: "Dòng limousine cao cấp", capacity: "Không gian cao cấp", benefits: ["Nội thất cao cấp", "Tiện nghi", "Phù hợp khách VIP / doanh nghiệp"], popular: false, fallback: "/images/services/city-tour.png" },
+  { type: "Xe 4 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Xe riêng có tài xế", "Xác nhận điểm đón khi báo giá", "Xác nhận điểm trả khi báo giá"], popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
+  { type: "Xe 7 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Xe riêng có tài xế", "Hành lý cần tư vấn", "Xác nhận điểm đón khi báo giá"], popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
+  { type: "Xe 16 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Cấu hình cần tư vấn", "Có tài xế", "Xác nhận điểm đón/trả khi báo giá"], popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
+  { type: "Xe 29 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Cấu hình cần tư vấn", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/long-an.webp" },
+  { type: "Xe 45 chỗ", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Cấu hình cần tư vấn", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/ben-tre.webp" },
+  { type: "Limousine", models: "Cần tư vấn", capacity: "Cần tư vấn", benefits: ["Sức chứa cần tư vấn", "Hành lý cần tư vấn", "Cấp dịch vụ cần tư vấn"], popular: false, fallback: "/images/services/city-tour.png" },
 ] as const;
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
@@ -156,8 +157,8 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
       {hero}
       {pricing && <div className="route-detail-design-hero-controls"><h2>Chọn chuyến đi</h2>{journeyControls}</div>}
     </section>
-    <div className="route-detail-design-main"><section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến"><div id="pricing">{picker}</div></section></div>
-  </> : picker;
+    <div className="route-detail-design-main"><section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến"><div id="pricing">{picker}<VehicleSelector /></div></section></div>
+  </> : <>{picker}<VehicleSelector /></>;
 }
 
 export default RoutePricingSection;

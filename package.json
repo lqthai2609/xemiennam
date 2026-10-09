@@ -40,7 +40,8 @@
     "test:promotion-snapshot": "node --test scripts/promotion-snapshot.test.mjs scripts/booking-snapshot-api.test.mjs",
     "test:promotion-snapshot:php": "php scripts/promotion-snapshot-php.test.php",
     "test:vehicle-facts": "node --test scripts/vehicle-facts.test.mjs",
-    "test:vehicle-facts:php": "php scripts/vehicle-facts-php.test.php"
+    "test:vehicle-facts:php": "php scripts/vehicle-facts-php.test.php",
+    "test:vehicle-selector": "node --test scripts/vehicle-selector.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
