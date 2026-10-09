@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:airport-consultation": "node --test scripts/airport-consultation.test.mjs",
     "test:promotion-surcharge:php": "php scripts/promotion-surcharge-php.test.php",
     "test:promotion-evaluator": "node --test scripts/promotion-evaluator.test.mjs",
     "test:promotion-model": "node --test scripts/promotion-model.test.mjs",

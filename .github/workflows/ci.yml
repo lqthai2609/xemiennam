@@ -72,6 +72,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 49 directional airport consultation and readiness guards
+        run: npm run test:airport-consultation
+
       - name: Day 48 approved airport timing and flight validation
         run: |
           npm run test:airport-timing

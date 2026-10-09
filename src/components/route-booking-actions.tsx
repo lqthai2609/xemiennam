@@ -1,6 +1,8 @@
 "use client";
 
 import { AirportPickupAdvice } from "@/components/airport-pickup-advice";
+import { AirportQuickConsultation } from "@/components/airport-quick-consultation";
+import { airportConsultationLabel } from "@/lib/airport-consultation";
 import { validateFlightFields } from "@/lib/airport-timing";
 import { VehicleSelector } from "@/components/vehicle-selector";
 import { RequiredMark } from "@/components/required-mark";
@@ -440,8 +442,9 @@ function QuickBookingDialog({
 
               <label className="flex items-start gap-2 text-sm font-semibold text-foreground">
                 <input {...register("requestNameplate")} type="checkbox" className="mt-1 size-4" />
-                <span>Cần bảng tên đón khách</span>
+                <span>Muốn hỏi về bảng tên đón khách</span>
               </label>
+              <p className="m-0 text-xs text-muted-foreground">Nhu cầu bảng tên cần được xác nhận về khả năng phục vụ và chi phí; chưa bao gồm mặc định.</p>
 
               {requestNameplate && (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
@@ -562,32 +565,35 @@ export function RouteBookingActions({
   if (pricingMode === "disabled") return null;
 
   const isQuote = pricingMode === "contact";
+  const consultationLabel = airportContext ? airportConsultationLabel(airportContext) : null;
+  const consultationOnly = /long[ -]th[aà]nh/i.test(`${airportName || ""} ${route} ${displayRoute || ""}`);
 
   return (
     <>
       <div className="detail-price-actions route-booking-actions">
         {zaloLink && (
           <Button size="sm" className="route-booking-primary zalo-cta" asChild>
-            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`${isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"} ${vehicleType}`} className="zalo-cta">
+            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`${consultationOnly ? "Liên hệ tư vấn trước" : consultationLabel || (isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe")} ${vehicleType}`} className="zalo-cta">
               <ZaloIcon />
-              {isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"}
+              {consultationOnly ? "Liên hệ tư vấn trước" : consultationLabel || (isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe")}
             </a>
           </Button>
         )}
         <div className="route-booking-secondary">
-          <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" aria-label={compactLabels ? `Gửi yêu cầu ${vehicleType}` : undefined} onClick={() => setOpen(true)}>
+          {airportContext && !consultationOnly && <AirportQuickConsultation journeys={[{ key: `${routeId}:${direction}:${packageKey}:${vehicleType}`, label: `${displayRoute || route} · ${vehicleType}${packageLabel ? ` · ${packageLabel}` : ""}`, context: airportContext }]} />}
+          {!consultationOnly && <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" aria-label={compactLabels ? `Gửi yêu cầu ${vehicleType}` : undefined} onClick={() => setOpen(true)}>
             {compactLabels && <ClipboardList aria-hidden="true" size={20} />}{compactLabels ? "Gửi yêu cầu" : isQuote ? "Gửi yêu cầu báo giá" : "Gửi yêu cầu đặt xe"}
-          </Button>
+          </Button>}
           <Button size="sm" variant="outline" asChild>
-            <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`${isQuote ? "Gọi báo giá" : "Gọi đặt xe"} ${vehicleType}`}>
+            <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`${consultationOnly || airportContext ? "Gọi tư vấn" : isQuote ? "Gọi báo giá" : "Gọi đặt xe"} ${vehicleType}`}>
               <Phone aria-hidden="true" size={16} />
-              {isQuote ? "Gọi báo giá" : "Gọi đặt xe"}
+              {consultationOnly || airportContext ? "Gọi tư vấn" : isQuote ? "Gọi báo giá" : "Gọi đặt xe"}
             </a>
           </Button>
         </div>
       </div>
-      {!isQuote && <p className="route-booking-note">Chúng tôi xác nhận lịch xe và chi phí cuối cùng trước khi nhận chuyến.</p>}
-      {open && (
+      {consultationOnly ? <p className="route-booking-note">Đang chuẩn bị, chưa nhận đặt chuyến. Liên hệ tư vấn trước.</p> : !isQuote && <p className="route-booking-note">Chúng tôi xác nhận lịch xe và chi phí cuối cùng trước khi nhận chuyến.</p>}
+      {open && !consultationOnly && (
         <QuickBookingDialog
           route={route}
           routeId={routeId}
