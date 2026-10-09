@@ -5,6 +5,7 @@ import { airportDisplayName, airportHubHref, airportPublicSlug } from "@/lib/air
 import { routeHref, type Route, type RoutePricingPackage } from "@/types/route";
 import { getPublicRouteLabel } from "@/lib/public-location-label";
 import { canSuggestRelatedRoute } from "@/lib/content-readiness";
+import { routeJourneyHref } from "@/lib/route-journey-selection";
 
 export type AirportTravelDirection = "from_airport" | "to_airport";
 
@@ -70,6 +71,7 @@ function buildAirportRoute(
   const airportName = airportDisplayName(airport.name);
   const from = travelDirection === "from_airport" ? airportName : counterpart.name;
   const to = travelDirection === "from_airport" ? counterpart.name : airportName;
+  const featuredPrice = featuredPriceForDirection(route, pricingDirection);
 
   return {
     route,
@@ -81,8 +83,8 @@ function buildAirportRoute(
     pricingDirection,
     from,
     to,
-    href: routeHref(route),
-    featuredPrice: featuredPriceForDirection(route, pricingDirection),
+    href: routeJourneyHref(routeHref(route), pricingDirection, featuredPrice?.mode === "disabled" ? undefined : featuredPrice?.packageKey),
+    featuredPrice,
     priceLabel: priceLabelForDirection(route, pricingDirection),
   };
 }
