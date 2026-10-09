@@ -32,6 +32,7 @@ export interface PromotionResolution {
   promotionalEstimatedTotal?: number;
   promotion_id?: number;
   revision?: number;
+  discountKind?: PromotionModel["discount"]["kind"];
   target?: PromotionModel["discount"]["target"];
   priceLayer?: "base_price" | "estimated_total" | "surcharge";
   comparisonBefore?: number;
@@ -212,7 +213,7 @@ export function evaluatePromotionRules(price: PriceRulesResolution, context: Pro
   const { record, model, amount, eligible } = selected[0];
   const discount = model.discount;
   result.promotion = { ...result.promotion, promotionStatus: discount.kind === "benefit" ? "benefit" : "applied", reason: "applied",
-    promotion_id: record.promotion_id, revision: model.revision, target: discount.target, validity: { ...model.window },
+    promotion_id: record.promotion_id, revision: model.revision, discountKind: discount.kind, target: discount.target, validity: { ...model.window },
     conditionsSummary: summaries(model), discountAmount: amount,
     requiresTripContext: model.conditions.some((condition) => condition.kind !== "min_eligible_amount"),
     promotionalEstimatedTotal: Number(BigInt(pricing.estimatedTotal!) - BigInt(amount)),

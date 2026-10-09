@@ -36,7 +36,9 @@
     "test:lead-idempotency": "node --test scripts/gocar-lead-idempotency.test.mjs",
     "test:seo006a-core": "node --test scripts/gocar-seo006a-core.test.mjs",
     "test:public-pricing": "node --test scripts/public-cms-pricing.test.mjs",
-    "test:promotion-presentation": "node --test scripts/promotion-presentation.test.mjs"
+    "test:promotion-presentation": "node --test scripts/promotion-presentation.test.mjs",
+    "test:promotion-snapshot": "node --test scripts/promotion-snapshot.test.mjs scripts/booking-snapshot-api.test.mjs",
+    "test:promotion-snapshot:php": "php scripts/promotion-snapshot-php.test.php"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

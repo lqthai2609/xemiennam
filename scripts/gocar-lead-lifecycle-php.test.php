@@ -8,13 +8,13 @@ function current_user_can( $cap, $id = 0 ) { return $GLOBALS['cap'][ $cap ] ?? (
 function get_current_user_id() { return 7; }
 function get_post_type( $id ) { return $GLOBALS['posts'][ $id ] ?? null; }
 function get_post_meta( $id, $key, $single = true ) { $values = $GLOBALS['meta'][ $id ][ $key ] ?? array(); return $single ? ( $values[0] ?? '' ) : $values; }
-function add_post_meta( $id, $key, $value, $unique = false ) { if ( $unique && isset( $GLOBALS['meta'][ $id ][ $key ] ) ) return false; $GLOBALS['meta'][ $id ][ $key ][] = $value; return true; }
-function update_post_meta( $id, $key, $value ) { $GLOBALS['meta'][ $id ][ $key ] = array( $value ); return true; }
+function add_post_meta( $id, $key, $value, $unique = false ) { if ( class_exists( 'Gocar_Promotion_Snapshot' ) && false === Gocar_Promotion_Snapshot::guard( null, $id, $key, $value, null ) ) return false; if ( '_gocar_promotion_snapshot_v1' === $key && ! empty( $GLOBALS['fail_snapshot'] ) ) return false; if ( $unique && isset( $GLOBALS['meta'][ $id ][ $key ] ) ) return false; $GLOBALS['meta'][ $id ][ $key ][] = $value; return true; }
+function update_post_meta( $id, $key, $value ) { if ( class_exists( 'Gocar_Promotion_Snapshot' ) && false === Gocar_Promotion_Snapshot::guard( null, $id, $key, $value, null ) ) return false; $GLOBALS['meta'][ $id ][ $key ] = array( $value ); return true; }
 function sanitize_text_field( $value ) { return trim( strip_tags( (string) $value ) ); }
 function wp_json_encode( $value ) { return json_encode( $value ); }
 function wp_parse_url( $value ) { return parse_url( $value ); }
 function get_option( $key ) { return $GLOBALS['options'][ $key ] ?? false; }
-function add_option( $key, $value ) { if ( isset( $GLOBALS['options'][ $key ] ) ) return false; $GLOBALS['options'][ $key ] = $value; return true; }
+function add_option( $key, $value ) { if ( isset( $GLOBALS['race_option'] ) && $GLOBALS['race_option'] === $key ) { $GLOBALS['options'][$key] = $value; unset($GLOBALS['race_option']); return false; } if ( isset( $GLOBALS['options'][ $key ] ) ) return false; $GLOBALS['options'][ $key ] = $value; return true; }
 function update_option( $key, $value ) { $GLOBALS['options'][ $key ] = $value; return true; }
 function delete_option( $key ) { unset( $GLOBALS['options'][ $key ] ); }
 function get_posts( $args ) {
@@ -50,6 +50,7 @@ class WP_REST_Request implements ArrayAccess {
 }
 class FakeDB { public string $posts = 'wp_posts'; public array $queries = array(); public function query( $sql ) { $this->queries[] = $sql; } public function prepare( $sql, $value ) { return sprintf( $sql, $value ); } public function get_var( $sql ) { return 200; } }
 $GLOBALS['wpdb'] = new FakeDB();
+require_once __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-promotion-snapshot.php';
 require_once __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-lead-lifecycle.php';
 function check( $condition, $message ) { if ( ! $condition ) { fwrite( STDERR, "FAIL: $message\n" ); exit( 1 ); } }
 check( Gocar_Lead_Lifecycle::context( array( 'source' => 'google', 'medium' => 'cpc', 'campaign' => 'airport_q4', 'landing_path' => '/tuyen/sai-gon-vung-tau/' ) )['campaign'] === 'airport_q4', 'paid context retained' );

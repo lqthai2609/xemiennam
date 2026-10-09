@@ -77,6 +77,13 @@ jobs:
           npm run test:promotion-model
           npm run test:promotion-model:php
 
+      - name: Day 45 immutable promotion snapshot and replay
+        run: |
+          npm run test:promotion-snapshot
+          npm run test:promotion-snapshot:php
+          php -l wordpress/gocar-core/includes/class-gocar-promotion-snapshot.php
+          php -l wordpress/gocar-core/includes/class-gocar-lead-lifecycle.php
+
       - name: Day 44 promotion presentation and expiry
         run: npm run test:promotion-presentation
 

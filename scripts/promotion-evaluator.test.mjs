@@ -183,11 +183,11 @@ for(const mode of ["fixed","contact","disabled"]) test(`booking server integrati
   const bookingLoad=typescriptLoader({"server-only":{},"next/server":{NextResponse:{json:(data,options)=>({data,options})}},
     "@/lib/api/raw":{fetchRawRoutes:async()=>[r],fetchRawVehicles:async()=>[vehicle],embeddedTermName:()=>"Synthetic vehicle"},
     "@/lib/api/locations":{fetchLocationsV2:async()=>[{id:4001,name:"Synthetic origin",serviceZoneId:"airport",serviceAreaStatus:"covered"},{id:4002,name:"Synthetic destination",serviceZoneId:"other",serviceAreaStatus:"covered"}],locationById:(rows)=>new Map(rows.map(row=>[row.id,row]))},
-    "@/lib/api/wp-auth":{wpAuthedFetch:async(path,init)=>{assert.equal(path,"/gocar/v1/leads");received=init.body;return {ok:true,data:{id:7001,lead_id:7001,replayed:true}};}},
+    "@/lib/api/wp-auth":{wpAuthedFetch:async(path,init)=>{if(path==="/gocar/v1/leads/replay")return {ok:true,data:{found:false}};assert.equal(path,"/gocar/v1/leads");received=init.body;return {ok:true,data:{id:7001,lead_id:7001,replayed:true,promotion_snapshot:init.body.promotion_snapshot}};}},
     "@/lib/booking-notification":{sendBookingNotification:async()=>{notifications++;return {sent:true};}},
   });
   const {POST}=bookingLoad("src/app/api/booking/route.ts");
-  const response=await POST(new Request("http://localhost/api/booking",{method:"POST",headers:{"content-type":"application/json","x-lead-idempotency-key":"synthetic-replay"},body:JSON.stringify({fullName:"Synthetic fixture",phone:"0900000000",route:"Synthetic",routeId:"1001",vehicleType:"Synthetic vehicle",direction:"outbound",packageKey:"one_way",estimatedTotal:1,discountAmount:900000,promotionalEstimatedTotal:0,commercialEnabled:true})}));
+  const response=await POST(new Request("http://localhost/api/booking",{method:"POST",headers:{"content-type":"application/json","x-lead-idempotency-key":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"},body:JSON.stringify({fullName:"Synthetic fixture",phone:"0900000000",route:"Synthetic",routeId:"1001",vehicleType:"Synthetic vehicle",direction:"outbound",packageKey:"one_way",estimatedTotal:1,discountAmount:900000,promotionalEstimatedTotal:0,commercialEnabled:true})}));
   assert.equal(response.data.ok,true);assert.equal(notifications,0);assert.equal(received.booking.meta.pricing_resolution_mode,mode);
   assert.equal(received.booking.meta.estimated_total,mode==="fixed"?900000:undefined);
   assert.equal(received.booking.meta.base_price_snapshot,mode==="fixed"?800000:undefined);
