@@ -7,7 +7,8 @@ const transpile = (source) => ts.transpileModule(source, { compilerOptions: { mo
 const dataUrl = (source) => `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 const capability = dataUrl(transpile(await readFile(new URL("../src/lib/route-package-capability.ts", import.meta.url), "utf8")));
 const source = await readFile(new URL("../src/lib/route-journey-selection.ts", import.meta.url), "utf8");
-const { resolveRouteJourneySelection, routeJourneyHref } = await import(dataUrl(transpile(source).replace('"@/lib/route-package-capability"', JSON.stringify(capability))));
+const journeyModule = dataUrl(transpile(source).replace('"@/lib/route-package-capability"', JSON.stringify(capability)));
+const { resolveRouteJourneySelection, routeJourneyHref } = await import(journeyModule);
 
 const keys = ["one_way", "round_trip_day", "2d1n", "3d2n"];
 const route = {
@@ -51,5 +52,49 @@ test("initial direction/package come from server query before rendering, canonic
     assert.match(page,/resolveRouteJourneySelection\(route, await searchParams/);
     assert.match(page,/initialSelection=\{selection\}/);
     assert.doesNotMatch(page,/path: routeJourneyHref/);
+  }
+});
+
+test("airport hub links preserve each card's direction and featured package for either airport endpoint", async () => {
+  const airportSource = transpile(await readFile(new URL("../src/lib/api/airport-routes.ts", import.meta.url), "utf8"));
+  const fixtures = [
+    { slug: "airport-first", originLocationId: 1, destinationLocationId: 2 },
+    { slug: "airport-last", originLocationId: 3, destinationLocationId: 1 },
+  ];
+  const routes = fixtures.map((fixture) => ({
+    slug: fixture.slug, regionSlug: "province",
+    pricingV2: {
+      outbound: { ...route.pricingV2.outbound, featured: route.pricingV2.outbound.packages.find((row) => row.packageKey === "2d1n") },
+      inbound: { ...route.pricingV2.inbound, featured: route.pricingV2.inbound.packages.find((row) => row.packageKey === "3d2n") },
+    },
+  }));
+  const pairs = fixtures.map((fixture) => ({ ...fixture, routeSlug: fixture.slug, usesLegacyLocationFallback: false, outbound: { enabled: true }, inbound: { enabled: true } }));
+  const mock = dataUrl(`
+    export const fetchLocationsV2 = async () => [{id:1,slug:"san-bay-tan-son-nhat",name:"Tân Sơn Nhất",type:"airport"},{id:2,slug:"city-a",name:"City A",type:"city"},{id:3,slug:"city-b",name:"City B",type:"city"}];
+    export const fetchRoutePairsV2 = async () => ${JSON.stringify(pairs)};
+    export const fetchRoutes = async () => ${JSON.stringify(routes)};
+    export const airportDisplayName = (name) => "Sân bay " + name;
+    export const airportPublicSlug = (slug) => slug.replace(/^san-bay-/, "");
+    export const airportHubHref = (slug) => "/san-bay/" + airportPublicSlug(slug);
+    export const routeHref = (route) => "/tuyen-duong/" + route.regionSlug + "/" + route.slug;
+    export const getPublicRouteLabel = (route) => route.slug;
+    export const canSuggestRelatedRoute = () => true;
+  `);
+  const code = airportSource.replace(/"(?:@\/[^\"]+|\.\/[^\"]+)"/g, (name) => name === '"@/lib/route-journey-selection"' ? JSON.stringify(journeyModule) : JSON.stringify(mock));
+  const { fetchAirportHubBySlug } = await import(dataUrl(code));
+  const hub = await fetchAirportHubBySlug("tan-son-nhat");
+  assert.equal(hub.routes.length, 4);
+  for (const card of hub.routes) {
+    const query = Object.fromEntries(new URL(card.href, "https://alodatxe.com").searchParams);
+    assert.equal(query.direction, card.pricingDirection);
+    assert.equal(query.package, card.featuredPrice.packageKey);
+    assert.deepEqual(resolveRouteJourneySelection(card.route, query), {
+      direction: card.pricingDirection,
+      journey: card.pricingDirection === "outbound" ? "twoDays" : "threeDays",
+    });
+    if (card.pricingDirection === "inbound") assert.equal(card.featuredPrice.mode, "contact");
+    const first = card.route.slug === "airport-first";
+    assert.equal(card.travelDirection, (first && card.pricingDirection === "outbound") || (!first && card.pricingDirection === "inbound") ? "from_airport" : "to_airport");
+    assert.equal(new URL(card.href, "https://alodatxe.com").pathname, "/tuyen-duong/province/" + card.route.slug);
   }
 });

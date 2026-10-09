@@ -28,7 +28,12 @@ for(const airportAtOrigin of [true,false]) test(`airport at ${airportAtOrigin?'o
  const hub=await run('src/lib/api/airport-routes.ts').fetchAirportHubBySlug('fixture');
  assert.equal(hub.fromAirport[0].pricingDirection,airportAtOrigin?'outbound':'inbound');
  assert.equal(hub.toAirport[0].pricingDirection,airportAtOrigin?'inbound':'outbound');
- assert.equal(hub.fromAirport[0].href,hub.toAirport[0].href);
+ const fromURL=new URL(hub.fromAirport[0].href,'https://alodatxe.com');
+ const toURL=new URL(hub.toAirport[0].href,'https://alodatxe.com');
+ assert.equal(fromURL.pathname,toURL.pathname);
+ assert.equal(fromURL.pathname,routeHref(route));
+ assert.equal(fromURL.searchParams.get('direction'),hub.fromAirport[0].pricingDirection);
+ assert.equal(toURL.searchParams.get('direction'),hub.toAirport[0].pricingDirection);
 });
 test('airport resolver suppresses legacy pairs even if inbound flag exists',async()=>{
  const run=typescriptLoader({'./locations':{fetchLocationsV2:async()=>[{id:10,slug:'san-bay-fixture',type:'airport',name:'Fixture'}]},'./route-directions':{...directions,fetchRoutePairsV2:async()=>[pair({destination_location_id:0})]},'./routes':{fetchRoutes:async()=>[route]}});
