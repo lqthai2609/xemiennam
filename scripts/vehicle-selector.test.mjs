@@ -88,12 +88,12 @@ test("malformed selector responses fail closed instead of crashing React",()=>{
  assert.deepEqual(read(valid),valid);
  for(const value of [null,{},[],{...valid,model_version:2},{...valid,items:[null]},{...valid,items:[{...valid.items[0],type:7}]},{...valid,items:[{...valid.items[0],facts:{...valid.items[0].facts,passengers:{}}}]},{...valid,items:[{...valid.items[0],fit:{status:'available',reason:'missing_luggage'}}]}])assert.equal(read(value),null);
 });
-test("selector does not import or execute loading logic in the browser",()=>{
+test("deferred selector keeps loading logic on the server and is absent from booking forms",()=>{
  const source=readFileSync(new URL('../src/components/vehicle-selector.tsx',import.meta.url),'utf8');
  assert.doesNotMatch(source,/assessVehicleFit|evaluateVehicleSuggestions|vehiclePassengerLabel/);
  assert.match(source,/fetch\("\/api\/vehicle-suggestions"/);
  for(const file of ['contact-booking-form.tsx','route-booking-actions.tsx']){
   const form=readFileSync(new URL(`../src/components/${file}`,import.meta.url),'utf8');
-  assert.match(form,/<VehicleSelector/);assert.doesNotMatch(form,/exceeds_confirmed_capacity|fits_confirmed_profile/);
+  assert.doesNotMatch(form,/<VehicleSelector/);assert.doesNotMatch(form,/exceeds_confirmed_capacity|fits_confirmed_profile/);
  }
 });
