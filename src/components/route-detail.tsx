@@ -54,6 +54,7 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
   const [journey, setJourney] = useState<JourneyPackage>(initial.journey);
 
   const prelaunch = isPrelaunchAirportRoute(route);
+  const showDirectionPriceGuidance = route.id === "41" && !prelaunch;
   const inbound = direction === "inbound";
   const from = getPublicLocationLabel(inbound ? route.to : route.from);
   const to = getPublicLocationLabel(inbound ? route.from : route.to);
@@ -98,6 +99,11 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
     </div>} />
 
     <div className="route-detail-design-main">
+      {showDirectionPriceGuidance && <section className="pt-8" aria-label="Hướng dẫn chọn chiều và xem giá">
+        <div className="route-detail-design-section-heading"><h2>Chọn đúng chiều đi để xem giá phù hợp</h2></div>
+        <p className="mb-3 leading-relaxed">Khi xem tuyến Sài Gòn–Vũng Tàu, hãy phân biệt chiều Sài Gòn đi Vũng Tàu và chiều Vũng Tàu về Sài Gòn. Giá cần được xem theo đúng chiều hành trình, loại xe và gói chuyến đi; không lấy giá của chiều đi áp dụng cho chiều về.</p>
+        <p className="leading-relaxed">Nếu lựa chọn của anh chị hiển thị “Liên hệ báo giá”, hãy trao đổi nhu cầu chuyến đi để được tư vấn. Khi liên hệ, nên nêu rõ chiều đi, ngày đi, loại xe và gói chuyến đi cần hỏi giá.</p>
+      </section>}
       <section className="route-detail-design-journey" aria-labelledby="route-journey-title">
         <div className="route-detail-design-section-heading"><h2 id="route-journey-title">Hành trình {from} – {to}</h2><p>{prelaunch ? "Lộ trình và lịch phục vụ sẽ được xác nhận khi tuyến sẵn sàng." : "Lộ trình tham khảo; điểm đón và trả được xác nhận theo lịch trình của bạn."}</p></div>
         <div className="route-detail-design-journey-grid">
@@ -128,8 +134,8 @@ export function RouteDetailPage({ route, relatedRoutes, testimonials, relatedPos
     <div className="route-detail-design-main route-detail-design-lower">
       <section className="route-detail-design-faq" aria-labelledby="route-faq-title"><div className="route-detail-design-section-heading"><h2 id="route-faq-title">Câu hỏi thường gặp</h2></div>
         <details><summary><span>1</span>{prelaunch ? `Tuyến ${to} đã nhận đặt xe chưa?` : `Làm thế nào để đặt xe đi ${to}?`}</summary><p>{prelaunch ? "Tuyến đang chuẩn bị và chưa nhận đặt chuyến. Bạn có thể liên hệ để được tư vấn trước." : `Chọn loại xe và gói hành trình ở trên, sau đó nhắn Zalo, gửi yêu cầu hoặc gọi ${SITE_HOTLINE}. ${SITE_NAME} sẽ xác nhận lịch và điều kiện chuyến đi.`}</p></details>
-        <details><summary><span>2</span>Có thể đặt xe khứ hồi {from} – {to} không?</summary><p>{prelaunch ? "Tuyến chưa nhận đặt chuyến, bao gồm chiều về và gói khứ hồi. Bạn có thể liên hệ để được tư vấn trước." : reverseAvailable ? "Bạn có thể chọn chiều về hoặc gói khứ hồi nếu gói này đang hiển thị trong phần chọn xe và giá. Giá được xác nhận theo gói và loại xe đã chọn." : "Vui lòng liên hệ để được tư vấn hành trình chiều về theo dữ liệu tuyến và lịch xe hiện có."}</p></details>
-        <details><summary><span>3</span>Giá xe có được xác nhận trước chuyến đi không?</summary><p>{prelaunch ? "Chưa có giá nhận chuyến cho tuyến đang chuẩn bị. Thông tin phục vụ và chi phí chỉ được xác nhận khi tuyến đủ điều kiện vận hành." : <>Giá hiển thị áp dụng cho đúng chiều, loại xe và gói đã chọn. {SITE_NAME} xác nhận chi phí cuối cùng trước khi nhận chuyến; tổ hợp chưa có giá sẽ được báo giá riêng.</>}</p></details>
+        <details><summary><span>2</span>Có thể đặt xe khứ hồi {from} – {to} không?</summary><p>{prelaunch ? "Tuyến chưa nhận đặt chuyến, bao gồm chiều về và gói khứ hồi. Bạn có thể liên hệ để được tư vấn trước." : reverseAvailable ? showDirectionPriceGuidance ? "Bạn có thể chọn chiều về hoặc gói khứ hồi nếu gói này đang hiển thị trong phần chọn xe và giá." : "Bạn có thể chọn chiều về hoặc gói khứ hồi nếu gói này đang hiển thị trong phần chọn xe và giá. Giá được xác nhận theo gói và loại xe đã chọn." : "Vui lòng liên hệ để được tư vấn hành trình chiều về theo dữ liệu tuyến và lịch xe hiện có."}</p></details>
+        <details><summary><span>3</span>Giá xe có được xác nhận trước chuyến đi không?</summary><p>{prelaunch ? "Chưa có giá nhận chuyến cho tuyến đang chuẩn bị. Thông tin phục vụ và chi phí chỉ được xác nhận khi tuyến đủ điều kiện vận hành." : showDirectionPriceGuidance ? <>{SITE_NAME} xác nhận chi phí cuối cùng trước khi nhận chuyến.</> : <>Giá hiển thị áp dụng cho đúng chiều, loại xe và gói đã chọn. {SITE_NAME} xác nhận chi phí cuối cùng trước khi nhận chuyến; tổ hợp chưa có giá sẽ được báo giá riêng.</>}</p></details>
       </section>
 
       {relatedRoutes.length > 0 && <section className="route-detail-design-related" aria-labelledby="route-related-title"><div className="route-detail-design-section-heading"><h2 id="route-related-title">Tuyến đường liên quan</h2><Link href={`/tuyen-duong/${route.regionSlug}`}>Khám phá thêm các tuyến xe <ArrowRight size={16} /></Link></div><div className="route-detail-design-related-grid">{relatedRoutes.slice(0, 3).map((item) => <RelatedCard route={item} key={item.id} />)}</div></section>}
