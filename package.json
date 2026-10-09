@@ -38,7 +38,9 @@
     "test:public-pricing": "node --test scripts/public-cms-pricing.test.mjs",
     "test:promotion-presentation": "node --test scripts/promotion-presentation.test.mjs",
     "test:promotion-snapshot": "node --test scripts/promotion-snapshot.test.mjs scripts/booking-snapshot-api.test.mjs",
-    "test:promotion-snapshot:php": "php scripts/promotion-snapshot-php.test.php"
+    "test:promotion-snapshot:php": "php scripts/promotion-snapshot-php.test.php",
+    "test:vehicle-facts": "node --test scripts/vehicle-facts.test.mjs",
+    "test:vehicle-facts:php": "php scripts/vehicle-facts-php.test.php"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

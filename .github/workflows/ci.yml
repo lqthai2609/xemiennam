@@ -72,6 +72,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 46 confirmed vehicle facts and loading suggestions
+        run: |
+          npm run test:vehicle-facts
+          npm run test:vehicle-facts:php
+          php -l wordpress/gocar-core/includes/class-gocar-vehicle-facts.php
+
       - name: Day 42 promotion model and private WordPress persistence
         run: |
           npm run test:promotion-model
