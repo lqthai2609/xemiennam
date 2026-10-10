@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PromotionPrice } from "@/components/promotion-price";
@@ -61,12 +61,12 @@ function LegacyPricingGrid({
 }
 
 const vehicleCards = [
-  { type: "Xe 4 chỗ", models: "Toyota Vios · Hyundai Accent · Honda City · Kia Cerato", popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
-  { type: "Xe 7 chỗ", models: "Mitsubishi Xpander · Toyota Innova · Toyota Fortuner", popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
-  { type: "Xe 16 chỗ", models: "Ford Transit · Hyundai Solati", popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
-  { type: "Xe 29 chỗ", models: "Thaco / Hyundai hoặc tương đương", popular: false, fallback: "/images/destinations/long-an.webp" },
-  { type: "Xe 45 chỗ", models: "Universe / Samco hoặc tương đương", popular: false, fallback: "/images/destinations/ben-tre.webp" },
-  { type: "Limousine", models: "Dòng limousine cao cấp", popular: false, fallback: "/images/services/city-tour.png" },
+  { type: "Xe 4 chỗ", models: "Toyota Vios · Hyundai Accent · Honda City · Kia Cerato", capacity: "1–3 hành khách", popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
+  { type: "Xe 7 chỗ", models: "Mitsubishi Xpander · Toyota Innova · Toyota Fortuner", capacity: "3–6 hành khách", popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
+  { type: "Xe 16 chỗ", models: "Ford Transit · Hyundai Solati", capacity: "7–14 hành khách", popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
+  { type: "Xe 29 chỗ", models: "Thaco / Hyundai hoặc tương đương", capacity: "Nhóm / đoàn", popular: false, fallback: "/images/destinations/long-an.webp" },
+  { type: "Xe 45 chỗ", models: "Universe / Samco hoặc tương đương", capacity: "Đoàn lớn", popular: false, fallback: "/images/destinations/ben-tre.webp" },
+  { type: "Limousine", models: "Dòng limousine cao cấp", capacity: "Không gian cao cấp", popular: false, fallback: "/images/services/city-tour.png" },
 ] as const;
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
@@ -141,7 +141,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
         <div className="route-vehicle-body">
           {!redesign && <h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>}
           <p className="route-vehicle-model">{redesign && <small>Mẫu xe tham khảo</small>}{!redesign && "Mẫu xe tham khảo: "}{vehicle.models}</p>
-          {redesign && <div className="route-vehicle-summary">{priceBlock}</div>}
+          <div className="route-vehicle-summary"><p className="route-vehicle-capacity"><UsersRound size={redesign ? 32 : 15} aria-hidden="true" /> {vehicle.capacity}</p>{redesign && priceBlock}</div>
           <div className="route-vehicle-bottom">
             {!redesign && priceBlock}
             {prelaunch ? <a className="button button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions compactLabels={redesign} route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={pkg.vehicleType} price={price} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} />}
