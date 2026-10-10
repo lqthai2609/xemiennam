@@ -179,3 +179,7 @@ The apply command creates missing `location` posts with `location_type=locality`
 11. For Day 33, submit bookings with zero, one and three intermediate stops; verify order, address and waiting minutes round-trip through REST.
 12. Confirm a fourth stop and invalid waiting values are rejected by the frontend/API boundary and capped by WordPress defense-in-depth.
 13. Continue migrating WPCode contracts into this plugin one module at a time only after acceptance tests.
+
+## Day 46 vehicle facts (source 0.13.0)
+
+Private versioned Operations record, protected GET/PUT admin endpoint and read-only confirmed public projection are documented in `docs/day46-vehicle-facts-contract.md`. Legacy vehicle fields are not approved automatically. Public null means consultation; confirmed capacity is passengers excluding driver. Load profiles cover passengers and luggage together, with explicit size/count/aggregate weight bounds. No live facts imported, commercial flag changed or production plugin installed in Day 46.

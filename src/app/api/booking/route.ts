@@ -5,7 +5,8 @@ import { z } from "zod";
 import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
 import { fetchLocationsV2, locationById } from "@/lib/api/locations";
 import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
-import { resolvePriceRulesV2 } from "@/lib/api/price-rules";
+import { resolvePriceRulesWithPromotion } from "@/lib/api/promotion-pricing";
+import { bookingIntentHash, buildPromotionSnapshot, persistedBookingResponse, type PersistedBookingResult } from "@/lib/api/promotion-snapshot";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { sendBookingNotification } from "@/lib/booking-notification";
 import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
@@ -120,6 +121,24 @@ export async function POST(request: Request) {
     );
   }
   const data = parsed.data;
+  const idempotencyKey = request.headers.get("x-lead-idempotency-key") || randomUUID();
+  if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(idempotencyKey)) {
+    return NextResponse.json({ ok: false, error: "Mã gửi lại yêu cầu không hợp lệ." }, { status: 400 });
+  }
+  const intentHash = bookingIntentHash(data);
+  // Authenticated lookup happens before CMS/resolvers. Fail closed on old backend.
+  const replay = await wpAuthedFetch<{ found: boolean } & Partial<PersistedBookingResult>>("/gocar/v1/leads/replay", {
+    method: "POST", body: { idempotency_key: idempotencyKey, intent_version: 2, intent_hash: intentHash },
+  });
+  if (!replay.ok) return NextResponse.json({ ok: false, error: replay.message }, { status: replay.status || 502 });
+  if (replay.data?.found === true) {
+    try {
+      if (!replay.data.promotion_snapshot) throw new Error("snapshot_missing");
+      return NextResponse.json(persistedBookingResponse(replay.data as PersistedBookingResult));
+    }
+    catch { return NextResponse.json({ ok: false, error: "Không xác nhận được bản đã lưu." }, { status: 502 }); }
+  }
+  if (replay.data?.found !== false) return NextResponse.json({ ok: false, error: "Không xác nhận được trạng thái yêu cầu." }, { status: 502 });
 
   const [routeContext, vehicleId] = await Promise.all([
     resolveRouteContext(data.routeId, data.route),
@@ -143,7 +162,7 @@ export async function POST(request: Request) {
     routeContext.validLocationIds,
   );
 
-  const priceRules = resolvePriceRulesV2({
+  const priceContext = {
     route: routeContext.route,
     direction,
     vehicleId,
@@ -156,7 +175,10 @@ export async function POST(request: Request) {
     },
     departureDate: data.departureDate,
     departureTime: data.departureTime,
-  });
+  };
+  const evaluation = await resolvePriceRulesWithPromotion(priceContext);
+  const priceRules = evaluation.pricing;
+  const promotionSnapshot = buildPromotionSnapshot(evaluation, priceContext);
   const surcharge = priceRules.surcharge;
 
   const noteParts: string[] = [];
@@ -185,10 +207,11 @@ export async function POST(request: Request) {
   // A successful backend booking_request is still the only source of lead_id.
   const acquisition = { consent_state: "unknown" };
 
-  const result = await wpAuthedFetch<{ id: number; lead_id: number; replayed: boolean }>("/gocar/v1/leads", {
+  const result = await wpAuthedFetch<PersistedBookingResult>("/gocar/v1/leads", {
     method: "POST",
     body: {
-      idempotency_key: request.headers.get("x-lead-idempotency-key") || randomUUID(),
+      idempotency_key: idempotencyKey,
+      intent_version: 2, intent_hash: intentHash, promotion_snapshot: promotionSnapshot,
       acquisition,
       booking: {
         title: data.fullName,
@@ -252,8 +275,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Không xác nhận được mã yêu cầu từ hệ thống." }, { status: 502 });
   }
 
+  if (!result.data.promotion_snapshot) return NextResponse.json({ ok: false, error: "Chưa xác nhận được bản giá đã lưu." }, { status: 502 });
+
   if (result.data.replayed) {
-    return NextResponse.json({ ok: true, id: result.data.lead_id, leadId: result.data.lead_id, notificationSent: false, replayed: true });
+    return NextResponse.json(persistedBookingResponse(result.data));
   }
   const notification = await sendBookingNotification({
     bookingId: result.data.id,
@@ -276,5 +301,5 @@ export async function POST(request: Request) {
     });
   }
 
-  return NextResponse.json({ ok: true, id: result.data.lead_id, leadId: result.data.lead_id, notificationSent: notification.sent });
+  return NextResponse.json(persistedBookingResponse(result.data, notification.sent));
 }

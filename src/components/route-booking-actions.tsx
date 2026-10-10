@@ -1,5 +1,9 @@
 "use client";
 
+import { AirportPickupAdvice } from "@/components/airport-pickup-advice";
+import { AirportQuickConsultation } from "@/components/airport-quick-consultation";
+import { airportConsultationLabel } from "@/lib/airport-consultation";
+import { validateFlightFields } from "@/lib/airport-timing";
 import { RequiredMark } from "@/components/required-mark";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -40,6 +44,7 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
       flightNumber: z.string().trim().max(40, "Số hiệu chuyến bay tối đa 40 ký tự.").optional(),
       landingAt: z.string().optional(),
       airportTerminal: z.string().trim().max(80, "Thông tin nhà ga tối đa 80 ký tự.").optional(),
+      flightKind: z.enum(["", "domestic", "international"]).optional(),
       flightAt: z.string().optional(),
       airportArrivalAt: z.string().optional(),
       passengerCount: z.string().trim().optional(),
@@ -55,6 +60,8 @@ function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
         context.addIssue({ code: "custom", path: ["dropoffAddress"], message: "Vui lòng nhập điểm trả cụ thể." });
       }
       if (!airportContext) return;
+      const issues = validateFlightFields({ movement: airportContext === "pickup_from_airport" ? "arrival" : "departure", flight_number: data.flightNumber || null, flight_at: (airportContext === "pickup_from_airport" ? data.landingAt : data.flightAt) || null, airport_arrival_at: data.airportArrivalAt || null }, Date.now());
+      for (const issue of issues) context.addIssue({ code: "custom", path: [issue.field === "flight_number" ? "flightNumber" : issue.field === "airport_arrival_at" ? "airportArrivalAt" : airportContext === "pickup_from_airport" ? "landingAt" : "flightAt"], message: issue.message });
 
       const passengerCount = Number(data.passengerCount);
       if (!data.passengerCount || !Number.isInteger(passengerCount) || passengerCount < 1) {
@@ -156,8 +163,8 @@ function QuickBookingDialog({
     defaultValues: {
       pickupAddress: "",
       dropoffAddress: "",
-      passengerCount: airportContext ? "1" : "",
-      luggageCount: airportContext ? "0" : "",
+      passengerCount: "",
+      luggageCount: "",
       requestNameplate: false,
     },
   });
@@ -166,6 +173,13 @@ function QuickBookingDialog({
   const isQuote = pricingMode === "contact";
   const visiblePrice = isQuote ? "Liên hệ để nhận báo giá" : price || "Liên hệ để nhận báo giá";
   const requestNameplate = useWatch({ control, name: "requestNameplate" });
+  const [flightNumber, landingAt, flightAt, airportTerminal, flightKind, airportArrivalAt, pickupAddress, dropoffAddress] = useWatch({ control, name: ["flightNumber", "landingAt", "flightAt", "airportTerminal", "flightKind", "airportArrivalAt", "pickupAddress", "dropoffAddress"] });
+  const timingInput = {
+    route_id: Number(routeId), direction, movement: airportContext === "pickup_from_airport" ? "arrival" as const : "departure" as const,
+    flight_kind: flightKind || null, terminal: airportTerminal?.trim() || null,
+    flight_number: flightNumber?.trim() || null, flight_at: (airportContext === "pickup_from_airport" ? landingAt : flightAt) || null,
+    airport_arrival_at: airportArrivalAt || null,
+  };
   const fixedAirportName = airportName || "Sân bay theo tuyến đã chọn";
 
   useEffect(() => {
@@ -187,6 +201,7 @@ function QuickBookingDialog({
       const departureDate = datePart(schedulingValue);
       const noteParts: string[] = [isQuote ? "Yêu cầu báo giá online." : "Đặt xe online."];
 
+      if (!airportContext && data.passengerCount) noteParts.push(`Khách: ${data.passengerCount}.`);
       if (packageLabel) noteParts.push(`Gói: ${packageLabel}.`);
 
       if (airportContext === "pickup_from_airport") {
@@ -201,6 +216,8 @@ function QuickBookingDialog({
         }
       } else if (airportContext === "dropoff_at_airport") {
         noteParts.push("Ngữ cảnh: Tiễn sân bay.");
+        if (data.flightNumber) noteParts.push(`Chuyến bay: ${data.flightNumber}.`);
+        if (data.airportTerminal) noteParts.push(`Nhà ga: ${data.airportTerminal}.`);
         if (data.flightAt) noteParts.push(`Giờ bay: ${formatDateTimeLabel(data.flightAt)}.`);
         if (data.airportArrivalAt) noteParts.push(`Có mặt sân bay: ${formatDateTimeLabel(data.airportArrivalAt)}.`);
         if (data.passengerCount) noteParts.push(`Khách: ${data.passengerCount}.`);
@@ -209,6 +226,8 @@ function QuickBookingDialog({
         noteParts.push(`Ngày giờ đi: ${formatDateTimeLabel(data.departureAt)}.`);
       }
 
+      if (airportContext && data.flightKind) noteParts.push(`Loại chuyến bay khách cung cấp: ${data.flightKind === "domestic" ? "Nội địa" : "Quốc tế"}.`);
+      // Advice remains separate: no inferred pickup date/time or approval in the booking contract.
       const res = await fetchBookingWithIdempotency("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -371,7 +390,8 @@ function QuickBookingDialog({
                   <span>
                     Giờ hạ cánh dự kiến
                   </span>
-                  <input {...register("landingAt")} type="datetime-local" className="form-control" />
+                  <input {...register("landingAt")} type="datetime-local" aria-invalid={!!errors.landingAt} className="form-control" />
+                  <FieldError message={errors.landingAt?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
                   <span>
@@ -418,8 +438,9 @@ function QuickBookingDialog({
 
               <label className="flex items-start gap-2 text-sm font-semibold text-foreground">
                 <input {...register("requestNameplate")} type="checkbox" className="mt-1 size-4" />
-                <span>Cần bảng tên đón khách</span>
+                <span>Muốn hỏi về bảng tên đón khách</span>
               </label>
+              <p className="m-0 text-xs text-muted-foreground">Nhu cầu bảng tên cần được xác nhận về khả năng phục vụ và chi phí; chưa bao gồm mặc định.</p>
 
               {requestNameplate && (
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
@@ -444,17 +465,21 @@ function QuickBookingDialog({
                 Thông tin này giúp {SITE_NAME} tư vấn giờ đón phù hợp với thời gian di chuyển thực tế.
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground"><span>Số hiệu chuyến bay</span><input {...register("flightNumber")} aria-invalid={!!errors.flightNumber} className="form-control" placeholder="VN123" /><FieldError message={errors.flightNumber?.message} /></label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground"><span>Nhà ga</span><input {...register("airportTerminal")} aria-invalid={!!errors.airportTerminal} className="form-control" placeholder="Nhà ga theo vé của bạn" /><FieldError message={errors.airportTerminal?.message} /></label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
                     Giờ bay dự kiến
                   </span>
-                  <input {...register("flightAt")} type="datetime-local" className="form-control" />
+                  <input {...register("flightAt")} type="datetime-local" aria-invalid={!!errors.flightAt} className="form-control" />
+                  <FieldError message={errors.flightAt?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span>
                     Giờ cần có mặt tại sân bay
                   </span>
-                  <input {...register("airportArrivalAt")} type="datetime-local" className="form-control" />
+                  <input {...register("airportArrivalAt")} type="datetime-local" aria-invalid={!!errors.airportArrivalAt} className="form-control" />
+                  <FieldError message={errors.airportArrivalAt?.message} />
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                   <span className="form-field-label">
@@ -488,6 +513,12 @@ function QuickBookingDialog({
               </div>
             </fieldset>
           )}
+
+          {airportContext && <fieldset className="flex flex-col gap-3 rounded-lg border border-border p-3">
+            <legend className="px-1 text-sm font-semibold">Gợi ý giờ đón sân bay</legend>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold"><span>Loại chuyến bay theo vé</span><select {...register("flightKind")} aria-label="Loại chuyến bay theo vé" className="form-control"><option value="">Chưa rõ, cần tư vấn</option><option value="domestic">Nội địa</option><option value="international">Quốc tế</option></select></label>
+            <AirportPickupAdvice key={JSON.stringify([timingInput, pickupAddress, dropoffAddress, vehicleType, packageKey])} input={timingInput} />
+          </fieldset>}
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
@@ -530,32 +561,35 @@ export function RouteBookingActions({
   if (pricingMode === "disabled") return null;
 
   const isQuote = pricingMode === "contact";
+  const consultationLabel = airportContext ? airportConsultationLabel(airportContext) : null;
+  const consultationOnly = /long[ -]th[aà]nh/i.test(`${airportName || ""} ${route} ${displayRoute || ""}`);
 
   return (
     <>
       <div className="detail-price-actions route-booking-actions">
         {zaloLink && (
           <Button size="sm" className="route-booking-primary zalo-cta" asChild>
-            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`${isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"} ${vehicleType}`} className="zalo-cta">
+            <a href={zaloLink} target="_blank" rel="noopener noreferrer" aria-label={`${consultationOnly ? "Liên hệ tư vấn trước" : consultationLabel || (isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe")} ${vehicleType}`} className="zalo-cta">
               <ZaloIcon />
-              {isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe"}
+              {consultationOnly ? "Liên hệ tư vấn trước" : consultationLabel || (isQuote ? "Nhắn Zalo báo giá" : "Nhắn Zalo đặt xe")}
             </a>
           </Button>
         )}
         <div className="route-booking-secondary">
-          <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" aria-label={compactLabels ? `Gửi yêu cầu ${vehicleType}` : undefined} onClick={() => setOpen(true)}>
+          {airportContext && !consultationOnly && <AirportQuickConsultation journeys={[{ key: `${routeId}:${direction}:${packageKey}:${vehicleType}`, label: `${displayRoute || route} · ${vehicleType}${packageLabel ? ` · ${packageLabel}` : ""}`, context: airportContext }]} />}
+          {!consultationOnly && <Button ref={triggerRef} size="sm" variant={zaloLink ? "outline" : "default"} className="detail-price-cta" aria-label={compactLabels ? `Gửi yêu cầu ${vehicleType}` : undefined} onClick={() => setOpen(true)}>
             {compactLabels && <ClipboardList aria-hidden="true" size={20} />}{compactLabels ? "Gửi yêu cầu" : isQuote ? "Gửi yêu cầu báo giá" : "Gửi yêu cầu đặt xe"}
-          </Button>
+          </Button>}
           <Button size="sm" variant="outline" asChild>
-            <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`${isQuote ? "Gọi báo giá" : "Gọi đặt xe"} ${vehicleType}`}>
+            <a href={`tel:${SITE_HOTLINE_TEL}`} aria-label={`${consultationOnly || airportContext ? "Gọi tư vấn" : isQuote ? "Gọi báo giá" : "Gọi đặt xe"} ${vehicleType}`}>
               <Phone aria-hidden="true" size={16} />
-              {isQuote ? "Gọi báo giá" : "Gọi đặt xe"}
+              {consultationOnly || airportContext ? "Gọi tư vấn" : isQuote ? "Gọi báo giá" : "Gọi đặt xe"}
             </a>
           </Button>
         </div>
       </div>
-      {!isQuote && <p className="route-booking-note">Chúng tôi xác nhận lịch xe và chi phí cuối cùng trước khi nhận chuyến.</p>}
-      {open && (
+      {consultationOnly ? <p className="route-booking-note">Đang chuẩn bị, chưa nhận đặt chuyến. Liên hệ tư vấn trước.</p> : !isQuote && <p className="route-booking-note">Chúng tôi xác nhận lịch xe và chi phí cuối cùng trước khi nhận chuyến.</p>}
+      {open && !consultationOnly && (
         <QuickBookingDialog
           route={route}
           routeId={routeId}

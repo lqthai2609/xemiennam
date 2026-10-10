@@ -72,6 +72,69 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Day 52 server projection and expiry auto-hide
+        run: |
+          npm run test:empty-leg-presentation
+          npm run test:empty-leg-presentation:php
+
+      - name: Day 51 private dispatch permissions, revision, audit and atomic persistence
+        run: |
+          npm run test:empty-leg-admin
+          npm run test:empty-leg-admin:php
+          php -l wordpress/gocar-core/includes/class-gocar-empty-leg-admin.php
+
+      - name: Day 50 private empty-leg model and time/price/reference guards
+        run: |
+          npm run test:empty-leg
+          npm run test:empty-leg:php
+          php -l wordpress/gocar-core/includes/class-gocar-empty-leg.php
+
+      - name: Day 49 directional airport consultation and readiness guards
+        run: npm run test:airport-consultation
+
+      - name: Day 48 approved airport timing and flight validation
+        run: |
+          npm run test:airport-timing
+          npm run test:airport-timing:php
+          php -l wordpress/gocar-core/includes/class-gocar-airport-timing.php
+
+      - name: Day 47 vehicle selector transport and verified display
+        run: npm run test:vehicle-selector
+
+      - name: Day 46 confirmed vehicle facts and loading suggestions
+        run: |
+          npm run test:vehicle-facts
+          npm run test:vehicle-facts:php
+          php -l wordpress/gocar-core/includes/class-gocar-vehicle-facts.php
+
+      - name: Day 42 promotion model and private WordPress persistence
+        run: |
+          npm run test:promotion-model
+          npm run test:promotion-model:php
+
+      - name: Day 53 read-only booking release compatibility
+        run: |
+          npm run test:booking-release
+          npm run test:booking-contract:php
+          php -l wordpress/gocar-core/includes/class-gocar-booking-contract.php
+
+      - name: Day 45 immutable promotion snapshot and replay
+        run: |
+          npm run test:promotion-snapshot
+          npm run test:promotion-snapshot:php
+          php -l wordpress/gocar-core/includes/class-gocar-promotion-snapshot.php
+          php -l wordpress/gocar-core/includes/class-gocar-lead-lifecycle.php
+
+      - name: Day 44 promotion presentation and expiry
+        run: npm run test:promotion-presentation
+
+      - name: Day 43 promotion evaluator
+        run: |
+          npm run test:promotion-evaluator
+          npm run test:promotion-surcharge:php
+          php -l wordpress/gocar-core/includes/class-gocar-service-area.php
+          php -l wordpress/gocar-core/gocar-core.php
+
       - name: Location migration regression tests
         run: npm run test:location-migration
 
@@ -156,4 +219,4 @@ jobs:
             if curl --silent --fail http://127.0.0.1:3100/api/revalidate >/dev/null; then break; fi
             sleep 1
           done
-          node --test scripts/seo006b-listing-html.test.mjs scripts/gocar-public-price-html.test.mjs scripts/gocar-location-display-output.test.mjs
+          node --test scripts/promotion-http.test.mjs scripts/seo006b-listing-html.test.mjs scripts/gocar-public-price-html.test.mjs scripts/gocar-location-display-output.test.mjs

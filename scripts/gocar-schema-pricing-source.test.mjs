@@ -43,7 +43,7 @@ test("all priced Service schema page families use the fixed-price helper", () =>
   assert.match(airportHubPage, /buildFixedServiceOffers\(/);
   assert.match(airportHubPage, /mode: pkg\.mode/);
   assert.match(comboPage, /buildFixedServiceOffers\(/);
-  assert.match(comboPage, /mode: vp\.pricingMode/);
+  assert.match(comboPage, /promotionOfferCandidate\(route, selectedRow/);
   assert.match(comboPage, /offers: readiness\.offerSchemaEligible \? serviceOffers : undefined/);
   assert.match(comboPage, /guard\.indexable && readiness\.serviceSchemaEligible/);
   assert.doesNotMatch(comboPage, /const fixedPrice =/);

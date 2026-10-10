@@ -2,7 +2,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { PromotionCard } from "@/components/promotion-card";
-import type { Promotion } from "@/types/promotion";
+import type { PublicPromotionCard } from "@/lib/api/promotions";
 import { UnifiedHero } from "@/components/unified-hero";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
@@ -23,15 +23,8 @@ const footerLinkGroups = [
   },
 ];
 
-/**
- * Trang /khuyen-mai (Ngày 18) — nhận `promotions` qua props, dữ liệu đã được fetchPromotions()
- * lấy từ WP REST API thật + fallback mock (lib/api/promotions.ts) ở Server Component cha
- * (app/khuyen-mai/page.tsx). Không cần lọc client-side — promotions đã được sắp xếp sẵn
- * (đang áp dụng trước, hết hạn xuống cuối) nên hiển thị nguyên trạng theo đúng thứ tự nhận vào.
- */
-export function PromotionsPage({ promotions }: { promotions: Promotion[] }) {
-  const activeCount = promotions.filter((p) => !p.isExpired).length;
-
+/** Cards use the same server presentation as route pricing; no client discount logic. */
+export function PromotionsPage({ promotions }: { promotions: PublicPromotionCard[] }) {
   return (
     <main className="site-shell">
       <SiteHeader
@@ -42,7 +35,7 @@ export function PromotionsPage({ promotions }: { promotions: Promotion[] }) {
         ctaHref="/#booking"
       />
 
-      <UnifiedHero eyebrow="KHUYẾN MÃI" title={activeCount > 0 ? <>Thông tin<br /><em>khuyến mãi.</em></> : <>Hiện chưa có<br /><em>chương trình đang áp dụng.</em></>} description="Chương trình và điều kiện áp dụng được công bố khi có thông tin đã xác nhận." />
+      <UnifiedHero eyebrow="KHUYẾN MÃI" title={promotions.length > 0 ? <>Thông tin<br /><em>khuyến mãi.</em></> : <>Hiện chưa có<br /><em>chương trình đang áp dụng.</em></>} description="Chương trình và điều kiện áp dụng được công bố khi có thông tin đã xác nhận." />
 
       <section className="section-wrap khuyen-mai-content">
         {promotions.length === 0 ? (

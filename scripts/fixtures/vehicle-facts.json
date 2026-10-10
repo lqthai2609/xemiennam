@@ -1,0 +1,1225 @@
+{
+  "notice": "Synthetic fixtures only. No business approval or real vehicle claims.",
+  "base": {
+    "model_version": 1,
+    "revision": 1,
+    "approval": {
+      "status": "confirmed",
+      "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+    },
+    "passenger_capacity": 6,
+    "load_profiles": [
+      {
+        "passengers": 6,
+        "cabin_bags": 2,
+        "checked_bags": 0,
+        "cabin_max_cm": [
+          55,
+          40,
+          20
+        ],
+        "checked_max_cm": null,
+        "total_luggage_kg": 16
+      },
+      {
+        "passengers": 3,
+        "cabin_bags": 2,
+        "checked_bags": 3,
+        "cabin_max_cm": [
+          55,
+          40,
+          20
+        ],
+        "checked_max_cm": [
+          75,
+          50,
+          30
+        ],
+        "total_luggage_kg": 60
+      }
+    ],
+    "model_examples": [
+      "Synthetic Model A"
+    ],
+    "service_level": "standard"
+  },
+  "cases": [
+    {
+      "name": "valid joint profiles",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": true
+    },
+    {
+      "name": "unknown version",
+      "model": {
+        "model_version": 2,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "zero revision",
+      "model": {
+        "model_version": 1,
+        "revision": 0,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "string capacity",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": "6",
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "zero capacity",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 0,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "fraction capacity",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6.1,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "profiles without capacity",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": null,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "profile exceeds passenger limit",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 7,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "negative bags",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": -1,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "bags without size bound",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": null,
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "bags without total weight bound",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": null
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "size for zero bags",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              10,
+              10,
+              10
+            ],
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "incomplete dimensions",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "zero dimension",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              0
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "zero weight bound",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 0
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "empty model list must be null",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "duplicate models",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Same",
+          "Same"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "unsafe model",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "<script>"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "untrimmed model",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          " leading"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "unknown service level",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "luxury"
+      },
+      "valid": false
+    },
+    {
+      "name": "unsupported approval",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "approved",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "confirmation without evidence",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": null
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 3,
+            "cabin_bags": 2,
+            "checked_bags": 3,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": [
+              75,
+              50,
+              30
+            ],
+            "total_luggage_kg": 60
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "duplicate profiles",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "reordered duplicate profiles",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 2,
+            "checked_bags": 0,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_max_cm": null,
+            "total_luggage_kg": 16
+          },
+          {
+            "total_luggage_kg": 16,
+            "checked_max_cm": null,
+            "cabin_max_cm": [
+              55,
+              40,
+              20
+            ],
+            "checked_bags": 0,
+            "cabin_bags": 2,
+            "passengers": 6
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": false
+    },
+    {
+      "name": "partial confirmed record remains unknown",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": null,
+        "load_profiles": [],
+        "model_examples": null,
+        "service_level": null
+      },
+      "valid": true
+    },
+    {
+      "name": "draft with missing facts",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "draft",
+          "source_ref": null
+        },
+        "passenger_capacity": null,
+        "load_profiles": [],
+        "model_examples": null,
+        "service_level": null
+      },
+      "valid": true
+    },
+    {
+      "name": "explicit no luggage profile",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC-FIXTURE-NOT-OPERATIONS"
+        },
+        "passenger_capacity": 6,
+        "load_profiles": [
+          {
+            "passengers": 6,
+            "cabin_bags": 0,
+            "checked_bags": 0,
+            "cabin_max_cm": null,
+            "checked_max_cm": null,
+            "total_luggage_kg": null
+          }
+        ],
+        "model_examples": [
+          "Synthetic Model A"
+        ],
+        "service_level": "standard"
+      },
+      "valid": true
+    }
+  ]
+}

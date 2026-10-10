@@ -1,13 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import ts from "typescript";
 
-const source = await readFile(new URL("../src/lib/wp.ts", import.meta.url), "utf8");
-const js = ts.transpileModule(source, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
-const { wpFetch, wpCacheTags, REVALIDATE_SECONDS } = await import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`);
+const { typescriptLoader } = await import("./lib/load-typescript.mjs");
+const { wpFetch, wpCacheTags, REVALIDATE_SECONDS } = typescriptLoader()("src/lib/wp.ts");
 
 function stubFetch(t, responses) {
   const calls = [];

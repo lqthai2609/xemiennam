@@ -47,6 +47,8 @@ final class Gocar_Service_Area {
             $amount = isset( $row['amount'] ) ? (float) $row['amount'] : 0;
             if ( 'fixed' === $mode && $amount <= 0 ) $mode = 'contact';
             $output[] = array(
+                // Optional approved identity; no key is invented for legacy rows.
+                'rule_key' => is_string( $row['rule_key'] ?? null ) && preg_match( '/^[a-z0-9_-]{1,80}$/', $row['rule_key'] ) ? $row['rule_key'] : '',
                 'zone_id' => $zone_id,
                 'applies_to' => in_array( $row['applies_to'] ?? '', array( 'pickup', 'dropoff', 'either' ), true ) ? $row['applies_to'] : 'either',
                 'direction' => in_array( $row['direction'] ?? '', array( 'outbound', 'inbound' ), true ) ? $row['direction'] : '',

@@ -93,6 +93,7 @@ export default async function RoutePricingAdminPage() {
   return (
     <>
     <div style={{ padding: "1rem", textAlign: "right" }}><Link href="/quan-tri/lead">Quản lý yêu cầu đặt xe →</Link></div>
+    <div style={{ padding: "1rem", textAlign: "right" }}><Link href="/quan-tri/chieu-trong">Điều phối chuyến xe chiều trống</Link></div>
     <RoutePricingAdminWizard
       locations={adminLocations}
       routes={adminRoutes}

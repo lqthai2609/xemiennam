@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PromotionPrice } from "@/components/promotion-price";
 import { MediaPhoto } from "@/components/media-photo";
 import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
 import { getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
@@ -44,6 +45,7 @@ function LegacyPricingGrid({
           <Link href={routeComboHref(route, vehicleTypeSlug(vp.vehicleType))} className="vehicle-chip">
             {vp.vehicleType}
           </Link>
+          <p className="route-vehicle-model">Mẫu xe tham khảo: {vehicleCards.find((vehicle) => vehicleTypeSlug(vehicle.type.replace(/^Xe /, "")) === vehicleTypeSlug(vp.vehicleType.replace(/^Xe /, "")))?.models || "Dòng xe được xác nhận khi tư vấn"}</p>
           <strong>{vp.price}</strong>
           <small>{priceTypeLabel(vp.priceType)} · Giá tham khảo</small>
           <Button size="sm" variant="outline" asChild>
@@ -59,12 +61,12 @@ function LegacyPricingGrid({
 }
 
 const vehicleCards = [
-  { type: "Xe 4 chỗ", models: "Toyota Vios · Hyundai Accent · Honda City · Kia Cerato", capacity: "1–3 hành khách", benefits: ["Xe riêng có tài xế", "Xác nhận điểm đón khi báo giá", "Xác nhận điểm trả khi báo giá"], popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
-  { type: "Xe 7 chỗ", models: "Mitsubishi Xpander · Toyota Innova · Toyota Fortuner", capacity: "3–6 hành khách", benefits: ["Xe riêng có tài xế", "Hành lý thoải mái", "Xác nhận điểm đón khi báo giá"], popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
-  { type: "Xe 16 chỗ", models: "Ford Transit · Hyundai Solati", capacity: "7–14 hành khách", benefits: ["Phù hợp nhóm đông", "Có tài xế", "Xác nhận điểm đón/trả khi báo giá"], popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
-  { type: "Xe 29 chỗ", models: "Thaco / Hyundai hoặc tương đương", capacity: "Nhóm / đoàn", benefits: ["Phù hợp đoàn đông", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/long-an.webp" },
-  { type: "Xe 45 chỗ", models: "Universe / Samco hoặc tương đương", capacity: "Đoàn lớn", benefits: ["Không gian rộng", "Có tài xế", "Phục vụ theo lịch"], popular: false, fallback: "/images/destinations/ben-tre.webp" },
-  { type: "Limousine", models: "Dòng limousine cao cấp", capacity: "Không gian cao cấp", benefits: ["Nội thất cao cấp", "Tiện nghi", "Phù hợp khách VIP / doanh nghiệp"], popular: false, fallback: "/images/services/city-tour.png" },
+  { type: "Xe 4 chỗ", models: "Toyota Vios · Hyundai Accent · Honda City · Kia Cerato", capacity: "1–3 hành khách", popular: false, fallback: "/images/hero-dat-xe-sai-gon.webp" },
+  { type: "Xe 7 chỗ", models: "Mitsubishi Xpander · Toyota Innova · Toyota Fortuner", capacity: "3–6 hành khách", popular: true, fallback: "/images/destinations/ba-ria-vung-tau.webp" },
+  { type: "Xe 16 chỗ", models: "Ford Transit · Hyundai Solati", capacity: "7–14 hành khách", popular: false, fallback: "/images/destinations/ho-chi-minh.webp" },
+  { type: "Xe 29 chỗ", models: "Thaco / Hyundai hoặc tương đương", capacity: "Nhóm / đoàn", popular: false, fallback: "/images/destinations/long-an.webp" },
+  { type: "Xe 45 chỗ", models: "Universe / Samco hoặc tương đương", capacity: "Đoàn lớn", popular: false, fallback: "/images/destinations/ben-tre.webp" },
+  { type: "Limousine", models: "Dòng limousine cao cấp", capacity: "Không gian cao cấp", popular: false, fallback: "/images/services/city-tour.png" },
 ] as const;
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
@@ -117,7 +119,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
   </>;
   const picker = !pricing ? legacy : <div className="route-vehicle-picker">
     {!hero && journeyControls}
-    {redesign && <div className="route-detail-price-heading"><h2>{prelaunch ? "Thông tin xe cho hành trình" : <>Chọn xe phù hợp<span className="route-price-title-desktop"> với hành trình</span></>}</h2><p>{prelaunch ? "Tuyến đang chuẩn bị, chưa nhận đặt chuyến." : selectedPackage ? `Giá cho chuyến ${packageLabels[selectedPackage].toLowerCase()}` : "Liên hệ để được tư vấn gói chuyến phù hợp."}</p></div>}
+    {redesign && <div className="route-detail-price-heading"><h2>{prelaunch ? "Thông tin xe cho hành trình" : <>Giá theo loại xe</>}</h2><p>{prelaunch ? "Tuyến đang chuẩn bị, chưa nhận đặt chuyến." : selectedPackage ? `Giá cho chuyến ${packageLabels[selectedPackage].toLowerCase()}` : "Liên hệ để được tư vấn gói chuyến phù hợp."}</p></div>}
     <section className="mb-4 rounded-lg border border-border bg-card p-4 text-sm" aria-label="Thông tin tuyến đường">
       <h3 className="mb-3 flex items-center gap-2 font-semibold text-foreground"><MapPin aria-hidden="true" size={18} /> Thông tin tuyến đường</h3>
       <dl className="grid gap-3 text-muted-foreground sm:grid-cols-3">
@@ -132,15 +134,14 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
       const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback;
       const vehicleHref = routeJourneyHref(routeComboHref(route, vehicleTypeSlug(pkg.vehicleType)), activeDirection, pkg.packageKey);
       const price = fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined;
-      const priceBlock = <div className="route-vehicle-price" data-pricing-mode={prelaunch ? "prelaunch" : fixed ? "fixed" : "contact"}>{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{price}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>;
+      const priceBlock = <div className="route-vehicle-price" data-pricing-mode={prelaunch ? "prelaunch" : fixed ? "fixed" : "contact"}>{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : pkg.promotionView ? <><PromotionPrice view={pkg.promotionView} /><span>{packageLabels[selectedPackage]} / chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{price}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>;
       return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
         {redesign && <header className="route-vehicle-heading"><h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>{vehicle.popular && <span className="route-vehicle-popular">Được đặt nhiều nhất</span>}</header>}
         <div className="route-vehicle-image"><Link href={vehicleHref} aria-label={`Xem tuyến ${displayRoute} bằng ${vehicle.type}`}><img src={image} alt={`Mẫu xe tham khảo ${vehicle.type.toLowerCase()}`} loading="lazy" /></Link>{!redesign && vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>
         <div className="route-vehicle-body">
           {!redesign && <h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>}
-          <p className="route-vehicle-model">{redesign && <small>Mẫu xe tham khảo</small>}{vehicle.models}</p>
+          <p className="route-vehicle-model">{redesign && <small>Mẫu xe tham khảo</small>}{!redesign && "Mẫu xe tham khảo: "}{vehicle.models}</p>
           <div className="route-vehicle-summary"><p className="route-vehicle-capacity"><UsersRound size={redesign ? 32 : 15} aria-hidden="true" /> {vehicle.capacity}</p>{redesign && priceBlock}</div>
-          {!redesign && <ul>{vehicle.benefits.map((benefit) => <li key={benefit}>✓ {benefit}</li>)}</ul>}
           <div className="route-vehicle-bottom">
             {!redesign && priceBlock}
             {prelaunch ? <a className="button button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions compactLabels={redesign} route={canonicalRoute} routeId={route.id} displayRoute={displayRoute} vehicleType={pkg.vehicleType} price={price} direction={activeDirection} packageKey={pkg.packageKey} packageLabel={packageLabels[selectedPackage]} pricingMode={pkg.mode} airportContext={airportContext} />}
@@ -156,7 +157,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
       {pricing && <div className="route-detail-design-hero-controls"><h2>Chọn chuyến đi</h2>{journeyControls}</div>}
     </section>
     <div className="route-detail-design-main"><section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến"><div id="pricing">{picker}</div></section></div>
-  </> : picker;
+  </> : <>{picker}</>;
 }
 
 export default RoutePricingSection;

@@ -10,6 +10,8 @@
  *   trang thành công gần nhất, thay vì lưu một trang rỗng và gây 404 giả.
  */
 
+import { PROMOTION_COMMERCIAL_ENABLED } from "./api/promotion-model";
+
 export const WP_API_BASE =
   process.env.WP_API_BASE_URL ?? "https://xemiennam.datxesaigon.com/wp-json/wp/v2";
 
@@ -34,7 +36,7 @@ export async function wpFetch<T>(
     let res: Response;
     try {
       res = await fetch(`${WP_API_BASE}${path}`, {
-        next: { revalidate, tags: wpCacheTags(path) },
+        ...(PROMOTION_COMMERCIAL_ENABLED ? { cache: "no-store" as const } : { next: { revalidate, tags: wpCacheTags(path) } }),
         // A different retry header prevents React request memoization from
         // replaying the first failed response, while retaining normal ISR.
         headers: {

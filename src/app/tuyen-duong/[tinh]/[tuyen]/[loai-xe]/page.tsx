@@ -15,6 +15,8 @@ import {
 import { buildPageMetadata } from "@/lib/metadata";
 import { routeComboHref, routeHref } from "@/types/route";
 import { JsonLd } from "@/components/json-ld";
+import { promotionOfferCandidate, firstPromotionExpiry } from "@/lib/promotion-schema";
+import { availablePackages, findVehiclePackage } from "@/lib/route-package-capability";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
 import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDataAllowed } from "@/lib/content-readiness";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
@@ -92,13 +94,14 @@ export default async function Page({ params, searchParams }: Props) {
   const description = comboDescriptionOrDefault(route, vp);
   const guard = getComboIndexability(route, loaiXe);
   const readiness = resolveRouteContentReadiness(route);
-  const serviceOffers = buildFixedServiceOffers([
-    {
-      name: `${vp.vehicleType} · ${vp.packageLabel || "Gói hành trình"} · ${getPublicRouteLabel(route)}`,
-      mode: vp.pricingMode ?? "contact",
-      price: vp.numericPrice,
-    },
-  ]);
+  const selectedRows = (route.pricingV2?.[selection.direction].packages ?? []).filter((row) => row.vehicleType === category.type);
+  const available = availablePackages(selectedRows);
+  const selectedJourney = available.includes(selection.journey) ? selection.journey : available[0];
+  const selectedRow = selectedJourney ? findVehiclePackage(selectedRows, category.type, selectedJourney) : undefined;
+  const schemaDirectionLabel = selection.direction === "outbound" ? getPublicRouteLabel(route) : `${getPublicLocationLabel(route.to)} → ${getPublicLocationLabel(route.from)}`;
+  const candidate = selectedRow ? promotionOfferCandidate(route, selectedRow, `${selectedRow.vehicleType} · ${selectedRow.packageLabel} · ${schemaDirectionLabel}`) : undefined;
+  const serviceOffers = buildFixedServiceOffers(candidate ? [candidate] : []);
+  const fallbackOffers = buildFixedServiceOffers(candidate ? [{ ...candidate, promotionView: undefined }] : []);
   const serviceSchema = guard.indexable && readiness.serviceSchemaEligible ? buildServiceSchema({
     name: `Thuê xe ${vp.vehicleType.toLowerCase()} đi ${getPublicRouteLabel(route, " – ")}`,
     description: formatPublicLocationText(description),
@@ -106,6 +109,12 @@ export default async function Page({ params, searchParams }: Props) {
     areaServed: [getPublicLocationLabel(route.from), getPublicLocationLabel(route.to)],
     offers: readiness.offerSchemaEligible ? serviceOffers : undefined,
   }) : undefined;
+  const fallbackSchema = serviceSchema ? buildServiceSchema({
+    name: serviceSchema.name, description: serviceSchema.description, url: routeComboHref(route, loaiXe),
+    areaServed: [getPublicLocationLabel(route.from), getPublicLocationLabel(route.to)],
+    offers: readiness.offerSchemaEligible ? fallbackOffers : undefined,
+  }) : undefined;
+  const expiresAt = firstPromotionExpiry(selectedRow ? [selectedRow] : []);
   const structuredDataAllowed = routeStructuredDataAllowed(route, readiness);
   const breadcrumbSchema = structuredDataAllowed ? buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
@@ -117,9 +126,9 @@ export default async function Page({ params, searchParams }: Props) {
   return (
     <>
       {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
-      {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
       <ComboLandingPage
         key={`${route.id}:${category.slug}:${selection.direction}:${selection.journey}`}
+        serviceSchema={serviceSchema && fallbackSchema ? { data: serviceSchema, fallback: fallbackSchema, unpriced: { ...serviceSchema, offers: undefined }, expiresAt } : undefined}
         initialSelection={selection}
         route={route}
         vehiclePrice={vp}

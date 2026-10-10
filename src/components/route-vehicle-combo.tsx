@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useState } from "react";
 import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
@@ -12,6 +13,8 @@ import { availablePackages, findVehiclePackage, type JourneyPackage } from "@/li
 import { findComboVehiclePriceForDirection } from "@/lib/combo";
 import { reverseRouteMapEmbedSrc } from "@/lib/maps";
 import { formatPriceShort } from "@/lib/wp";
+import { PromotionPrice } from "@/components/promotion-price";
+import { ExpiringJsonLd, type PromotionServiceSchema } from "@/components/expiring-json-ld";
 import { navItems } from "@/data/nav";
 import { routeComboHref, type Route, type RoutePricingDirectionKey, type VehiclePrice } from "@/types/route";
 import type { VehicleCategory } from "@/types/vehicle-category";
@@ -23,7 +26,6 @@ import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { resolveRouteJourneySelection, type RouteJourneySelection } from "@/lib/route-journey-selection";
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
-const passengerLabels: Record<string, string> = { "4 chỗ": "1–3 hành khách", "7 chỗ": "3–6 hành khách", "16 chỗ": "7–14 hành khách", "29 chỗ": "Nhóm và đoàn", "45 chỗ": "Đoàn lớn", Limousine: "Không gian cao cấp" };
 
 function SimilarRouteCard({ route, vehicleSlug }: { route: Route; vehicleSlug: string }) {
   return <Link className="combo-design-related-card" href={routeComboHref(route, vehicleSlug)}>
@@ -32,7 +34,7 @@ function SimilarRouteCard({ route, vehicleSlug }: { route: Route; vehicleSlug: s
   </Link>;
 }
 
-export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes, vehicle, initialSelection }: { route: Route; vehiclePrice: VehiclePrice; category: VehicleCategory; similarRoutes: Route[]; vehicle?: Vehicle; initialSelection?: RouteJourneySelection }) {
+export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes, vehicle, initialSelection, serviceSchema }: { route: Route; vehiclePrice: VehiclePrice; category: VehicleCategory; similarRoutes: Route[]; vehicle?: Vehicle; initialSelection?: RouteJourneySelection; serviceSchema?: PromotionServiceSchema }) {
   const initial = initialSelection ?? resolveRouteJourneySelection(route, {}, category.type);
   const [direction, setDirection] = useState<RoutePricingDirectionKey>(initial.direction);
   const [journey, setJourney] = useState<"oneWay" | "roundTrip" | "twoDays">(initial.journey === "threeDays" ? "twoDays" : initial.journey);
@@ -61,7 +63,7 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   const heroFallback = route.regionSlug === "phan-thiet" ? "/images/destinations/phan-thiet.webp" : "/images/home-coastal-fleet.webp";
   const heroImage = route.featuredImage || heroFallback;
   const mapSrc = inbound ? reverseRouteMapEmbedSrc(route.mapEmbedSrc, from, to) : route.mapEmbedSrc;
-  const passengerLabel = passengerLabels[category.type] || vehicle?.capacity || "Đi theo nhóm";
+  const passengerLabel = "Cần tư vấn";
   const zaloLink = getZaloChatLink();
   const pickupLocation = inbound ? route.destinationLocation : route.originLocation;
   const dropoffLocation = inbound ? route.originLocation : route.destinationLocation;
@@ -70,11 +72,12 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
   const bookingProps = { route: getPublicRouteLabel(route, " – "), routeId: route.id, displayRoute, vehicleType: category.type, price: hasFixedPrice ? priceLabel : undefined, direction: activeDirection, packageKey, packageLabel, pricingMode: hasFixedPrice ? "fixed" as const : "contact" as const, airportContext, airportName };
 
   return <main className="site-shell home-redesign combo-redesign">
+    {serviceSchema ? <ExpiringJsonLd data={activeDirection === initial.direction && selectedPackage === initial.journey ? serviceSchema.data : serviceSchema.unpriced} fallback={activeDirection === initial.direction && selectedPackage === initial.journey ? serviceSchema.fallback : serviceSchema.unpriced} expiresAt={serviceSchema.expiresAt} /> : null}
     <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
     <section className="combo-design-hero" aria-labelledby="combo-title"><Image src={heroImage} alt="" fill priority sizes="100vw" className="combo-design-hero-image" /><div className="combo-design-width combo-design-hero-inner">
       <nav className="combo-design-breadcrumb" aria-label="Đường dẫn"><Link href="/tuyen-duong">Tuyến đường</Link><span>/</span><Link href={`/tuyen-duong/${route.regionSlug}`}>{getPublicLocationLabel(route.region)}</Link><span>/</span><span>Xe {category.type}</span></nav>
       <p className="home-eyebrow">{prelaunch ? "TUYẾN ĐANG CHUẨN BỊ" : "XE RIÊNG CÓ TÀI XẾ"}</p><h1 id="combo-title">Xe {category.type}<br />{from} đi {to}</h1>
-      <p className="combo-design-hero-description">Xe riêng có tài xế, chủ động lịch trình, phù hợp {passengerLabel.toLowerCase()}.</p>
+      <p className="combo-design-hero-description">Xe riêng có tài xế, chủ động lịch trình; số khách và hành lý cần được xác nhận.</p>
       <div className="combo-design-hero-chips"><span><CarFront aria-hidden="true" /><strong>Xe {category.type}<small>Riêng tư, thoải mái</small></strong></span><span><UsersRound aria-hidden="true" /><strong>{passengerLabel}<small>Phù hợp lịch trình của bạn</small></strong></span></div>
       {zaloLink && <a className="home-button home-button-primary combo-design-hero-cta zalo-cta" href={zaloLink} target="_blank" rel="noopener noreferrer"><ZaloIcon />{prelaunch ? "Nhắn Zalo tư vấn" : "Nhắn Zalo đặt xe"}<ArrowRight size={17} aria-hidden="true" /></a>}
     </div></section>
@@ -83,10 +86,10 @@ export function ComboLandingPage({ route, vehiclePrice, category, similarRoutes,
       {journeyTabs.length > 0 && <div className="combo-design-tabs" role="tablist" aria-label="Chọn loại hành trình">{([{key:"oneWay",label:"Một chiều",icon:ArrowRight},{key:"roundTrip",label:"Khứ hồi",icon:ArrowRightLeft},{key:"twoDays",label:"Theo ngày",icon:CalendarDays}] as const).filter((item) => journeyTabs.includes(item.key)).map((item) => <button type="button" role="tab" aria-selected={visibleJourney === item.key} className={visibleJourney === item.key ? "is-selected" : ""} key={item.key} onClick={() => setJourney(item.key)}><item.icon aria-hidden="true" size={19} />{item.label}</button>)}</div>}
       {visibleJourney === "twoDays" && <div className="combo-design-days" role="group" aria-label="Gói theo ngày">{(["twoDays","threeDays"] as const).filter((item) => available.includes(item)).map((item) => <button type="button" aria-pressed={visibleDays === item} className={visibleDays === item ? "is-selected" : ""} key={item} onClick={() => setDays(item)}>{packageLabels[item]}</button>)}</div>}
       {inboundAvailable && <div className="combo-design-directions" role="group" aria-label="Chọn chiều đi"><button type="button" aria-pressed={!inbound} className={!inbound ? "is-selected" : ""} onClick={() => setDirection("outbound")}><span aria-hidden="true" />{getPublicLocationLabel(route.from)} đi {getPublicLocationLabel(route.to)}</button><button type="button" aria-pressed={inbound} className={inbound ? "is-selected" : ""} onClick={() => setDirection("inbound")}><span aria-hidden="true" />{getPublicLocationLabel(route.to)} đi {getPublicLocationLabel(route.from)}</button></div>}
-      <div className="combo-design-offer"><div className="combo-design-offer-vehicle"><span><CarFront aria-hidden="true" /></span><p><strong>Xe {category.type}</strong><small>{from} đi {to}</small></p></div><div className="combo-design-offer-price"><small>{prelaunch ? "Trạng thái" : hasFixedPrice ? "Giá chỉ" : "Giá xe"}</small><strong className={hasFixedPrice && !prelaunch ? "is-fixed" : ""}>{prelaunch ? "Đang chuẩn bị" : priceLabel}</strong><span>{prelaunch ? "Chưa nhận đặt chuyến" : hasFixedPrice ? `${packageLabel} / chuyến` : "Xác nhận theo lịch thực tế"}</span></div><div className="combo-design-offer-actions">{prelaunch ? <a className="home-button home-button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions {...bookingProps} />}</div><p className="combo-design-offer-note"><Info size={17} aria-hidden="true" />{prelaunch ? "Liên hệ để được tư vấn; tuyến chưa nhận đặt chuyến." : "Giá và lịch xe được xác nhận trước khi nhận chuyến."}</p></div>
+      <div className="combo-design-offer"><div className="combo-design-offer-vehicle"><span><CarFront aria-hidden="true" /></span><p><strong>Xe {category.type}</strong><small>{from} đi {to}</small></p></div><div className="combo-design-offer-price"><small>{prelaunch ? "Trạng thái" : hasFixedPrice ? "Giá chỉ" : "Giá xe"}</small>{selectedRow?.promotionView && !prelaunch ? <PromotionPrice view={selectedRow.promotionView} /> : <strong className={hasFixedPrice && !prelaunch ? "is-fixed" : ""}>{prelaunch ? "Đang chuẩn bị" : priceLabel}</strong>}<span>{prelaunch ? "Chưa nhận đặt chuyến" : hasFixedPrice ? `${packageLabel} / chuyến` : "Xác nhận theo lịch thực tế"}</span></div><div className="combo-design-offer-actions">{prelaunch ? <a className="home-button home-button-primary" href="/lien-he">Liên hệ tư vấn</a> : <RouteBookingActions {...bookingProps} />}</div><p className="combo-design-offer-note"><Info size={17} aria-hidden="true" />{prelaunch ? "Liên hệ để được tư vấn; tuyến chưa nhận đặt chuyến." : "Giá và lịch xe được xác nhận trước khi nhận chuyến."}</p></div>
     </section>
 
-    <section className="combo-design-section combo-design-fit" aria-labelledby="combo-fit-title"><div className="combo-design-heading"><h2 id="combo-fit-title">Xe phù hợp với chuyến đi</h2><p>Xe riêng {category.type}, thoải mái và linh hoạt cho hành trình {displayRoute}.</p></div><div className="combo-design-fit-grid"><div className="combo-design-fit-image">{image ? <Image src={image} alt={`Xe ${category.type}`} fill sizes="(max-width: 800px) 100vw, 50vw" /> : <CarFront size={70} aria-hidden="true" />}</div><div className="combo-design-fit-facts"><div><span><UsersRound /></span><p><strong>Xe riêng có tài xế</strong><small>Tài xế hỗ trợ suốt hành trình.</small></p></div><div><span><UsersRound /></span><p><strong>Phù hợp {passengerLabel.toLowerCase()}</strong><small>Không gian riêng cho gia đình hoặc nhóm bạn.</small></p></div><div><span><MapPin /></span><p><strong>Điểm đón và trả xác nhận khi đặt</strong><small>Linh hoạt theo nhu cầu của bạn.</small></p></div><p className="combo-design-fit-note"><Info size={16} />Dòng xe thực tế được xác nhận khi tư vấn.</p></div></div></section>
+    <section className="combo-design-section combo-design-fit" aria-labelledby="combo-fit-title"><div className="combo-design-heading"><h2 id="combo-fit-title">Xe phù hợp với chuyến đi</h2><p>Xe riêng {category.type}, thoải mái và linh hoạt cho hành trình {displayRoute}.</p></div><div className="combo-design-fit-grid"><div className="combo-design-fit-image">{image ? <Image src={image} alt={`Xe ${category.type}`} fill sizes="(max-width: 800px) 100vw, 50vw" /> : <CarFront size={70} aria-hidden="true" />}</div><div className="combo-design-fit-facts"><div><span><UsersRound /></span><p><strong>Xe riêng có tài xế</strong><small>Tài xế hỗ trợ suốt hành trình.</small></p></div><div><span><UsersRound /></span><p><strong>Sức chứa: {passengerLabel}</strong><small>Không gian riêng cho gia đình hoặc nhóm bạn.</small></p></div><div><span><MapPin /></span><p><strong>Điểm đón và trả xác nhận khi đặt</strong><small>Linh hoạt theo nhu cầu của bạn.</small></p></div><p className="combo-design-fit-note"><Info size={16} />Dòng xe thực tế được xác nhận khi tư vấn.</p></div></div></section>
 
     <section className="combo-design-section combo-design-journey" aria-labelledby="combo-journey-title"><div className="combo-design-heading"><h2 id="combo-journey-title">Thông tin hành trình</h2><p>Hành trình từ {from} đến {to} với xe riêng, linh hoạt theo nhu cầu của bạn.</p></div><div className="combo-design-map">{mapSrc && !prelaunch ? <iframe src={mapSrc} title={`Bản đồ hành trình ${displayRoute}`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <div><RouteIcon size={39} /><strong>{displayRoute}</strong><small>Bản đồ hành trình đang cập nhật</small></div>}</div><div className="combo-design-journey-facts"><div><MapPin /><p><strong>Điểm đón theo yêu cầu</strong><small>Đón tại nhà, văn phòng hoặc địa điểm phù hợp.</small></p></div><div><Navigation /><p><strong>Lộ trình xác nhận khi tư vấn</strong><small>Lộ trình phù hợp, linh hoạt theo tình hình thực tế.</small></p></div><div><Clock3 /><p><strong>Thời gian tùy tình hình giao thông</strong><small>Thời gian di chuyển sẽ được tư vấn cụ thể khi đặt xe.</small></p></div></div></section>
     </div>

@@ -8,6 +8,8 @@ export interface SurchargeResolution {
   mode: SurchargeMode;
   amount?: number;
   matchedRuleKeys: string[];
+  /** Exact resolved charges, for a versioned free_surcharge promotion. */
+  components?: { ruleKey?: string; policyVersion: number; applicationKey: string; mode: "none" | "fixed"; amount: number }[];
   reason: "fixed" | "no_surcharge" | "policy_missing" | "zone_unverified" | "contact_rule";
 }
 
@@ -63,10 +65,17 @@ export function resolveSurchargeV2(route: WPRoute | undefined, context: Surcharg
     return { mode: "contact", matchedRuleKeys: matched.map(({ key }) => key), reason: "contact_rule" };
   }
 
-  const fixed = matched.map(({ rule }) => positiveAmount(rule.amount)).filter((amount): amount is number => Boolean(amount));
+  const components = matched.map(({ rule, key }) => ({
+    ruleKey: rule.rule_key?.trim() || undefined,
+    policyVersion: policyVersion(route.meta.surcharge_policy_version),
+    applicationKey: key,
+    mode: rule.surcharge_mode === "fixed" ? "fixed" as const : "none" as const,
+    amount: rule.surcharge_mode === "fixed" ? positiveAmount(rule.amount)! : 0,
+  }));
+  const fixed = components.filter((item) => item.mode === "fixed").map((item) => item.amount);
   if (fixed.length) {
-    return { mode: "fixed", amount: fixed.reduce((sum, amount) => sum + amount, 0), matchedRuleKeys: matched.map(({ key }) => key), reason: "fixed" };
+    return { mode: "fixed", amount: fixed.reduce((sum, amount) => sum + amount, 0), matchedRuleKeys: matched.map(({ key }) => key), components, reason: "fixed" };
   }
 
-  return { mode: "none", matchedRuleKeys: matched.map(({ key }) => key), reason: "no_surcharge" };
+  return { mode: "none", matchedRuleKeys: matched.map(({ key }) => key), components, reason: "no_surcharge" };
 }

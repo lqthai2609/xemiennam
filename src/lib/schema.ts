@@ -1,4 +1,8 @@
 import { SITE_AREA_SERVED, SITE_DESCRIPTION, SITE_HOTLINE_TEL, SITE_NAME, SITE_URL } from "@/lib/site-config";
+import type { PromotionPriceView } from "@/types/promotion-price";
+import type { PromotionTuple } from "@/lib/api/promotion-model";
+import { promotionTupleKey } from "@/lib/api/promotion-model";
+import { promotionLeaseActive } from "@/lib/promotion-expiry";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type JsonLdObject = Record<string, any>;
@@ -6,12 +10,17 @@ export type JsonLdObject = Record<string, any>;
 export type ServiceOfferInput = {
   name: string;
   price: number;
+  validFrom?: string;
+  validThrough?: string;
+  unitText?: string;
 };
 
 export type ServiceOfferCandidateInput = {
   name: string;
   mode: string;
   price?: number;
+  tuple?: PromotionTuple;
+  promotionView?: PromotionPriceView;
 };
 
 export type ServiceAggregateOfferInput = {
@@ -33,6 +42,7 @@ function absoluteUrl(url: string): string {
 
 export function buildFixedServiceOffers(
   candidates: ServiceOfferCandidateInput[],
+  now: number = Date.now(),
 ): ServiceAggregateOfferInput | undefined {
   const offers = candidates
     .filter(
@@ -42,7 +52,16 @@ export function buildFixedServiceOffers(
         Number.isFinite(candidate.price) &&
         candidate.price > 0,
     )
-    .map((candidate) => ({ name: candidate.name, price: candidate.price }));
+    .map((candidate) => {
+      const view = candidate.promotionView;
+      const claim = view?.claim;
+      const useClaim = view?.offerEligible && view.purpose === "base_catalog" && view.mode === "fixed"
+        && candidate.tuple && promotionTupleKey(candidate.tuple) === promotionTupleKey(view.tuple)
+        && candidate.price === view.originalAmount && claim?.layer === "base_price"
+        && promotionLeaseActive(claim.expiresAt, now) && Number.isSafeInteger(view.amount) && view.amount! > 0;
+      return { name: candidate.name, price: useClaim ? view.amount! : candidate.price,
+        ...(useClaim ? { validFrom: claim.validFrom, validThrough: claim.validThrough, unitText: view.tuple.package_key } : {}) };
+    });
 
   if (offers.length === 0) return undefined;
   const prices = offers.map((offer) => offer.price);
@@ -117,6 +136,10 @@ export function buildServiceSchema({
             name: offer.name,
             price: offer.price,
             priceCurrency: offers?.priceCurrency ?? "VND",
+            ...(offer.validFrom ? { validFrom: offer.validFrom } : {}),
+            ...(offer.validThrough ? { validThrough: offer.validThrough } : {}),
+            ...(offer.unitText ? { priceSpecification: { "@type": "UnitPriceSpecification", price: offer.price,
+              priceCurrency: "VND", unitText: offer.unitText, validFrom: offer.validFrom, validThrough: offer.validThrough } } : {}),
           })),
         }
       : undefined;
