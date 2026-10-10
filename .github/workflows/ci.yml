@@ -112,6 +112,12 @@ jobs:
           npm run test:promotion-model
           npm run test:promotion-model:php
 
+      - name: Day 53 read-only booking release compatibility
+        run: |
+          npm run test:booking-release
+          npm run test:booking-contract:php
+          php -l wordpress/gocar-core/includes/class-gocar-booking-contract.php
+
       - name: Day 45 immutable promotion snapshot and replay
         run: |
           npm run test:promotion-snapshot

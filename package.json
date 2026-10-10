@@ -11,7 +11,7 @@
     "test:promotion-model": "node --test scripts/promotion-model.test.mjs",
     "test:promotion-model:php": "php scripts/promotion-model-php.test.php",
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/booking-release-preflight.mjs && next build",
     "typecheck": "tsc --noEmit",
     "start": "next start",
     "lint": "eslint",
@@ -50,7 +50,11 @@
     "test:empty-leg": "node --test scripts/empty-leg.test.mjs",
     "test:empty-leg:php": "php scripts/empty-leg-php.test.php",
     "test:empty-leg-presentation": "node --test scripts/empty-leg-presentation.test.mjs",
-    "test:empty-leg-presentation:php": "php scripts/empty-leg-presentation-php.test.php && php scripts/empty-leg-presentation-api-php.test.php"
+    "test:empty-leg-presentation:php": "php scripts/empty-leg-presentation-php.test.php && php scripts/empty-leg-presentation-api-php.test.php",
+    "build:production": "node scripts/booking-release-preflight.mjs --check && next build",
+    "release:preflight": "node scripts/booking-release-preflight.mjs --check",
+    "test:booking-release": "node --test scripts/booking-release-preflight.test.mjs",
+    "test:booking-contract:php": "php scripts/booking-contract-php.test.php"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
