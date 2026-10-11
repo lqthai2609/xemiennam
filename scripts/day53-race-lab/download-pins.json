@@ -1,0 +1,113 @@
+[
+  {
+    "filename": "libedit2.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libe/libedit/libedit2_3.1-20230828-1build1_amd64.deb",
+    "sha256": "3afbc8ddf835049dd4d88275b9d13680e4c4cdd59e191cbd63424152cc08e00e",
+    "version": "3.1-20230828-1build1"
+  },
+  {
+    "filename": "php8.3-cli.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/php8.3/php8.3-cli_8.3.6-0maysync1_amd64.deb",
+    "sha256": "8cb7461dd06fb214b30c060b80b1c6f95d1ff5e2656fdadf215e50b9f299f196",
+    "version": "8.3.6-0maysync1"
+  },
+  {
+    "filename": "libprotobuf-lite32t64.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/protobuf/libprotobuf-lite32t64_3.21.12-8.2build1_amd64.deb",
+    "sha256": "8036d6416d998d55ad7b3b6d29059d61d200ed05099d12de38742389188f6498",
+    "version": "3.21.12-8.2build1"
+  },
+  {
+    "filename": "mysql-server-core-8.0.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/m/mysql-8.0/mysql-server-core-8.0_8.0.36-2ubuntu3_amd64.deb",
+    "sha256": "74ad88d5c53e0ba540067adc7234f2013a2ec7e2e536eaf9d5c40336ea18116f",
+    "version": "8.0.36-2ubuntu3"
+  },
+  {
+    "filename": "php8.3-readline.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/php8.3/php8.3-readline_8.3.6-0maysync1_amd64.deb",
+    "sha256": "380f8ed79196914ee2eebb68bf518a752204826af1fdb8a0d5c9609c76086b90",
+    "version": "8.3.6-0maysync1"
+  },
+  {
+    "filename": "libevent-core-2.1-7t64.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libe/libevent/libevent-core-2.1-7t64_2.1.12-stable-9ubuntu2_amd64.deb",
+    "sha256": "3da51e864e4067779a2ba3a87daf5e4d8030c0aaa6291a1ce12483d4f73bf752",
+    "version": "2.1.12-stable-9ubuntu2"
+  },
+  {
+    "filename": "mysql-client-core-8.0.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/m/mysql-8.0/mysql-client-core-8.0_8.0.36-2ubuntu3_amd64.deb",
+    "sha256": "fda22fc012bcbc4e090e71c371aac3fb37c017b4580c4253dcc443e59a9d80cb",
+    "version": "8.0.36-2ubuntu3"
+  },
+  {
+    "filename": "php8.3-mysql.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/php8.3/php8.3-mysql_8.3.6-0maysync1_amd64.deb",
+    "sha256": "28050003758e191191ceffe6d2c00731544746ee3a712790f5d87c42f712513b",
+    "version": "8.3.6-0maysync1"
+  },
+  {
+    "filename": "php8.3-xml.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/php8.3/php8.3-xml_8.3.6-0maysync1_amd64.deb",
+    "sha256": "6c6ded219d1966a50108d032b7a522e641765a8a6aa48747483313fa7dafd533",
+    "version": "8.3.6-0maysync1"
+  },
+  {
+    "filename": "php8.3-common.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/php8.3/php8.3-common_8.3.6-0maysync1_amd64.deb",
+    "sha256": "0e0d0ad9c17add5fb2afcc14c6fffb81c2beb99114108b8ebd0461d910a79dfc",
+    "version": "8.3.6-0maysync1"
+  },
+  {
+    "filename": "libaio1t64.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/liba/libaio/libaio1t64_0.3.113-6build1_amd64.deb",
+    "sha256": "b1c4ebee35cfc85481443171e6e09943f3b0b530901fdf4fd6a864e242c2a1a5",
+    "version": "0.3.113-6build1"
+  },
+  {
+    "filename": "php8.3-mbstring.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/php8.3/php8.3-mbstring_8.3.6-0maysync1_amd64.deb",
+    "sha256": "42c89945eb105c2232ab208b893ef65e9abc8af5c95aa10c507498655ef812c4",
+    "version": "8.3.6-0maysync1"
+  },
+  {
+    "filename": "libmecab2.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/m/mecab/libmecab2_0.996-14ubuntu4_amd64.deb",
+    "sha256": "cc91804dc82ac766833a97288384b7b65762aa26212bb915a556e13430c61745",
+    "version": "0.996-14ubuntu4"
+  },
+  {
+    "filename": "libonig5.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libo/libonig/libonig5_6.9.9-1build1_amd64.deb",
+    "sha256": "605f42287d2bcb6c84f5a02377c7cd777090c5e857259a4030a571989f19dde2",
+    "version": "6.9.9-1build1"
+  },
+  {
+    "filename": "php8.3-opcache.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/php8.3/php8.3-opcache_8.3.6-0maysync1_amd64.deb",
+    "sha256": "13b2662201c57904c1eda9b048b1349acaf3609c7d9e8df5b2d93833a059bdb0",
+    "version": "8.3.6-0maysync1"
+  },
+  {
+    "filename": "libevent-pthreads-2.1-7t64.deb",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libe/libevent/libevent-pthreads-2.1-7t64_2.1.12-stable-9ubuntu2_amd64.deb",
+    "sha256": "f9bf6e3681179df772eea7d04b98b597560c428c39b7fca05bfaf64691c327b1",
+    "version": "2.1.12-stable-9ubuntu2"
+  },
+  {
+    "filename": "wordpress.tar.gz",
+    "url": "https://wordpress.org/latest.tar.gz",
+    "sha256": "d2a09acb6a15e3b9c471d72557753c266d6f41a79ed19bfe04cbfe49e283b2a5"
+  },
+  {
+    "filename": "wp-cli.phar",
+    "url": "https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar",
+    "sha256": "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c"
+  },
+  {
+    "filename": "jwt.zip",
+    "url": "https://downloads.wordpress.org/plugin/jwt-authentication-for-wp-rest-api.latest-stable.zip",
+    "sha256": "97c21033394de71c60acee8fe307c3ce89dae9227fad5fbee9569bc323202498"
+  }
+]

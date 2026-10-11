@@ -66,4 +66,11 @@ $GLOBALS['posts'][$historical_id] = 'booking_request'; Gocar_Promotion_Snapshot:
 $GLOBALS['options']['_gocar_lead_key_' . hash('sha256',$r->get_param('idempotency_key'))] = array('fingerprint'=>hash('sha256','booking_intent_v2:'.str_repeat('f',64)),'intent_version'=>2,'id'=>$historical_id,'snapshot'=>$fixtures['applied']);
 verify_snapshot( Gocar_Lead_Lifecycle::replay( $r )['promotion_snapshot'] === $fixtures['applied'], 'expired historical applied result is not reevaluated or repriced' );
 verify_snapshot( false === Gocar_Promotion_Snapshot::save( $historical_id,$fixtures['fixed'] ), 'append-only estimate cannot be replaced by another resolution' );
+$GLOBALS['fail_reservation_read'] = true;
+$r = request_for( '78787878-7878-4787-8787-787878787878', str_repeat( '7',64 ), $fixtures['fixed'] ); $count = $GLOBALS['creates'];
+foreach ( array( 'create', 'replay' ) as $operation ) {
+    $failure = Gocar_Lead_Lifecycle::$operation( $r );
+    verify_snapshot( $failure instanceof WP_Error && 'lead_reservation_failed' === $failure->code && 503 === $failure->details['status'] && $GLOBALS['creates'] === $count, 'SQL read error fails closed without creating a lead' );
+}
+$GLOBALS['fail_reservation_read'] = false;
 echo "Day 45 snapshot checks: $checks passed; in-memory only.\n";

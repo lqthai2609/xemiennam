@@ -34,6 +34,8 @@ function rest_do_request( $request ) {
     return new FakeResponse( 'malformed' === ( $GLOBALS['response_mode'] ?? '' ) ? array() : array( 'id' => $id ), 'error_after_insert' === ( $GLOBALS['response_mode'] ?? '' ) );
 }
 function wp_cache_delete() {}
+function maybe_serialize($value) { return serialize($value); }
+function maybe_unserialize($value) { return unserialize($value); }
 class WP_Error { public function __construct( public string $code, public string $message, public array $details ) {} }
 class WP_Post { public function __construct( public int $ID, public string $post_type ) {} }
 class FakeResponse { public function __construct( private array $data, private bool $error = false ) {} public function is_error() { return $this->error; } public function get_data() { return $this->data; } public function as_error() { return new WP_Error( 'upstream_failed', 'Upstream failed.', array( 'status' => 502 ) ); } }
@@ -48,7 +50,25 @@ class WP_REST_Request implements ArrayAccess {
     public function offsetSet( mixed $offset, mixed $value ): void { $this->set_param( $offset, $value ); }
     public function offsetUnset( mixed $offset ): void { unset( $this->params[ $offset ] ); }
 }
-class FakeDB { public string $posts = 'wp_posts'; public array $queries = array(); public function query( $sql ) { $this->queries[] = $sql; } public function prepare( $sql, $value ) { return sprintf( $sql, $value ); } public function get_var( $sql ) { return 200; } }
+class FakeDB {
+    public string $posts = 'wp_posts'; public string $options = 'wp_options';
+    public string $last_error = ''; public $dbh = null; public array $queries = array(); private array $args = array(); private bool $suppressed = false;
+    public function suppress_errors($value) { $previous = $this->suppressed; $this->suppressed = $value; return $previous; }
+    public function prepare($sql, ...$values) { $this->args = $values; return $sql; }
+    public function get_row($sql) { $this->last_error = ''; if (!empty($GLOBALS['fail_reservation_read'])) { $this->last_error = 'Synthetic read failure'; return null; } $key = $this->args[0]; return isset($GLOBALS['options'][$key]) ? (object) array('option_value'=>serialize($GLOBALS['options'][$key])) : null; }
+    public function query($sql) {
+        $this->queries[] = $sql; $this->last_error = '';
+        if (str_starts_with($sql, 'INSERT INTO wp_options')) {
+            [$key, $serialized] = $this->args;
+            if (($GLOBALS['race_option'] ?? '') === $key) { $GLOBALS['options'][$key] = unserialize($serialized); unset($GLOBALS['race_option']); }
+            // This double fails closed; real MySQL duplicate errno is verified in the lab.
+            if (isset($GLOBALS['options'][$key])) { $this->last_error = 'Synthetic insert failure'; return false; }
+            $GLOBALS['options'][$key] = unserialize($serialized); return 1;
+        }
+        return 1;
+    }
+    public function get_var($sql) { return 200; }
+}
 $GLOBALS['wpdb'] = new FakeDB();
 require_once __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-promotion-snapshot.php';
 require_once __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-lead-lifecycle.php';

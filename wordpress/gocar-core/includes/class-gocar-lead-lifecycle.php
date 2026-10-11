@@ -156,8 +156,8 @@ final class Gocar_Lead_Lifecycle {
         // Store only a hash so the reserved key can find that post on a retry.
         if ( null !== self::$creating_key_hash ) {
             add_post_meta( $post->ID, '_gocar_lead_request_key_hash', self::$creating_key_hash, true );
-            $reservation = get_option( '_gocar_lead_key_' . self::$creating_key_hash );
-            if ( isset( $reservation['snapshot'] ) ) { Gocar_Promotion_Snapshot::save( $post->ID, $reservation['snapshot'] ); }
+            $reservation = self::reservation( '_gocar_lead_key_' . self::$creating_key_hash );
+            if ( is_array( $reservation ) && isset( $reservation['snapshot'] ) ) { Gocar_Promotion_Snapshot::save( $post->ID, $reservation['snapshot'] ); }
         }
         self::initialize( $post->ID, $request->get_param( 'acquisition' ) );
     }
@@ -201,14 +201,55 @@ final class Gocar_Lead_Lifecycle {
         return rest_ensure_response( array( 'found' => true, 'id' => $id, 'lead_id' => $id, 'replayed' => true, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ) ) );
     }
 
+    /** Reservations are authoritative SQL state, never an option-cache lease. */
+    private static function reservation( string $option ) {
+        global $wpdb;
+        $row = $wpdb->get_row( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $option ) );
+        if ( '' !== $wpdb->last_error ) {
+            return new WP_Error( 'lead_reservation_failed', 'Could not read the request reservation; retry with the same key.', array( 'status' => 503 ) );
+        }
+        return null === $row ? false : maybe_unserialize( $row->option_value );
+    }
+
+    /** Plain INSERT: a duplicate must never update the winning reservation. */
+    private static function reserve( string $option, array $reservation ) {
+        global $wpdb;
+        $previous = $wpdb->suppress_errors( true );
+        try {
+            $inserted = $wpdb->query( $wpdb->prepare(
+                "INSERT INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')",
+                $option, maybe_serialize( $reservation )
+            ) );
+            // Capture the driver error before any further query can replace it.
+            $errno = $wpdb->dbh instanceof mysqli ? mysqli_errno( $wpdb->dbh ) : 0;
+        } finally {
+            $wpdb->suppress_errors( $previous );
+        }
+        // Invalidate both positive and negative caches after bypassing Options API.
+        wp_cache_delete( $option, 'options' );
+        wp_cache_delete( 'notoptions', 'options' );
+        wp_cache_delete( 'alloptions', 'options' );
+        if ( 1 === $inserted ) { return true; }
+        if ( false === $inserted && 1062 === $errno ) { return false; }
+        // Unsupported drivers and all other database errors fail closed.
+        return new WP_Error( 'lead_reservation_failed', 'Could not reserve the request; retry with the same key.', array( 'status' => 503 ) );
+    }
+
+    private static function existing_result( string $option, string $key_hash, $existing, string $fingerprint, bool $v2 ) {
+        if ( ! is_array( $existing ) || ! hash_equals( $existing['fingerprint'] ?? '', $fingerprint ) ) { return new WP_Error( 'key_conflict', 'Idempotency key belongs to another request.', array( 'status' => 409 ) ); }
+        if ( $v2 !== ( 2 === ( $existing['intent_version'] ?? null ) ) ) { return new WP_Error( 'key_conflict', 'Request protocol changed.', array( 'status' => 409 ) ); }
+        return self::saved_result( $option, $key_hash, $existing );
+    }
+
     public static function replay( WP_REST_Request $request ) {
         $key = $request->get_param( 'idempotency_key' );
         if ( ! is_string( $key ) || ! preg_match( '/^[a-f0-9-]{36}$/i', $key ) ) { return new WP_Error( 'invalid_key', 'A UUID idempotency key is required.', array( 'status' => 400 ) ); }
         $identity = self::identity( $request );
         if ( $identity instanceof WP_Error ) { return $identity; }
         if ( null === $identity ) { return new WP_Error( 'invalid_intent', 'Version 2 is required for replay lookup.', array( 'status' => 400 ) ); }
-        $key_hash = hash( 'sha256', $key ); $option = '_gocar_lead_key_' . $key_hash; $existing = get_option( $option );
-        if ( ! $existing ) { return rest_ensure_response( array( 'found' => false ) ); }
+        $key_hash = hash( 'sha256', $key ); $option = '_gocar_lead_key_' . $key_hash; $existing = self::reservation( $option );
+        if ( $existing instanceof WP_Error ) { return $existing; }
+        if ( false === $existing ) { return rest_ensure_response( array( 'found' => false ) ); }
         if ( ! is_array( $existing ) || 2 !== ( $existing['intent_version'] ?? null ) || ! hash_equals( $existing['fingerprint'] ?? '', $identity ) ) {
             return new WP_Error( 'key_conflict', 'Key belongs to a different or legacy request; reconciliation is required.', array( 'status' => 409 ) );
         }
@@ -225,11 +266,10 @@ final class Gocar_Lead_Lifecycle {
         $identity = self::identity( $request );
         if ( $identity instanceof WP_Error ) { return $identity; }
         $fingerprint = $identity ?? hash( 'sha256', wp_json_encode( array( $booking, $request->get_param( 'acquisition' ) ) ) );
-        $existing = get_option( $option );
-        if ( $existing ) {
-            if ( ! is_array( $existing ) || ! hash_equals( $existing['fingerprint'] ?? '', $fingerprint ) ) { return new WP_Error( 'key_conflict', 'Idempotency key belongs to another request.', array( 'status' => 409 ) ); }
-            if ( ( null !== $identity ) !== ( 2 === ( $existing['intent_version'] ?? null ) ) ) { return new WP_Error( 'key_conflict', 'Request protocol changed.', array( 'status' => 409 ) ); }
-            return self::saved_result( $option, $key_hash, $existing );
+        $existing = self::reservation( $option );
+        if ( $existing instanceof WP_Error ) { return $existing; }
+        if ( false !== $existing ) {
+            return self::existing_result( $option, $key_hash, $existing, $fingerprint, null !== $identity );
         }
         $snapshot = $request->get_param( 'promotion_snapshot' );
         if ( null !== $identity && ( ! Gocar_Promotion_Snapshot::valid( $snapshot, Gocar_Promotion_Model::COMMERCIAL_ENABLED ) || ! Gocar_Promotion_Snapshot::matches_booking( $snapshot, $booking['meta'] ) ) ) {
@@ -239,8 +279,14 @@ final class Gocar_Lead_Lifecycle {
         if ( null === $identity && null !== $snapshot ) { return new WP_Error( 'invalid_snapshot', 'Versioned intent is required.', array( 'status' => 400 ) ); }
         $reservation = array( 'fingerprint' => $fingerprint, 'id' => null, 'reserved_at' => gmdate( 'c' ) );
         if ( null !== $identity ) { $reservation['intent_version'] = 2; $reservation['snapshot'] = $snapshot; }
-        // add_option's unique key chooses the winner across concurrent workers.
-        if ( ! add_option( $option, $reservation, '', false ) ) { return new WP_Error( 'lead_in_progress', 'Lead creation is in progress; retry with the same key.', array( 'status' => 409 ) ); }
+        $reserved = self::reserve( $option, $reservation );
+        if ( $reserved instanceof WP_Error ) { return $reserved; }
+        if ( ! $reserved ) {
+            $existing = self::reservation( $option );
+            if ( $existing instanceof WP_Error ) { return $existing; }
+            if ( false === $existing ) { return new WP_Error( 'lead_in_progress', 'Lead creation needs reconciliation; retry with the same key.', array( 'status' => 409 ) ); }
+            return self::existing_result( $option, $key_hash, $existing, $fingerprint, null !== $identity );
+        }
         $inner = new WP_REST_Request( 'POST', '/wp/v2/booking_request' );
         $inner->set_body_params( $booking );
         $inner->set_param( 'acquisition', $request->get_param( 'acquisition' ) );
