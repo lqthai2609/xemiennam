@@ -72,6 +72,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Minimal source measurement, consent, privacy and intent separation
+        run: |
+          node --test scripts/lead-measurement.test.mjs
+          php scripts/lead-measurement-php.test.php
+
       - name: Day 52 server projection and expiry auto-hide
         run: |
           npm run test:empty-leg-presentation

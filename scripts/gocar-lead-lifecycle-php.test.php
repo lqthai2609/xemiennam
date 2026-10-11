@@ -20,7 +20,11 @@ function delete_option( $key ) { unset( $GLOBALS['options'][ $key ] ); }
 function get_posts( $args ) {
     $ids = array();
     foreach ( $GLOBALS['posts'] as $id => $type ) {
-        if ( $type === $args['post_type'] && get_post_meta( $id, $args['meta_key'], true ) === $args['meta_value'] ) $ids[] = $id;
+        if ( ! in_array( $type, (array) $args['post_type'], true ) ) continue;
+        if ( isset( $args['meta_key'] ) && get_post_meta( $id, $args['meta_key'], true ) !== $args['meta_value'] ) continue;
+        if ( isset( $args['post_status'] ) && 'any' !== $args['post_status'] && ! in_array( $GLOBALS['post_status'][ $id ] ?? 'publish', (array) $args['post_status'], true ) ) continue;
+        if ( isset( $args['meta_query'] ) ) { $q = $args['meta_query'][0]; $value = get_post_meta( $id, $q['key'], true ); if ( '' === $value || (int) $value > $q['value'] ) continue; }
+        $ids[] = $id;
     }
     return array_slice( $ids, 0, $args['posts_per_page'] );
 }

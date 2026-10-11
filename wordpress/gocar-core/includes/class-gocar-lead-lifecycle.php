@@ -17,6 +17,7 @@ final class Gocar_Lead_Lifecycle {
     private const LEGACY_BY_STATE = array( 'new' => 'moi', 'quote' => 'bao_gia', 'sent' => 'da_gui_gia', 'agreed' => 'dong_y', 'deposit' => 'dat_coc', 'assigned' => 'xep_xe', 'complete' => 'hoan_thanh', 'lost' => 'mat_khach' );
     private static bool $syncing_legacy = false;
     private static ?string $creating_key_hash = null;
+    private static bool $expiring_acquisition = false;
     private const CONTEXT_KEYS = array( 'source' => 100, 'medium' => 50, 'campaign' => 150, 'utm_source' => 100, 'utm_medium' => 50, 'utm_campaign' => 150, 'utm_id' => 100, 'utm_term' => 150, 'utm_content' => 150, 'landing_page_id' => 100, 'landing_path' => 500, 'landing_family' => 100 );
     private const SEARCH_HOSTS = array( 'google.com', 'google.com.vn', 'bing.com', 'search.yahoo.com', 'duckduckgo.com', 'coccoc.com' );
     private const FIRST_PARTY_HOSTS = array( 'xemiennam.vercel.app', 'alodatxe.com', 'www.alodatxe.com' );
@@ -65,6 +66,7 @@ final class Gocar_Lead_Lifecycle {
     }
 
     public static function guard_legacy_meta( $check, int $id, string $key, $value, $previous ) {
+        if ( self::$expiring_acquisition && in_array( $key, array( '_gocar_lead_context_v1', '_gocar_lead_attribution_v1' ), true ) ) return $check;
         if ( self::$syncing_legacy || 'booking_request' !== get_post_type( $id ) ) { return $check; }
         if ( '_gocar_lead_state_v1' === $key || '_gocar_lead_context_v1' === $key || '_gocar_lead_attribution_v1' === $key || '_gocar_lead_history_v1' === $key ) { return false; }
         if ( 'trang_thai_booking' === $key && get_post_meta( $id, '_gocar_lead_state_v1', true ) && ( self::LEGACY[ $value ] ?? '' ) !== self::state( $id ) ) { return false; }
@@ -78,6 +80,7 @@ final class Gocar_Lead_Lifecycle {
             $value = $input[ $key ] ?? null;
             if ( ! is_string( $value ) || '' === trim( $value ) || strlen( $value ) > $max ) { $output[ $key ] = null; continue; }
             $value = trim( $value );
+            if ( in_array( $key, array( 'medium', 'utm_medium' ), true ) && 'email' === strtolower( $value ) ) { $output[ $key ] = 'email'; continue; }
             // Reject identifiers, addresses, coordinates, URLs and unbounded free text.
             if ( preg_match( '/@|\+?\d[\d\s.()-]{8,}|https?:|%40|%2b|\b(?:phone|email|address|token|name|dia_chi|so_dien_tho)\b/i', $value ) || ! preg_match( '/^[\pL\pN_\/.:-]+$/u', $value ) ) { $output[ $key ] = null; continue; }
             if ( 'landing_path' === $key && ( '/' !== substr( $value, 0, 1 ) || str_contains( $value, '..' ) || str_contains( $value, '//' ) || preg_match( '#/(?:api|quan-tri|wp-admin|checkout|booking)(?:/|$)#i', $value ) ) ) { $output[ $key ] = null; continue; }
@@ -117,24 +120,35 @@ final class Gocar_Lead_Lifecycle {
         $referrer = self::referrer( $input['referrer_origin'] ?? null );
         $medium = strtolower( $context['utm_medium'] ?? '' );
         $source = strtolower( $context['utm_source'] ?? '' );
+        $minimal = class_exists( 'Gocar_Lead_Measurement' ) && Gocar_Lead_Measurement::is_policy( $input );
         $channel = 'unknown';
         if ( 'granted' !== $consent ) {
             $context = self::context( array() );
             $referrer = self::referrer( null );
         } elseif ( in_array( $medium, array( 'cpc', 'ppc', 'paid_search', 'paid_social' ), true ) ) {
             $channel = 'paid_search' === $medium || in_array( $medium, array( 'cpc', 'ppc' ), true ) ? 'paid_search' : 'paid_social';
-        } elseif ( 'search_engine' === $referrer['type'] && ( '' === $medium || 'organic' === $medium ) ) {
-            $channel = 'organic_search';
+        } elseif ( ! empty( $input['paid_marker_present'] ) ) {
+            $channel = 'unknown';
+        } elseif ( $minimal && '' !== $source && in_array( $medium, array( 'email', 'social', 'affiliate', 'referral' ), true ) ) {
+            $channel = 'social' === $medium ? 'organic_social' : $medium;
+        } elseif ( empty( $input['paid_marker_present'] ) && 'search_engine' === $referrer['type'] && ( '' === $medium || 'organic' === $medium ) ) {
+            // An explicit contradictory source cannot become a verified organic touch.
+            $matches_source = '' === $source || preg_match( '/(^|\.)' . preg_quote( $source, '/' ) . '\./', $referrer['host'] );
+            $channel = ! $minimal || $matches_source ? 'organic_search' : 'unknown';
         } elseif ( 'external_referral' === $referrer['type'] && '' === $medium ) {
             $channel = 'referral';
         } elseif ( 'internal' === $referrer['type'] && '' === $medium && '' === $source ) {
             $channel = 'direct';
         }
         if ( 'granted' !== $consent ) { $channel = 'unknown'; }
+        if ( class_exists( 'Gocar_Lead_Measurement' ) && Gocar_Lead_Measurement::is_policy( $input ) && in_array( $channel, array( 'direct', 'referral' ), true ) ) {
+            $context['source'] = 'direct' === $channel ? 'direct' : $referrer['host'];
+            $context['medium'] = 'direct' === $channel ? 'direct' : 'referral';
+        }
         $touch = array(
             'occurred_at_utc' => gmdate( 'c' ),
-            'source' => 'organic_search' === $channel ? $referrer['host'] : ( $context['utm_source'] ?? null ),
-            'medium' => 'organic_search' === $channel ? 'organic' : ( $context['utm_medium'] ?? null ),
+            'source' => 'organic_search' === $channel ? $referrer['host'] : ( $context['utm_source'] ?? $context['source'] ?? null ),
+            'medium' => 'organic_search' === $channel ? 'organic' : ( $context['utm_medium'] ?? $context['medium'] ?? null ),
             'campaign' => $context['utm_campaign'],
             'channel_group' => $channel,
             'referrer_origin' => $referrer['origin'], 'referrer_host' => $referrer['host'], 'referrer_type' => $referrer['type'],
@@ -147,8 +161,9 @@ final class Gocar_Lead_Lifecycle {
         $status = 'denied' === $consent ? 'privacy_rejected' : ( 'unknown' === $channel ? 'unknown' : ( $context['landing_path'] ? 'attributed' : 'missing_context' ) );
         return array(
             'attribution_schema_version' => 1, 'channel_rule_version' => 'channel_v1',
-            'search_allowlist_version' => 'search_v1', 'attribution_model' => 'first_eligible_organic_30d_v1',
-            'lookback_days' => 30, 'consent_state' => $consent,
+            'search_allowlist_version' => 'search_v1', 'attribution_model' => $minimal ? 'current_visit_v1' : 'first_eligible_organic_30d_v1',
+            'lookback_days' => $minimal ? 0 : 30, 'consent_state' => $consent,
+            'measurement_policy' => $minimal ? Gocar_Lead_Measurement::POLICY : null,
             'attribution_status' => $status,
             'initial_touch' => $touch, 'lead_touch' => $touch,
             'first_eligible_organic_touch' => 'organic_search' === $channel ? $touch : null,
@@ -182,8 +197,20 @@ final class Gocar_Lead_Lifecycle {
         $operational_context = is_array( $context ) && 'granted' === ( $context['consent_state'] ?? null ) ? $context : array();
         add_post_meta( $id, '_gocar_lead_context_v1', self::context( $operational_context ), true );
         add_post_meta( $id, '_gocar_lead_attribution_v1', self::attribution( $context ), true );
+        if ( class_exists( 'Gocar_Lead_Measurement' ) ) Gocar_Lead_Measurement::mark( $id, $context );
         add_post_meta( $id, '_gocar_lead_state_v1', 'new', true );
         add_post_meta( $id, '_gocar_lead_history_v1', array( 'from' => null, 'to' => 'new', 'at' => gmdate( 'c' ), 'actor' => get_current_user_id(), 'source' => 'booking_request_create', 'reason' => null ), false );
+    }
+
+    public static function expire_acquisition( int $id ): void {
+        if ( ! class_exists( 'Gocar_Lead_Measurement' ) || ! Gocar_Lead_Measurement::expired( $id ) ) return;
+        self::$expiring_acquisition = true;
+        try {
+            $empty = array( 'retention_status' => 'expired', 'attribution_status' => 'retention_expired' );
+            update_post_meta( $id, '_gocar_lead_context_v1', $empty );
+            update_post_meta( $id, '_gocar_lead_attribution_v1', $empty );
+            if ( $empty === get_post_meta( $id, '_gocar_lead_context_v1', true ) && $empty === get_post_meta( $id, '_gocar_lead_attribution_v1', true ) ) delete_post_meta( $id, '_gocar_measurement_expires_at' );
+        } finally { self::$expiring_acquisition = false; }
     }
 
     /** V2 stable intent is generated by the authenticated server gateway, never the browser. */
@@ -321,7 +348,9 @@ final class Gocar_Lead_Lifecycle {
 
     public static function read( WP_REST_Request $request ) {
         $id = absint( $request['id'] );
-        return rest_ensure_response( array( 'lead_id' => $id, 'state' => self::state( $id ), 'history' => get_post_meta( $id, '_gocar_lead_history_v1', false ), 'acquisition' => get_post_meta( $id, '_gocar_lead_context_v1', true ) ?: null, 'attribution' => get_post_meta( $id, '_gocar_lead_attribution_v1', true ) ?: null, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ), 'notification' => self::notification( $id ) ) );
+        $record = array( 'lead_id' => $id, 'state' => self::state( $id ), 'history' => get_post_meta( $id, '_gocar_lead_history_v1', false ), 'acquisition' => get_post_meta( $id, '_gocar_lead_context_v1', true ) ?: null, 'attribution' => get_post_meta( $id, '_gocar_lead_attribution_v1', true ) ?: null, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ), 'notification' => self::notification( $id ) );
+        if ( class_exists( 'Gocar_Lead_Measurement' ) && Gocar_Lead_Measurement::expired( $id ) ) $record = Gocar_Lead_Measurement::redact( $record );
+        return rest_ensure_response( $record );
     }
 
     public static function transition( WP_REST_Request $request ) {

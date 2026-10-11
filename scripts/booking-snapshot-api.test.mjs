@@ -63,3 +63,14 @@ test("old backend or malformed receipt preserves saved lead without claiming mai
   assert.equal(response.status,200);assert.equal(body.leadId,42);assert.equal(body.notificationStatus,"unconfirmed");assert.equal(body.notificationSent,null);assert.equal(h.calls.notifications,0);
  }
 });
+test('consented acquisition is sanitized outside stable booking identity; the API Referer cannot assert a source',async()=>{
+ const previous=process.env.LEAD_MEASUREMENT_POLICY;process.env.LEAD_MEASUREMENT_POLICY='visit_30d_v1';
+ try {
+  const a=harness(),b=harness(),c=harness();await a.POST(request());
+  await b.POST(request({acquisition:{consent_state:'granted',policy_version:'visit_30d_v1',landing_path:'/',utm_source:'google',utm_medium:'cpc',utm_campaign:'person@example.com',source:'forged',phone:'0300000000'}}));
+  await c.POST(request({acquisition:{consent_state:'denied',utm_source:'google'}}));
+  assert.equal(a.calls.backend[0].body.intent_hash,b.calls.backend[0].body.intent_hash);assert.equal(b.calls.backend[0].body.intent_hash,c.calls.backend[0].body.intent_hash);
+  assert.equal(b.calls.backend[1].body.acquisition.utm_source,'google');assert.equal(b.calls.backend[1].body.acquisition.utm_campaign,null);assert.equal(b.calls.backend[1].body.acquisition.source,undefined);assert.equal(b.calls.backend[1].body.acquisition.phone,undefined);
+  assert.deepEqual(c.calls.backend[1].body.acquisition,{consent_state:'denied'});
+ } finally {if(previous===undefined)delete process.env.LEAD_MEASUREMENT_POLICY;else process.env.LEAD_MEASUREMENT_POLICY=previous;}
+});
