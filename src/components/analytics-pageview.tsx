@@ -30,6 +30,7 @@ function PageviewTracker() {
 
   useEffect(() => {
     function handleContactClick(event: MouseEvent) {
+      if (!event.isTrusted) return;
       if (!(event.target instanceof Element)) return;
 
       const anchor = event.target.closest<HTMLAnchorElement>("a[href]");

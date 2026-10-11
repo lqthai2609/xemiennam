@@ -215,3 +215,54 @@ replay; an absent or incompatible receipt stays unconfirmed. Production build
 requires `notification_status_version=1`, so deploy this plugin before releasing
 the frontend. Existing lead reservations, snapshots, audit and commercial gates
 are unchanged. Never retry creation with a different key to retry a notification.
+# Minimal source measurement candidate — 0.17.4
+
+This candidate is inactive until the owner approves the `visit_30d_v1` policy and
+production sets `LEAD_MEASUREMENT_POLICY=visit_30d_v1`. GA4, Meta and ads remain off.
+The production preflight blocks activation against a backend without that exact
+capability and the contact-intent endpoint. Install the backend first.
+
+Policy proposed for approval: an optional, initially unanswered consent choice;
+no cookies, local/session storage or persistent visitor/session ID; only sanitized
+entry metadata in tab memory for at most 30 minutes; saved source metadata expires after 30 days. Opt-out clears
+tab context and stops new measurement. Booking is available regardless of consent.
+Changing consent does not rewrite an already saved lead; its source expires under
+the new policy. No historical lead attribution is backfilled or upgraded.
+
+Coverage is deliberately the approved first sales scope: homepage, contact, route
+index, price/vehicle surfaces and the existing Sài Gòn–Vũng Tàu owner #41 URL. Other
+paths remain unmapped rather than persisting arbitrary/private slugs. Only safe
+`utm_source`, `utm_medium`, `utm_campaign`, a host-only referrer and marker presence
+are transmitted. Raw click IDs, queries, names, phones, addresses and notes are
+excluded. Client-provided acquisition is unverified visit context, never proof of
+ad spend or a completed booking. Reload/new tab starts with unanswered consent.
+The launch UTM vocabulary is explicitly bounded to known source/medium tokens and
+campaign `sg_vt_launch_v1`; unknown values are omitted. Unrecognized referrer
+subdomains are omitted rather than preserving possible user-specific hostnames.
+
+The backend labels new snapshots `current_visit_v1` with lookback_days=0; this
+candidate does not implement the full DEP-002 30-day cross-visit model, session
+funnel, landing-cluster mapping or Finance revenue. Missing/conflicting context
+stays unknown. The `contact_click` private CPT is distinct from `booking_request`:
+it cannot create a lead, price, dispatch or email. Event UUID reservations prevent
+replay duplicates; the browser suppresses repeated same-channel clicks for 5s.
+
+`GET /gocar/v1/admin/measurement` requires edit_posts and returns separate contact
+clicks and saved-request counts, by lead channel, without PII. Its last-30-day view
+excludes draft/trash and trusted `_gocar_measurement_test` marks, reports unknown
+and expired source explicitly and signals the 1,000-record-per-type limit. Saved
+requests are not qualified customers or confirmed trips. View it under
+`/quan-tri/lead` after signing in.
+
+New policy-marked source has `_gocar_measurement_expires_at`. Protected reads redact
+expired fields immediately. Daily WP-Cron physically scrubs the two source metadata
+fields and removes expired intent records and their reservations; it preserves
+operational bookings, price snapshots, email receipts and lifecycle history.
+Physical cleanup depends on functioning WordPress cron and may lag the expiry.
+Legacy records without the policy expiry are outside this new cleanup scope.
+Before activation, verify the scheduled cleanup and hosting cron operation. The
+owner must approve the retention wording and that cleanup arrangement.
+
+Tests use synthetic data only. The isolated WordPress/MySQL harness blocks outbound
+HTTP and mail; production measurement requests and real contact actions are not
+part of this candidate verification.

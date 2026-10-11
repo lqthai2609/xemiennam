@@ -9,6 +9,7 @@ import { resolvePriceRulesWithPromotion } from "@/lib/api/promotion-pricing";
 import { bookingIntentHash, buildPromotionSnapshot, persistedBookingResponse, type PersistedBookingResult } from "@/lib/api/promotion-snapshot";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
+import { LEAD_MEASUREMENT_POLICY, normalizeAcquisition } from "@/lib/lead-measurement";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
@@ -30,6 +31,7 @@ const bookingRequestSchema = z.object({
   pickupNote: z.string().trim().max(300, "Ghi chú điểm đón tối đa 300 ký tự.").optional().default(""),
   intermediateStops: intermediateStopsInputSchema.optional().default([]),
   note: z.string().trim().max(500).optional().default(""),
+  acquisition: z.unknown().optional(),
 });
 
 const OTHER_ROUTE_LABEL = "Tuyến khác";
@@ -124,7 +126,8 @@ export async function POST(request: Request) {
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(idempotencyKey)) {
     return NextResponse.json({ ok: false, error: "Mã gửi lại yêu cầu không hợp lệ." }, { status: 400 });
   }
-  const intentHash = bookingIntentHash(data);
+  const { acquisition: clientAcquisition, ...bookingIntent } = data;
+  const intentHash = bookingIntentHash(bookingIntent);
   // Authenticated lookup happens before CMS/resolvers. Fail closed on old backend.
   const replay = await wpAuthedFetch<{ found: boolean } & Partial<PersistedBookingResult>>("/gocar/v1/leads/replay", {
     method: "POST", body: { idempotency_key: idempotencyKey, intent_version: 2, intent_hash: intentHash },
@@ -201,10 +204,9 @@ export async function POST(request: Request) {
   }
   if (data.note) noteParts.push(data.note);
 
-  // No approved consent capture exists yet. The same-origin Referer is the form
-  // page, not an acquisition touch; do not send its URL or UTM to WordPress.
-  // A successful backend booking_request is still the only source of lead_id.
-  const acquisition = { consent_state: "unknown" };
+  // Context is optional, sanitized and outside booking identity. Never infer a touch
+  // from the API Referer, booking PII, an asserted source, channel or lead ID.
+  const acquisition = normalizeAcquisition(clientAcquisition, process.env.LEAD_MEASUREMENT_POLICY === LEAD_MEASUREMENT_POLICY);
 
   const result = await wpAuthedFetch<PersistedBookingResult>("/gocar/v1/leads", {
     method: "POST",

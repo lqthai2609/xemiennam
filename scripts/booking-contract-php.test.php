@@ -11,6 +11,7 @@ class WP_REST_Response {
 }
 require __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-lead-lifecycle.php';
 require __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-promotion-snapshot.php';
+require __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-lead-measurement.php';
 require __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-booking-contract.php';
 $checks = 0;
 function verify( $ok, $label ) { $GLOBALS['checks']++; if ( ! $ok ) { throw new Exception( $label ); } }
@@ -20,7 +21,7 @@ verify( 'GET' === $route['methods'], 'GET only' );
 verify( '__return_true' === $route['permission_callback'], 'public versions, no credentials' );
 verify( array( Gocar_Booking_Contract::class, 'read' ) === $route['callback'], 'exact read callback' );
 $response = Gocar_Booking_Contract::read();
-verify( array( 'contract_version' => 1, 'intent_version' => 2, 'snapshot_version' => 1, 'replay_lookup' => true, 'snapshot_persistence' => true, 'notification_status_version' => 1 ) === $response->data, 'actual source classes advertise supported protocols only' );
+verify( array( 'contract_version' => 1, 'intent_version' => 2, 'snapshot_version' => 1, 'replay_lookup' => true, 'snapshot_persistence' => true, 'notification_status_version' => 1, 'measurement_policy_version' => 'visit_30d_v1' ) === $response->data, 'actual source classes advertise supported protocols only' );
 verify( 'no-store, max-age=0' === $response->headers['Cache-Control'], 'not cached' );
 verify( 'noindex, nofollow, noarchive' === $response->headers['X-Robots-Tag'], 'not indexable' );
 verify( $response->data === Gocar_Booking_Contract::read()->data, 'repeated read has no state' );

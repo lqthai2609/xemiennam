@@ -19,6 +19,7 @@ final class Gocar_Booking_Contract {
             'replay_lookup' => is_callable( array( 'Gocar_Lead_Lifecycle', 'replay' ) ),
             'snapshot_persistence' => is_callable( array( 'Gocar_Promotion_Snapshot', 'save' ) ),
             'notification_status_version' => is_callable( array( 'Gocar_Lead_Lifecycle', 'notification' ) ) ? 1 : 0,
+            'measurement_policy_version' => class_exists( 'Gocar_Lead_Measurement' ) ? Gocar_Lead_Measurement::POLICY : null,
         ) );
         $response->header( 'Cache-Control', 'no-store, max-age=0' );
         $response->header( 'X-Robots-Tag', 'noindex, nofollow, noarchive' );

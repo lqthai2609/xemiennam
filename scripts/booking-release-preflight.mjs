@@ -31,7 +31,7 @@ export function validateBookingContract(contract) {
       contract.snapshot_persistence !== true || contract.notification_status_version !== 1) throw new Error('booking_contract_incompatible');
 }
 
-export async function checkBookingBackend({ base, fetchImpl = fetch }) {
+export async function checkBookingBackend({ base, fetchImpl = fetch, measurementEnabled = false }) {
   const origin = backendOrigin(base);
   const read = async (path) => {
     const response = await fetchImpl(`${origin}/wp-json${path}`, {
@@ -43,15 +43,19 @@ export async function checkBookingBackend({ base, fetchImpl = fetch }) {
     try { return await response.json(); }
     catch { throw new Error('backend_read_invalid_json'); }
   };
-  validateBookingRoutes(await read('/'));
-  validateBookingContract(await read('/gocar/v1/leads/contract'));
+  const index = await read('/');
+  validateBookingRoutes(index);
+  const contract = await read('/gocar/v1/leads/contract');
+  validateBookingContract(contract);
+  if (measurementEnabled && (contract?.measurement_policy_version !== 'visit_30d_v1' ||
+      !index?.routes?.['/gocar/v1/measurement/contact']?.methods?.includes('POST'))) throw new Error('measurement_backend_incompatible');
   return { status: 'PASS', scope: 'booking_capability_only', origin };
 }
 
 export async function runPreflight({ env = process.env, force = false, fetchImpl = fetch } = {}) {
   if (!requiresBookingPreflight(env, force)) return { status: 'SKIPPED', scope: 'non_production_build' };
   if (!env.WP_API_BASE_URL) throw new Error('production_backend_url_missing');
-  return checkBookingBackend({ base: env.WP_API_BASE_URL, fetchImpl });
+  return checkBookingBackend({ base: env.WP_API_BASE_URL, fetchImpl, measurementEnabled: env.LEAD_MEASUREMENT_POLICY === 'visit_30d_v1' });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

@@ -6,6 +6,7 @@
  * hoặc gửi event kể cả khi môi trường build có NEXT_PUBLIC_* tương ứng.
  * Chỉ khôi phục qua cơ chế consent và retention được duyệt riêng.
  */
+import { trackFirstPartyContact } from "./lead-measurement-client";
 
 // Day 39 release gate: no marketing measurement before consent and retention approval.
 // Keep the public exports for existing callers; a later approved consent guard can restore them.
@@ -56,6 +57,7 @@ export type ContactChannel = "phone" | "zalo";
  */
 export function trackContactClick(channel: ContactChannel) {
   if (typeof window === "undefined") return;
+  trackFirstPartyContact(channel);
 
   // Query strings may contain addresses, phone numbers or tokens.
   const pagePath = window.location.pathname;

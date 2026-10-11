@@ -80,3 +80,11 @@ test('npm build and explicit production build both enforce the preflight', () =>
   const vercel = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url)));
   assert.equal(vercel.buildCommand, 'npm run build');
 });
+test('measurement activation requires its exact backend policy and intent endpoint; disabled remains compatible',async()=>{
+  const compatibleIndex={routes:{...index.routes,'/gocar/v1/measurement/contact':{methods:['POST']}}};
+  const compatibleContract={...contract,measurement_policy_version:'visit_30d_v1'};
+  await assert.rejects(checkBookingBackend({base,measurementEnabled:true,...fakeRead()}),/measurement_backend_incompatible/);
+  await assert.rejects(checkBookingBackend({base,measurementEnabled:true,...fakeRead([index,compatibleContract])}),/measurement_backend_incompatible/);
+  assert.equal((await checkBookingBackend({base,measurementEnabled:true,...fakeRead([compatibleIndex,compatibleContract])})).status,'PASS');
+  assert.equal((await checkBookingBackend({base,...fakeRead()})).status,'PASS');
+});

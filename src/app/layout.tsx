@@ -5,6 +5,8 @@ import { Toaster } from "sonner";
 import { FloatingContactActions } from "@/components/floating-contact-actions";
 import { AnalyticsScripts } from "@/components/analytics-scripts";
 import { AnalyticsPageview } from "@/components/analytics-pageview";
+import { MeasurementConsent } from "@/components/measurement-consent";
+import { LEAD_MEASUREMENT_POLICY } from "@/lib/lead-measurement";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site-config";
 import "./globals.css";
 import "./vehicle-selector.css";
@@ -57,6 +59,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-full flex flex-col">
         <AnalyticsScripts />
         <AnalyticsPageview />
+        {process.env.LEAD_MEASUREMENT_POLICY === LEAD_MEASUREMENT_POLICY && <MeasurementConsent />}
         {children}
         <FloatingContactActions />
         <Toaster position="top-right" richColors closeButton />

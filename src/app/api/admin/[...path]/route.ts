@@ -13,6 +13,7 @@ import { WP_CACHE_TAG } from "@/lib/wp";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_PATHS = [
+  /^measurement$/,
   /^empty-legs$/,
   /^empty-legs\/options$/,
   /^empty-legs\/presentation$/,
@@ -43,6 +44,7 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
   const { path: segments } = await context.params;
   const path = segments.join("/");
   if (!allowed(path)) return privateJson({ message: "Endpoint không hợp lệ." }, 404);
+  if (path === "measurement" && request.method !== "GET") return privateJson({ message: "Báo cáo chỉ cho phép đọc." }, 405);
   if (path.startsWith("empty-legs") && (process.env.NODE_ENV !== "development" && process.env.VERCEL_ENV !== "preview" && process.env.GOCAR_ADMIN_WIZARD_ENABLED !== "true")) {
     return privateJson({ message: "Chức năng điều phối chưa được bật." }, 404);
   }
