@@ -73,4 +73,17 @@ foreach ( array( 'create', 'replay' ) as $operation ) {
     verify_snapshot( $failure instanceof WP_Error && 'lead_reservation_failed' === $failure->code && 503 === $failure->details['status'] && $GLOBALS['creates'] === $count, 'SQL read error fails closed without creating a lead' );
 }
 $GLOBALS['fail_reservation_read'] = false;
+// Simulate the existing one-time WordPress mail hook, not a new sender.
+foreach ( array( 1, '1', true, '', 0, '0', 'yes', array() ) as $i => $receipt ) {
+    $GLOBALS['mail_receipt'] = $receipt;
+    $request = request_for( sprintf( '91919191-9191-4919-8919-%012d', $i ), str_repeat( '8', 64 ), $fixtures['contact'] );
+    $before_mail = $GLOBALS['fake_mail_calls'] ?? 0; $before_creates = $GLOBALS['creates'];
+    $first = Gocar_Lead_Lifecycle::create( $request );
+    $expected = array( 'version' => 1, 'channel' => 'wordpress', 'status' => in_array( $receipt, array( 1, '1', true ), true ) ? 'accepted' : 'unconfirmed' );
+    verify_snapshot( $first['notification'] === $expected, 'first receipt reads existing WordPress acceptance without claiming delivery' );
+    verify_snapshot( Gocar_Lead_Lifecycle::replay( $request )['notification'] === $expected, 'lookup retains mail receipt' );
+    verify_snapshot( Gocar_Lead_Lifecycle::create( $request )['notification'] === $expected, 'repeated create retains mail receipt' );
+    verify_snapshot( $GLOBALS['creates'] === $before_creates + 1 && $GLOBALS['fake_mail_calls'] === $before_mail + 1, 'mail is attempted only by first WordPress insert' );
+}
+unset( $GLOBALS['mail_receipt'] );
 echo "Day 45 snapshot checks: $checks passed; in-memory only.\n";

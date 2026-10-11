@@ -50,9 +50,17 @@ export function buildPromotionSnapshot(result: PromotionEvaluation, context: Pri
   return JSON.parse(JSON.stringify(snapshot)) as typeof snapshot;
 }
 export type PromotionSnapshot = ReturnType<typeof buildPromotionSnapshot>;
-export interface PersistedBookingResult { id: number; lead_id: number; replayed: boolean; promotion_snapshot?: PromotionSnapshot | null }
-export function persistedBookingResponse(result: PersistedBookingResult, notificationSent = false) {
+export interface PersistedBookingResult {
+  id: number; lead_id: number; replayed: boolean; promotion_snapshot?: PromotionSnapshot | null;
+  notification?: { version: 1; channel: "wordpress"; status: "accepted" | "unconfirmed" };
+}
+export function persistedBookingResponse(result: PersistedBookingResult) {
   if (!Number.isSafeInteger(result.lead_id) || result.lead_id <= 0 || result.id !== result.lead_id) throw new Error("invalid_persisted_lead");
-  return { ok: true, id: result.lead_id, leadId: result.lead_id, notificationSent: result.replayed ? false : notificationSent,
+  const notification = result.notification;
+  const accepted = notification?.version === 1 && notification.channel === "wordpress" && notification.status === "accepted";
+  // accepted means WordPress's mail transport accepted the message, not inbox delivery.
+  // A missing receipt cannot prove failure; retain an explicit unconfirmed state.
+  return { ok: true, id: result.lead_id, leadId: result.lead_id, notificationSent: accepted ? true : null,
+    notificationChannel: "wordpress", notificationStatus: accepted ? "accepted" : "unconfirmed",
     replayed: result.replayed, promotionSnapshot: result.promotion_snapshot ?? null };
 }

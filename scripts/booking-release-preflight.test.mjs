@@ -8,7 +8,7 @@ const index = { routes: {
   '/gocar/v1/leads/replay': { methods: ['POST'] },
 } };
 const contract = { contract_version: 1, intent_version: 2, snapshot_version: 1,
-  replay_lookup: true, snapshot_persistence: true };
+  replay_lookup: true, snapshot_persistence: true, notification_status_version: 1 };
 const base = 'https://backend.example/wp-json/wp/v2';
 function fakeRead(data = [index, contract], options = {}) {
   const calls = [];
@@ -49,7 +49,8 @@ test('wrong methods and absent lead endpoint cannot pass', async () => {
 });
 test('missing, string, future or disabled protocol declarations are blocked', async () => {
   for (const value of [null, {}, { ...contract, intent_version: '2' }, { ...contract, snapshot_version: 2 },
-    { ...contract, contract_version: 2 }, { ...contract, replay_lookup: false }, { ...contract, snapshot_persistence: false }]) {
+    { ...contract, contract_version: 2 }, { ...contract, replay_lookup: false }, { ...contract, snapshot_persistence: false },
+    { ...contract, notification_status_version: undefined }, { ...contract, notification_status_version: '1' }, { ...contract, notification_status_version: 2 }]) {
     await assert.rejects(checkBookingBackend({ base, ...fakeRead([index, value]) }), /contract_incompatible/);
   }
 });

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { typescriptLoader } from "./lib/load-typescript.mjs";
 const snapshots=JSON.parse(readFileSync(new URL("./fixtures/promotion-snapshot.json",import.meta.url)));
-function harness({replay,create,lookupError=false,invalidLookup=false}={}) {
+function harness({replay,create,notification={version:1,channel:"wordpress",status:"unconfirmed"},lookupError=false,invalidLookup=false}={}) {
  const calls={cms:0,pricing:0,notifications:0,backend:[]};
  const load=typescriptLoader({"server-only":{},"next/server":{NextResponse:Response},
   "@/lib/api/raw":{fetchRawRoutes:async()=>{calls.cms++;return[]},fetchRawVehicles:async()=>{calls.cms++;return[]},embeddedTermName:()=>""},
@@ -12,7 +12,7 @@ function harness({replay,create,lookupError=false,invalidLookup=false}={}) {
   "@/lib/api/wp-auth":{wpAuthedFetch:async(path,init)=>{
    calls.backend.push({path,body:init.body});
    if(path.endsWith("/replay"))return lookupError?{ok:false,status:404,message:"Backend snapshot unavailable"}:{ok:true,data:invalidLookup?{}:replay?{found:true,...replay}:{found:false}};
-   return {ok:true,data:create??{id:42,lead_id:42,replayed:false,promotion_snapshot:init.body.promotion_snapshot}};
+   return {ok:true,data:create??{id:42,lead_id:42,replayed:false,promotion_snapshot:init.body.promotion_snapshot,notification}};
   }},
   "@/lib/booking-notification":{sendBookingNotification:async()=>{calls.notifications++;return{sent:true}}},
  });
@@ -21,15 +21,15 @@ function harness({replay,create,lookupError=false,invalidLookup=false}={}) {
 const payload={fullName:"Synthetic request",phone:"0900000000",route:"Tuyến khác",vehicleType:"Synthetic vehicle",note:"synthetic"};
 const request=(patch={},key="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")=>new Request("http://localhost/api/booking",{method:"POST",headers:{"content-type":"application/json","x-lead-idempotency-key":key},body:JSON.stringify({...payload,...patch})});
 test("persisted applied result replays before CMS pricing or notification",async()=>{
- const h=harness({replay:{id:42,lead_id:42,replayed:true,promotion_snapshot:snapshots.applied}});const r=await h.POST(request());const b=await r.json();
- assert.equal(r.status,200);assert.deepEqual(b.promotionSnapshot,snapshots.applied);assert.equal(b.notificationSent,false);assert.equal(h.calls.cms,0);assert.equal(h.calls.pricing,0);assert.equal(h.calls.notifications,0);assert.equal(h.calls.backend.length,1);
+ const h=harness({replay:{id:42,lead_id:42,replayed:true,promotion_snapshot:snapshots.applied,notification:{version:1,channel:"wordpress",status:"accepted"}}});const r=await h.POST(request());const b=await r.json();
+ assert.equal(r.status,200);assert.deepEqual(b.promotionSnapshot,snapshots.applied);assert.equal(b.notificationSent,true);assert.equal(b.notificationStatus,"accepted");assert.equal(h.calls.cms,0);assert.equal(h.calls.pricing,0);assert.equal(h.calls.notifications,0);assert.equal(h.calls.backend.length,1);
 });
 for(const mode of ["fixed","contact","disabled"])test(`replay ${mode} retains saved mode even when fresh resolver differs`,async()=>{
  const h=harness({replay:{id:42,lead_id:42,replayed:true,promotion_snapshot:snapshots[mode]}});const b=await(await h.POST(request())).json();assert.equal(b.promotionSnapshot.pricing.mode,mode);assert.equal(h.calls.pricing,0);
 });
 test("new request persists server estimate and ignores asserted client price/hash/flag",async()=>{
  const h=harness();const b=await(await h.POST(request({estimated_total:1,promotion_snapshot:snapshots.applied,intent_hash:"client",commercial_enabled:true}))).json();
- assert.equal(b.promotionSnapshot.promotion.reason,"disabled");assert.equal(b.promotionSnapshot.promotion.promotion_id,null);assert.equal(b.promotionSnapshot.pricing.estimated_total,null);assert.equal(h.calls.notifications,1);
+ assert.equal(b.promotionSnapshot.promotion.reason,"disabled");assert.equal(b.promotionSnapshot.promotion.promotion_id,null);assert.equal(b.promotionSnapshot.pricing.estimated_total,null);assert.equal(h.calls.notifications,0);assert.equal(b.notificationSent,null);
  const sent=h.calls.backend[1].body;assert.equal(sent.intent_version,2);assert.notEqual(sent.intent_hash,"client");assert.equal(sent.booking.meta.estimated_total,undefined);assert.equal(sent.promotion_snapshot.snapshot_version,1);
 });
 test("race winner returned by create is authoritative and has no second notification",async()=>{
@@ -48,3 +48,18 @@ test("stable intent hash survives price changes; changing actual input changes h
  assert.equal(a.calls.backend[0].body.intent_hash,b.calls.backend[0].body.intent_hash);assert.notEqual(a.calls.backend[0].body.intent_hash,c.calls.backend[0].body.intent_hash);
 });
 test("invalid UUID is rejected without backend or resolver work",async()=>{const h=harness();assert.equal((await h.POST(request({},"invalid"))).status,400);assert.equal(h.calls.backend.length,0)});
+
+for(const replayed of [false,true])for(const status of ["accepted","unconfirmed"])test(`WordPress ${status} receipt stays authoritative with replay=${replayed}`,async()=>{
+ const notification={version:1,channel:"wordpress",status};
+ const saved={id:42,lead_id:42,replayed,promotion_snapshot:snapshots.contact,notification};
+ const h=harness(replayed?{replay:saved}:{create:saved});
+ const body=await(await h.POST(request({notificationSent:true,notification:{version:1,channel:"wordpress",status:"accepted"}}))).json();
+ assert.equal(body.ok,true);assert.equal(body.notificationChannel,"wordpress");assert.equal(body.notificationStatus,status);assert.equal(body.notificationSent,status==="accepted"?true:null);assert.equal(h.calls.notifications,0);
+});
+test("old backend or malformed receipt preserves saved lead without claiming mail failure or delivery",async()=>{
+ for(const notification of [undefined,{version:2,channel:"wordpress",status:"accepted"},{version:1,channel:"web3forms",status:"accepted"},{version:1,channel:"wordpress",status:"delivered"}]){
+  const h=harness({create:{id:42,lead_id:42,replayed:false,promotion_snapshot:snapshots.contact,notification}});
+  const response=await h.POST(request());const body=await response.json();
+  assert.equal(response.status,200);assert.equal(body.leadId,42);assert.equal(body.notificationStatus,"unconfirmed");assert.equal(body.notificationSent,null);assert.equal(h.calls.notifications,0);
+ }
+});

@@ -31,6 +31,10 @@ function rest_do_request( $request ) {
     $id = 199 + $GLOBALS['creates'];
     $GLOBALS['posts'][ $id ] = 'booking_request';
     Gocar_Lead_Lifecycle::legacy_create( new WP_Post( $id, 'booking_request' ), $request, true );
+    if ( array_key_exists( 'mail_receipt', $GLOBALS ) ) {
+        $GLOBALS['fake_mail_calls'] = ( $GLOBALS['fake_mail_calls'] ?? 0 ) + 1;
+        update_post_meta( $id, '_xmn_lead_email_sent', $GLOBALS['mail_receipt'] );
+    }
     return new FakeResponse( 'malformed' === ( $GLOBALS['response_mode'] ?? '' ) ? array() : array( 'id' => $id ), 'error_after_insert' === ( $GLOBALS['response_mode'] ?? '' ) );
 }
 function wp_cache_delete() {}
