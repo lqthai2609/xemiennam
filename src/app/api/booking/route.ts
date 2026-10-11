@@ -8,7 +8,6 @@ import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
 import { resolvePriceRulesWithPromotion } from "@/lib/api/promotion-pricing";
 import { bookingIntentHash, buildPromotionSnapshot, persistedBookingResponse, type PersistedBookingResult } from "@/lib/api/promotion-snapshot";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
-import { sendBookingNotification } from "@/lib/booking-notification";
 import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
 
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
@@ -277,29 +276,7 @@ export async function POST(request: Request) {
 
   if (!result.data.promotion_snapshot) return NextResponse.json({ ok: false, error: "Chưa xác nhận được bản giá đã lưu." }, { status: 502 });
 
-  if (result.data.replayed) {
-    return NextResponse.json(persistedBookingResponse(result.data));
-  }
-  const notification = await sendBookingNotification({
-    bookingId: result.data.id,
-    fullName: data.fullName,
-    phone: data.phone,
-    route: data.route,
-    vehicleType: data.vehicleType,
-    departureDate: data.departureDate,
-    pickupAddress: data.pickupAddress,
-    dropoffAddress: data.dropoffAddress,
-    pickupNote: data.pickupNote,
-    intermediateStops: data.intermediateStops,
-    note: data.note,
-  });
-
-  if (!notification.sent) {
-    console.error("Booking notification was not sent", {
-      bookingId: result.data.id,
-      reason: notification.reason,
-    });
-  }
-
-  return NextResponse.json(persistedBookingResponse(result.data, notification.sent));
+  // WordPress owns the existing one-time mail hook. Reading its receipt cannot
+  // send another email, including when this worker loses the create race.
+  return NextResponse.json(persistedBookingResponse(result.data));
 }

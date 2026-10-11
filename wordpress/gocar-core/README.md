@@ -198,3 +198,20 @@ No schema migration, expiry-based unlock, historical backfill or commercial flag
 change. The fix cannot clean duplicates already created by version 0.17.1.
 Only isolated WordPress/MySQL lab evidence applies until deployment is separately
 authorized and target dependencies/authentication are verified.
+
+### Day 53 single notification channel — source version 0.17.3
+
+WordPress remains the only lead email sender through the existing one-time
+WPCode notification hook and WP Mail SMTP. Core adds a read-only `notification`
+receipt to create, replay and protected admin responses. `version=1`,
+`channel=wordpress`, `status=accepted` reflects the existing
+`_xmn_lead_email_sent=1` marker. Otherwise status is `unconfirmed`, not failure.
+Acceptance by the mail transport does not prove inbox delivery. No recipient,
+SMTP credential or email body is exposed. This module does not send, resend or
+change the configured recipient, snippet or SMTP settings.
+
+Next.js no longer calls Web3Forms. It reports the backend receipt, including on
+replay; an absent or incompatible receipt stays unconfirmed. Production build
+requires `notification_status_version=1`, so deploy this plugin before releasing
+the frontend. Existing lead reservations, snapshots, audit and commercial gates
+are unchanged. Never retry creation with a different key to retry a notification.

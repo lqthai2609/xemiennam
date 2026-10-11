@@ -37,6 +37,12 @@ final class Gocar_Lead_Lifecycle {
     }
 
     public static function can_create(): bool { return current_user_can( 'edit_posts' ); }
+
+    /** Read the existing WordPress mail receipt; never send or retry a notification. */
+    public static function notification( int $id ): array {
+        $accepted = in_array( get_post_meta( $id, '_xmn_lead_email_sent', true ), array( 1, '1', true ), true );
+        return array( 'version' => 1, 'channel' => 'wordpress', 'status' => $accepted ? 'accepted' : 'unconfirmed' );
+    }
     public static function can_access( WP_REST_Request $request ): bool {
         $id = absint( $request['id'] );
         return 'booking_request' === get_post_type( $id ) && current_user_can( 'edit_post', $id );
@@ -198,7 +204,7 @@ final class Gocar_Lead_Lifecycle {
         }
         $existing['id'] = $id;
         update_option( $option, $existing, false );
-        return rest_ensure_response( array( 'found' => true, 'id' => $id, 'lead_id' => $id, 'replayed' => true, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ) ) );
+        return rest_ensure_response( array( 'found' => true, 'id' => $id, 'lead_id' => $id, 'replayed' => true, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ), 'notification' => self::notification( $id ) ) );
     }
 
     /** Reservations are authoritative SQL state, never an option-cache lease. */
@@ -310,12 +316,12 @@ final class Gocar_Lead_Lifecycle {
         }
         $reservation['id'] = (int) $record['id'];
         update_option( $option, $reservation, false );
-        return rest_ensure_response( array( 'id' => (int) $record['id'], 'lead_id' => (int) $record['id'], 'replayed' => false, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( (int) $record['id'] ) ) );
+        return rest_ensure_response( array( 'id' => (int) $record['id'], 'lead_id' => (int) $record['id'], 'replayed' => false, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( (int) $record['id'] ), 'notification' => self::notification( (int) $record['id'] ) ) );
     }
 
     public static function read( WP_REST_Request $request ) {
         $id = absint( $request['id'] );
-        return rest_ensure_response( array( 'lead_id' => $id, 'state' => self::state( $id ), 'history' => get_post_meta( $id, '_gocar_lead_history_v1', false ), 'acquisition' => get_post_meta( $id, '_gocar_lead_context_v1', true ) ?: null, 'attribution' => get_post_meta( $id, '_gocar_lead_attribution_v1', true ) ?: null, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ) ) );
+        return rest_ensure_response( array( 'lead_id' => $id, 'state' => self::state( $id ), 'history' => get_post_meta( $id, '_gocar_lead_history_v1', false ), 'acquisition' => get_post_meta( $id, '_gocar_lead_context_v1', true ) ?: null, 'attribution' => get_post_meta( $id, '_gocar_lead_attribution_v1', true ) ?: null, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ), 'notification' => self::notification( $id ) ) );
     }
 
     public static function transition( WP_REST_Request $request ) {

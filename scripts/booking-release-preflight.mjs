@@ -28,7 +28,7 @@ export function validateBookingRoutes(index) {
 export function validateBookingContract(contract) {
   if (contract?.contract_version !== 1 || contract.intent_version !== 2 ||
       contract.snapshot_version !== 1 || contract.replay_lookup !== true ||
-      contract.snapshot_persistence !== true) throw new Error('booking_contract_incompatible');
+      contract.snapshot_persistence !== true || contract.notification_status_version !== 1) throw new Error('booking_contract_incompatible');
 }
 
 export async function checkBookingBackend({ base, fetchImpl = fetch }) {

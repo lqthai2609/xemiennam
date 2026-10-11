@@ -46,9 +46,10 @@ test("stable identity canonicalizes objects but preserves trip changes and array
  assert.notEqual(bookingIntentHash({direction:"outbound"}),bookingIntentHash({direction:"inbound"}));
  assert.notEqual(bookingIntentHash({stops:[1,2]}),bookingIntentHash({stops:[2,1]}));
 });
-test("reply uses persisted snapshot and suppresses notifications on replay",()=>{
- const saved={id:42,lead_id:42,replayed:true,promotion_snapshot:applied};const reply=persistedBookingResponse(saved,true);
- assert.deepEqual(reply.promotionSnapshot,applied);assert.equal(reply.notificationSent,false);assert.equal(reply.replayed,true);
+test("reply preserves saved mail acceptance on replay without sending mail",()=>{
+ const saved={id:42,lead_id:42,replayed:true,promotion_snapshot:applied,notification:{version:1,channel:"wordpress",status:"accepted"}};const reply=persistedBookingResponse(saved);
+ assert.deepEqual(reply.promotionSnapshot,applied);assert.equal(reply.notificationSent,true);assert.equal(reply.notificationStatus,"accepted");assert.equal(reply.replayed,true);
  assert.equal(persistedBookingResponse({id:43,lead_id:43,replayed:true}).promotionSnapshot,null);
+ assert.equal(persistedBookingResponse({id:43,lead_id:43,replayed:true}).notificationSent,null);
  assert.throws(()=>persistedBookingResponse({...saved,id:44}));
 });

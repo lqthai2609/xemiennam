@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gocar Core
  * Description: Core WordPress contracts and migration helpers for Alo Đặt Xe.
- * Version: 0.17.2
+ * Version: 0.17.3
  * Author: Alo Đặt Xe
  * Requires at least: 6.5
  * Requires PHP: 8.1
