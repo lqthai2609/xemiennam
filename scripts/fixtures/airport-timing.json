@@ -1,0 +1,635 @@
+{
+  "notice": "Synthetic arithmetic only, not Operations data; never import into CMS.",
+  "base": {
+    "model_version": 1,
+    "revision": 1,
+    "approval": {
+      "status": "confirmed",
+      "source_ref": "SYNTHETIC TEST ONLY"
+    },
+    "rules": [
+      {
+        "direction": "outbound",
+        "airport_id": 8001,
+        "readiness_version": 1,
+        "movement": "departure",
+        "flight_kind": "domestic",
+        "terminal": "SYNTHETIC T1",
+        "buffer_minutes": 90,
+        "travel_minutes": 120,
+        "valid_from": "2020-01-01T00:00:00Z",
+        "valid_until": "2099-01-01T00:00:00Z",
+        "counterpart_id": 8002
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "valid departure",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "name": "valid arrival",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "arrival",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": null,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "name": "draft empty",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "draft",
+          "source_ref": null
+        },
+        "rules": []
+      },
+      "valid": true
+    },
+    {
+      "name": "unknown version",
+      "model": {
+        "model_version": 2,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "no source",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": null
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "confirmed empty",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": []
+      },
+      "valid": false
+    },
+    {
+      "name": "client actor",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ],
+        "actor_id": 1
+      },
+      "valid": false
+    },
+    {
+      "name": "zero revision",
+      "model": {
+        "model_version": 1,
+        "revision": 0,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "negative buffer",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": -1,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "fractional buffer",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 1.5,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "string buffer",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": "90",
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "zero departure travel",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 0,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "missing departure travel",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": null,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "arrival travel not null",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "arrival",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "invalid direction",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "reverse",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "unspecified terminal",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "unknown kind",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "unknown",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "no readiness version",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 0,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "bad real date",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2026-02-30T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "equal validity",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2099-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "duplicate scope",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          },
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "zero buffer confirmed allowed",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "SYNTHETIC T1",
+            "buffer_minutes": 0,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "name": "HTML terminal",
+      "model": {
+        "model_version": 1,
+        "revision": 1,
+        "approval": {
+          "status": "confirmed",
+          "source_ref": "SYNTHETIC TEST ONLY"
+        },
+        "rules": [
+          {
+            "direction": "outbound",
+            "airport_id": 8001,
+            "readiness_version": 1,
+            "movement": "departure",
+            "flight_kind": "domestic",
+            "terminal": "<b>T1</b>",
+            "buffer_minutes": 90,
+            "travel_minutes": 120,
+            "valid_from": "2020-01-01T00:00:00Z",
+            "valid_until": "2099-01-01T00:00:00Z",
+            "counterpart_id": 8002
+          }
+        ]
+      },
+      "valid": false
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import { AnalyticsScripts } from "@/components/analytics-scripts";
 import { AnalyticsPageview } from "@/components/analytics-pageview";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site-config";
 import "./globals.css";
+import "./vehicle-selector.css";
 
 const archivo = Archivo({
   variable: "--font-archivo",

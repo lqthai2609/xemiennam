@@ -1,0 +1,25 @@
+.vehicle-selector { margin: 24px 0; padding: 24px; border: 1px solid #d9e1ee; border-radius: 18px; background: #f7f9fd; color: #192b49; min-width: 0; text-align: left; }
+.vehicle-selector h2 { font-size: 22px; margin: 0 0 12px; line-height: 1.35; }
+.vehicle-selector p, .vehicle-facts-summary p { font-size: 14px; line-height: 1.65; margin: 12px 0; }
+.vehicle-selector-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+.vehicle-selector label { display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-weight: 600; min-width: 0; }
+.vehicle-selector input, .vehicle-selector select { width: 100%; min-width: 0; height: 46px; padding: 8px 12px; border: 1px solid #b9c6da; border-radius: 8px; background: white; color: #192b49; font: inherit; }
+.vehicle-selector button { min-height: 44px; padding: 10px 16px; border-radius: 8px; border: 1px solid #0000d8; background: white; color: #0000d8; font-weight: 600; cursor: pointer; }
+.vehicle-selector .vehicle-selector-check { background: #0000d8; color: white; }
+.vehicle-selector button:disabled { opacity: .6; cursor: wait; }
+.vehicle-selector :is(input, select, button, summary):focus-visible { outline: 3px solid #ff5122; outline-offset: 3px; }
+.vehicle-selector-luggage { border: 1px solid #b9c6da; border-radius: 10px; padding: 16px; min-width: 0; }
+.vehicle-selector-bags { display: grid; gap: 12px; }
+.vehicle-selector-results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+.vehicle-selector-result { background: white; border: 1px solid #cbd5e3; border-radius: 12px; padding: 18px; min-width: 0; overflow-wrap: anywhere; }
+.vehicle-selector-result h3 { margin: 0 0 10px; font-size: 18px; }
+.vehicle-selector-result.is-exceeds_confirmed_capacity { border-color: #bf4020; }
+.vehicle-selector-result.is-exceeds_confirmed_capacity > strong { color: #9b2913; }
+.vehicle-selector-result.is-fits_confirmed_profile > strong { color: #176346; }
+.vehicle-facts-summary dl { display: grid; gap: 12px; margin: 16px 0; }
+.vehicle-facts-summary dt { font-size: 13px; font-weight: 600; color: #53617a; }
+.vehicle-facts-summary dd { margin: 4px 0 0; font-size: 14px; overflow-wrap: anywhere; }
+.vehicle-facts-summary summary { cursor: pointer; font-size: 14px; line-height: 1.5; }
+.vehicle-facts-summary ul { padding-left: 20px; font-size: 14px; line-height: 1.7; }
+.quick-booking-panel .vehicle-selector-fields, .quick-booking-panel .vehicle-selector-results, .contact-form .vehicle-selector-results { grid-template-columns: 1fr; }
+@media (max-width: 700px) { .vehicle-selector { padding: 18px; margin: 20px 0; } .vehicle-selector-fields, .vehicle-selector-results { grid-template-columns: 1fr; } .vehicle-selector h2 { font-size: 20px; } .vehicle-selector-check { width: 100%; } }

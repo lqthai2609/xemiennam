@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { fetchPromotions } from "@/lib/api/promotions";
 import { PromotionsPage } from "@/components/promotions-page";
 import { buildPageMetadata } from "@/lib/metadata";
@@ -11,8 +12,9 @@ export const metadata: Metadata = buildPageMetadata({
   noIndex: true,
 });
 
-/** Server Component — gọi fetchPromotions() (WP REST API thật + fallback mock, Ngày 18). ISR áp dụng qua revalidate trong wpFetch(). */
+/** Request-rendered: HTML never persists a promotion across its expiry boundary. */
 export default async function Page() {
+  await connection();
   const promotions = await fetchPromotions();
   return <PromotionsPage promotions={promotions} />;
 }

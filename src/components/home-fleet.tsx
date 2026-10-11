@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ArrowRight, Users } from "lucide-react";
 
 const cars = [
-  { seats: "7 chỗ", passengers: "3 – 6 hành khách", slug: "7-cho", position: "center", popular: true },
-  { seats: "4 chỗ", passengers: "1 – 3 hành khách", slug: "4-cho", position: "left", popular: false },
-  { seats: "16 chỗ", passengers: "7 – 14 hành khách", slug: "16-cho", position: "right", popular: false },
+  { seats: "7 chỗ", passengers: "Cần tư vấn", slug: "7-cho", position: "center", popular: true },
+  { seats: "4 chỗ", passengers: "Cần tư vấn", slug: "4-cho", position: "left", popular: false },
+  { seats: "16 chỗ", passengers: "Cần tư vấn", slug: "16-cho", position: "right", popular: false },
 ];
 
 export function HomeFleet() {

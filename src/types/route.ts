@@ -1,3 +1,5 @@
+import type { PromotionPriceView } from "./promotion-price";
+
 export type PriceType = "one_way" | "round_trip_same_day" | "two_days_one_night";
 
 export function normalizePriceType(value: string | undefined | null): PriceType {
@@ -57,6 +59,7 @@ export type RoutePricingDirectionKey = "outbound" | "inbound";
 export type RoutePricingMode = "fixed" | "contact" | "disabled";
 
 export interface RoutePricingPackage {
+  promotionView?: PromotionPriceView;
   direction: RoutePricingDirectionKey;
   vehicleId: string;
   vehicleType: string;

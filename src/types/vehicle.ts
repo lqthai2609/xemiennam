@@ -1,3 +1,4 @@
+import type { VehicleFacts } from "./vehicle-facts";
 export type Vehicle = {
   id: string; slug: string; name: string;
   /** Trước Ngày 25 là union cứng 4 giá trị — nới thành string vì taxonomy vehicle_type
@@ -5,6 +6,8 @@ export type Vehicle = {
    * data/vehicle-categories.ts) và có thể còn đổi tiếp, union cứng dễ lệch với dữ liệu thật. */
   type: string;
   seats: string; capacity: string; description: string; badge?: string;
+  /** Confirmed Operations facts; legacy and absent values always require consultation. */
+  operationalFacts?: VehicleFacts;
   color: "sand" | "gold" | "navy" | "orange"; imageLabel: string;
   /**
    * Ảnh xe thật (Ngày 21b) — mảng URL, phần tử đầu dùng cho ảnh chính (thẻ danh sách + hero

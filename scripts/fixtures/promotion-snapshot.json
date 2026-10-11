@@ -1,0 +1,419 @@
+{
+  "fixed": {
+    "snapshot_version": 1,
+    "evaluator_version": 1,
+    "pricing_version": 2,
+    "estimate_only": true,
+    "currency": "VND",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "evaluation_time": "2000-02-28T05:00:00.000Z",
+    "tuple": {
+      "route_id": 1001,
+      "direction": "outbound",
+      "vehicle_id": 2001,
+      "package_key": "one_way"
+    },
+    "pricing": {
+      "mode": "fixed",
+      "reason": "fixed",
+      "base_price": 800000,
+      "estimated_total": 900000,
+      "modifier_amount": 0,
+      "surcharge": {
+        "mode": "fixed",
+        "amount": 100000,
+        "reason": "fixed",
+        "rule_keys": [
+          "pickup:zone:0"
+        ],
+        "components": [
+          {
+            "rule_key": "airport",
+            "policy_version": 1,
+            "application_key": "pickup:zone:0",
+            "mode": "fixed",
+            "amount": 100000
+          }
+        ]
+      },
+      "modifiers": [],
+      "condition": {
+        "mode": "none",
+        "amount": null,
+        "rule_key": null,
+        "reason": "explicit_none",
+        "policy_version": 0,
+        "timezone": ""
+      }
+    },
+    "promotion": {
+      "status": "none",
+      "reason": "disabled",
+      "promotion_id": null,
+      "revision": null,
+      "type": null,
+      "target": null,
+      "discount_amount": null,
+      "promotional_estimated_total": null,
+      "window": null,
+      "conditions": [],
+      "requires_trip_context": false,
+      "benefit": null
+    },
+    "rule_versions": {
+      "surcharge": 1,
+      "modifier": 1,
+      "condition": 1
+    }
+  },
+  "applied": {
+    "snapshot_version": 1,
+    "evaluator_version": 1,
+    "pricing_version": 2,
+    "estimate_only": true,
+    "currency": "VND",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "evaluation_time": "2000-02-28T05:00:00.000Z",
+    "tuple": {
+      "route_id": 1001,
+      "direction": "outbound",
+      "vehicle_id": 2001,
+      "package_key": "one_way"
+    },
+    "pricing": {
+      "mode": "fixed",
+      "reason": "fixed",
+      "base_price": 800000,
+      "estimated_total": 900000,
+      "modifier_amount": 0,
+      "surcharge": {
+        "mode": "fixed",
+        "amount": 100000,
+        "reason": "fixed",
+        "rule_keys": [
+          "pickup:zone:0"
+        ],
+        "components": [
+          {
+            "rule_key": "airport",
+            "policy_version": 1,
+            "application_key": "pickup:zone:0",
+            "mode": "fixed",
+            "amount": 100000
+          }
+        ]
+      },
+      "modifiers": [],
+      "condition": {
+        "mode": "none",
+        "amount": null,
+        "rule_key": null,
+        "reason": "explicit_none",
+        "policy_version": 0,
+        "timezone": ""
+      }
+    },
+    "promotion": {
+      "status": "applied",
+      "reason": "applied",
+      "promotion_id": 3001,
+      "revision": 1,
+      "type": "percent_discount",
+      "target": "base_price",
+      "discount_amount": 80000,
+      "promotional_estimated_total": 820000,
+      "window": {
+        "start_date": "2000-02-28",
+        "end_date": "2000-02-29",
+        "timezone": "Asia/Ho_Chi_Minh"
+      },
+      "conditions": [],
+      "requires_trip_context": false,
+      "benefit": null
+    },
+    "rule_versions": {
+      "surcharge": 1,
+      "modifier": 1,
+      "condition": 1
+    }
+  },
+  "contact": {
+    "snapshot_version": 1,
+    "evaluator_version": 1,
+    "pricing_version": 2,
+    "estimate_only": true,
+    "currency": "VND",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "evaluation_time": "2000-02-28T05:00:00.000Z",
+    "tuple": {
+      "route_id": 1001,
+      "direction": "outbound",
+      "vehicle_id": 2001,
+      "package_key": "one_way"
+    },
+    "pricing": {
+      "mode": "contact",
+      "reason": "base_contact",
+      "base_price": 800000,
+      "estimated_total": null,
+      "modifier_amount": 0,
+      "surcharge": {
+        "mode": "fixed",
+        "amount": 100000,
+        "reason": "fixed",
+        "rule_keys": [
+          "pickup:zone:0"
+        ],
+        "components": [
+          {
+            "rule_key": "airport",
+            "policy_version": 1,
+            "application_key": "pickup:zone:0",
+            "mode": "fixed",
+            "amount": 100000
+          }
+        ]
+      },
+      "modifiers": [],
+      "condition": {
+        "mode": "none",
+        "amount": null,
+        "rule_key": null,
+        "reason": "explicit_none",
+        "policy_version": 0,
+        "timezone": ""
+      }
+    },
+    "promotion": {
+      "status": "none",
+      "reason": "disabled",
+      "promotion_id": null,
+      "revision": null,
+      "type": null,
+      "target": null,
+      "discount_amount": null,
+      "promotional_estimated_total": null,
+      "window": null,
+      "conditions": [],
+      "requires_trip_context": false,
+      "benefit": null
+    },
+    "rule_versions": {
+      "surcharge": 1,
+      "modifier": 1,
+      "condition": 1
+    }
+  },
+  "disabled": {
+    "snapshot_version": 1,
+    "evaluator_version": 1,
+    "pricing_version": 2,
+    "estimate_only": true,
+    "currency": "VND",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "evaluation_time": "2000-02-28T05:00:00.000Z",
+    "tuple": {
+      "route_id": 1001,
+      "direction": "outbound",
+      "vehicle_id": 2001,
+      "package_key": "one_way"
+    },
+    "pricing": {
+      "mode": "disabled",
+      "reason": "base_disabled",
+      "base_price": 800000,
+      "estimated_total": null,
+      "modifier_amount": 0,
+      "surcharge": {
+        "mode": "fixed",
+        "amount": 100000,
+        "reason": "fixed",
+        "rule_keys": [
+          "pickup:zone:0"
+        ],
+        "components": [
+          {
+            "rule_key": "airport",
+            "policy_version": 1,
+            "application_key": "pickup:zone:0",
+            "mode": "fixed",
+            "amount": 100000
+          }
+        ]
+      },
+      "modifiers": [],
+      "condition": {
+        "mode": "none",
+        "amount": null,
+        "rule_key": null,
+        "reason": "explicit_none",
+        "policy_version": 0,
+        "timezone": ""
+      }
+    },
+    "promotion": {
+      "status": "none",
+      "reason": "disabled",
+      "promotion_id": null,
+      "revision": null,
+      "type": null,
+      "target": null,
+      "discount_amount": null,
+      "promotional_estimated_total": null,
+      "window": null,
+      "conditions": [],
+      "requires_trip_context": false,
+      "benefit": null
+    },
+    "rule_versions": {
+      "surcharge": 1,
+      "modifier": 1,
+      "condition": 1
+    }
+  },
+  "benefit": {
+    "snapshot_version": 1,
+    "evaluator_version": 1,
+    "pricing_version": 2,
+    "estimate_only": true,
+    "currency": "VND",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "evaluation_time": "2000-02-28T05:00:00.000Z",
+    "tuple": {
+      "route_id": 1001,
+      "direction": "outbound",
+      "vehicle_id": 2001,
+      "package_key": "one_way"
+    },
+    "pricing": {
+      "mode": "fixed",
+      "reason": "fixed",
+      "base_price": 800000,
+      "estimated_total": 900000,
+      "modifier_amount": 0,
+      "surcharge": {
+        "mode": "fixed",
+        "amount": 100000,
+        "reason": "fixed",
+        "rule_keys": [
+          "pickup:zone:0"
+        ],
+        "components": [
+          {
+            "rule_key": "airport",
+            "policy_version": 1,
+            "application_key": "pickup:zone:0",
+            "mode": "fixed",
+            "amount": 100000
+          }
+        ]
+      },
+      "modifiers": [],
+      "condition": {
+        "mode": "none",
+        "amount": null,
+        "rule_key": null,
+        "reason": "explicit_none",
+        "policy_version": 0,
+        "timezone": ""
+      }
+    },
+    "promotion": {
+      "status": "benefit",
+      "reason": "applied",
+      "promotion_id": 3001,
+      "revision": 1,
+      "type": "benefit",
+      "target": "none",
+      "discount_amount": 0,
+      "promotional_estimated_total": 900000,
+      "window": {
+        "start_date": "2000-02-28",
+        "end_date": "2000-02-29",
+        "timezone": "Asia/Ho_Chi_Minh"
+      },
+      "conditions": [],
+      "requires_trip_context": false,
+      "benefit": {
+        "title": "Quyền lợi tổng hợp",
+        "rule": "Điều kiện tổng hợp"
+      }
+    },
+    "rule_versions": {
+      "surcharge": 1,
+      "modifier": 1,
+      "condition": 1
+    }
+  },
+  "free_surcharge": {
+    "snapshot_version": 1,
+    "evaluator_version": 1,
+    "pricing_version": 2,
+    "estimate_only": true,
+    "currency": "VND",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "evaluation_time": "2000-02-28T05:00:00.000Z",
+    "tuple": {
+      "route_id": 1001,
+      "direction": "outbound",
+      "vehicle_id": 2001,
+      "package_key": "one_way"
+    },
+    "pricing": {
+      "mode": "fixed",
+      "reason": "fixed",
+      "base_price": 800000,
+      "estimated_total": 900000,
+      "modifier_amount": 0,
+      "surcharge": {
+        "mode": "fixed",
+        "amount": 100000,
+        "reason": "fixed",
+        "rule_keys": [
+          "pickup:zone:0"
+        ],
+        "components": [
+          {
+            "rule_key": "airport",
+            "policy_version": 1,
+            "application_key": "pickup:zone:0",
+            "mode": "fixed",
+            "amount": 100000
+          }
+        ]
+      },
+      "modifiers": [],
+      "condition": {
+        "mode": "none",
+        "amount": null,
+        "rule_key": null,
+        "reason": "explicit_none",
+        "policy_version": 0,
+        "timezone": ""
+      }
+    },
+    "promotion": {
+      "status": "applied",
+      "reason": "applied",
+      "promotion_id": 3001,
+      "revision": 1,
+      "type": "free_surcharge",
+      "target": "surcharge",
+      "discount_amount": 100000,
+      "promotional_estimated_total": 800000,
+      "window": {
+        "start_date": "2000-02-28",
+        "end_date": "2000-02-29",
+        "timezone": "Asia/Ho_Chi_Minh"
+      },
+      "conditions": [],
+      "requires_trip_context": false,
+      "benefit": null
+    },
+    "rule_versions": {
+      "surcharge": 1,
+      "modifier": 1,
+      "condition": 1
+    }
+  }
+}

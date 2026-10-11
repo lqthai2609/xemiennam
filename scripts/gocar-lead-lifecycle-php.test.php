@@ -8,13 +8,13 @@ function current_user_can( $cap, $id = 0 ) { return $GLOBALS['cap'][ $cap ] ?? (
 function get_current_user_id() { return 7; }
 function get_post_type( $id ) { return $GLOBALS['posts'][ $id ] ?? null; }
 function get_post_meta( $id, $key, $single = true ) { $values = $GLOBALS['meta'][ $id ][ $key ] ?? array(); return $single ? ( $values[0] ?? '' ) : $values; }
-function add_post_meta( $id, $key, $value, $unique = false ) { if ( $unique && isset( $GLOBALS['meta'][ $id ][ $key ] ) ) return false; $GLOBALS['meta'][ $id ][ $key ][] = $value; return true; }
-function update_post_meta( $id, $key, $value ) { $GLOBALS['meta'][ $id ][ $key ] = array( $value ); return true; }
+function add_post_meta( $id, $key, $value, $unique = false ) { if ( class_exists( 'Gocar_Promotion_Snapshot' ) && false === Gocar_Promotion_Snapshot::guard( null, $id, $key, $value, null ) ) return false; if ( '_gocar_promotion_snapshot_v1' === $key && ! empty( $GLOBALS['fail_snapshot'] ) ) return false; if ( $unique && isset( $GLOBALS['meta'][ $id ][ $key ] ) ) return false; $GLOBALS['meta'][ $id ][ $key ][] = $value; return true; }
+function update_post_meta( $id, $key, $value ) { if ( class_exists( 'Gocar_Promotion_Snapshot' ) && false === Gocar_Promotion_Snapshot::guard( null, $id, $key, $value, null ) ) return false; $GLOBALS['meta'][ $id ][ $key ] = array( $value ); return true; }
 function sanitize_text_field( $value ) { return trim( strip_tags( (string) $value ) ); }
 function wp_json_encode( $value ) { return json_encode( $value ); }
 function wp_parse_url( $value ) { return parse_url( $value ); }
 function get_option( $key ) { return $GLOBALS['options'][ $key ] ?? false; }
-function add_option( $key, $value ) { if ( isset( $GLOBALS['options'][ $key ] ) ) return false; $GLOBALS['options'][ $key ] = $value; return true; }
+function add_option( $key, $value ) { if ( isset( $GLOBALS['race_option'] ) && $GLOBALS['race_option'] === $key ) { $GLOBALS['options'][$key] = $value; unset($GLOBALS['race_option']); return false; } if ( isset( $GLOBALS['options'][ $key ] ) ) return false; $GLOBALS['options'][ $key ] = $value; return true; }
 function update_option( $key, $value ) { $GLOBALS['options'][ $key ] = $value; return true; }
 function delete_option( $key ) { unset( $GLOBALS['options'][ $key ] ); }
 function get_posts( $args ) {
@@ -34,6 +34,8 @@ function rest_do_request( $request ) {
     return new FakeResponse( 'malformed' === ( $GLOBALS['response_mode'] ?? '' ) ? array() : array( 'id' => $id ), 'error_after_insert' === ( $GLOBALS['response_mode'] ?? '' ) );
 }
 function wp_cache_delete() {}
+function maybe_serialize($value) { return serialize($value); }
+function maybe_unserialize($value) { return unserialize($value); }
 class WP_Error { public function __construct( public string $code, public string $message, public array $details ) {} }
 class WP_Post { public function __construct( public int $ID, public string $post_type ) {} }
 class FakeResponse { public function __construct( private array $data, private bool $error = false ) {} public function is_error() { return $this->error; } public function get_data() { return $this->data; } public function as_error() { return new WP_Error( 'upstream_failed', 'Upstream failed.', array( 'status' => 502 ) ); } }
@@ -48,8 +50,27 @@ class WP_REST_Request implements ArrayAccess {
     public function offsetSet( mixed $offset, mixed $value ): void { $this->set_param( $offset, $value ); }
     public function offsetUnset( mixed $offset ): void { unset( $this->params[ $offset ] ); }
 }
-class FakeDB { public string $posts = 'wp_posts'; public array $queries = array(); public function query( $sql ) { $this->queries[] = $sql; } public function prepare( $sql, $value ) { return sprintf( $sql, $value ); } public function get_var( $sql ) { return 200; } }
+class FakeDB {
+    public string $posts = 'wp_posts'; public string $options = 'wp_options';
+    public string $last_error = ''; public $dbh = null; public array $queries = array(); private array $args = array(); private bool $suppressed = false;
+    public function suppress_errors($value) { $previous = $this->suppressed; $this->suppressed = $value; return $previous; }
+    public function prepare($sql, ...$values) { $this->args = $values; return $sql; }
+    public function get_row($sql) { $this->last_error = ''; if (!empty($GLOBALS['fail_reservation_read'])) { $this->last_error = 'Synthetic read failure'; return null; } $key = $this->args[0]; return isset($GLOBALS['options'][$key]) ? (object) array('option_value'=>serialize($GLOBALS['options'][$key])) : null; }
+    public function query($sql) {
+        $this->queries[] = $sql; $this->last_error = '';
+        if (str_starts_with($sql, 'INSERT INTO wp_options')) {
+            [$key, $serialized] = $this->args;
+            if (($GLOBALS['race_option'] ?? '') === $key) { $GLOBALS['options'][$key] = unserialize($serialized); unset($GLOBALS['race_option']); }
+            // This double fails closed; real MySQL duplicate errno is verified in the lab.
+            if (isset($GLOBALS['options'][$key])) { $this->last_error = 'Synthetic insert failure'; return false; }
+            $GLOBALS['options'][$key] = unserialize($serialized); return 1;
+        }
+        return 1;
+    }
+    public function get_var($sql) { return 200; }
+}
 $GLOBALS['wpdb'] = new FakeDB();
+require_once __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-promotion-snapshot.php';
 require_once __DIR__ . '/../wordpress/gocar-core/includes/class-gocar-lead-lifecycle.php';
 function check( $condition, $message ) { if ( ! $condition ) { fwrite( STDERR, "FAIL: $message\n" ); exit( 1 ); } }
 check( Gocar_Lead_Lifecycle::context( array( 'source' => 'google', 'medium' => 'cpc', 'campaign' => 'airport_q4', 'landing_path' => '/tuyen/sai-gon-vung-tau/' ) )['campaign'] === 'airport_q4', 'paid context retained' );

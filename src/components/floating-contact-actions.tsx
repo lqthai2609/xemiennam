@@ -10,6 +10,8 @@ export function FloatingContactActions() {
   const pathname = usePathname();
   const zaloLink = getZaloChatLink();
 
+  if (pathname === "/quan-tri/chieu-trong" || pathname.startsWith("/quan-tri/chieu-trong/")) return null;
+
   if (pathname === "/" || pathname === "/lien-he" || pathname === "/tuyen-duong" || pathname === "/diem-den" || pathname === "/loai-xe" || /^\/tuyen-duong\/[^/]+\/[^/]+(?:\/[^/]+)?$/.test(pathname)) return null;
 
   return (

@@ -6,6 +6,7 @@ import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchTestimonials } from "@/lib/api/testimonials";
 import { fetchPostsByRegion } from "@/lib/api/blog";
 import { JsonLd } from "@/components/json-ld";
+import { promotionOfferCandidate, firstPromotionExpiry } from "@/lib/promotion-schema";
 import { buildBreadcrumbListSchema, buildFixedServiceOffers, buildServiceSchema } from "@/lib/schema";
 import { isPrelaunchAirportRoute } from "@/lib/airport-readiness";
 import { SITE_NAME } from "@/lib/site-config";
@@ -15,7 +16,8 @@ import { canSuggestRelatedRoute, resolveRouteContentReadiness, routeStructuredDa
 import { formatPublicLocationText, getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
 import "../../../home-redesign.css";
 import "./route-detail-redesign.css";
-import { resolveRouteJourneySelection, type JourneyQuery } from "@/lib/route-journey-selection";
+import { packageMatches } from "@/lib/route-package-capability";
+import { resolveRouteJourneySelection, type JourneyQuery, type RouteJourneySelection } from "@/lib/route-journey-selection";
 
 /** Ảnh đại diện theo loại xe (loại xe → images[0] của xe THẬT đầu tiên thuộc loại đó). */
 async function buildVehicleImageByType(): Promise<Record<string, string>> {
@@ -44,12 +46,14 @@ function fallbackRouteDescription(route: Route): string {
   return `${base}.`;
 }
 
-function buildRouteSchemaOffers(route: Route) {
+function buildRouteSchemaOffers(route: Route, baseOnly = false, selection?: RouteJourneySelection) {
   if (!route.pricingV2) return undefined;
   return buildFixedServiceOffers(
     [route.pricingV2.outbound, route.pricingV2.inbound].flatMap((direction) => {
-      if (!direction.enabled) return [];
-      return direction.packages.map((item) => ({
+      if (!direction.enabled || (selection && direction.key !== selection.direction)) return [];
+      return direction.packages.filter((row) => !selection || packageMatches(row, selection.journey)).map((item) => ({
+        ...promotionOfferCandidate(route, item, ""),
+        ...(baseOnly ? { promotionView: undefined } : {}),
         name: `${item.vehicleType} · ${item.packageLabel} · ${item.direction === "outbound" ? getPublicRouteLabel(route) : `${getPublicLocationLabel(route.to)} → ${getPublicLocationLabel(route.from)}`}`,
         mode: item.mode,
         price: item.price,
@@ -146,8 +150,13 @@ export default async function Page({ params, searchParams }: Props) {
           : formatPublicLocationText(route.summary || fallbackRouteDescription(route)),
         url: routeHref(route),
         areaServed: [publicFrom, publicTo],
-        offers: readiness.offerSchemaEligible ? buildRouteSchemaOffers(route) : undefined,
+        offers: readiness.offerSchemaEligible ? buildRouteSchemaOffers(route, false, selection) : undefined,
       });
+  const fallbackSchema = serviceSchema ? buildServiceSchema({
+    name: serviceSchema.name, description: serviceSchema.description, url: routeHref(route), areaServed: [publicFrom, publicTo],
+    offers: readiness.offerSchemaEligible ? buildRouteSchemaOffers(route, true, selection) : undefined,
+  }) : undefined;
+  const expiresAt = firstPromotionExpiry([...(route.pricingV2?.outbound.packages ?? []), ...(route.pricingV2?.inbound.packages ?? [])]);
   const structuredDataAllowed = routeStructuredDataAllowed(route, readiness);
   const breadcrumbSchema = structuredDataAllowed ? buildBreadcrumbListSchema([
     { name: "Trang chủ", url: "/" },
@@ -158,8 +167,7 @@ export default async function Page({ params, searchParams }: Props) {
   return (
     <>
       {breadcrumbSchema ? <JsonLd data={breadcrumbSchema} /> : null}
-      {serviceSchema ? <JsonLd data={serviceSchema} /> : null}
-      <RouteDetailPage key={`${route.id}:${selection.direction}:${selection.journey}`} initialSelection={selection} route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
+      <RouteDetailPage serviceSchema={serviceSchema && fallbackSchema ? { data: serviceSchema, fallback: fallbackSchema, unpriced: { ...serviceSchema, offers: undefined }, expiresAt } : undefined} key={`${route.id}:${selection.direction}:${selection.journey}`} initialSelection={selection} route={route} relatedRoutes={relatedRoutes} testimonials={routeTestimonials} relatedPosts={relatedPosts} vehicleImageByType={vehicleImageByType} />
     </>
   );
 }

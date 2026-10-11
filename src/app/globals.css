@@ -564,3 +564,13 @@ h1 em, .final-cta em { color: var(--primary); font-style: normal; }
 /* Keep required markers on the same line as their field label. */
 form .form-field-label { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
 form .required-mark { display: inline-block; flex: none; color: #ff5122; font-size: inherit; line-height: inherit; white-space: nowrap; }
+
+/* Day 44: readable comparison of the same server-resolved price layer. */
+.promotion-price { min-width: 0; overflow-wrap: anywhere; font-size: .875rem; line-height: 1.6; }
+.promotion-price strong { font-size: 1.2rem; }
+.promotion-price-comparison { display: grid; gap: .25rem; }
+.promotion-price-comparison > span { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+.promotion-price del { color: #64748b; font-size: .875rem; }
+.promotion-price-comparison strong { color: #0000d8; }
+.promotion-price p { margin: .5rem 0; }
+.promotion-price ul { padding-left: 1.25rem; }

@@ -179,3 +179,22 @@ The apply command creates missing `location` posts with `location_type=locality`
 11. For Day 33, submit bookings with zero, one and three intermediate stops; verify order, address and waiting minutes round-trip through REST.
 12. Confirm a fourth stop and invalid waiting values are rejected by the frontend/API boundary and capped by WordPress defense-in-depth.
 13. Continue migrating WPCode contracts into this plugin one module at a time only after acceptance tests.
+
+## Day 46 vehicle facts (source 0.13.0)
+
+Private versioned Operations record, protected GET/PUT admin endpoint and read-only confirmed public projection are documented in `docs/day46-vehicle-facts-contract.md`. Legacy vehicle fields are not approved automatically. Public null means consultation; confirmed capacity is passengers excluding driver. Load profiles cover passengers and luggage together, with explicit size/count/aggregate weight bounds. No live facts imported, commercial flag changed or production plugin installed in Day 46.
+
+
+### Day 53 reservation repair — source version 0.17.2
+
+`RELEASE-01-RACE-01`: lead creation now reserves the existing hashed option key
+with a plain SQL `INSERT`. Duplicate-key error 1062 never updates the winning
+reservation; its original intent and snapshot remain authoritative. The losing
+worker reads SQL state and replays the saved lead or returns 409 while pending.
+Other database failures return `lead_reservation_failed` (503), without creating
+a post or deleting the reservation. SQL reads bypass positive/negative option
+caches; INSERT invalidates the option, notoptions and alloptions cache entries.
+No schema migration, expiry-based unlock, historical backfill or commercial flag
+change. The fix cannot clean duplicates already created by version 0.17.1.
+Only isolated WordPress/MySQL lab evidence applies until deployment is separately
+authorized and target dependencies/authentication are verified.

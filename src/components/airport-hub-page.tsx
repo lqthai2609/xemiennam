@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AirportQuickConsultation } from "@/components/airport-quick-consultation";
+import { airportHubConsultationJourneys } from "@/lib/airport-consultation";
 import { ZaloIcon } from "@/components/zalo-icon";
 import { ArrowDown, ArrowRight, CheckCircle2, MapPin, Phone, PlaneLanding, PlaneTakeoff } from "lucide-react";
 import { BlogCard } from "@/components/blog-card";
@@ -199,10 +201,12 @@ export function AirportHubPage({ data, relatedPosts = [] }: { data: AirportHubDa
 
           <div id="from-airport" className="airport-direction-block">
             <h3>Từ {airportName} đi tỉnh</h3>
+            {!isPrelaunch && <AirportQuickConsultation journeys={airportHubConsultationJourneys(data.fromAirport)} />}
             <RouteList routes={data.fromAirport} />
           </div>
           <div id="to-airport" className="airport-direction-block">
             <h3>Từ tỉnh đến {airportName}</h3>
+            {!isPrelaunch && <AirportQuickConsultation journeys={airportHubConsultationJourneys(data.toAirport)} />}
             <RouteList routes={data.toAirport} />
           </div>
         </section>

@@ -30,12 +30,14 @@ import { mapWPRouteToRoutePairV2, type RouteDirectionKey } from "./route-directi
 import { fetchLocationsV2, locationById, type LocationV2 } from "./locations";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { publicRouteWithCmsPricing } from "@/lib/public-pricing";
+import { withRoutePromotionViews } from "./route-promotions";
 import { formatPriceShort, splitCommaList } from "@/lib/wp";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
 const useMockFallback = shouldUseMockFallback();
 
-export const VEHICLE_TYPE_ORDER = ["4 chỗ", "4–7 chỗ", "7 chỗ", "16 chỗ", "16–29 chỗ", "29 chỗ", "45 chỗ", "Limousine"];
+import { VEHICLE_TYPE_ORDER } from "@/types/vehicle-order";
+export { VEHICLE_TYPE_ORDER } from "@/types/vehicle-order";
 function byVehicleTypeOrder(a: string, b: string) {
   const ai = VEHICLE_TYPE_ORDER.indexOf(a);
   const bi = VEHICLE_TYPE_ORDER.indexOf(b);
@@ -289,14 +291,15 @@ export async function fetchRoutes(options: { adminPricing?: boolean } = {}): Pro
   }
   const locationsById = locationById(locations);
   const routes = rawRoutes.map((wp) => mapWPRouteToRoute(wp, rawVehicles, locationsById));
-  return options.adminPricing ? routes : routes.map(publicRouteWithCmsPricing);
+  return options.adminPricing ? routes : Promise.all(routes.map((route, index) => withRoutePromotionViews(publicRouteWithCmsPricing(route), rawRoutes[index], locationsById)));
 }
 
 export async function fetchRouteBySlug(slug: string): Promise<Route | undefined> {
   const wp = await fetchRawRouteBySlug(slug);
   if (wp) {
     const [rawVehicles, locations] = await Promise.all([fetchRawVehicles(), fetchLocationsV2()]);
-    return publicRouteWithCmsPricing(mapWPRouteToRoute(wp, rawVehicles, locationById(locations)));
+    const locationsById = locationById(locations);
+    return withRoutePromotionViews(publicRouteWithCmsPricing(mapWPRouteToRoute(wp, rawVehicles, locationsById)), wp, locationsById);
   }
   if (useMockFallback) {
     const rawRoutes = await fetchRawRoutes();

@@ -3,6 +3,7 @@ import { vehicles as mockVehicles } from "@/data/vehicles";
 import { fetchRawVehicles, fetchRawVehicleBySlug, embeddedTermName, type WPVehicle } from "./raw";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { stripHtml, wpFetch } from "@/lib/wp";
+import { readVehicleFacts, VEHICLE_CONSULTATION_LABEL } from "@/lib/vehicle-facts";
 
 const useMockFallback = shouldUseMockFallback();
 
@@ -33,9 +34,10 @@ async function resolveGalleryImages(mediaIds: number[] | undefined): Promise<str
   return ids.map((id) => urlById.get(id)).filter((url): url is string => Boolean(url));
 }
 
-async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
+export async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
   const images = await resolveGalleryImages(wp.meta.gallery_anh);
-  const type = embeddedTermName(wp._embedded, "vehicle_type") ?? "4 chỗ";
+  const type = embeddedTermName(wp._embedded, "vehicle_type") ?? VEHICLE_CONSULTATION_LABEL;
+  const operationalFacts = readVehicleFacts(wp.gocar_vehicle_facts, wp.id);
 
   return {
     id: String(wp.id),
@@ -43,7 +45,9 @@ async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
     name: wp.title.rendered,
     type,
     seats: wp.meta.so_cho ? `${wp.meta.so_cho} chỗ` : "",
-    capacity: "",
+    // Legacy `capacity` is displayed beside a luggage icon without a trip load.
+    capacity: VEHICLE_CONSULTATION_LABEL,
+    operationalFacts,
     description: stripHtml(wp.content.rendered),
     color: COLOR_BY_TYPE[type] ?? "sand",
     imageLabel: wp.title.rendered,
@@ -57,12 +61,12 @@ async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
   };
 }
 
-export async function fetchVehicles(): Promise<Vehicle[]> {
-  const rawVehicles = await fetchRawVehicles();
+export async function fetchVehicles(options: { freshFacts?: boolean } = {}): Promise<Vehicle[]> {
+  const rawVehicles = await fetchRawVehicles(options.freshFacts ? 0 : undefined);
   if (rawVehicles.length === 0) {
     if (useMockFallback) {
       console.warn("[fetchVehicles] WP chưa có vehicle nào — dùng dữ liệu mock theo policy môi trường.");
-      return mockVehicles.map((vehicle) => ({ ...vehicle, routePrices: [] }));
+      return mockVehicles.map(withUnconfirmedMockFacts);
     }
     return [];
   }
@@ -76,10 +80,14 @@ export async function fetchVehicleBySlug(slug: string): Promise<Vehicle | undefi
     const rawVehicles = await fetchRawVehicles();
     if (rawVehicles.length === 0) {
       const vehicle = mockVehicles.find((item) => item.slug === slug);
-      return vehicle ? { ...vehicle, routePrices: [] } : undefined;
+      return vehicle ? withUnconfirmedMockFacts(vehicle) : undefined;
     }
   }
   return undefined;
+}
+
+function withUnconfirmedMockFacts(vehicle: Vehicle): Vehicle {
+  return { ...vehicle, routePrices: [], capacity: VEHICLE_CONSULTATION_LABEL, operationalFacts: { status: "needs_consultation", facts: null } };
 }
 
 export async function fetchSimilarVehicles(currentSlug: string, count = 3): Promise<Vehicle[]> {
