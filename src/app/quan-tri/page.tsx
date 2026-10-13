@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { fetchLocationsV2 } from "@/lib/api/locations";
 import { fetchRoutes } from "@/lib/api/routes";
 import { fetchVehicles } from "@/lib/api/vehicles";
@@ -33,11 +33,17 @@ function isAdminPreviewEnabled() {
   );
 }
 
-export default async function RoutePricingAdminPage() {
+export default async function RoutePricingAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   if (!isAdminPreviewEnabled()) notFound();
 
+  const showRouteTools = (await searchParams)["cong-cu"] === "tuyen";
   const auth = await getAdminSession();
-  if (!auth) return <AdminLogin />;
+  if (!auth) return <AdminLogin forPricing={!showRouteTools} />;
+  if (auth.session.canEditPricing && !showRouteTools) redirect("/bang-gia");
 
   const [locations, routes, vehicles] = await Promise.all([
     fetchLocationsV2(),
