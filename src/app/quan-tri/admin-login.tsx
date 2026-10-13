@@ -7,7 +7,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./route-pricing-admin-wizard.module.css";
 
-export function AdminLogin() {
+export function AdminLogin({ forPricing = false }: { forPricing?: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -36,9 +36,11 @@ export function AdminLogin() {
       <section className={styles.loginCard}>
         <div className={styles.loginMark}>A</div>
         <p className={styles.eyebrow}>ALO ĐẶT XE</p>
-        <h1>Đăng nhập quản trị</h1>
+        <h1>{forPricing ? "Đăng nhập để sửa giá" : "Đăng nhập quản trị"}</h1>
         <p className={styles.loginIntro}>
-          Sử dụng tài khoản WordPress được cấp quyền vận hành. Mật khẩu chỉ được chuyển tới WordPress để xác thực và không được lưu trong trình duyệt.
+          {forPricing
+            ? "Đăng nhập bằng tài khoản quản trị WordPress. Sau khi đăng nhập, anh sẽ đến trang Bảng giá và có thể bấm Sửa ngay cạnh mức giá cần thay đổi."
+            : "Sử dụng tài khoản WordPress được cấp quyền vận hành. Mật khẩu chỉ được chuyển tới WordPress để xác thực và không được lưu trong trình duyệt."}
         </p>
         <form onSubmit={submit} className={styles.loginForm}>
           <label>
