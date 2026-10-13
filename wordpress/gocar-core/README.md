@@ -1,5 +1,12 @@
 # Gocar Core
 
+## 0.17.6 — Existing public price edits on historically locked routes
+
+- Keeps legacy D35 route creation, archival/deletion and general wizard price-write locks.
+- The administrator-only inline endpoint can read/update an existing published Pricing V2 tuple on a historic record with clear current mapping, valid published location endpoints and Route/Pricing V2 models.
+- Explicit mapping blocks, unresolved historical mappings and Long Thành PRELAUNCH remain denied. No route, URL, SEO mapping, package or direction is unlocked/created by this path.
+- A resource-level 403 no longer removes all inline edit controls; the frontend displays its error.
+
 ## 0.17.5 — Inline price editing
 
 - Adds the authenticated `admin/routes/{id}/pricing` endpoint for existing published Pricing V2 rows.
