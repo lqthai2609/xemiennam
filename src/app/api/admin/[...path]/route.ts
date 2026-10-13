@@ -23,6 +23,7 @@ const ALLOWED_PATHS = [
   /^drafts\/\d+\/(?:validate|submit|publish)$/,
   /^apply$/,
   /^routes$/,
+  /^routes\/[1-9]\d*\/pricing$/,
   /^routes\/\d+\/archive$/,
   /^audit$/,
   /^audit\/\d+\/rollback$/,
@@ -55,6 +56,9 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value ?? "";
   const session = await fetchAdminSession(token);
   if (!session) return privateJson({ message: "Phiên đăng nhập đã hết hạn." }, 401);
+  const inlinePricing = /^routes\/[1-9]\d*\/pricing$/.test(path);
+  if (inlinePricing && !session.canEditPricing) return privateJson({ message: "Chỉ quản trị viên được sửa giá." }, 403);
+  if (inlinePricing && !["GET", "POST"].includes(request.method)) return privateJson({ message: "Thao tác không được phép." }, 405);
 
   const mutating = request.method !== "GET";
   if (mutating) {
@@ -81,7 +85,7 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
   });
   const data = await upstream.json().catch(() => ({ message: `WordPress HTTP ${upstream.status}` }));
 
-  if (upstream.ok && mutating && /(?:apply|publish|archive|rollback)$/.test(path)) {
+  if (upstream.ok && mutating && /(?:apply|publish|archive|rollback|pricing)$/.test(path)) {
     revalidateTag(WP_CACHE_TAG, { expire: 0 });
     revalidatePath("/", "layout");
   }

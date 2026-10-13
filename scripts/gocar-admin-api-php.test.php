@@ -9,6 +9,7 @@ $GLOBALS['gocar_test_meta'] = array();
 $GLOBALS['gocar_test_route_matches'] = array();
 
 function add_action() {}
+function add_filter() {}
 function sanitize_key( $value ) { return strtolower( preg_replace( '/[^a-z0-9_-]/', '', (string) $value ) ); }
 function sanitize_text_field( $value ) { return trim( strip_tags( (string) $value ) ); }
 function sanitize_textarea_field( $value ) { return trim( strip_tags( (string) $value ) ); }

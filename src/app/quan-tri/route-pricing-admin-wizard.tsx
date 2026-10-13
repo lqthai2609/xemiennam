@@ -209,7 +209,7 @@ export function RoutePricingAdminWizard({
   locations: AdminLocation[];
   routes: AdminRoute[];
   vehicles: AdminVehicle[];
-  actor: { id: number; name: string; canPublish: boolean; contract: number };
+  actor: { id: number; name: string; canPublish: boolean; canEditPricing: boolean; contract: number };
   csrf: string;
 }) {
   const [screen, setScreen] = useState<Screen>("home");
@@ -564,7 +564,7 @@ export function RoutePricingAdminWizard({
           <section className={styles.actionSection}>
             <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Thao tác</p><h2>Anh muốn làm gì?</h2></div>{hydrated && draft.updatedAt && <span className={styles.savedAt}>Nháp thiết bị {formatTime(draft.updatedAt)}</span>}</div>
             <ActionButton primary icon={<Plus />} title="Tạo tuyến mới" note="Lưu nháp hoặc ghi thẳng vào backend" onClick={() => openScreen("create")} />
-            <ActionButton icon={<BadgeDollarSign />} title="Cập nhật giá" note="Tìm tuyến và lưu nháp hoặc áp dụng ngay" onClick={() => openScreen("pricing")} />
+            {actor.canEditPricing && <ActionButton icon={<BadgeDollarSign />} title="Cập nhật giá" note="Tìm tuyến và lưu nháp hoặc áp dụng ngay" onClick={() => openScreen("pricing")} />}
             <ActionButton icon={<RouteIcon />} title="Quản lý tuyến" note="Tìm, tạm ngừng hoặc xóa tuyến trực tiếp" onClick={() => openScreen("manage")} />
             <ActionButton icon={<History />} title="Lịch sử và rollback" note={`${auditRows.length} thay đổi gần nhất`} onClick={() => openScreen("audit")} />
           </section>
@@ -607,7 +607,7 @@ export function RoutePricingAdminWizard({
         </div>
       )}
 
-      {screen === "pricing" && (
+      {screen === "pricing" && actor.canEditPricing && (
         <AdminPanel onBack={() => setScreen("home")} kicker="Pricing V2" title="Cập nhật giá một tổ hợp">
           <div className={styles.fieldStack}>
             <RouteCombobox label="Tìm tuyến" value={priceDraft.routeId} routes={routeRows} onChange={(routeId) => updatePriceDraft({ routeId })} />

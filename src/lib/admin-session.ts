@@ -11,6 +11,7 @@ export type AdminSession = {
   id: number;
   name: string;
   canPublish: boolean;
+  canEditPricing: boolean;
   contract: number;
 };
 
@@ -28,11 +29,12 @@ export async function fetchAdminSession(token: string): Promise<AdminSession | n
     });
     if (!response.ok) return null;
     const data = (await response.json()) as Partial<AdminSession>;
-    if (!Number.isInteger(data.id) || !data.name || data.contract !== 1) return null;
+    if (!Number.isInteger(data.id) || (data.id as number) <= 0 || !data.name || data.contract !== 1) return null;
     return {
       id: data.id as number,
       name: String(data.name),
       canPublish: Boolean(data.canPublish),
+      canEditPricing: data.canEditPricing === true,
       contract: data.contract,
     };
   } catch {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ComponentProps } from "react";
+import { InlinePriceEditor, PricingEditProvider } from "@/components/inline-price-editor";
 import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,7 +45,7 @@ function destinationImage(route: Route) {
   return localRegionImages.has(route.regionSlug) ? `/images/destinations/${route.regionSlug}.webp` : "/images/home-coastal-fleet.webp";
 }
 
-export function BangGiaPageClient({ routes, lastModified, updatedOn }: { routes: Route[]; lastModified?: string; updatedOn: string }) {
+function BangGiaContent({ routes, lastModified, updatedOn }: { routes: Route[]; lastModified?: string; updatedOn: string }) {
   const origins = useMemo(() => Array.from(new Set(routes.map((route) => route.from))).sort((a, b) => getPublicLocationLabel(a).localeCompare(getPublicLocationLabel(b), "vi")), [routes]);
   const [origin, setOrigin] = useState(() => origins.find((item) => getPublicLocationLabel(item) === "Sài Gòn") || origins[0] || "");
   const [region, setRegion] = useState(() => routes.some((route) => route.regionSlug === featuredRegions[0]) ? featuredRegions[0] : routes[0]?.regionSlug || "");
@@ -90,7 +91,7 @@ export function BangGiaPageClient({ routes, lastModified, updatedOn }: { routes:
 
       <section className="pricing-results" aria-labelledby="pricing-table-title">
         <div className="pricing-results-heading"><h2 id="pricing-table-title">Bảng giá thuê xe theo tuyến</h2><p>Cập nhật ngày {updatedOn}</p></div>
-        <div className="pricing-table-scroll"><table className="pricing-table"><thead><tr><th scope="col">ĐIỂM ĐẾN <span className="pricing-desktop-only">/ TUYẾN</span></th>{columns.map((type) => <th key={type} scope="col"><CarFront size={29} aria-hidden="true" /> XE {type.toUpperCase()}</th>)}<th scope="col" className="pricing-route-column">XEM TUYẾN</th></tr></thead><tbody>{filteredRoutes.map((route) => { const { from, to } = getPublicRouteLocations(route); return <tr key={route.slug}><td className="pricing-destination-cell"><Link href={routeHref(route)} className="pricing-place"><span className="pricing-place-image"><Image src={destinationImage(route)} alt="" fill sizes="(max-width: 700px) 70px, 95px" /></span><span><strong>{to}</strong><small>{from} đi {to}</small></span></Link></td>{columns.map((type) => { const price = priceFor(route, type, tripType); const label = priceText(price); return <td key={type}><div className="pricing-price-cell">{price && isFixed(price) && <small>Giá chỉ</small>}{price ? <Link href={`${routeComboHref(route, vehicleTypeSlug(type))}?package=${tripType}#pricing`} className={isFixed(price) ? "pricing-fixed" : "pricing-contact-price"} title={`Xem xe ${type} tuyến ${from} đi ${to}`}>{label}</Link> : <span className="pricing-unavailable">{label}</span>}<small>{tripLabel} / chuyến</small></div></td>; })}<td className="pricing-route-column"><Link href={routeHref(route)} className="pricing-view-route">Xem tuyến <ArrowRight size={16} aria-hidden="true" /></Link></td></tr>; })}</tbody></table>{!filteredRoutes.length && <p className="pricing-empty">Chưa tìm thấy điểm đến phù hợp. Hãy thử một tỉnh hoặc từ khóa khác.</p>}</div>
+        <div className="pricing-table-scroll"><table className="pricing-table"><thead><tr><th scope="col">ĐIỂM ĐẾN <span className="pricing-desktop-only">/ TUYẾN</span></th>{columns.map((type) => <th key={type} scope="col"><CarFront size={29} aria-hidden="true" /> XE {type.toUpperCase()}</th>)}<th scope="col" className="pricing-route-column">XEM TUYẾN</th></tr></thead><tbody>{filteredRoutes.map((route) => { const { from, to } = getPublicRouteLocations(route); return <tr key={route.slug}><td className="pricing-destination-cell"><Link href={routeHref(route)} className="pricing-place"><span className="pricing-place-image"><Image src={destinationImage(route)} alt="" fill sizes="(max-width: 700px) 70px, 95px" /></span><span><strong>{to}</strong><small>{from} đi {to}</small></span></Link></td>{columns.map((type) => { const price = priceFor(route, type, tripType); const label = priceText(price); return <td key={type}><div className="pricing-price-cell">{price && isFixed(price) && <small>Giá chỉ</small>}{price ? price && "mode" in price ? <InlinePriceEditor key={`${route.id}:${price.direction}:${price.vehicleId}:${price.packageKey}`} routeId={route.id} row={price} routeLabel={`${from} đi ${to}`}><Link href={`${routeComboHref(route, vehicleTypeSlug(type))}?package=${tripType}#pricing`} className={isFixed(price) ? "pricing-fixed" : "pricing-contact-price"} title={`Xem xe ${type} tuyến ${from} đi ${to}`}>{label}</Link></InlinePriceEditor> : <Link href={`${routeComboHref(route, vehicleTypeSlug(type))}?package=${tripType}#pricing`} className={isFixed(price) ? "pricing-fixed" : "pricing-contact-price"} title={`Xem xe ${type} tuyến ${from} đi ${to}`}>{label}</Link> : <span className="pricing-unavailable">{label}</span>}<small>{tripLabel} / chuyến</small></div></td>; })}<td className="pricing-route-column"><Link href={routeHref(route)} className="pricing-view-route">Xem tuyến <ArrowRight size={16} aria-hidden="true" /></Link></td></tr>; })}</tbody></table>{!filteredRoutes.length && <p className="pricing-empty">Chưa tìm thấy điểm đến phù hợp. Hãy thử một tỉnh hoặc từ khóa khác.</p>}</div>
         <p className="pricing-mobile-hint"><span>☝</span> Chạm tên điểm đến để xem tuyến <ArrowRight size={20} aria-hidden="true" /></p>
       </section>
       <p className="pricing-note"><Info size={21} aria-hidden="true" /><span>Giá áp dụng cho tuyến, loại xe và gói dịch vụ bạn chọn. Giá cuối cùng sẽ được xác nhận trước khi khởi hành.{lastModified && <> Cập nhật {formatVNDate(lastModified)}.</>}</span></p>
@@ -100,4 +101,8 @@ export function BangGiaPageClient({ routes, lastModified, updatedOn }: { routes:
     </div>
     <SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "Khám phá", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Điểm đến", href: "/diem-den" }, { label: "Loại xe", href: "/loai-xe" }, { label: "Bảng giá", href: "/bang-gia" }] }, { title: "Hỗ trợ", links: [{ label: "Câu hỏi thường gặp", href: "/cau-hoi-thuong-gap" }, { label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
   </main>;
+}
+
+export function BangGiaPageClient(props: ComponentProps<typeof BangGiaContent> & { previewViewer?: "admin" | "guest" }) {
+  return <PricingEditProvider key={props.previewViewer} previewViewer={props.previewViewer}><BangGiaContent {...props} /></PricingEditProvider>;
 }

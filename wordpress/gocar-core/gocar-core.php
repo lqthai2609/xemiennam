@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gocar Core
  * Description: Core WordPress contracts and migration helpers for Alo Đặt Xe.
- * Version: 0.17.4
+ * Version: 0.17.5
  * Author: Alo Đặt Xe
  * Requires at least: 6.5
  * Requires PHP: 8.1
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'GOCAR_CORE_VERSION', '0.17.4' );
+define( 'GOCAR_CORE_VERSION', '0.17.5' );
 define( 'GOCAR_CORE_PATH', plugin_dir_path( __FILE__ ) );
 
 // Phase 1 is intentionally non-mutating: shared normalization only.

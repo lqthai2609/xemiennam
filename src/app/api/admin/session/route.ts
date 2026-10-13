@@ -31,9 +31,10 @@ function cookieOptions(httpOnly: boolean) {
 export async function GET(request: NextRequest) {
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value ?? "";
   const session = await fetchAdminSession(token);
-  if (!session) return NextResponse.json({ authenticated: false }, { status: 401 });
+  const headers = { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex, nofollow" };
+  if (!session) return NextResponse.json({ authenticated: false }, { status: 401, headers });
   const csrf = request.cookies.get(ADMIN_CSRF_COOKIE)?.value ?? randomBytes(24).toString("base64url");
-  const response = NextResponse.json({ authenticated: true, session, csrf });
+  const response = NextResponse.json({ authenticated: true, session, csrf }, { headers });
   response.cookies.set(ADMIN_CSRF_COOKIE, csrf, cookieOptions(false));
   return response;
 }
