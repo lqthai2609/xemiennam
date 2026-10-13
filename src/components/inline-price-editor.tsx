@@ -64,7 +64,7 @@ export function InlinePriceEditor({ routeId, row, routeLabel, children }: { rout
     try {
       const response = await fetch(endpoint, { cache: "no-store", credentials: "same-origin" });
       const data = await response.json();
-      if ([401, 403].includes(response.status)) auth.revoke();
+      if (response.status === 401) auth.revoke();
       if (!response.ok) throw new Error(data.message || "Không thể đọc giá hiện tại.");
       const current = data as CurrentPricing;
       const matches = current.pricingRows.filter((item) => item.direction === row.direction && item.vehicleId === row.vehicleId && item.packageKey === row.packageKey);
@@ -98,7 +98,7 @@ export function InlinePriceEditor({ routeId, row, routeLabel, children }: { rout
         body: JSON.stringify({ pricingDirection: row.direction, vehicleId: Number(row.vehicleId), packageKey: row.packageKey, priceMode: edit.mode, priceAmount: edit.mode === "fixed" ? amount : null, baseVersion: edit.version, reason: `Sửa giá trực tiếp: ${contextLabel}. Giá trước: ${edit.before}.` }),
       });
       const data = await response.json();
-      if ([401, 403].includes(response.status)) auth.revoke();
+      if (response.status === 401) auth.revoke();
       if (!response.ok) throw new Error(data.data?.errors?.join(" ") || data.message || "Chưa lưu được giá. Hãy thử lại.");
       setEdit(null); setSaved(true); setMessage("Đã lưu giá.");
       startRefresh(() => router.refresh());

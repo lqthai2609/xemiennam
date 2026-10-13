@@ -277,10 +277,14 @@ final class Gocar_Admin_API {
         if ( ! $post || 'route' !== $post->post_type || 'publish' !== $post->post_status ) {
             return self::error( 'route_not_found', 'Không tìm thấy tuyến đang công khai.', 404 );
         }
-        if ( self::is_blocked_route( $route_id ) || ! current_user_can( 'edit_post', $route_id ) ) {
+        if ( self::is_inline_pricing_blocked( $route_id ) || ! current_user_can( 'edit_post', $route_id ) ) {
             return self::error( 'route_locked', 'Tuyến đang bị khóa hoặc tài khoản không có quyền sửa.', 403 );
         }
-        if ( 'GET' === $request->get_method() ) return rest_ensure_response( self::route_response( $post ) );
+        if ( 'GET' === $request->get_method() ) {
+            $response = self::route_response( $post );
+            $response['locked'] = self::is_inline_pricing_blocked( $route_id );
+            return rest_ensure_response( $response );
+        }
 
         $raw = $request->get_json_params();
         if ( ! is_array( $raw )
@@ -311,7 +315,7 @@ final class Gocar_Admin_API {
         $apply_request = new WP_REST_Request( 'POST' );
         $apply_request->set_body( wp_json_encode( $payload ) );
         $apply_request->set_header( 'content-type', 'application/json' );
-        return self::direct_apply( $apply_request );
+        return self::direct_apply( $apply_request, true );
     }
 
     public static function save_draft( WP_REST_Request $request ) {
@@ -467,7 +471,7 @@ final class Gocar_Admin_API {
     }
 
     /** Apply a validated mutation immediately for the authenticated publisher. */
-    public static function direct_apply( WP_REST_Request $request ) {
+    public static function direct_apply( WP_REST_Request $request, bool $existing_pricing_only = false ) {
         $payload = self::sanitize_payload( $request->get_json_params() );
         if ( 'update_pricing' === ( $payload['operation'] ?? '' ) && ! self::can_edit_pricing() ) {
             return self::error( 'pricing_forbidden', 'Chỉ quản trị viên được sửa giá.', 403 );
@@ -479,7 +483,7 @@ final class Gocar_Admin_API {
             return self::error( 'base_version_required', 'Thiếu phiên bản tuyến; hãy tải lại trước khi ghi trực tiếp.', 409 );
         }
 
-        $validation = self::validate_payload( $payload );
+        $validation = self::validate_payload( $payload, $existing_pricing_only );
         if ( ! empty( $validation['errors'] ) ) {
             return self::error( 'direct_apply_invalid', 'Dữ liệu chưa đạt kiểm tra để ghi trực tiếp.', 422, $validation );
         }
@@ -623,7 +627,7 @@ final class Gocar_Admin_API {
     }
 
     /** @return array{valid:bool,errors:string[],warnings:string[]} */
-    public static function validate_payload( array $payload ): array {
+    public static function validate_payload( array $payload, bool $existing_pricing_only = false ): array {
         $errors = array();
         $warnings = array();
         $operation = $payload['operation'] ?? '';
@@ -661,7 +665,10 @@ final class Gocar_Admin_API {
             } elseif ( ! current_user_can( 'edit_post', $route_id ) ) {
                 $errors[] = 'Tài khoản không có quyền sửa tuyến này.';
             }
-            if ( self::is_blocked_route( $route_id ) ) {
+            $blocked = $existing_pricing_only && 'update_pricing' === $operation
+                ? self::is_inline_pricing_blocked( $route_id )
+                : self::is_blocked_route( $route_id );
+            if ( $blocked ) {
                 $errors[] = 'Tuyến thuộc D35-10 hoặc Long Thành PRELAUNCH và đang bị khóa.';
             }
             $current_version = self::snapshot_version( self::snapshot_route( $route_id ) );
@@ -839,6 +846,20 @@ final class Gocar_Admin_API {
 
     private static function snapshot_version( array $snapshot ): string {
         return hash( 'sha256', wp_json_encode( $snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+    }
+
+    /** Editing an existing published price does not create/unlock a route or change SEO mapping. */
+    private static function is_inline_pricing_blocked( int $route_id ): bool {
+        $origin = absint( get_post_meta( $route_id, 'origin_location_id', true ) );
+        $destination = absint( get_post_meta( $route_id, 'destination_location_id', true ) );
+        if ( 'd35_10_blocked' === get_post_meta( $route_id, 'content_mapping_state', true )
+            || self::is_prelaunch_location( $origin ) || self::is_prelaunch_location( $destination ) ) return true;
+        if ( ! self::operational_route_blocked( $route_id, $origin, $destination ) ) return false;
+        // Historic D35 records may only edit existing prices after their current mapping is clear.
+        return 'clear' !== get_post_meta( $route_id, 'content_mapping_state', true )
+            || 2 !== absint( get_post_meta( $route_id, 'route_model_version', true ) )
+            || 2 !== absint( get_post_meta( $route_id, 'pricing_model_version', true ) )
+            || ! self::valid_post( $origin, 'location' ) || ! self::valid_post( $destination, 'location' );
     }
 
     private static function is_blocked_route( int $route_id ): bool {

@@ -8,6 +8,7 @@ on:
       - "scripts/wp-frontend-sync-php.test.php"
       - "scripts/gocar-price-conditions-php.test.php"
       - "scripts/gocar-admin-api-php.test.php"
+      - "scripts/inline-pricing-php.test.php"
       - "scripts/gocar-lead-lifecycle-php.test.php"
       - ".github/workflows/gocar-core-package.yml"
   push:
@@ -19,6 +20,7 @@ on:
       - "scripts/wp-frontend-sync-php.test.php"
       - "scripts/gocar-price-conditions-php.test.php"
       - "scripts/gocar-admin-api-php.test.php"
+      - "scripts/inline-pricing-php.test.php"
       - "scripts/gocar-lead-lifecycle-php.test.php"
       - ".github/workflows/gocar-core-package.yml"
   workflow_dispatch:
@@ -55,7 +57,9 @@ jobs:
         run: php scripts/gocar-price-conditions-php.test.php
 
       - name: Admin write API behavioral tests
-        run: php scripts/gocar-admin-api-php.test.php
+        run: |
+          php scripts/gocar-admin-api-php.test.php
+          php scripts/inline-pricing-php.test.php
 
       - name: Lead lifecycle behavioral tests
         run: php scripts/gocar-lead-lifecycle-php.test.php
