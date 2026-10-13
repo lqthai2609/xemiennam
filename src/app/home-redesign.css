@@ -278,8 +278,6 @@
   .home-first-screen .home-booking-wrap #booking [role="tablist"] { margin-bottom: 8px; }
   .home-first-screen .home-booking-wrap #booking [role="tab"] { min-height: 38px; padding: 7px 5px; gap: 6px; font-size: 12px; }
   .home-first-screen .home-booking-wrap #booking [role="tabpanel"] > .grid { gap: 8px; }
-  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child { gap: 8px; padding-right: 36px; }
-  .home-first-screen .home-booking-wrap #booking [role="tabpanel"] > .grid > div:first-child > button { right: 0; top: calc(50% + 9px); width: 32px; height: 44px; background: #edf5ff; border-radius: 22px; }
   .home-first-screen .home-booking-wrap #booking [role="tabpanel"] label { font-size: 12px; }
   .home-first-screen .home-booking-wrap #booking [role="tabpanel"] input,
   .home-first-screen .home-booking-wrap #booking [role="tabpanel"] select { height: 40px; padding-right: 8px; font-size: 16px; border-radius: 8px; }

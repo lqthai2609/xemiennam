@@ -64,25 +64,19 @@
 .route-detail-redesign .route-detail-design-hero-controls .route-direction-tabs button { flex: 1; min-width: 0; min-height: 38px; gap: 7px; padding: 7px 8px; border-radius: 6px; color: #07165d; font-size: 14px; }
 .route-detail-redesign .route-detail-design-hero-controls .route-direction-tabs button.is-selected { background: #001eea; color: #fff; }
 .route-detail-redesign .route-detail-design-hero-controls .route-day-tabs { margin: 0; }
-.route-detail-design-endpoints { order: 1; display: grid; grid-template-columns: minmax(0, 1fr) 36px minmax(0, 1fr); align-items: center; gap: 14px; padding: 10px 14px; border: 1px solid #dce5f8; border-radius: 8px; background: #fff; }
-.route-detail-design-endpoints > div { min-width: 0; }
-.route-detail-design-endpoints > div:last-child { padding-left: 14px; border-left: 1px solid #e3eafb; }
-.route-detail-design-endpoints small, .route-detail-design-endpoints strong { display: block; }
-.route-detail-design-endpoints small { color: #64739e; font-size: 11px; line-height: 1.3; }
-.route-detail-design-endpoints strong { margin-top: 2px; color: #07165d; font-size: 15px; line-height: 1.3; overflow-wrap: anywhere; }
-.route-detail-design-endpoints button { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #001eea; color: #fff; cursor: pointer; }
-.route-detail-design-endpoints button:disabled { background: #eaf1ff; color: #64739e; cursor: default; }
-.route-detail-design-endpoints button:focus-visible, .route-detail-design-hero-controls button:focus-visible { outline: 2px solid #001eea; outline-offset: 3px; }
+.route-direction-select { order: 0; display: flex; flex-direction: column; gap: 5px; min-width: 0; margin: 0; color: #07165d; font-size: 13px; font-weight: 700; }
+.route-direction-select-field { position: relative; display: block; min-width: 0; }
+.route-direction-select select { display: block; width: 100%; min-width: 0; min-height: 46px; appearance: none; padding: 10px 40px 10px 14px; border: 1px solid #dce5f8; border-radius: 8px; background: #fff; color: #07165d; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+.route-direction-select-field > svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #001eea; }
+.route-direction-select select:disabled { cursor: default; }
+.route-direction-select select:focus-visible, .route-detail-design-hero-controls button:focus-visible { outline: 2px solid #001eea; outline-offset: 3px; }
+.route-vehicle-picker > .route-direction-select { margin-bottom: 8px; }
 .route-detail-design-pricing { padding-top: 0; scroll-margin-top: 82px; }
 .route-detail-design-pricing #pricing { scroll-margin-top: 82px; }
 .route-detail-redesign .route-vehicle-picker { display: flex; flex-direction: column; margin-top: 20px; }
-.route-detail-redesign .route-direction-tabs { order: 0; gap: 7px; margin: 0; padding: 10px 16px 8px; border: 0; border-radius: 10px 10px 0 0; background: #0019d7; }
+.route-detail-redesign .route-direction-tabs { order: 1; gap: 7px; margin: 0; padding: 10px 16px 8px; border: 0; border-radius: 10px 10px 0 0; background: #0019d7; }
 .route-detail-redesign .route-direction-tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-width: 178px; padding: 10px 18px; border: 0; border-radius: 7px; color: #fff; font-size: 14px; }
 .route-detail-redesign .route-direction-tabs button.is-selected { background: #fff; color: #001eea; }
-.route-detail-redesign .route-direction-switch { order: 1; display: flex; gap: 8px; margin: 0 0 20px; padding: 0 16px 11px; border-radius: 0 0 10px 10px; background: #0019d7; color: #fff; }
-.route-detail-redesign .route-direction-switch > span { display: none; }
-.route-detail-redesign .route-direction-switch button { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; min-height: 45px; border: 1px solid #ffffff88; border-radius: 6px; color: #fff; font-size: 14px; }
-.route-detail-redesign .route-direction-switch button.is-selected { border-color: #fff; background: #fff; color: #001eea; }
 .route-detail-redesign .route-day-tabs { order: 2; display: flex; gap: 8px; margin: -9px 0 18px; }
 .route-detail-redesign .route-day-tabs button { border-radius: 7px; border-color: #dce5f8; color: #001eea; }
 .route-detail-redesign .route-day-tabs button.is-selected { border-color: #001eea; background: #001eea; color: #fff; }
@@ -177,16 +171,10 @@
   .route-detail-design-hero-controls { width: min(100% - 30px, 620px); margin: -7px auto 18px; padding: 10px; gap: 7px; }
   .route-detail-design-hero-controls h2 { font-size: 18px; }
   .route-detail-redesign .route-detail-design-hero-controls .route-direction-tabs button { gap: 5px; min-height: 36px; padding: 7px 3px; font-size: 12px; }
-  .route-detail-design-endpoints { gap: 8px; padding: 8px 10px; }
-  .route-detail-design-endpoints > div:last-child { padding-left: 10px; }
-  .route-detail-design-endpoints strong { font-size: 14px; }
   .route-detail-redesign .route-vehicle-picker { margin-top: 10px; }
   .route-detail-redesign .route-direction-tabs { padding: 8px 8px 3px; }
   .route-detail-redesign .route-direction-tabs button { flex: 1; min-width: 0; gap: 4px; padding: 8px 3px; font-size: 11px; }
   .route-detail-redesign .route-direction-tabs button svg { width: 15px; height: 15px; }
-  .route-detail-redesign .route-direction-switch { display: flex; flex-direction: column; gap: 0; padding: 0 8px 8px; }
-  .route-detail-redesign .route-direction-switch button { width: 100%; min-height: 39px; justify-content: flex-start; padding: 8px 15px; border-radius: 5px; font-size: 12px; }
-  .route-detail-redesign .route-direction-switch button + button { margin-top: 3px; }
   .route-detail-design-journey { padding-top: 24px; }
   .route-detail-design-section-heading { display: block; }
   .route-detail-design-section-heading h2 { font-size: 22px; }
