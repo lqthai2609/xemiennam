@@ -1,5 +1,13 @@
 # Gocar Core
 
+## 0.17.5 — Inline price editing
+
+- Adds the authenticated `admin/routes/{id}/pricing` endpoint for existing published Pricing V2 rows.
+- Session `canEditPricing` requires a logged-in WordPress administrator with `manage_options`.
+- Price updates through inline editing, the existing direct-apply/draft approval flow and standard REST pricing meta are denied to other roles.
+- Fixed/contact changes retain the exact route, direction, vehicle and package, preserve other rows and row-specific conditions, and use existing before/after audit and cache invalidation.
+- The frontend must be released with this plugin version to enable the inline editor. Existing authenticated sessions receive the new permission on the next private session check.
+
 WordPress-side foundation for Alo Đặt Xe contracts and controlled migrations.
 
 ## Day 6 scope

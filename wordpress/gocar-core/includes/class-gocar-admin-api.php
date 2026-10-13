@@ -57,6 +57,7 @@ final class Gocar_Admin_API {
     public static function boot(): void {
         add_action( 'init', array( self::class, 'register_private_post_types' ), 30 );
         add_action( 'rest_api_init', array( self::class, 'register_routes' ) );
+        add_filter( 'map_meta_cap', array( self::class, 'protect_pricing_meta' ), 99, 4 );
     }
 
     public static function register_private_post_types(): void {
@@ -138,6 +139,17 @@ final class Gocar_Admin_API {
 
         register_rest_route(
             self::REST_NAMESPACE,
+            '/admin/routes/(?P<id>\d+)/pricing',
+            array(
+                'methods'             => array( WP_REST_Server::READABLE, WP_REST_Server::CREATABLE ),
+                'callback'            => array( self::class, 'inline_pricing' ),
+                'permission_callback' => array( self::class, 'can_edit_pricing' ),
+                'args'                => array( 'id' => array( 'sanitize_callback' => 'absint' ) ),
+            )
+        );
+
+        register_rest_route(
+            self::REST_NAMESPACE,
             '/admin/apply',
             array(
                 'methods'             => WP_REST_Server::CREATABLE,
@@ -187,6 +199,26 @@ final class Gocar_Admin_API {
         return current_user_can( 'publish_posts' );
     }
 
+    /** Pricing writes require a logged-in administrator, not an editor/author. */
+    public static function can_edit_pricing(): bool {
+        $user = wp_get_current_user();
+        return (int) $user->ID > 0
+            && in_array( 'administrator', (array) $user->roles, true )
+            && current_user_can( 'manage_options' );
+    }
+
+    /** Also close the standard WP REST meta-write path for non-admin accounts. */
+    public static function protect_pricing_meta( array $caps, string $cap, int $user_id, array $args ): array {
+        if ( ! in_array( $cap, array( 'edit_post_meta', 'add_post_meta', 'delete_post_meta' ), true )
+            || ! in_array( $args[1] ?? '', array( 'pricing_packages_v2', 'pricing_model_version', 'pricing_by_vehicle' ), true )
+        ) return $caps;
+        $post = get_post( absint( $args[0] ?? 0 ) );
+        if ( ! $post || 'route' !== $post->post_type ) return $caps;
+        $user = get_userdata( $user_id );
+        if ( ! $user || ! in_array( 'administrator', (array) $user->roles, true ) || ! user_can( $user, 'manage_options' ) ) return array( 'do_not_allow' );
+        return $caps;
+    }
+
     /** Shared hard gates for private operational inventory; meta cannot unlock them. */
     public static function operational_route_blocked( int $id, int $from, int $to ): bool {
         $pair = min( $from, $to ) . ':' . max( $from, $to );
@@ -200,6 +232,7 @@ final class Gocar_Admin_API {
                 'id'         => (int) $user->ID,
                 'name'       => sanitize_text_field( $user->display_name ?: $user->user_login ),
                 'canPublish' => self::can_publish(),
+                'canEditPricing' => self::can_edit_pricing(),
                 'contract'   => self::CONTRACT_VERSION,
             )
         );
@@ -234,6 +267,53 @@ final class Gocar_Admin_API {
         return rest_ensure_response( array_map( array( self::class, 'route_response' ), $posts ) );
     }
 
+    /** Read the current row/version before editing; save through the existing audit flow. */
+    public static function inline_pricing( WP_REST_Request $request ) {
+        if ( ! self::can_edit_pricing() ) {
+            return self::error( 'pricing_forbidden', 'Chỉ quản trị viên đã đăng nhập được sửa giá.', 403 );
+        }
+        $route_id = absint( $request['id'] );
+        $post = get_post( $route_id );
+        if ( ! $post || 'route' !== $post->post_type || 'publish' !== $post->post_status ) {
+            return self::error( 'route_not_found', 'Không tìm thấy tuyến đang công khai.', 404 );
+        }
+        if ( self::is_blocked_route( $route_id ) || ! current_user_can( 'edit_post', $route_id ) ) {
+            return self::error( 'route_locked', 'Tuyến đang bị khóa hoặc tài khoản không có quyền sửa.', 403 );
+        }
+        if ( 'GET' === $request->get_method() ) return rest_ensure_response( self::route_response( $post ) );
+
+        $raw = $request->get_json_params();
+        if ( ! is_array( $raw )
+            || ! in_array( $raw['pricingDirection'] ?? '', array( 'outbound', 'inbound' ), true )
+            || ! in_array( $raw['priceMode'] ?? '', array( 'fixed', 'contact' ), true )
+            || ! is_string( $raw['packageKey'] ?? null )
+            || ! preg_match( '/^[a-z0-9_-]+$/', $raw['packageKey'] )
+            || ! is_numeric( $raw['vehicleId'] ?? null )
+            || (float) $raw['vehicleId'] !== (float) absint( $raw['vehicleId'] )
+            || ( 'fixed' === $raw['priceMode'] && ( ! is_int( $raw['priceAmount'] ?? null ) || $raw['priceAmount'] <= 0 || $raw['priceAmount'] > self::MAX_PRICE ) )
+        ) {
+            return self::error( 'pricing_invalid', 'Nhập số tiền nguyên dương hoặc chọn Liên hệ báo giá.', 422 );
+        }
+        $payload = self::sanitize_payload( array_merge( $raw, array( 'operation' => 'update_pricing', 'routeId' => $route_id ) ) );
+        $rows = get_post_meta( $route_id, 'pricing_packages_v2', true );
+        $matches = array_filter( is_array( $rows ) ? $rows : array(), static function ( $row ) use ( $payload ) {
+            return is_array( $row )
+                && ( $row['direction'] ?? 'outbound' ) === $payload['pricingDirection']
+                && absint( $row['vehicle_id'] ?? 0 ) === $payload['vehicleId']
+                && ( $row['package_key'] ?? '' ) === $payload['packageKey'];
+        } );
+        if ( 2 !== absint( get_post_meta( $route_id, 'pricing_model_version', true ) )
+            || 1 !== count( $matches )
+            || ! in_array( reset( $matches )['pricing_mode'] ?? '', array( 'fixed', 'contact' ), true )
+        ) {
+            return self::error( 'pricing_unavailable', 'Tổ hợp giá không còn khả dụng; hãy tải lại trang.', 409 );
+        }
+        $apply_request = new WP_REST_Request( 'POST' );
+        $apply_request->set_body( wp_json_encode( $payload ) );
+        $apply_request->set_header( 'content-type', 'application/json' );
+        return self::direct_apply( $apply_request );
+    }
+
     public static function save_draft( WP_REST_Request $request ) {
         $params = $request->get_json_params();
         $params = is_array( $params ) ? $params : array();
@@ -251,6 +331,9 @@ final class Gocar_Admin_API {
         }
 
         $payload = self::sanitize_payload( $params['payload'] ?? $params );
+        if ( 'update_pricing' === ( $payload['operation'] ?? '' ) && ! self::can_edit_pricing() ) {
+            return self::error( 'pricing_forbidden', 'Chỉ quản trị viên được sửa giá.', 403 );
+        }
         $operation = $payload['operation'] ?? '';
         if ( ! in_array( $operation, array( 'create_route', 'update_pricing', 'archive_route' ), true ) ) {
             return self::error( 'operation_invalid', 'Thao tác không hợp lệ.', 422 );
@@ -386,6 +469,9 @@ final class Gocar_Admin_API {
     /** Apply a validated mutation immediately for the authenticated publisher. */
     public static function direct_apply( WP_REST_Request $request ) {
         $payload = self::sanitize_payload( $request->get_json_params() );
+        if ( 'update_pricing' === ( $payload['operation'] ?? '' ) && ! self::can_edit_pricing() ) {
+            return self::error( 'pricing_forbidden', 'Chỉ quản trị viên được sửa giá.', 403 );
+        }
         if ( ! in_array( $payload['operation'] ?? '', array( 'create_route', 'update_pricing', 'delete_route' ), true ) ) {
             return self::error( 'operation_invalid', 'Thao tác ghi trực tiếp không hợp lệ.', 422 );
         }
@@ -485,6 +571,9 @@ final class Gocar_Admin_API {
         }
 
         $row = self::decode_post_json( $audit );
+        if ( in_array( $row['operation'] ?? '', array( 'update_pricing', 'create_route', 'rollback' ), true ) && ! self::can_edit_pricing() ) {
+            return self::error( 'pricing_forbidden', 'Chỉ quản trị viên được khôi phục giá.', 403 );
+        }
         $route_id = absint( $row['routeId'] ?? 0 );
         $current = self::snapshot_route( $route_id );
         if ( self::snapshot_version( $current ) !== self::snapshot_version( $row['after'] ?? array() ) ) {
@@ -584,6 +673,7 @@ final class Gocar_Admin_API {
         }
 
         if ( in_array( $operation, array( 'create_route', 'update_pricing' ), true ) ) {
+            if ( 'update_pricing' === $operation && ! self::can_edit_pricing() ) $errors[] = 'Chỉ quản trị viên được sửa giá.';
             $vehicle_id = absint( $payload['vehicleId'] ?? 0 );
             if ( ! self::valid_post( $vehicle_id, 'vehicle' ) ) $errors[] = 'Loại xe không tồn tại hoặc chưa được xuất bản.';
             if ( empty( $payload['packageKey'] ) ) $errors[] = 'Gói chuyến không hợp lệ.';
@@ -651,7 +741,9 @@ final class Gocar_Admin_API {
                     absint( $row['vehicle_id'] ?? 0 ) === $replacement['vehicle_id'] &&
                     sanitize_key( $row['package_key'] ?? '' ) === $replacement['package_key']
                 ) {
-                    $rows[ $index ] = $replacement;
+                    // Preserve row-specific conditions/labels while removing stale amounts.
+                    unset( $row['price'], $row['contact_text'] );
+                    $rows[ $index ] = array_merge( $row, $replacement );
                     $matched = true;
                     break;
                 }
@@ -659,6 +751,8 @@ final class Gocar_Admin_API {
             if ( ! $matched ) $rows[] = $replacement;
             update_post_meta( $route_id, 'pricing_model_version', 2 );
             update_post_meta( $route_id, 'pricing_packages_v2', $rows );
+            // Update the existing route's modification date and CMS sync hooks too.
+            wp_update_post( array( 'ID' => $route_id ) );
         } elseif ( 'archive_route' === $operation ) {
             update_post_meta( $route_id, 'outbound_enabled', false );
             update_post_meta( $route_id, 'inbound_enabled', false );

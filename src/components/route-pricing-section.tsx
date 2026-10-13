@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, MapPin, UsersRound } from "lucide-react";
 
+import { InlinePriceEditor, PricingEditProvider } from "@/components/inline-price-editor";
 import { Button } from "@/components/ui/button";
 import { PromotionPrice } from "@/components/promotion-price";
 import { MediaPhoto } from "@/components/media-photo";
@@ -71,7 +72,7 @@ const vehicleCards = [
 
 const packageLabels: Record<JourneyPackage, string> = { oneWay: "Một chiều", roundTrip: "Khứ hồi", twoDays: "2 ngày 1 đêm", threeDays: "3 ngày 2 đêm" };
 
-export function RoutePricingSection({ route, direction, onDirectionChange, journey, onJourneyChange, vehicleImageByType = {}, prelaunch = false, redesign = false, hero }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; journey: JourneyPackage; onJourneyChange: (journey: JourneyPackage) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean; redesign?: boolean; hero?: ReactNode }) {
+function RoutePricingContent({ route, direction, onDirectionChange, journey, onJourneyChange, vehicleImageByType = {}, prelaunch = false, redesign = false, hero }: { route: Route; direction: RoutePricingDirectionKey; onDirectionChange: (direction: RoutePricingDirectionKey) => void; journey: JourneyPackage; onJourneyChange: (journey: JourneyPackage) => void; vehicleImageByType?: Record<string, string>; prelaunch?: boolean; redesign?: boolean; hero?: ReactNode }) {
   const [showAllVehicles, setShowAllVehicles] = useState(false);
   const pricing = route.pricingV2;
   const activeDirection = pricing?.[direction]?.enabled ? direction : pricing?.outbound.enabled ? "outbound" : "inbound";
@@ -134,7 +135,7 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
       const image = vehicleImageByType[pkg.vehicleType] || vehicle.fallback;
       const vehicleHref = routeJourneyHref(routeComboHref(route, vehicleTypeSlug(pkg.vehicleType)), activeDirection, pkg.packageKey);
       const price = fixed ? pkg.priceLabel || `${pkg.price!.toLocaleString("vi-VN")} đ` : undefined;
-      const priceBlock = <div className="route-vehicle-price" data-pricing-mode={prelaunch ? "prelaunch" : fixed ? "fixed" : "contact"}>{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : pkg.promotionView ? <><PromotionPrice view={pkg.promotionView} /><span>{packageLabels[selectedPackage]} / chuyến</span></> : fixed ? <><small>Giá chỉ</small><strong>{price}</strong><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><strong>Liên hệ báo giá</strong><span>Xác nhận theo lịch thực tế</span></>}</div>;
+      const priceBlock = <div className="route-vehicle-price" data-pricing-mode={prelaunch ? "prelaunch" : fixed ? "fixed" : "contact"}>{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : pkg.promotionView ? <><InlinePriceEditor key={`${route.id}:${pkg.direction}:${pkg.vehicleId}:${pkg.packageKey}`} routeId={route.id} row={pkg} routeLabel={displayRoute}><PromotionPrice view={pkg.promotionView} /></InlinePriceEditor><span>{packageLabels[selectedPackage]} / chuyến</span></> : fixed ? <><small>Giá chỉ</small><InlinePriceEditor key={`${route.id}:${pkg.direction}:${pkg.vehicleId}:${pkg.packageKey}`} routeId={route.id} row={pkg} routeLabel={displayRoute}><strong>{price}</strong></InlinePriceEditor><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><InlinePriceEditor key={`${route.id}:${pkg.direction}:${pkg.vehicleId}:${pkg.packageKey}`} routeId={route.id} row={pkg} routeLabel={displayRoute}><strong>Liên hệ báo giá</strong></InlinePriceEditor><span>Xác nhận theo lịch thực tế</span></>}</div>;
       return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
         {redesign && <header className="route-vehicle-heading"><h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>{vehicle.popular && <span className="route-vehicle-popular">Được đặt nhiều nhất</span>}</header>}
         <div className="route-vehicle-image"><Link href={vehicleHref} aria-label={`Xem tuyến ${displayRoute} bằng ${vehicle.type}`}><img src={image} alt={`Mẫu xe tham khảo ${vehicle.type.toLowerCase()}`} loading="lazy" /></Link>{!redesign && vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>
@@ -158,6 +159,10 @@ export function RoutePricingSection({ route, direction, onDirectionChange, journ
     </section>
     <div className="route-detail-design-main"><section className="route-detail-design-pricing" aria-label="Chọn gói và xe cho tuyến"><div id="pricing">{picker}</div></section></div>
   </> : <>{picker}</>;
+}
+
+export function RoutePricingSection(props: ComponentProps<typeof RoutePricingContent> & { previewViewer?: "admin" | "guest" }) {
+  return <PricingEditProvider key={props.previewViewer} enabled={!props.prelaunch} previewViewer={props.previewViewer}><RoutePricingContent {...props} /></PricingEditProvider>;
 }
 
 export default RoutePricingSection;
