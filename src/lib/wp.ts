@@ -21,11 +21,30 @@ export const REVALIDATE_SECONDS = Number.isFinite(configuredRevalidate) && confi
   : 300;
 
 export const WP_CACHE_TAG = "alo-wp-v2";
+export const WP_ROUTE_CACHE_TAG = `${WP_CACHE_TAG}:route`;
+export const WP_ROUTE_LIST_CACHE_TAG = `${WP_ROUTE_CACHE_TAG}:list`;
+
+/** WordPress slugs are at most 200 characters; retain a safe broad fallback. */
+export function wpRouteSlugCacheTag(slug: string): string {
+  return slug.length <= 200 ? `${WP_ROUTE_CACHE_TAG}:slug:${slug}` : WP_ROUTE_CACHE_TAG;
+}
 
 /** List, detail, pagination and embedded terms share the same resource tag. */
 export function wpCacheTags(path: string): string[] {
   const resource = path.split(/[/?]/).filter(Boolean)[0];
-  return resource ? [WP_CACHE_TAG, `${WP_CACHE_TAG}:${resource}`] : [WP_CACHE_TAG];
+  const tags = resource ? [WP_CACHE_TAG, `${WP_CACHE_TAG}:${resource}`] : [WP_CACHE_TAG];
+  if (resource === "route") {
+    const url = new URL(path, "https://cache-key.invalid");
+    const slugs = url.searchParams.getAll("slug");
+    // Current public detail requests use one slug. Collections and any ambiguous
+    // query keep the list tag so price-bearing lists cannot silently go stale.
+    if (url.pathname === "/route" && slugs.length === 1 && slugs[0] && !slugs[0].includes(",")) {
+      tags.push(wpRouteSlugCacheTag(slugs[0]));
+    } else {
+      tags.push(WP_ROUTE_LIST_CACHE_TAG);
+    }
+  }
+  return tags;
 }
 
 export async function wpFetch<T>(
@@ -42,7 +61,9 @@ export async function wpFetch<T>(
         headers: {
           Accept: "application/json",
           // Replace untagged pre-Day41 entries with a fresh cache identity on rollout.
-          "X-Alo-Dat-Xe-Cache-Version": "2",
+          // Route-only migration ensures persistent entries acquire the new
+          // list/detail tags. Other WordPress resources retain their cache keys.
+          "X-Alo-Dat-Xe-Cache-Version": path.split(/[/?]/).filter(Boolean)[0] === "route" ? "3" : "2",
           ...(attempt > 0 ? { "X-Alo-Dat-Xe-Retry": "1" } : {}),
         },
       });

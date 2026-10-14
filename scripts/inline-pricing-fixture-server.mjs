@@ -31,6 +31,7 @@ http.createServer(async(req,res) => {
     return json(res,{id:"1001",locked:false,backendVersion:String(version),pricingRows:rows.map(row=>({direction:row.direction,vehicleId:String(row.vehicle_id),packageKey:row.package_key,mode:row.pricing_mode,price:row.price??null}))});
   }
   if(req.method !== "GET") return json(res,{message:"Fixture blocks unrelated writes."},405);
+  if(url.pathname === "/wp/v2/route/1001") return json(res,{ id: route.id, slug: route.slug });
   if(url.pathname === "/wp/v2/route") return json(res,url.searchParams.has("slug") && url.searchParams.get("slug") !== route.slug ? [] : [route]);
   if(url.pathname === "/wp/v2/vehicle") return json(res,vehicles);
   if(url.pathname === "/wp/v2/location") return json(res,locations);

@@ -12,7 +12,7 @@ const origin="http://localhost:4388";
 const cookie=role=>`alo_admin_session=synthetic-${role}; alo_admin_csrf=synthetic-csrf`;
 try {
   child(["scripts/inline-pricing-fixture-server.mjs"]);
-  child(["node_modules/next/dist/bin/next","dev","--webpack","--hostname","127.0.0.1","--port","4388"],{WP_API_BASE_URL:"http://127.0.0.1:4399/wp/v2",GOCAR_ENABLE_MOCK_FALLBACK:"false",VERCEL_ENV:"preview"});
+  child(["node_modules/next/dist/bin/next",...(process.env.PRICING_TEST_PRODUCTION === "true" ? ["start"] : ["dev","--webpack"]),"--hostname","127.0.0.1","--port","4388"],{WP_API_BASE_URL:"http://127.0.0.1:4399/wp/v2",GOCAR_ENABLE_MOCK_FALLBACK:"false",VERCEL_ENV:"preview"});
   for(let i=0;i<60;i++) { if(logs.includes("Ready in") && logs.includes("SYNTHETIC inline-pricing transport ready"))break; await new Promise(resolve=>setTimeout(resolve,500)); if(i===59) throw new Error(logs); }
   const page=await fetch(`${origin}/bang-gia`);
   assert.equal(page.status,200);
@@ -20,6 +20,8 @@ try {
   assert.match(html,/pricing-table/); assert.match(html,/synthetic-route/);
   assert.doesNotMatch(html,/aria-label="Sửa giá/);
   assert.match(html,/Liên hệ báo giá/);
+  const detailUrl = `${origin}/tuyen-duong/ba-ria-vung-tau/synthetic-route`;
+  const beforeDetail = await fetch(detailUrl); assert.equal(beforeDetail.status,200); await beforeDetail.text();
   const endpoint=`${origin}/api/admin/routes/1001/pricing`;
   for(const [role,status] of [[null,401],["guest",401],["editor",403]]) {
     const headers=role?{Cookie:cookie(role)}:{};
@@ -42,6 +44,8 @@ try {
   assert.equal(after.pricingRows.find(row=>row.vehicleId==="2001" && row.direction==="outbound" && row.packageKey==="one_way").price,1234000);
   assert.deepEqual(after.pricingRows.filter(row=>!(row.vehicleId==="2001" && row.direction==="outbound" && row.packageKey==="one_way")),current.pricingRows.filter(row=>!(row.vehicleId==="2001" && row.direction==="outbound" && row.packageKey==="one_way")));
   const refreshed=await (await fetch(`${origin}/bang-gia`)).text(); assert.match(refreshed,/1\.234K/);
+  const refreshedDetail = await fetch(detailUrl); assert.equal(refreshedDetail.status,200);
+  assert.match(await refreshedDetail.text(),/1\.234K/);
   const fixture=await (await fetch("http://127.0.0.1:4399/fixture/status")).json();assert.equal(fixture.writes.length,1);
   const demoPage=await fetch(`${origin}/quan-tri/xem-thu-gia`);assert.equal(demoPage.status,200);
   assert.match(await demoPage.text(),/GIÁ GIẢ ĐỊNH/);

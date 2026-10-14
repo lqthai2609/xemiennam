@@ -18,6 +18,7 @@ function wp_remote_retrieve_response_code($response) { return $response['code'];
 function wp_remote_retrieve_body($response) { return $response['body']; }
 function wp_next_scheduled($name, $args) { return false; }
 function wp_schedule_single_event($at, $name, $args) { global $events; $events[] = array($name, $args); }
+function current_user_can($capability) { global $administrator; return $administrator && 'manage_options' === $capability; }
 function check($condition, $message) { if (!$condition) { throw new RuntimeException($message); } }
 require __DIR__ . '/../wordpress/snippets/frontend-sync.php';
 $sync = 'Alo_Dat_Xe_Frontend_Sync_V2';
@@ -49,4 +50,44 @@ check($options['alo_dat_xe_frontend_sync_status']['route']['http'] === 401, 'Kee
 unset($options['alo_dat_xe_frontend_sync_secret']); $sync::send('route', 1);
 check($options['alo_dat_xe_frontend_sync_status']['route']['result'] === 'missing_secret', 'Never fallback to public secret');
 check(strpos(json_encode($options['alo_dat_xe_frontend_sync_status']), str_repeat('a',64)) === false, 'Receipt must never expose credential');
+
+// Only the authenticated inline-pricing REST route has a price-only contract.
+define('REST_REQUEST', true);
+$administrator = true;
+$GLOBALS['wp'] = (object) array('query_vars' => array('rest_route' => '/gocar/v1/admin/routes/41/pricing'));
+$_SERVER['REQUEST_METHOD'] = 'POST';
+$options['alo_dat_xe_frontend_sync_secret'] = str_repeat('a',64);
+$response = array('code' => 200, 'body' => '{"revalidated":true}');
+$posts[41] = (object) array('post_type' => 'route');
+$requests = array();
+$sync::post_saved(41, $posts[41]);
+$sync::meta_changed(1, 41, 'pricing_packages_v2', array());
+check(!$requests, 'Price callback waits for committed fields');
+$sync::flush();
+check(count($requests) === 1, 'Price post and metadata events are coalesced');
+$payload = json_decode($requests[0][1]['body'], true);
+check($payload['post_type'] === 'route' && $payload['pricing_route_id'] === 41, 'Price callback identifies only the server route ID');
+$sync::flush();
+check(count($requests) === 1, 'Flushed price callbacks are not repeated');
+
+$requests = $events = array();
+$response = array('code' => 503, 'body' => '{}');
+$sync::send('route', 1, 41);
+check($events[0][1] === array('route', 2, 41), 'Transient retry retains the exact price scope');
+$sync::send(...$events[0][1]);
+check(json_decode(end($requests)[1]['body'], true)['pricing_route_id'] === 41, 'Retried transport remains price-only');
+$response = array('code' => 200, 'body' => '{"revalidated":true}');
+
+foreach (array('/gocar/v1/admin/apply', '/gocar/v1/admin/routes/42/pricing', '/wp/v2/route/41') as $rest_route) {
+    $requests = array(); $GLOBALS['wp']->query_vars['rest_route'] = $rest_route;
+    $sync::post_saved(41, $posts[41]); $sync::flush();
+    check(!isset(json_decode($requests[0][1]['body'], true)['pricing_route_id']), 'Unrelated, structural and editor saves keep legacy scope');
+}
+$GLOBALS['wp']->query_vars['rest_route'] = '/gocar/v1/admin/routes/41/pricing';
+$requests = array(); $administrator = false;
+$sync::post_saved(41, $posts[41]); $sync::flush();
+check(!isset(json_decode($requests[0][1]['body'], true)['pricing_route_id']), 'Non-administrator cannot select price-only scope');
+$administrator = true; $requests = array();
+$sync::post_saved(41, $posts[41]); $sync::term_changed(1, 1, 'province'); $sync::flush();
+check(count($requests) === 1 && json_decode($requests[0][1]['body'], true)['post_type'] === 'taxonomy', 'Actual taxonomy changes retain the broader safe scope');
 echo "Frontend sync PHP behavior: PASS\n";

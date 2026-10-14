@@ -7,11 +7,13 @@ const source = await readFile(new URL("../src/app/api/revalidate/route.ts", impo
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
   .replace('import { revalidatePath, revalidateTag } from "next/cache";', 'const { revalidatePath, revalidateTag } = globalThis.__wpRevalidateMocks;')
   .replace('import { NextResponse } from "next/server";', 'const NextResponse = { json: Response.json };')
-  .replace('import { WP_CACHE_TAG } from "@/lib/wp";', 'const WP_CACHE_TAG = "alo-wp-v2";');
+  .replace('import { WP_CACHE_TAG } from "@/lib/wp";', 'const WP_CACHE_TAG = "alo-wp-v2";')
+  .replace('import { revalidateRoutePricing } from "@/lib/route-pricing-cache";', 'const { revalidateRoutePricing } = globalThis.__wpRevalidateMocks;');
 const calls = [];
 globalThis.__wpRevalidateMocks = {
   revalidateTag: (...args) => calls.push(["tag", ...args]),
   revalidatePath: (...args) => calls.push(["path", ...args]),
+  revalidateRoutePricing: async id => calls.push(["pricing", id]),
 };
 const { POST, GET } = await import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`);
 const secret = "test-only-private-key-for-webhook-fixture";
@@ -54,6 +56,20 @@ test("location and embedded taxonomy edits invalidate their consumers", async t 
   assert.ok(calls.some(c => c[0] === "tag" && c[1] === "alo-wp-v2:location"));
   await send(t, { secret, post_type: "taxonomy" });
   assert.ok(calls.some(c => c[0] === "tag" && c[1] === "alo-wp-v2"));
+});
+test("price-only callback delegates to the same scoped action and never purges path patterns", async t => {
+  const response = await send(t, { secret, post_type: "route", pricing_route_id: 41 });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).scope, "route_pricing");
+  assert.deepEqual(calls, [["pricing", "41"]]);
+});
+test("invalid price-only callback identifiers and types cannot select a scope", async t => {
+  for (const pricing_route_id of [null, "41", 0, -1, 1.5, 9007199254740992]) {
+    assert.equal((await send(t, { secret, post_type: "route", pricing_route_id })).status, 400);
+    assert.deepEqual(calls, []);
+  }
+  assert.equal((await send(t, { secret, post_type: "post", pricing_route_id: 41 })).status, 400);
+  assert.deepEqual(calls, []);
 });
 test("invalid JSON returns 400 and GET remains read-only", async () => {
   calls.length = 0;

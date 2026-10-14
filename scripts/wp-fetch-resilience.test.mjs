@@ -26,8 +26,8 @@ test("transient 500 retries once and returns real CMS data with ISR intact", asy
   const calls = stubFetch(t, [new Response("", { status: 500 }), Response.json([{ id: 41 }])]);
   assert.deepEqual(await wpFetch("/route", 3600), [{ id: 41 }]);
   assert.equal(calls.length, 2);
-  assert.deepEqual(calls[0][1].next, { revalidate: 3600, tags: ["alo-wp-v2", "alo-wp-v2:route"] });
-  assert.deepEqual(calls[1][1].next, { revalidate: 3600, tags: ["alo-wp-v2", "alo-wp-v2:route"] });
+  assert.deepEqual(calls[0][1].next, { revalidate: 3600, tags: ["alo-wp-v2", "alo-wp-v2:route", "alo-wp-v2:route:list"] });
+  assert.deepEqual(calls[1][1].next, { revalidate: 3600, tags: ["alo-wp-v2", "alo-wp-v2:route", "alo-wp-v2:route:list"] });
   assert.notDeepEqual(calls[0][1].headers, calls[1][1].headers);
 });
 
@@ -69,7 +69,7 @@ test("malformed success responses throw instead of becoming empty data", async (
   await assert.rejects(wpFetch("/route"), /không phải JSON hợp lệ/);
 });
 
- test("resource tags join list, detail and pagination without query-dependent tags", () => {
+ test("legacy resource tags remain available while price-bearing route collections share a list tag", () => {
   assert.deepEqual(wpCacheTags("/route?per_page=100"), wpCacheTags("/route/41"));
   assert.deepEqual(wpCacheTags("/location?page=2"), ["alo-wp-v2", "alo-wp-v2:location"]);
   assert.equal(REVALIDATE_SECONDS, 300);
