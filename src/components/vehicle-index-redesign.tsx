@@ -13,8 +13,9 @@ import { SiteFooter } from "@/components/site-footer";
 import { navItems } from "@/data/nav";
 import { canonicalLocationKey } from "@/lib/location-search";
 import { getPublicLocationLabel } from "@/lib/public-location-label";
+import { packageMatches } from "@/lib/route-package-capability";
 import { getZaloChatLink } from "@/lib/zalo";
-import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL } from "@/lib/site-config";
 import { routeComboHref, routeHref, type Route } from "@/types/route";
 import type { VehicleCategory } from "@/types/vehicle-category";
 
@@ -30,8 +31,6 @@ const otherCopy: Record<string, { audience: string; description: string }> = {
 };
 
 function VehicleImage({ category, primary = false }: { category: VehicleCategory; primary?: boolean }) {
-  const imageClass = featuredCopy[category.slug]?.imageClass;
-  if (imageClass) return <span className={`vehicle-index-image vehicle-index-trio ${imageClass}`} role="img" aria-label={`Minh họa ${category.type}`} />;
   return <span className="vehicle-index-image">{category.imageUrl ? <Image src={category.imageUrl} alt={`Minh họa ${category.type}`} fill sizes={primary ? "(max-width: 700px) 50vw, 33vw" : "(max-width: 700px) 40vw, 33vw"} /> : <CarFront size={46} />}</span>;
 }
 
@@ -61,13 +60,15 @@ function RouteFinder({ routes, categories }: { routes: Route[]; categories: Vehi
     if (route) {
       const direction = matching ? "outbound" : "inbound";
       const vehicleType = categories.find((item) => item.slug === vehicle)?.type;
-      const hasVehicle = vehicleType && (route.pricingV2
-        ? route.pricingV2.outbound.enabled && route.pricingV2.outbound.packages.some((item) => item.vehicleType === vehicleType && (item.mode === "contact" || (item.mode === "fixed" && typeof item.price === "number" && item.price > 0)))
-        : route.pricingByVehicle.some((item) => item.vehicleType === vehicleType));
+      const packageRow = route.pricingV2?.[direction].packages.find((item) => item.vehicleType === vehicleType && item.mode !== "disabled" && packageMatches(item, tripType === "round_trip" ? "roundTrip" : "oneWay"));
+      if (vehicleType && !packageRow) { setError("Chưa có gói phù hợp cho xe " + vehicleType + " ở chiều này. Vui lòng đổi hành trình hoặc gói; hệ thống không chuyển loại xe."); return; }
+      const hasVehicle = Boolean(vehicleType && packageRow);
       const href = hasVehicle ? routeComboHref(route, vehicle) : routeHref(route);
       const params = new URLSearchParams({ direction, trip_type: tripType, source: "vehicle_catalog" });
+      if (packageRow) params.set("package", packageRow.packageKey);
       router.push(`${href}?${params.toString()}#pricing`);
     } else {
+      if (vehicle) { setError("Chưa có tuyến phù hợp với xe đã chọn. Vui lòng đổi hành trình hoặc liên hệ tư vấn."); return; }
       const params = new URLSearchParams({ from, to });
       router.push(`/tuyen-duong?${params.toString()}#route-catalog`);
     }
@@ -107,6 +108,6 @@ export function VehicleIndexRedesign({ categories, routes }: { categories: Vehic
       <section className="vehicle-index-faq" aria-labelledby="vehicle-index-faq-title"><div className="vehicle-index-heading"><h2 id="vehicle-index-faq-title">Câu hỏi thường gặp</h2><p>Một số thắc mắc phổ biến khi chọn loại xe.</p></div><div>{questions.map((item, index) => <details key={item.question} open={openQuestion === index} onClick={(event) => { event.preventDefault(); setOpenQuestion(openQuestion === index ? null : index); }}><summary><CircleHelp size={19} />{item.question}</summary><p>{item.answer}</p></details>)}</div></section>
       <section className="vehicle-index-contact" aria-labelledby="vehicle-index-contact-title"><div><h2 id="vehicle-index-contact-title">Chưa biết chọn xe nào?</h2><p>Liên hệ ngay để được tư vấn loại xe phù hợp với hành trình của bạn.</p></div><div><a href={zaloLink} target="_blank" rel="noopener noreferrer" className="home-button home-button-primary zalo-cta"><ZaloIcon /> Nhắn Zalo để được tư vấn</a><a href={`tel:${SITE_HOTLINE_TEL}`} className="home-button home-button-outline"><Phone size={18} /> Gọi {SITE_HOTLINE}</a></div></section>
     </div>
-    <SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "KHÁM PHÁ", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến đường", href: "/tuyen-duong" }, { label: "Điểm đến", href: "/diem-den" }, { label: "Loại xe", href: "/loai-xe" }] }, { title: "HỖ TRỢ", links: [{ label: "Câu hỏi thường gặp", href: "/loai-xe#vehicle-index-faq-title" }, { label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
+    <SiteFooter />
   </main>;
 }

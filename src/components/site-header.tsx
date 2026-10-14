@@ -118,7 +118,7 @@ export function SiteHeader({ menuItems, hotline, hotlineHref, ctaLabel, ctaHref,
         >
           <Home />
         </Link>
-        {menuItems.map((item) => (
+        {menuItems.filter((item) => item.href !== "/").map((item) => (
           <Link
             key={`mobile-${item.label}`}
             href={item.href}

@@ -7,6 +7,7 @@ import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, ChevronDown, MapPin
 import { InlinePriceEditor, PricingEditProvider } from "@/components/inline-price-editor";
 import { Button } from "@/components/ui/button";
 import { PromotionPrice } from "@/components/promotion-price";
+import { JourneyPackageTabs } from "@/components/journey-package-tabs";
 import { MediaPhoto } from "@/components/media-photo";
 import { RouteBookingActions, type AirportBookingContext } from "@/components/route-booking-actions";
 import { getPublicLocationLabel, getPublicRouteLabel } from "@/lib/public-location-label";
@@ -118,9 +119,9 @@ function RoutePricingContent({ route, direction, onDirectionChange, journey, onJ
         <ChevronDown size={18} aria-hidden="true" />
       </span>
     </label>
-    {availableJourneys.length > 0 ? <div className="route-direction-tabs" role="tablist" aria-label="Chọn loại hành trình">
-      {[{ key: "oneWay" as const, label: "Một chiều", icon: ArrowRightLeft }, { key: "roundTrip" as const, label: "Khứ hồi", icon: ArrowRightLeft }, { key: "twoDays" as const, label: "Theo ngày", icon: CalendarDays }].filter((tab) => availableJourneys.includes(tab.key)).map((tab) => <button key={tab.key} type="button" role="tab" aria-selected={visibleJourney === tab.key} className={visibleJourney === tab.key ? "is-selected" : ""} onClick={() => onJourneyChange(tab.key)}>{redesign && <tab.icon size={17} aria-hidden="true" />}{tab.label}</button>)}
-    </div> : <p>Chưa có gói được xác nhận cho chiều này. Liên hệ để được tư vấn.</p>}
+    {availableJourneys.length > 0 ? <JourneyPackageTabs label="Chọn loại hành trình" value={visibleJourney} onChange={(key) => onJourneyChange(key as JourneyPackage)}
+      items={[{ key: "oneWay" as const, label: "Một chiều", icon: ArrowRightLeft }, { key: "roundTrip" as const, label: "Khứ hồi", icon: ArrowRightLeft }, { key: "twoDays" as const, label: "Theo ngày", icon: CalendarDays }].filter((tab) => availableJourneys.includes(tab.key)).map((tab) => ({ key: tab.key, label: tab.label, icon: redesign ? <tab.icon size={17} aria-hidden="true" /> : undefined }))} />
+      : <p>Chưa có gói được xác nhận cho chiều này. Liên hệ để được tư vấn.</p>}
     {visibleJourney === "twoDays" && <div className="route-day-tabs" role="group" aria-label="Chọn gói theo ngày">{(["twoDays", "threeDays"] as const).filter((key) => available.includes(key)).map((key) => <button key={key} type="button" aria-pressed={visibleDays === key} className={visibleDays === key ? "is-selected" : ""} onClick={() => onJourneyChange(key)}>{packageLabels[key]}</button>)}</div>}
   </>;
   const picker = !pricing ? legacy : <div className="route-vehicle-picker">

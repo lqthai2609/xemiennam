@@ -123,6 +123,7 @@ type BookingPricingContext = {
   pricingMode?: RoutePricingMode;
   airportContext?: AirportBookingContext;
   airportName?: string;
+  initialTrip?: { pickupAddress?: string; dropoffAddress?: string; departureAt?: string };
 };
 
 function QuickBookingDialog({
@@ -137,6 +138,7 @@ function QuickBookingDialog({
   pricingMode = "fixed",
   airportContext,
   airportName,
+  initialTrip,
   onClose,
 }: {
   route: string;
@@ -150,6 +152,7 @@ function QuickBookingDialog({
   pricingMode?: Exclude<RoutePricingMode, "disabled">;
   airportContext?: AirportBookingContext;
   airportName?: string;
+  initialTrip?: BookingPricingContext["initialTrip"];
   onClose: () => void;
 }) {
   const schema = useMemo(() => buildQuickBookingSchema(airportContext), [airportContext]);
@@ -161,8 +164,9 @@ function QuickBookingDialog({
   } = useForm<QuickBookingData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      pickupAddress: "",
-      dropoffAddress: "",
+      pickupAddress: initialTrip?.pickupAddress ?? "",
+      dropoffAddress: initialTrip?.dropoffAddress ?? "",
+      departureAt: initialTrip?.departureAt ?? "",
       passengerCount: "",
       luggageCount: "",
       requestNameplate: false,
@@ -543,6 +547,7 @@ export function RouteBookingActions({
   airportContext,
   airportName,
   compactLabels = false,
+  initialTrip,
 }: {
   route: string;
   vehicleType: string;
@@ -602,6 +607,7 @@ export function RouteBookingActions({
           pricingMode={pricingMode}
           airportContext={airportContext}
           airportName={airportName}
+          initialTrip={initialTrip}
           onClose={closeDialog}
         />
       )}

@@ -2,6 +2,7 @@ import type { NavItem } from "@/components/site-header";
 
 /** Menu chung cho tất cả các trang công khai. */
 export const navItems: NavItem[] = [
+  { label: "Trang chủ", href: "/" },
   { label: "Tuyến đường", href: "/tuyen-duong" },
   { label: "Điểm đến", href: "/diem-den", children: [
     { label: "Bà Rịa - Vũng Tàu", href: "/tuyen-duong/ba-ria-vung-tau" },
@@ -23,6 +24,5 @@ export const navItems: NavItem[] = [
   { label: "Bảng giá", href: "/bang-gia" },
   { label: "Khuyến mãi", href: "/khuyen-mai" },
   { label: "Blog", href: "/blog" },
-  { label: "Đánh giá", href: "/danh-gia" },
   { label: "Liên hệ", href: "/lien-he" },
 ];

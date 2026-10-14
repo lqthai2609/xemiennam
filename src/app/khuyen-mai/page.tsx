@@ -3,6 +3,8 @@ import { connection } from "next/server";
 import { fetchPromotions } from "@/lib/api/promotions";
 import { PromotionsPage } from "@/components/promotions-page";
 import { buildPageMetadata } from "@/lib/metadata";
+import "../home-redesign.css";
+import "./promotions-redesign.css";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Khuyến mãi thuê xe | Alo Đặt Xe",

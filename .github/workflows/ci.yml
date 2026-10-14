@@ -58,6 +58,10 @@ jobs:
           check_forbidden "Legacy hotline URI found in src" "19006789"
 
           for pattern in "0898 400 800" "0898400800" "+84898400800"; do
+            check_forbidden "Retired hotline found in src" "$pattern"
+          done
+
+          for pattern in "0559 633 457" "0559633457" "+84559633457"; do
             if grep -RniF --exclude="site-config.ts" -- "$pattern" src; then
               echo "::error::Hotline literal must be centralized in src/lib/site-config.ts: $pattern"
               fail=1
@@ -183,7 +187,7 @@ jobs:
         run: npm run test:booking-search
 
       - name: Route direction and package navigation
-        run: node --test scripts/route-journey-selection.test.mjs
+        run: node --test scripts/route-journey-selection.test.mjs scripts/vehicle-category-journey.test.mjs
 
       - name: Sitemap lastmod date validity
         run: node --test scripts/sitemap-lastmod.test.mjs
