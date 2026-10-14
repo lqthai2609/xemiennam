@@ -6,7 +6,12 @@ import { airportConsultationLabel } from "@/lib/airport-consultation";
 import { validateFlightFields } from "@/lib/airport-timing";
 import { RequiredMark } from "@/components/required-mark";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+import { promotionCodeInput } from "@/lib/booking-promotion-code";
+import { rememberBookingReceipt } from "@/lib/booking-receipt";
+import "./quick-booking-dialog.css";
 import { ZaloIcon } from "@/components/zalo-icon";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ClipboardList, LoaderCircle, Phone, Plane, X } from "lucide-react";
@@ -29,6 +34,7 @@ export type AirportBookingContext = "pickup_from_airport" | "dropoff_at_airport"
 function buildQuickBookingSchema(airportContext?: AirportBookingContext) {
   return z
     .object({
+      promotionCode: promotionCodeInput.optional(),
       fullName: z.string().trim().min(1, "Vui lòng nhập họ tên."),
       phone: z.string().trim().regex(phoneRegex, "Số điện thoại chưa đúng định dạng Việt Nam."),
       pickupAddress: z
@@ -160,10 +166,13 @@ function QuickBookingDialog({
     register,
     handleSubmit,
     control,
+    trigger,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<QuickBookingData>({
     resolver: zodResolver(schema),
     defaultValues: {
+      fullName: "", phone: "", promotionCode: "",
       pickupAddress: initialTrip?.pickupAddress ?? "",
       dropoffAddress: initialTrip?.dropoffAddress ?? "",
       departureAt: initialTrip?.departureAt ?? "",
@@ -172,6 +181,28 @@ function QuickBookingDialog({
       requestNameplate: false,
     },
   });
+
+  const router = useRouter();
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [confirmed, setConfirmed] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
+  const [sending, setSending] = useState(false);
+  const busy = isSubmitting || sending;
+  const sendingRef = useRef(false);
+  const panelRef = useRef<HTMLElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const titleId = useId();
+  const contactFields = ["fullName", "phone", "promotionCode", "pickupNote"] as const;
+  const tripFields = ["pickupAddress", "dropoffAddress", "departureAt", "flightNumber", "landingAt", "airportTerminal", "flightKind", "flightAt", "airportArrivalAt", "passengerCount", "luggageCount", "requestNameplate", "nameplateName"] as const;
+  const stepTitles = ["Xác nhận chuyến đi", "Thông tin liên hệ", "Kiểm tra trước khi gửi"];
+
+  function goToStep(next: 1 | 2 | 3) { if (sendingRef.current) return; setConfirmed(false); setSubmissionError(""); setStep(next); }
+  async function nextStep() {
+    const valid = await trigger(step === 1 ? [...tripFields] : [...contactFields], { shouldFocus: true });
+    if (valid) goToStep(step === 1 ? 2 : 3);
+  }
 
   const visibleRoute = displayRoute || route;
   const isQuote = pricingMode === "contact";
@@ -187,14 +218,51 @@ function QuickBookingDialog({
   const fixedAirportName = airportName || "Sân bay theo tuyến đã chọn";
 
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+    const body = document.body;
+    const previousOverflow = body.style.overflow;
+    const previousModal = body.getAttribute("data-booking-dialog-open");
+    body.style.overflow = "hidden";
+    body.setAttribute("data-booking-dialog-open", "true");
+    const siblings = Array.from(body.children).filter((element) => element !== overlayRef.current && element instanceof HTMLElement) as HTMLElement[];
+    const inertStates = siblings.map((element) => element.inert);
+    siblings.forEach((element) => { element.inert = true; });
+    const viewport = window.visualViewport;
+    function fitViewport() {
+      overlayRef.current?.style.setProperty("--booking-viewport-height", `${viewport?.height ?? window.innerHeight}px`);
+      overlayRef.current?.style.setProperty("--booking-viewport-top", `${viewport?.offsetTop ?? 0}px`);
+    }
+    fitViewport();
+    viewport?.addEventListener("resize", fitViewport);
+    viewport?.addEventListener("scroll", fitViewport);
+    window.addEventListener("resize", fitViewport);
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") { if (!sendingRef.current) onClose(); return; }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]') ?? []).filter((element) => element.offsetParent !== null);
+      const first = focusable[0], last = focusable.at(-1);
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === headingRef.current)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || !panelRef.current?.contains(document.activeElement))) { event.preventDefault(); first?.focus(); }
     }
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", fitViewport);
+      viewport?.removeEventListener("resize", fitViewport);
+      viewport?.removeEventListener("scroll", fitViewport);
+      siblings.forEach((element, index) => { element.inert = inertStates[index]; });
+      body.style.overflow = previousOverflow;
+      if (previousModal === null) body.removeAttribute("data-booking-dialog-open");
+      else body.setAttribute("data-booking-dialog-open", previousModal);
+    };
   }, [onClose]);
 
+  useEffect(() => { headingRef.current?.focus(); if (bodyRef.current) bodyRef.current.scrollTop = 0; }, [step]);
+
   async function submitForm(data: QuickBookingData) {
+    if (step !== 3 || !confirmed || sendingRef.current) return;
+    sendingRef.current = true;
+    setSending(true);
+    setSubmissionError("");
     try {
       const schedulingValue =
         airportContext === "pickup_from_airport"
@@ -236,6 +304,7 @@ function QuickBookingDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(data.promotionCode ? { promotionCode: data.promotionCode } : {}),
           fullName: data.fullName,
           phone: data.phone,
           route,
@@ -246,6 +315,7 @@ function QuickBookingDialog({
           pickupNote: data.pickupNote || "",
           intermediateStops: [],
           departureDate,
+          departureTime: schedulingValue?.split("T")[1]?.slice(0, 5) || "",
           direction,
           packageKey,
           pricingMode,
@@ -257,77 +327,37 @@ function QuickBookingDialog({
       toast.success(isQuote ? "Đã nhận yêu cầu báo giá" : "Đã nhận thông tin đặt xe", {
         description: `Mã yêu cầu #${leadId}. ${SITE_NAME} sẽ liên hệ với bạn trong thời gian sớm nhất.`,
       });
+      rememberBookingReceipt(leadId, isQuote ? "quote" : "booking");
       onClose();
+      router.push("/cam-on");
     } catch {
+      setSubmissionError("Gửi yêu cầu chưa thành công. Thông tin vẫn được giữ để bạn thử lại.");
       toast.error("Gửi thông tin chưa thành công", {
         description: `Vui lòng thử lại hoặc gọi trực tiếp cho ${SITE_NAME}.`,
       });
-    }
+    } finally { sendingRef.current = false; setSending(false); }
   }
 
-  return (
-    <div className="quick-booking-overlay" role="presentation" onClick={onClose}>
-      <div
-        className="quick-booking-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${isQuote ? "Yêu cầu báo giá" : "Đặt xe"} ${vehicleType}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button type="button" className="quick-booking-close" onClick={onClose} aria-label="Đóng">
-          <X size={18} />
-        </button>
-        <p className="section-label">{isQuote ? "YÊU CẦU BÁO GIÁ" : "ĐẶT XE ONLINE"}</p>
-        <h3>Xác nhận thông tin chuyến.</h3>
-        <div className="quick-booking-summary">
-          <div>
-            Tuyến: <strong>{visibleRoute}</strong>
-          </div>
-          <div>
-            Loại xe: <strong>{vehicleType}</strong>
-          </div>
-          {packageLabel && (
-            <div>
-              Gói: <strong>{packageLabel}</strong>
-            </div>
-          )}
-          {airportName && (
-            <div>
-              Sân bay: <strong>{airportName}</strong>
-            </div>
-          )}
-          <div>
-            Giá: <strong>{visiblePrice}</strong>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit(submitForm)} className="quick-booking-form" noValidate>
-          <fieldset className="flex flex-col gap-3">
-            <legend className="mb-2 text-sm font-semibold text-foreground">Thông tin khách hàng</legend>
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span className="form-field-label">
-                Họ tên <RequiredMark /></span>
-              <input
-                {...register("fullName")}
-                aria-invalid={!!errors.fullName}
-                placeholder="Nguyễn Văn A"
-                className="form-control"
-                autoFocus
-              />
-              <FieldError message={errors.fullName?.message} />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
-              <span className="form-field-label">
-                Số điện thoại <RequiredMark /></span>
-              <input
-                {...register("phone")}
-                aria-invalid={!!errors.phone}
-                inputMode="tel"
-                placeholder="0901 234 567"
-                className="form-control"
-              />
-              <FieldError message={errors.phone?.message} />
-            </label>
+  const values = getValues();
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div ref={overlayRef} className="home-redesign quick-booking-overlay quick-booking-wizard" role="presentation" onClick={() => { if (!sendingRef.current) onClose(); }}>
+      <section ref={panelRef} className="quick-booking-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} onClick={(event) => event.stopPropagation()}>
+        <header className="quick-booking-header">
+          <p className="section-label">{isQuote ? "YÊU CẦU BÁO GIÁ" : "ĐẶT XE ONLINE"} · BƯỚC {step}/3</p>
+          <h2 id={titleId} ref={headingRef} tabIndex={-1}>{stepTitles[step - 1]}</h2>
+          <button type="button" className="quick-booking-close" disabled={busy} onClick={onClose} aria-label="Đóng"><X size={18} /></button>
+          <ol className="quick-booking-progress" aria-label="Các bước đặt xe">{["Chuyến đi", "Liên hệ", "Xác nhận"].map((label, index) => <li key={label} aria-current={step === index + 1 ? "step" : undefined} className={step >= index + 1 ? "is-active" : ""}><span>{index + 1}</span>{label}</li>)}</ol>
+        </header>
+        <form className="quick-booking-form" noValidate onSubmit={(event) => {
+          if (step !== 3) { event.preventDefault(); void nextStep(); return; }
+          void handleSubmit(submitForm, (invalid) => { goToStep(contactFields.some((field) => invalid[field]) ? 2 : 1); })(event);
+        }}>
+          <div ref={bodyRef} className="quick-booking-body">
+            {step === 1 && <>
+              <dl className="quick-booking-summary"><div><dt>Chiều đi</dt><dd>{visibleRoute}</dd></div><div><dt>Gói dịch vụ</dt><dd>{packageLabel || "Cần tư vấn"}</dd></div><div><dt>Loại xe</dt><dd>{vehicleType}</dd></div><div><dt>{isQuote ? "Giá" : "Giá tham khảo"}</dt><dd>{visiblePrice}</dd></div></dl>
+              <p className="quick-booking-price-note">Lịch xe và chi phí cuối cùng được xác nhận theo thông tin chuyến trước khi nhận chuyến.</p>
+              <fieldset className="flex flex-col gap-3"><legend className="mb-2 text-sm font-semibold">Điểm đón và điểm trả</legend>
             {airportContext === "pickup_from_airport" ? (
               <div className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
                 <span>Điểm đón</span>
@@ -358,13 +388,7 @@ function QuickBookingDialog({
                 <FieldError message={errors.dropoffAddress?.message} />
               </label>
             )}
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
-              <span>Lưu ý điểm đón</span>
-              <textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />
-              <FieldError message={errors.pickupNote?.message} />
-            </label>
-          </fieldset>
-
+              </fieldset>
           {!airportContext && (
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
               <span>
@@ -523,14 +547,75 @@ function QuickBookingDialog({
             <label className="flex flex-col gap-1.5 text-sm font-semibold"><span>Loại chuyến bay theo vé</span><select {...register("flightKind")} aria-label="Loại chuyến bay theo vé" className="form-control"><option value="">Chưa rõ, cần tư vấn</option><option value="domestic">Nội địa</option><option value="international">Quốc tế</option></select></label>
             <AirportPickupAdvice key={JSON.stringify([timingInput, pickupAddress, dropoffAddress, vehicleType, packageKey])} input={timingInput} />
           </fieldset>}
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
-            {isSubmitting ? "Đang gửi..." : isQuote ? "Gửi yêu cầu báo giá" : "Xác nhận đặt xe"}
-          </Button>
+            </>}
+            {step === 2 && <fieldset className="flex flex-col gap-3"><legend className="sr-only">Thông tin liên hệ</legend>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span className="form-field-label">
+                Họ tên <RequiredMark /></span>
+              <input
+                {...register("fullName")}
+                aria-invalid={!!errors.fullName}
+                placeholder="Nguyễn Văn A"
+                className="form-control"
+              />
+              <FieldError message={errors.fullName?.message} />
+            </label>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
+              <span className="form-field-label">
+                Số điện thoại <RequiredMark /></span>
+              <input
+                {...register("phone")}
+                aria-invalid={!!errors.phone}
+                inputMode="tel"
+                placeholder="0901 234 567"
+                className="form-control"
+              />
+              <FieldError message={errors.phone?.message} />
+            </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold"><span>Mã khuyến mãi (nếu có)</span><input {...register("promotionCode")} maxLength={64} aria-invalid={!!errors.promotionCode} aria-describedby="booking-code-note" className="form-control" autoComplete="off" placeholder="Nhập mã bạn đang có" /><FieldError message={errors.promotionCode?.message} /></label>
+              <p id="booking-code-note" className="quick-booking-price-note">Mã sẽ được gửi cùng yêu cầu để kiểm tra điều kiện áp dụng. Giá hiện tại chưa giảm theo mã này.</p>
+              <details className="quick-booking-extra"><summary>Bổ sung hướng dẫn đón khách</summary>
+            <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
+              <span>Lưu ý điểm đón</span>
+              <textarea {...register("pickupNote")} maxLength={300} aria-invalid={!!errors.pickupNote} className="form-control min-h-24 resize-y" placeholder="Cổng, sảnh, mốc nhận diện hoặc hướng dẫn đón..." />
+              <FieldError message={errors.pickupNote?.message} />
+            </label>
+              </details>
+            </fieldset>}
+            {step === 3 && <>
+              <div className="quick-booking-review-heading"><h3>Hành khách</h3><button type="button" disabled={busy} onClick={() => goToStep(2)}>Sửa liên hệ</button></div>
+              <dl className="quick-booking-summary"><div><dt>Họ tên</dt><dd>{values.fullName}</dd></div><div><dt>Số điện thoại</dt><dd>{values.phone}</dd></div></dl>
+              <div className="quick-booking-review-heading"><h3>Chuyến đi</h3><button type="button" disabled={busy} onClick={() => goToStep(1)}>Sửa chuyến đi</button></div>
+              <dl className="quick-booking-summary">
+                <div><dt>Chiều đi</dt><dd>{visibleRoute}</dd></div><div><dt>Gói dịch vụ</dt><dd>{packageLabel || "Cần tư vấn"}</dd></div><div><dt>Loại xe</dt><dd>{vehicleType}</dd></div><div><dt>{isQuote ? "Giá" : "Giá tham khảo"}</dt><dd>{visiblePrice}</dd></div>
+                <div><dt>Điểm đón</dt><dd>{airportContext === "pickup_from_airport" ? fixedAirportName : values.pickupAddress}</dd></div>
+                <div><dt>Điểm trả</dt><dd>{airportContext === "dropoff_at_airport" ? fixedAirportName : values.dropoffAddress}</dd></div>
+                <div><dt>{airportContext === "pickup_from_airport" ? "Giờ hạ cánh" : airportContext === "dropoff_at_airport" ? "Giờ bay" : "Ngày giờ đi"}</dt><dd>{(airportContext === "pickup_from_airport" ? values.landingAt : airportContext === "dropoff_at_airport" ? values.flightAt : values.departureAt) ? formatDateTimeLabel((airportContext === "pickup_from_airport" ? values.landingAt : airportContext === "dropoff_at_airport" ? values.flightAt : values.departureAt)!) : "Cần tư vấn"}</dd></div>
+                {values.airportArrivalAt && <div><dt>Có mặt tại sân bay</dt><dd>{formatDateTimeLabel(values.airportArrivalAt)}</dd></div>}
+                {values.flightNumber && <div><dt>Chuyến bay</dt><dd>{values.flightNumber}</dd></div>}
+                {values.airportTerminal && <div><dt>Nhà ga</dt><dd>{values.airportTerminal}</dd></div>}
+                {values.flightKind && <div><dt>Loại chuyến bay</dt><dd>{values.flightKind === "domestic" ? "Nội địa" : "Quốc tế"}</dd></div>}
+                {values.passengerCount && <div><dt>Số khách</dt><dd>{values.passengerCount}</dd></div>}
+                {values.luggageCount && <div><dt>Hành lý</dt><dd>{values.luggageCount} kiện</dd></div>}
+                {values.requestNameplate && <div><dt>Hỏi về bảng tên</dt><dd>{values.nameplateName} · Cần xác nhận</dd></div>}
+                {values.pickupNote && <div><dt>Lưu ý điểm đón</dt><dd>{values.pickupNote}</dd></div>}
+                {values.promotionCode && <div><dt>Mã khuyến mãi</dt><dd>{values.promotionCode} · Chờ kiểm tra</dd></div>}
+              </dl>
+              <p className="quick-booking-price-note">{values.promotionCode && "Mã khuyến mãi chưa được áp dụng vào giá trên. "}Alo Đặt Xe xác nhận lịch xe và chi phí cuối cùng trước khi nhận chuyến.</p>
+              <label className="quick-booking-agreement"><input type="checkbox" disabled={busy} checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} /> Tôi đã kiểm tra thông tin trên.</label>
+            </>}
+            {submissionError && <p className="quick-booking-error" role="alert">{submissionError}</p>}
+          </div>
+          <footer className="quick-booking-controls">
+            {step > 1 && <Button type="button" variant="outline" disabled={busy} onClick={() => goToStep(step === 3 ? 2 : 1)}>Quay lại</Button>}
+            <Button type="submit" disabled={busy || (step === 3 && !confirmed)}>
+              {busy && <LoaderCircle data-icon="inline-start" className="animate-spin" />}
+              {busy ? "Đang gửi..." : step < 3 ? "Tiếp tục" : isQuote ? "Đồng ý gửi yêu cầu báo giá" : "Đồng ý đặt xe"}
+            </Button>
+          </footer>
         </form>
-      </div>
-    </div>
+      </section>
+    </div>, document.body,
   );
 }
 

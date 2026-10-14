@@ -186,6 +186,9 @@ jobs:
       - name: Booking search regression guard
         run: npm run test:booking-search
 
+      - name: Booking acknowledgement and optional promotion code
+        run: node --test scripts/booking-receipt.test.mjs
+
       - name: Route direction and package navigation
         run: node --test scripts/route-journey-selection.test.mjs scripts/vehicle-category-journey.test.mjs
 
