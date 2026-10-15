@@ -45,3 +45,37 @@ Trang chủ giữ nguyên lượng JavaScript về thực chất (chênh 12 byte
 Nghiệm thu các thay đổi giao diện còn lại trên PR #150 trước phát hành. Khi có production release được cho phép, đo lại mobile LCP/INP/CLS bằng nội dung và backend thực tế; đối chiếu dữ liệu người dùng thực tế. Không tạo Preview mới chỉ để chạy phép đo cục bộ.
 
 Nguồn hướng dẫn: tài liệu Next.js 16.3.4 cài trong `node_modules/next/dist/docs/` (Lazy Loading và Image); https://nextjs.org/docs/app/guides/lazy-loading; https://web.dev/articles/vitals.
+
+## Lượt tối ưu tiếp theo — khung tìm chuyến và thư viện xe
+
+Baseline riêng: `15c30ca31cece2e86c3cb8ef159f5d8ffb20350f`. Không cộng mức giảm của lượt này với mức giảm JavaScript ở lượt trước: đây là hai loại dữ liệu và hai baseline khác nhau.
+
+### Thay đổi
+
+- Thêm server wrapper `booking-search.tsx` cho trang chủ, trang dịch vụ và hero dùng chung. Chỉ gửi ID/slug, hai đầu tuyến, loại địa điểm, trạng thái chiều và lựa chọn xe mà khung tìm chuyến thực sự cần. Các trang đang hiển thị bảng giá vẫn nhận nguồn giá đầy đủ hiện hành.
+- Projection không tính giá, không lọc bỏ tuyến hoặc kích hoạt chiều. Dòng gói trùng đúng loại xe và mode được gộp trong dữ liệu tìm chuyến; mọi gói vẫn nằm trong nguồn giá ở trang đích. Xe legacy, fixed/contact/disabled, chiều bị tắt và thứ tự lựa chọn được giữ đúng.
+- Lập Map tra cứu một lần theo danh sách tuyến trong `useMemo`; mỗi lần nhập chỉ chuẩn hóa hai địa điểm rồi tra cứu. Giữ quy tắc bản ghi đầu tiên khớp, outbound trước inbound trong mỗi bản ghi, alias Sài Gòn/HCM/quận và không cho hai đầu cùng nhóm giá. Không dùng cache toàn cục, không giữ địa chỉ khách trong bộ nhớ dùng chung.
+- Gom media ID của thư viện xe, loại trùng khi đọc và chia tối đa 100 ID mỗi yêu cầu. Khôi phục đúng thứ tự và ảnh lặp của từng xe; ảnh thiếu vẫn thiếu và lỗi máy chủ vẫn được báo lỗi. Đọc từng xe giữ phương thức cũ; freshFacts vẫn yêu cầu facts mới như trước. Không đổi TTL, tag hoặc phạm vi làm mới cache.
+
+### Số liệu và giới hạn
+
+| Hạng mục | Trước lượt này | Sau lượt này | Phạm vi đo |
+| --- | ---: | ---: | --- |
+| JSON tuyến gửi cho khung tìm chuyến | 762.675 byte | 93.363 byte | Snapshot công khai đã lưu của 82 tuyến, giảm 87,76% trước nén |
+| HTML/RSC trang chủ | 86.264 byte | 74.109 byte | Build cục bộ cùng fixture hai tuyến, giảm 14,09% trước nén |
+| HTML/RSC trang dịch vụ | 76.609 byte | 64.409 byte | Cùng fixture, giảm 15,93% trước nén |
+| Yêu cầu media cho danh sách sáu xe | 6 | 1 | Cùng sáu media ID; ảnh và thứ tự giữ nguyên |
+
+- 492 trường hợp tra cứu từ snapshot 82 tuyến (hai chiều, alias và hành trình chưa khớp) trả cùng route ID/direction với phép quét cũ. Kiểm tra giữ nguyên lựa chọn, không nghiệm thu lại giá kinh doanh.
+- Microbenchmark 4.920 lượt tra cứu: khoảng 1.468 ms → 33 ms trên máy thử, không gồm dựng index. Đây là phép đo thuật toán, không phải INP hoặc mức tăng tốc của toàn website; index phải được dựng lại khi danh sách tuyến thay đổi.
+- Một GET chỉ đọc tới WordPress thật với sáu media ID: HTTP 200, đủ sáu bản ghi, URL ảnh khớp snapshot; không ghi dữ liệu CMS. Không khẳng định mức giảm ISR Writes chỉ từ số yêu cầu ít hơn.
+- JavaScript trang chủ gần như không đổi (600.867 → 600.936 byte sau giải nén); trang tuyến/xe/bảng giá giữ kết quả lượt trước. Không tuyên bố giảm thêm JavaScript 88%.
+- Chưa đo người dùng thực tế, backend thật và mạng điện thoại cho toàn bộ trang sau phát hành; chưa chốt LCP/INP/CLS production.
+
+### Kiểm tra
+
+- TypeScript, production build cục bộ: PASS. ESLint không có lỗi, tám cảnh báo hiện có.
+- 85 kiểm tra về projection/index/gallery, dữ liệu xe, lựa chọn chuyến, địa chỉ, điểm dừng và luồng xe: PASS. Hai bộ kiểm tra mới được đưa vào CI.
+- Mười kịch bản trình duyệt: viewport 390 và 1440; HCM → Vũng Tàu với xe/khứ hồi đúng URL, đảo chiều về với ngày/xe tùy chọn, chặn Sài Gòn → Thủ Đức cùng nhóm giá, hành trình chưa có tuyến vẫn mở báo giá, chiều đón sân bay giữ query: PASS. Không gửi yêu cầu đặt xe thật.
+- Bốn trang × hai viewport không có lỗi JavaScript/tràn ngang. Hai luồng wizard 390×500 và 1440×900 vẫn đạt (giữ dữ liệu khi lỗi, gửi lại cùng key/payload, chặn hai lần, xác nhận và trang cảm ơn giả lập).
+- Giá, nội dung kinh doanh, thương hiệu, header/footer, miền/DNS, cờ thương mại và Long Thành PRELAUNCH không sửa; không tạo Preview/deployment Vercel hoặc merge production.

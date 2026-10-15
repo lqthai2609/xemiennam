@@ -113,6 +113,7 @@ jobs:
       - name: Day 46 confirmed vehicle facts and loading suggestions
         run: |
           npm run test:vehicle-facts
+          node --test scripts/vehicle-gallery.test.mjs
           npm run test:vehicle-facts:php
           php -l wordpress/gocar-core/includes/class-gocar-vehicle-facts.php
 
@@ -184,7 +185,9 @@ jobs:
         run: npm run test:seo-url-map
 
       - name: Booking search regression guard
-        run: npm run test:booking-search
+        run: |
+          npm run test:booking-search
+          node --test scripts/booking-search-performance.test.mjs
 
       - name: Booking acknowledgement and optional promotion code
         run: node --test scripts/booking-receipt.test.mjs

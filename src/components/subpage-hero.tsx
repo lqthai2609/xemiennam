@@ -1,4 +1,4 @@
-import { RouteFinderForm } from "@/components/route-finder-form";
+import { RouteFinderForm } from "@/components/booking-search";
 import Image from "next/image";
 import type { Route } from "@/types/route";
 

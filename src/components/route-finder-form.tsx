@@ -22,9 +22,10 @@ import {
   routeComboHref,
   routeHref,
   vehicleTypeSlug,
-  type Route,
   type RoutePricingDirectionKey,
 } from "@/types/route";
+
+import { buildBookingJourneyIndex, findBookingJourney, type BookingSearchRoute as Route } from "@/lib/booking-search-routes";
 
 type BookingSearchVariant = "default" | "hero" | "compact";
 export type BookingSearchMode = "standard" | "airport";
@@ -71,40 +72,6 @@ function tripTypeLabel(value: BookingTripType) {
 
 function airportDirectionLabel(value: AirportTransferDirection) {
   return value === "pickup" ? "Đón sân bay" : "Đi sân bay";
-}
-
-function supportsDirection(route: Route, direction: RoutePricingDirectionKey) {
-  if (!route.pricingV2) return direction === "outbound";
-  return route.pricingV2[direction].enabled;
-}
-
-function findJourney(routes: Route[], pickup: string, destination: string): BookingJourney | undefined {
-  const normalizedPickup = canonicalLocationKey(pickup);
-  const normalizedDestination = canonicalLocationKey(destination);
-  if (!normalizedPickup || !normalizedDestination || normalizedPickup === normalizedDestination) return undefined;
-
-  for (const route of routes) {
-    const routeFrom = canonicalLocationKey(route.from);
-    const routeTo = canonicalLocationKey(route.to);
-
-    if (
-      routeFrom === normalizedPickup &&
-      routeTo === normalizedDestination &&
-      supportsDirection(route, "outbound")
-    ) {
-      return { route, direction: "outbound" };
-    }
-
-    if (
-      routeTo === normalizedPickup &&
-      routeFrom === normalizedDestination &&
-      supportsDirection(route, "inbound")
-    ) {
-      return { route, direction: "inbound" };
-    }
-  }
-
-  return undefined;
 }
 
 function uniqueLocations(routes: Route[]) {
@@ -541,7 +508,8 @@ export function BookingSearchForm({
     ? airportDirection === "pickup" ? airportPlace : selectedAirport
     : standardDestination;
 
-  const journey = useMemo(() => findJourney(routes, pickup, destination), [routes, pickup, destination]);
+  const journeyIndex = useMemo(() => buildBookingJourneyIndex(routes), [routes]);
+  const journey = useMemo(() => findBookingJourney(journeyIndex, pickup, destination), [journeyIndex, pickup, destination]);
   const availableVehicleTypes = useMemo(
     () => (journey ? vehicleTypesForJourney(journey) : globalVehicleTypes),
     [globalVehicleTypes, journey],
