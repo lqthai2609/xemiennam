@@ -79,3 +79,42 @@ Baseline riêng: `15c30ca31cece2e86c3cb8ef159f5d8ffb20350f`. Không cộng mức
 - Mười kịch bản trình duyệt: viewport 390 và 1440; HCM → Vũng Tàu với xe/khứ hồi đúng URL, đảo chiều về với ngày/xe tùy chọn, chặn Sài Gòn → Thủ Đức cùng nhóm giá, hành trình chưa có tuyến vẫn mở báo giá, chiều đón sân bay giữ query: PASS. Không gửi yêu cầu đặt xe thật.
 - Bốn trang × hai viewport không có lỗi JavaScript/tràn ngang. Hai luồng wizard 390×500 và 1440×900 vẫn đạt (giữ dữ liệu khi lỗi, gửi lại cùng key/payload, chặn hai lần, xác nhận và trang cảm ơn giả lập).
 - Giá, nội dung kinh doanh, thương hiệu, header/footer, miền/DNS, cờ thương mại và Long Thành PRELAUNCH không sửa; không tạo Preview/deployment Vercel hoặc merge production.
+
+
+## Lượt tối ưu ảnh bảng giá và lịch tải logo cuối trang
+
+Baseline riêng: `53f0fcf2d747a0fa722e759ddb01bd1edc2e6aeb`. Không đổi nguồn giá, dữ liệu CMS, công thức giá, ISR, nội dung hoặc quy trình đặt xe.
+
+### Phát hiện và thay đổi
+
+- Hero `/bang-gia` tải ảnh nền CSS nguyên bản `home-coastal-fleet.webp` (178.196 byte). Chuyển đúng ảnh đó sang Next Image `fill`, `sizes=100vw`, `preload`. Giữ chiều cao 340/235 px, crop `center 55%` trên máy tính và `right center` trên điện thoại, nền dự phòng và lớp gradient cũ. Ảnh trang trí có alt rỗng và aria-hidden; không thêm ảnh hoặc thay thương hiệu.
+- Logo footer raw img chưa có loading policy nên React tự thêm preload vào head; ảnh 54.972 byte bắt đầu tải cùng ảnh hero dù footer ở xa. Thêm `loading=lazy`, `decoding=async`, giữ nguyên nguồn, kích thước nội tại và CSS. Không tạo thêm biến thể logo hoặc yêu cầu biến đổi ảnh cho logo. Trình duyệt vẫn có thể tải trước khi cuộn nếu footer đủ gần viewport, đúng cơ chế native lazy loading.
+- Dùng cơ chế Next Image đang có cho đúng một ảnh hero. Sau phát hành, cơ chế này có thể tạo các biến thể ảnh theo kích thước được yêu cầu và dùng tài nguyên Image Optimization; không tuyên bố thay đổi hoàn toàn không tốn tài nguyên hoặc đã giảm ISR Writes. Lượt làm việc này không tạo deployment.
+
+### Đo đối chiếu
+
+Next production build cục bộ với cùng fixture hai tuyến/ba xe/ba Location. Chromium 145, viewport 390×844, DPR 1, CPU giảm tốc 4 lần; CDP network 200.000 byte/giây tải xuống (1,6 Mbps), 93.750 byte/giây tải lên, latency 150 ms. Mỗi trang ba browser context mới trước/sau; server loopback và cache biến thể ảnh cục bộ, không mô phỏng toàn bộ độ trễ backend/CDN. Chặn API booking thật, request ngoài và router prefetch như các lượt trước. PerformanceObserver ghi LCP và tổng layout shift không do input; chưa phải phép đo field hoặc đầy đủ INP/session-window CLS.
+
+| Chỉ số | Trước | Sau |
+| --- | ---: | ---: |
+| Ảnh hero bảng giá truyền tới viewport thử | 178.196 byte | 25.194 byte, biến thể 640 px |
+| LCP bảng giá, trung vị 3 lượt | 3.600 ms | 1.300 ms |
+| LCP bảng giá, cả ba lượt | 3.608 / 3.596 / 3.600 ms | 1.344 / 1.232 / 1.300 ms |
+| Layout shift bảng giá, giá trị lớn nhất | 0,000227 | 0,000163 |
+| JavaScript ban đầu bảng giá, sau giải nén | 597.261 byte | 597.449 byte |
+
+Ảnh hero giảm khoảng 85,86% byte trong viewport/DPR thử, không phải tổng dung lượng trang. Biến thể màn hình lớn hoặc DPR cao có kích thước khác. Bảng giá tải ảnh từ head thay vì đợi CSS; LCP thử nghiệm giảm khoảng 64%, không suy ra phần trăm cho production. Logo footer không còn preload ở cả ba trang; trang chủ và xe 7 chỗ không tải logo trong cửa sổ đo, bảng giá ngắn vẫn tải logo từ khoảng 989–1.267 ms thay vì khoảng 170 ms trước sửa.
+
+Trang chủ không ghi nhận cải thiện LCP nhất quán: trung vị 1.324 → 1.492 ms, các lượt sau 1.540 / 1.492 / 1.316 ms. Xe 7 chỗ 1.140 → 1.112 ms. JavaScript hai trang giữ nguyên. Không tuyên bố tăng tốc hai trang này từ phép đo; chỉ xác nhận footer không còn cạnh tranh tải từ head. CPU dùng chung và thứ tự mạng có thể gây dao động. Chưa có dữ liệu CrUX/Search Console hoặc INP thực tế; chưa nghiệm thu Core Web Vitals production.
+
+### Kiểm tra hồi quy
+
+- Production build, TypeScript: PASS. ESLint: 0 lỗi, 8 cảnh báo có sẵn.
+- 13 kiểm tra hợp đồng footer, giá công khai và schema giá: PASS.
+- So sánh nguyên văn từng hàng giá và từng href ở ba gói Một chiều/Khứ hồi/Theo ngày, trên viewport 390 và 1440: giống baseline. Không điều chỉnh giá để phục vụ tối ưu.
+- Kiểm tra ảnh chụp trang bảng giá trên điện thoại/máy tính: giữ nội dung, header/footer chung, crop, gradient, kích thước hero và vị trí bộ lọc. Thay đổi chỉ là lịch tải và biến thể nén của ảnh hiện có.
+- Bốn trang × hai viewport: HTTP 200, không lỗi JavaScript hoặc tràn ngang.
+- Sáu kiểm tra ảnh trên ba trang × hai viewport ở DPR 2: footer không có preload, cuộn tới footer tải được ảnh và giải mã thành công; hero bảng giá tải đúng ảnh đáp ứng. Điện thoại chọn biến thể 828 px, máy tính 3840 px.
+- Hai luồng wizard 390×500 và 1440×900: PASS gồm xác nhận từng bước, dữ liệu/voucher, lỗi giữ thông tin, retry cùng key/payload, chặn bấm hai lần, redirect cảm ơn giả lập và không lưu PII trong biên nhận. Không tạo booking/email thật.
+
+Phần còn lại cần đo bằng dữ liệu thực sau phát hành được phép: tải khung tìm chuyến và độ phản hồi khi nhập/chọn trên thiết bị thật. Ảnh CSS fleet trang chủ vẫn tải sớm (64.882 byte trong phép đo); cần giữ đúng cách cắt ảnh ba xe nếu tối ưu tiếp, không thay vội để tránh đổi hình xe. Không tạo thêm deployment để đo trong lượt này.

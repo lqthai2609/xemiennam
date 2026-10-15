@@ -78,7 +78,10 @@ function BangGiaContent({ routes, lastModified, updatedOn }: { routes: Route[]; 
 
   return <main className="site-shell home-redesign pricing-redesign">
     <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zaloLink || "/lien-he"} homeDesign />
-    <section className="pricing-hero" aria-labelledby="pricing-title"><div className="pricing-width pricing-hero-inner"><p className="home-eyebrow">BẢNG GIÁ</p><h1 id="pricing-title">Bảng giá xe riêng<br />theo điểm đến</h1><p>Chọn tỉnh thành, tìm địa điểm và xem giá theo loại xe.</p></div></section>
+    <section className="pricing-hero" aria-labelledby="pricing-title">
+      <Image className="pricing-hero-photo" src="/images/home-coastal-fleet.webp" alt="" aria-hidden="true" fill sizes="100vw" preload />
+      <div className="pricing-width pricing-hero-inner"><p className="home-eyebrow">BẢNG GIÁ</p><h1 id="pricing-title">Bảng giá xe riêng<br />theo điểm đến</h1><p>Chọn tỉnh thành, tìm địa điểm và xem giá theo loại xe.</p></div>
+    </section>
 
     <div className="pricing-width pricing-main">
       <section className="pricing-filter" aria-label="Lọc bảng giá">
