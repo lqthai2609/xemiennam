@@ -92,7 +92,7 @@ test("deferred selector keeps loading logic on the server and is absent from boo
  const source=readFileSync(new URL('../src/components/vehicle-selector.tsx',import.meta.url),'utf8');
  assert.doesNotMatch(source,/assessVehicleFit|evaluateVehicleSuggestions|vehiclePassengerLabel/);
  assert.match(source,/fetch\("\/api\/vehicle-suggestions"/);
- for(const file of ['contact-booking-form.tsx','route-booking-actions.tsx']){
+ for(const file of ['contact-booking-form.tsx','route-booking-actions.tsx','quick-booking-dialog.tsx']){
   const form=readFileSync(new URL(`../src/components/${file}`,import.meta.url),'utf8');
   assert.doesNotMatch(form,/<VehicleSelector/);assert.doesNotMatch(form,/exceeds_confirmed_capacity|fits_confirmed_profile/);
  }

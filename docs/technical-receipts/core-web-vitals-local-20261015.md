@@ -36,6 +36,7 @@ Trang chủ giữ nguyên lượng JavaScript về thực chất (chênh 12 byte
 - TypeScript và production build cục bộ: PASS.
 - ESLint: không có lỗi; tám cảnh báo còn lại thuộc mã hiện có ngoài phạm vi.
 - 132 kiểm tra hợp đồng/hàm hiện có: PASS (giá public, Promotion Model, schema giá, tên địa điểm, luồng sân bay, voucher, biên nhận, gửi lại booking và phạm vi làm mới cache).
+- Các source guard về điểm đón/trả và điểm dừng đã chuyển sang đọc wizard thực tế sau khi tách tệp; guard VehicleSelector kiểm cả launcher và wizard. Các điều kiện bảo vệ không bị bỏ. Nhóm kiểm tra các bước CI còn lại chạy cục bộ: 128 lượt PASS (có giao với nhóm 132 ở trên, không cộng thành số kiểm tra độc lập).
 - Hai luồng trình duyệt trên 390×500 và 1440×900: mở lần đầu, CTA trong viewport, khóa nền, Escape và trả focus, validation từng bước, tóm tắt chiều–xe–giá/tên/điện thoại/voucher, chặn gửi trước xác nhận, phản hồi lỗi giữ dữ liệu, gửi lại cùng idempotency key và payload, chặn bấm gửi hai lần, chuyển `/cam-on` sau phản hồi giả lập hợp lệ, biên nhận phiên không chứa tên/điện thoại/voucher: PASS. Toàn bộ phản hồi booking được chặn và giả lập; không tạo booking/email thật.
 - Luồng booking/API và chính sách cache không sửa trong lượt tối ưu này. Cờ thương mại và Long Thành PRELAUNCH giữ nguyên.
 

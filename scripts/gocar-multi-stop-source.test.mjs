@@ -10,7 +10,7 @@ const bookingContract = await readFile(
 const sharedContract = await readFile(new URL("../src/lib/booking-stops.ts", import.meta.url), "utf8");
 const sharedFields = await readFile(new URL("../src/components/multi-stop-fields.tsx", import.meta.url), "utf8");
 const contactForm = await readFile(new URL("../src/components/contact-booking-form.tsx", import.meta.url), "utf8");
-const quickBooking = await readFile(new URL("../src/components/route-booking-actions.tsx", import.meta.url), "utf8");
+const quickBooking = await readFile(new URL("../src/components/quick-booking-dialog.tsx", import.meta.url), "utf8");
 const journeyQuote = await readFile(new URL("../src/components/route-finder-form.tsx", import.meta.url), "utf8");
 
 test("Day 33 caps intermediate stops and waiting time on both server contracts", () => {
