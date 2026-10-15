@@ -41,12 +41,13 @@ export function VehicleTypeDetailRedesign({ category, vehicles, routePrices, rou
     <div className="vehicle-page-width">
       <PublicBreadcrumbs items={[{ label: "Trang chủ", href: "/" }, { label: "Loại xe", href: "/loai-xe" }, { label: vehicleTitle }]} />
       <section className="vehicle-page-hero" aria-labelledby="vehicle-page-title">
-        <div><p className="home-eyebrow">XE RIÊNG CHO HÀNH TRÌNH CỦA BẠN</p><h1 id="vehicle-page-title">Thuê xe {category.type} có tài xế</h1><p className="vehicle-page-lead">{category.description}</p>
+        <div><p className="home-eyebrow">XE RIÊNG CHO HÀNH TRÌNH CỦA BẠN</p><h1 id="vehicle-page-title">Thuê xe {category.type} có tài xế</h1></div>
+        <div className="vehicle-page-hero-media">{heroImage ? <Image src={heroImage} alt={"Ảnh tham khảo " + vehicleTitle.toLowerCase()} fill sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1208px) calc(100vw - 48px), 1160px" preload /> : <div className="vehicle-page-no-photo"><CarFront size={64} /><span>Ảnh xe cần được xác nhận</span></div>}</div>
+        <div><p className="vehicle-page-lead">{category.description}</p>
           {confirmedCapacity.length > 0 && <div className="vehicle-page-confirmed">{confirmedCapacity.map((vehicle) => <span key={vehicle.id}><UsersRound size={16} />{vehicle.name}: {vehicleFactsDisplay(vehicle).passengers}</span>)}</div>}
           <VehiclePageActions />
           <p className="vehicle-page-caption">Mẫu xe thực tế và lịch phục vụ được xác nhận khi tư vấn.</p>
         </div>
-        <div className="vehicle-page-hero-media">{heroImage ? <Image src={heroImage} alt={"Ảnh tham khảo " + vehicleTitle.toLowerCase()} fill sizes="(max-width: 700px) 92vw, 46vw" preload /> : <div className="vehicle-page-no-photo"><CarFront size={64} /><span>Ảnh xe cần được xác nhận</span></div>}</div>
       </section>
       <VehicleJourneyPicker vehicleType={category.type} vehicleSlug={category.slug} routes={routes} />
       <section className="vehicle-page-section" id="vehicle-capacity" aria-labelledby="vehicle-capacity-title">

@@ -1,7 +1,7 @@
 .vehicle-page-width { width: min(1160px, calc(100% - 48px)); margin: auto; }
 .vehicle-page .public-breadcrumbs { padding-top: 24px; }
-.vehicle-page-hero { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 48px; padding: 34px 0 40px; }
-.vehicle-page-hero h1 { font-size: clamp(30px, 3.7vw, 48px); line-height: 1.18; margin: 14px 0 18px; letter-spacing: -.035em; }
+.vehicle-page-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 34px 0 40px; }
+.vehicle-page-hero h1 { font-size: clamp(30px, 3.7vw, 48px); line-height: 1.18; margin: 14px 0 0; letter-spacing: -.035em; }
 .vehicle-page-lead { max-width: 580px; color: var(--muted-foreground); font-size: 16px; line-height: 1.8; }
 .vehicle-page-hero-media { position: relative; min-height: 290px; border-radius: var(--radius-xl); overflow: hidden; background: var(--secondary); }
 .vehicle-page-hero-media img { object-fit: contain; padding: 18px; }
@@ -70,7 +70,6 @@
 .vehicle-page-final h2 { font-size: 28px; line-height: 1.4; margin: 12px 0; }
 .vehicle-page-final p { color: var(--muted-foreground); line-height: 1.8; }
 @media (max-width: 900px) {
-  .vehicle-page-hero { gap: 28px; }
   .vehicle-trip-fields { grid-template-columns: 1fr 1fr; }
   .vehicle-trip-result { grid-template-columns: 1fr; }
   .vehicle-page-route-table article { grid-template-columns: 1fr 1fr; }
