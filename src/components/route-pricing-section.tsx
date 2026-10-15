@@ -2,6 +2,7 @@
 
 import { useState, type ComponentProps, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ArrowRightLeft, BusFront, CalendarDays, ChevronDown, MapPin, UsersRound } from "lucide-react";
 
 import { InlinePriceEditor, PricingEditProvider } from "@/components/inline-price-editor";
@@ -144,7 +145,7 @@ function RoutePricingContent({ route, direction, onDirectionChange, journey, onJ
       const priceBlock = <div className="route-vehicle-price" data-pricing-mode={prelaunch ? "prelaunch" : fixed ? "fixed" : "contact"}>{prelaunch ? <><strong>Đang chuẩn bị</strong><span>Chưa nhận đặt chuyến</span></> : pkg.promotionView ? <><InlinePriceEditor key={`${route.id}:${pkg.direction}:${pkg.vehicleId}:${pkg.packageKey}`} routeId={route.id} row={pkg} routeLabel={displayRoute}><PromotionPrice view={pkg.promotionView} /></InlinePriceEditor><span>{packageLabels[selectedPackage]} / chuyến</span></> : fixed ? <><small>Giá chỉ</small><InlinePriceEditor key={`${route.id}:${pkg.direction}:${pkg.vehicleId}:${pkg.packageKey}`} routeId={route.id} row={pkg} routeLabel={displayRoute}><strong>{price}</strong></InlinePriceEditor><span>{packageLabels[selectedPackage]} / chuyến</span></> : <><InlinePriceEditor key={`${route.id}:${pkg.direction}:${pkg.vehicleId}:${pkg.packageKey}`} routeId={route.id} row={pkg} routeLabel={displayRoute}><strong>Liên hệ báo giá</strong></InlinePriceEditor><span>Xác nhận theo lịch thực tế</span></>}</div>;
       return <article className={`route-vehicle-card${vehicle.popular ? " is-popular" : ""}`} key={vehicle.type}>
         {redesign && <header className="route-vehicle-heading"><h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>{vehicle.popular && <span className="route-vehicle-popular">Được đặt nhiều nhất</span>}</header>}
-        <div className="route-vehicle-image"><Link href={vehicleHref} aria-label={`Xem tuyến ${displayRoute} bằng ${vehicle.type}`}><img src={image} alt={`Mẫu xe tham khảo ${vehicle.type.toLowerCase()}`} loading="lazy" /></Link>{!redesign && vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>
+        <div className="route-vehicle-image"><Link href={vehicleHref} aria-label={`Xem tuyến ${displayRoute} bằng ${vehicle.type}`}><Image src={image} alt={`Mẫu xe tham khảo ${vehicle.type.toLowerCase()}`} fill sizes={redesign ? "(max-width: 800px) calc(100vw - 64px), (max-width: 1280px) 42vw, 480px" : "(max-width: 800px) calc(100vw - 64px), (max-width: 1180px) 45vw, 540px"} /></Link>{!redesign && vehicle.popular && <span>Được đặt nhiều nhất</span>}</div>
         <div className="route-vehicle-body">
           {!redesign && <h3><Link href={vehicleHref}>{vehicle.type}</Link></h3>}
           <p className="route-vehicle-model">{redesign && <small>Mẫu xe tham khảo</small>}{!redesign && "Mẫu xe tham khảo: "}{vehicle.models}</p>

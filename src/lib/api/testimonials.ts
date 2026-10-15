@@ -6,7 +6,7 @@ import { fetchRawTestimonials, type WPTestimonial } from "./raw";
 import { fetchRoutes } from "./routes";
 import { fetchVehicles } from "./vehicles";
 import { shouldUseMockFallback } from "./mock-fallback";
-import { stripHtml } from "@/lib/wp";
+import { stripHtml } from "@/lib/wp-format";
 
 const useMockFallback = shouldUseMockFallback();
 

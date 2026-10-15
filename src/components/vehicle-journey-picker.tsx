@@ -9,7 +9,7 @@ import { getPublicRouteLabel } from "@/lib/public-location-label";
 import { vehicleJourneyChoices, vehicleJourneyPrice, vehicleJourneyRows } from "@/lib/vehicle-category-journey";
 import { routeJourneyHref } from "@/lib/route-journey-selection";
 import { routeComboHref, type Route } from "@/types/route";
-import { formatCurrencyVN } from "@/lib/wp";
+import { formatCurrencyVN } from "@/lib/wp-format";
 
 export function VehicleJourneyPicker({ routes, vehicleType, vehicleSlug }: { routes: Route[]; vehicleType: string; vehicleSlug: string }) {
   const choices = useMemo(() => vehicleJourneyChoices(routes, vehicleType), [routes, vehicleType]);

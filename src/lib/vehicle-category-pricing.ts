@@ -1,4 +1,4 @@
-import { formatPriceShort } from "@/lib/wp";
+import { formatPriceShort } from "@/lib/wp-format";
 import { routeComboHref, type Route, type RoutePricingPackage } from "@/types/route";
 import { getPublicRouteLabel, getPublicLocationLabel } from "@/lib/public-location-label";
 import { routeJourneyHref } from "@/lib/route-journey-selection";

@@ -7,7 +7,7 @@ import { fetchRawServices, fetchRawServiceBySlug, embeddedTerms, embeddedFeature
 import { fetchVehicles } from "./vehicles";
 import { fetchRoutes } from "./routes";
 import { shouldUseMockFallback } from "./mock-fallback";
-import { splitCommaList, stripHtml } from "@/lib/wp";
+import { splitCommaList, stripHtml } from "@/lib/wp-format";
 import { SITE_HOTLINE } from "@/lib/site-config";
 import { formatPublicLocationText, getPublicRouteLabel } from "@/lib/public-location-label";
 import { canSuggestRelatedRoute } from "@/lib/content-readiness";

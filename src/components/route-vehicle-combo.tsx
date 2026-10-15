@@ -12,7 +12,7 @@ import { RouteBookingActions, type AirportBookingContext } from "@/components/ro
 import { availablePackages, findVehiclePackage, type JourneyPackage } from "@/lib/route-package-capability";
 import { findComboVehiclePriceForDirection } from "@/lib/combo";
 import { reverseRouteMapEmbedSrc } from "@/lib/maps";
-import { formatPriceShort } from "@/lib/wp";
+import { formatPriceShort } from "@/lib/wp-format";
 import { PromotionPrice } from "@/components/promotion-price";
 import { ExpiringJsonLd, type PromotionServiceSchema } from "@/components/expiring-json-ld";
 import { navItems } from "@/data/nav";

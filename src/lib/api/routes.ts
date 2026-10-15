@@ -31,7 +31,7 @@ import { fetchLocationsV2, locationById, type LocationV2 } from "./locations";
 import { shouldUseMockFallback } from "./mock-fallback";
 import { publicRouteWithCmsPricing } from "@/lib/public-pricing";
 import { withRoutePromotionViews } from "./route-promotions";
-import { formatPriceShort, splitCommaList } from "@/lib/wp";
+import { formatPriceShort, splitCommaList } from "@/lib/wp-format";
 import { buildRouteMapEmbedSrc } from "@/lib/maps";
 
 const useMockFallback = shouldUseMockFallback();

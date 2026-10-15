@@ -1,4 +1,4 @@
-import { stripHtml } from "@/lib/wp";
+import { stripHtml } from "@/lib/wp-format";
 
 export type BlogOutlineItem = { id: string; title: string; level: number };
 

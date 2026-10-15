@@ -1,4 +1,5 @@
 import { RouteFinderForm } from "@/components/route-finder-form";
+import Image from "next/image";
 import type { Route } from "@/types/route";
 
 type SubpageHeroProps = {
@@ -14,7 +15,6 @@ export function SubpageHero({
   title,
   eyebrow = "MỞ RỘNG HÀNH TRÌNH",
   description,
-  backgroundImage,
   routes = [],
   showFinder = true,
 }: SubpageHeroProps) {
@@ -22,9 +22,17 @@ export function SubpageHero({
     <div className="subpage-hero-wrap">
       <section
         className="subpage-hero"
-        style={{ backgroundImage: `url(/images/hero-dat-xe-sai-gon.webp?v=2)` }}
         aria-labelledby="subpage-hero-title"
       >
+        <Image
+          src={defaultSubpageHeroImage}
+          alt=""
+          aria-hidden="true"
+          fill
+          preload
+          sizes="100vw"
+          style={{ objectFit: "cover", objectPosition: "center", zIndex: -2 }}
+        />
         <div className="subpage-hero-overlay" aria-hidden="true" />
         <div className="subpage-hero-content">
           <p className="eyebrow"><span className="eyebrow-line" /> {eyebrow}</p>

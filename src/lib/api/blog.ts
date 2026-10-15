@@ -9,7 +9,7 @@ import {
   type WPPost,
 } from "./raw";
 import { shouldUseMockFallback } from "./mock-fallback";
-import { stripHtml, parseFaqItems } from "@/lib/wp";
+import { stripHtml, parseFaqItems } from "@/lib/wp-format";
 
 const useMockFallback = shouldUseMockFallback();
 const DEFAULT_WP_SLUG = "hello-world";

@@ -13,7 +13,7 @@ import { VEHICLE_TYPE_ORDER } from "@/types/vehicle-order";
 import { routeHref, routeComboHref, vehicleTypeSlug, type Route, type RoutePricingPackage, type VehiclePrice } from "@/types/route";
 import { getPublicLocationLabel, getPublicRouteLocations } from "@/lib/public-location-label";
 import { locationMatchesQuery } from "@/lib/location-search";
-import { formatVNDate } from "@/lib/wp";
+import { formatVNDate } from "@/lib/wp-format";
 import { getZaloChatLink } from "@/lib/zalo";
 import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
 
