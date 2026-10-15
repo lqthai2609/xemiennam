@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Calendar, Clock3, Compass, MapPin, Milestone, Newspaper } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
-import { formatVNDate } from "@/lib/wp";
+import { formatVNDate } from "@/lib/wp-format";
 import { navItems } from "@/data/nav";
 import type { BlogPost } from "@/types/blog";
 import { routeHref, routePriceKicker, type Route } from "@/types/route";

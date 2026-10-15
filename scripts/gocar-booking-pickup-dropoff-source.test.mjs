@@ -12,7 +12,7 @@ const contactBookingForm = await readFile(
   "utf8",
 );
 const quickBookingActions = await readFile(
-  new URL("../src/components/route-booking-actions.tsx", import.meta.url),
+  new URL("../src/components/quick-booking-dialog.tsx", import.meta.url),
   "utf8",
 );
 const routeFinderForm = await readFile(

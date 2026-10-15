@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter, defaultSocialLinks } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { navItems } from "@/data/nav";
-import { formatVNDate } from "@/lib/wp";
+import { formatVNDate } from "@/lib/wp-format";
 import type { Testimonial } from "@/types/testimonial";
 import type { Route } from "@/types/route";
 import { UnifiedHero } from "@/components/unified-hero";

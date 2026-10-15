@@ -17,7 +17,7 @@ Vị trí đang ghi **Liên hệ báo giá** giữ nguyên trong ô giá. Quản
 3. Đọc giá hiện tại và phiên bản tuyến từ máy chủ; hiển thị đúng tuyến, chiều, loại xe, gói và giá cũ trong ô đang sửa.
 4. Lưu đúng một dòng Pricing V2, theo `routeId × direction × vehicleId × packageKey` đã hiển thị. Không sao chép giá sang chiều ngược lại hoặc gói khác.
 5. Ghi người sửa, thời gian, lý do thao tác và ảnh chụp dữ liệu trước/sau vào lịch sử sẵn có. Nếu lưu lịch sử thất bại, khôi phục dữ liệu trước thao tác.
-6. Làm hết hạn bộ nhớ đệm WordPress chung và các trang, rồi làm mới trang của quản trị viên. Những trang khác đọc cùng nguồn giá nhận giá mới khi tải hoặc lấy lại dữ liệu; đây không phải cơ chế đẩy giá tức thì tới mọi thẻ trình duyệt đang mở.
+6. Sau khi WordPress lưu thành công, làm hết hạn cache danh sách tuyến và cache chi tiết tuyến vừa sửa, rồi làm mới trang của quản trị viên. Những trang khác đọc cùng nguồn giá nhận giá mới khi tải hoặc lấy lại dữ liệu; đây không phải cơ chế đẩy giá tức thì tới mọi thẻ trình duyệt đang mở.
 
 Giá và thông tin đã lưu trong yêu cầu đặt xe trước đó không được cập nhật lại. Bộ tính ưu đãi hiện hành vẫn áp dụng quy tắc riêng trên giá gốc; chỉnh giá không chỉnh chương trình ưu đãi.
 
@@ -60,3 +60,21 @@ Cài plugin trước khi phát hành frontend. Khi backend chưa có `canEditPri
 Bổ sung ngày 13/10/2026: `/quan-tri/xem-thu-gia` dùng chính các component bảng giá/thẻ tuyến và ô sửa giá với dữ liệu giả. Chọn người xem mô phỏng Quản trị viên/Khách để quan sát quyền trên giao diện; lựa chọn này không đăng nhập hay cấp quyền quản trị thật.
 
 Các endpoint `/api/preview/pricing/*` chỉ hoạt động trên Vercel Preview hoặc môi trường phát triển có cờ thử riêng. Chúng không gọi WordPress, booking hoặc email. Thay đổi giá giả lưu trong cookie riêng của trình duyệt, hết hạn sau một giờ. Production trả 404 cho trang và API xem thử. Giá khởi tạo của bản xem thử không phải bảng giá kinh doanh.
+
+## Giảm ISR Writes sau khi sửa giá — 14/10/2026
+
+Đường Sửa/Lưu giá `/api/admin/routes/{id}/pricing` không còn làm hết hạn tag WordPress toàn cục hoặc layout gốc. Sau khi backend xác nhận thành công, frontend làm hết hạn tag danh sách tuyến và tag chi tiết đúng slug tuyến, dùng `{expire:0}` để yêu cầu đọc tiếp theo lấy dữ liệu mới. Các trang dùng danh sách này (bảng giá, thẻ tuyến, hub, tuyến liên quan, sitemap và các trang khác thực sự phụ thuộc) vẫn phải cập nhật; không được giữ giá cũ để tiết kiệm usage. Cache xe, bài viết, địa điểm và các nguồn không đổi không bị xóa vì thao tác sửa giá.
+
+Plugin hiện tại trả mã tuyến. Frontend đọc riêng `id,slug` từ WordPress, không lưu đệm và giới hạn chờ năm giây. Nếu WordPress lỗi, trả sai mã hoặc thiếu slug, frontend vẫn giữ kết quả lưu thành công và làm hết hạn riêng nhóm dữ liệu tuyến. Không khôi phục lệnh xóa cache toàn website trong nhánh dự phòng này.
+
+Cache tuyến có tag danh sách hoặc tag slug; vẫn giữ tag loại dữ liệu cũ để tương thích các callback hiện hành. Khóa cache tuyến chuyển phiên bản 2 sang 3 một lần khi phát hành nhằm tránh dùng các mục cũ chưa có tag mới. Khóa cache nguồn khác và thời gian dự phòng 300 giây giữ nguyên. Một số trang chi tiết cũng đọc danh sách tuyến để dựng phần liên quan nên vẫn được làm mới theo phụ thuộc dữ liệu; thay đổi này không bảo đảm mỗi lần lưu chỉ dựng lại một trang.
+
+Nguồn snippet `wordpress/snippets/frontend-sync.php` bổ sung mã tuyến trong callback chỉ khi nhận sự kiện từ đúng endpoint WordPress Sửa giá, phương thức POST và người dùng có quyền quản trị. Callback và lần gửi lại sử dụng cùng phạm vi hẹp với frontend. Lưu nội dung, đổi slug, xóa tuyến, thay taxonomy và các thao tác API cũ giữ phạm vi hiện hành để tránh bỏ sót dữ liệu. Không đổi thuật toán giá, quyền sửa, cờ thương mại, domain hoặc DNS.
+
+Điều kiện áp dụng đầy đủ: phát hành frontend mới trước, sau đó thay nội dung snippet WPCode hiện hành bằng nguồn đã kiểm tra, giữ secret/bootstrap hiện có. Không bật thêm một snippet song song và không kích hoạt lại bootstrap. Nếu chưa cập nhật snippet, frontend vẫn tương thích nhưng callback cũ tiếp tục làm mới cả nhóm tuyến. Bản sửa mã nguồn không đồng nghĩa đã áp dụng trên website.
+
+Kiểm tra dùng dữ liệu giả: tag chi tiết độc lập; danh sách và tuyến vừa sửa đọc giá mới; nguồn xe/bài viết và chi tiết tuyến khác giữ cache; lỗi tra slug có dự phòng an toàn; GET, lỗi backend, khách và sai mã bảo vệ không làm mới cache; callback giá/gửi lại giữ đúng ID; lưu nội dung và taxonomy giữ hành vi cũ. Kiểm tra phạm vi invalidation là bằng chứng mã, chưa phải phép đo giảm ISR Writes thực tế trên Vercel.
+
+Kết quả tại nhánh sửa: 26 kiểm tra cache/khả năng phục hồi/callback và 19 kiểm tra quản trị/giá công khai/schema/chiều–gói đạt; kiểm tra PHP callback, cú pháp snippet và quyền/lưu giá đạt. TypeScript, kiểm tra mã các tệp thay đổi và bản dựng Next.js 16.3.4 đạt. Kiểm tra HTTP chạy cả máy chủ phát triển và bản dựng tối ưu với WordPress giả: lưu một dòng, bảng giá và trang chi tiết đều nhận giá mới; các dòng khác giữ nguyên. Chưa thay website đang chạy, chưa nghiệm thu WordPress/MySQL thật hoặc đo usage sau phát hành.
+
+Quy tắc làm việc bổ sung: sửa giá chỉ làm mới dữ liệu giá và nguồn phụ thuộc; dữ liệu giá hết hạn ngay sau lưu; không dùng deploy để cập nhật WordPress; kiểm tra phạm vi callback cùng proxy để tránh một đường còn xóa cache rộng; đo usage trước/sau phát hành trong cùng khoảng thời gian để xác nhận mức giảm.

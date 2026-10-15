@@ -1,5 +1,5 @@
 import { getVehicleCategory } from "@/data/vehicle-categories";
-import { formatPriceShort } from "@/lib/wp";
+import { formatPriceShort } from "@/lib/wp-format";
 import { formatPublicLocationText, getPublicRouteLabel } from "@/lib/public-location-label";
 import {
   vehicleTypeSlug,

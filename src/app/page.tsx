@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { HomeFeaturedRoutes, HomeFeaturedDestinations, HomeFeaturedBlog } from "@/components/home-dynamic-sections";
 import { HomeFleet } from "@/components/home-fleet";
-import { RouteFinderForm } from "@/components/route-finder-form";
+import { RouteFinderForm } from "@/components/booking-search";
 import { fetchRoutes } from "@/lib/api/routes";
 import { getZaloChatLink } from "@/lib/zalo";
 import { navItems } from "@/data/nav";

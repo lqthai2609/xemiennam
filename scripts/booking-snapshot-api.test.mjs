@@ -74,3 +74,16 @@ test('consented acquisition is sanitized outside stable booking identity; the AP
   assert.deepEqual(c.calls.backend[1].body.acquisition,{consent_state:'denied'});
  } finally {if(previous===undefined)delete process.env.LEAD_MEASUREMENT_POLICY;else process.env.LEAD_MEASUREMENT_POLICY=previous;}
 });
+
+test('optional promotion code is persisted for manual review without changing the evaluator result', async () => {
+ const h=harness();const response=await h.POST(request({promotionCode:'  SYNTHETIC10  '}));const body=await response.json();
+ assert.equal(response.status,200);assert.match(h.calls.backend[1].body.booking.meta.ghi_chu,/Mã khuyến mãi khách cung cấp \(chờ xác nhận\): SYNTHETIC10\./);
+ assert.equal(body.promotionSnapshot.promotion.reason,'disabled');assert.equal(body.promotionSnapshot.promotion.discount_amount,null);assert.equal(body.promotionSnapshot.pricing.estimated_total,null);
+});
+test('absent and blank promotion codes keep the old intent identity; changing a code changes it',async()=>{
+ const absent=harness(),blank=harness(),a=harness(),b=harness();await absent.POST(request());await blank.POST(request({promotionCode:' '}));await a.POST(request({promotionCode:'A10'}));await b.POST(request({promotionCode:'B10'}));
+ assert.equal(absent.calls.backend[0].body.intent_hash,blank.calls.backend[0].body.intent_hash);assert.notEqual(a.calls.backend[0].body.intent_hash,b.calls.backend[0].body.intent_hash);assert.notEqual(absent.calls.backend[0].body.intent_hash,a.calls.backend[0].body.intent_hash);
+});
+for(const code of ['x'.repeat(65),'<script>',123,'A\nB'])test(`invalid promotion code rejected before backend work (${typeof code})`,async()=>{
+ const h=harness();assert.equal((await h.POST(request({promotionCode:code}))).status,400);assert.equal(h.calls.backend.length,0);assert.equal(h.calls.pricing,0);
+});

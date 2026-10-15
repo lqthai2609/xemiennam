@@ -1,6 +1,8 @@
-import { formatPriceShort } from "@/lib/wp";
+import { formatPriceShort } from "@/lib/wp-format";
 import { routeComboHref, type Route, type RoutePricingPackage } from "@/types/route";
-import { getPublicRouteLabel } from "@/lib/public-location-label";
+import { getPublicRouteLabel, getPublicLocationLabel } from "@/lib/public-location-label";
+import { routeJourneyHref } from "@/lib/route-journey-selection";
+import type { PromotionPriceView } from "@/types/promotion-price";
 import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 
 export type VehicleCategoryRoutePrice = {
@@ -8,6 +10,11 @@ export type VehicleCategoryRoutePrice = {
   price: string;
   note: string;
   href: string;
+  vehicleId: string;
+  direction: "outbound" | "inbound";
+  packageKey: string;
+  packageLabel: string;
+  promotionView?: PromotionPriceView;
 };
 
 function pickPackage(rows: RoutePricingPackage[], featuredPackage: string): RoutePricingPackage | undefined {
@@ -31,11 +38,7 @@ function pickPackage(rows: RoutePricingPackage[], featuredPackage: string): Rout
   return enabled.find((row) => row.mode === "contact");
 }
 
-/**
- * Day 13: bảng giá trên trang loại xe phải đọc Pricing V2 đã normalize trên Route.
- * Chỉ dùng outbound ở surface này để giữ cùng ngữ nghĩa với route-combo URL hiện tại;
- * inbound vẫn được hiển thị/chọn ở route detail theo contract Day 11.
- */
+/** Same Pricing V2 rows as route pages, with exact vehicle, direction and package links. */
 export function buildVehicleCategoryRoutePrices(
   routes: Route[],
   vehicleType: string,
@@ -43,28 +46,21 @@ export function buildVehicleCategoryRoutePrices(
 ): VehicleCategoryRoutePrice[] {
   return routes.flatMap((route) => {
     if (!canSuggestRelatedRoute(route)) return [];
-    const outbound = route.pricingV2?.outbound;
-    if (!outbound?.enabled) return [];
-
-    const packageRow = pickPackage(
-      outbound.packages.filter((row) => row.vehicleType === vehicleType),
-      outbound.featuredPackage,
-    );
-    if (!packageRow) return [];
-
-    const price =
-      packageRow.mode === "fixed" && typeof packageRow.price === "number" && packageRow.price > 0
-        ? formatPriceShort(packageRow.price)
-        : packageRow.contactText || "Liên hệ báo giá";
-
-    return [
-      {
-        route: getPublicRouteLabel(route),
-        price,
-        note: `${packageRow.packageLabel} · Giá tham khảo, thay đổi theo mùa/lễ`,
-        href: routeComboHref(route, vehicleSlug),
-      },
-    ];
+    return (["outbound", "inbound"] as const).flatMap((direction) => {
+      const pricing = route.pricingV2?.[direction];
+      if (!pricing?.enabled) return [];
+      const packageRow = pickPackage(pricing.packages.filter((row) => row.vehicleType === vehicleType), pricing.featuredPackage);
+      if (!packageRow) return [];
+      const price = packageRow.mode === "fixed" && typeof packageRow.price === "number" && Number.isFinite(packageRow.price) && packageRow.price > 0
+        ? formatPriceShort(packageRow.price) : packageRow.contactText || "Liên hệ báo giá";
+      return [{
+        route: direction === "outbound" ? getPublicRouteLabel(route) : getPublicLocationLabel(route.to) + " – " + getPublicLocationLabel(route.from),
+        price, note: packageRow.packageLabel,
+        href: routeJourneyHref(routeComboHref(route, vehicleSlug), direction, packageRow.packageKey),
+        vehicleId: packageRow.vehicleId, direction, packageKey: packageRow.packageKey,
+        packageLabel: packageRow.packageLabel, promotionView: packageRow.promotionView,
+      }];
+    });
   });
 }
 

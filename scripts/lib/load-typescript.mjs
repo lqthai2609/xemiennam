@@ -21,6 +21,7 @@ export function typescriptLoader(overrides = {}) {
     }).outputText;
     const localRequire = (id) => {
       if (Object.hasOwn(overrides, id)) return overrides[id];
+      if (id.endsWith(".css")) return {}; // Next handles styles; behavior tests run in Node.
       if (id.startsWith("@/")) return load(`src/${id.slice(2)}`);
       if (id.startsWith(".")) return load(resolve(dirname(path), id));
       return require(id);

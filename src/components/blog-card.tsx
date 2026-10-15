@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 import type { BlogPost } from "@/types/blog";
 import { blogIllustration } from "@/lib/blog-presentation";
-import { formatVNDate } from "@/lib/wp";
+import { formatVNDate } from "@/lib/wp-format";
 import { formatPublicLocationText } from "@/lib/public-location-label";
 
 export type BlogSummary = Omit<BlogPost, "contentHtml">;

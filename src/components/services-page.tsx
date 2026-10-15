@@ -7,7 +7,7 @@ import { navItems } from "@/data/nav";
 import type { Service } from "@/types/service";
 import type { Route } from "@/types/route";
 import { ServiceCard } from "@/components/service-card";
-import { BookingSearchForm } from "@/components/route-finder-form";
+import { RouteFinderForm as BookingSearchForm } from "@/components/booking-search";
 import { ServiceContactBanner, ServiceFeatureList, ServiceSteps, serviceImage, servicePromises } from "@/components/service-design-shared";
 import { ZaloIcon } from "@/components/zalo-icon";
 import { SITE_CONTACT_PHONE_DISPLAY, SITE_CONTACT_PHONE_TEL } from "@/lib/site-config";

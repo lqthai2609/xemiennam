@@ -11,9 +11,12 @@ import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
 import { LEAD_MEASUREMENT_POLICY, normalizeAcquisition } from "@/lib/lead-measurement";
 
+import { promotionCodeInput } from "@/lib/booking-promotion-code";
+
 const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
 const bookingRequestSchema = z.object({
+  promotionCode: promotionCodeInput.optional().transform((code) => code || undefined),
   fullName: z.string().trim().min(1, "Thiếu họ tên."),
   phone: z.string().trim().regex(phoneRegex, "Số điện thoại không đúng định dạng Việt Nam."),
   route: z.string().trim().min(1, "Thiếu tuyến quan tâm."),
@@ -203,6 +206,7 @@ export async function POST(request: Request) {
     noteParts.push(`Điểm dừng trung gian: ${formatIntermediateStops(data.intermediateStops)}.`);
   }
   if (data.note) noteParts.push(data.note);
+  if (data.promotionCode) noteParts.push(`Mã khuyến mãi khách cung cấp (chờ xác nhận): ${data.promotionCode}.`);
 
   // Context is optional, sanitized and outside booking identity. Never infer a touch
   // from the API Referer, booking PII, an asserted source, channel or lead ID.

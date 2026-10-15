@@ -1,0 +1,7 @@
+.booking-thank-you { width: min(720px, calc(100% - 32px)); margin: 60px auto; padding: 38px; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--secondary); }
+.booking-thank-you > svg { color: var(--primary); }
+.booking-thank-you h1 { font-size: clamp(27px, 3vw, 38px); line-height: 1.4; margin: 20px 0; }
+.booking-thank-you p { font-size: 15px; line-height: 1.8; margin: 12px 0; color: var(--muted-foreground); }
+.booking-thank-you strong { color: var(--primary); }
+.booking-thank-you-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+@media (max-width: 600px) { .booking-thank-you { padding: 24px; margin: 32px auto; } .booking-thank-you-actions > a { flex: 1; } }

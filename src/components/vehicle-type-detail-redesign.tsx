@@ -1,115 +1,77 @@
-"use client";
-
-import { RequiredMark } from "@/components/required-mark";
-
-import { useMemo, useState, type FormEvent } from "react";
-import { ZaloIcon } from "@/components/zalo-icon";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowRightLeft, BriefcaseBusiness, CalendarDays, CarFront, Check, ChevronDown, ClipboardCheck, Flame, Luggage, Mail, MapPin, Phone, Search, UsersRound } from "lucide-react";
+import { ArrowRight, CarFront, Luggage, Phone, UsersRound } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { PublicBreadcrumbs } from "@/components/public-breadcrumbs";
+import { VehicleJourneyPicker } from "@/components/vehicle-journey-picker";
+import { VehicleRealGallery } from "@/components/vehicle-real-gallery";
+import { VehicleFactsSummary } from "@/components/vehicle-facts-summary";
+import { PriceExplanation } from "@/components/price-explanation";
+import { ServiceSteps } from "@/components/service-design-shared";
+import { BlogCard } from "@/components/blog-card";
+import { PromotionPrice } from "@/components/promotion-price";
 import { navItems } from "@/data/nav";
-import { canonicalLocationKey } from "@/lib/location-search";
-import { getPublicLocationLabel } from "@/lib/public-location-label";
-import { SITE_HOTLINE, SITE_HOTLINE_TEL, SITE_NAME } from "@/lib/site-config";
+import { vehicleFactsDisplay } from "@/lib/vehicle-facts-display";
+import { formatPublicLocationText } from "@/lib/public-location-label";
 import { getZaloChatLink } from "@/lib/zalo";
-import { routeComboHref, type Route } from "@/types/route";
+import { SITE_HOTLINE, SITE_HOTLINE_TEL } from "@/lib/site-config";
 import type { VehicleCategory } from "@/types/vehicle-category";
+import type { Vehicle } from "@/types/vehicle";
+import type { Route } from "@/types/route";
 import type { BlogPost } from "@/types/blog";
 import type { VehicleCategoryRoutePrice } from "@/lib/vehicle-category-pricing";
 
-type RouteLink = { label: string; href: string };
-type ServiceLink = { title: string; description: string; href: string };
+function VehiclePageActions() {
+  return <div className="vehicle-page-actions"><a className="home-button home-button-primary" href="#vehicle-journey">Xem giá chuyến đi <ArrowRight size={17} /></a><a className="home-button home-button-outline" href={"tel:" + SITE_HOTLINE_TEL}><Phone size={17} /> Gọi tư vấn</a></div>;
+}
 
-
-const needs = [
-  { title: "Cặp đôi", description: "Chủ động lịch trình, xác nhận cấu hình khi tư vấn.", panel: "couple", icon: UsersRound },
-  { title: "Gia đình nhỏ", description: "Số khách và hành lý cần được xác nhận.", panel: "family", icon: Luggage },
-  { title: "Đi công tác", description: "Chủ động thời gian, di chuyển nhanh chóng, thoải mái.", panel: "business", icon: BriefcaseBusiness },
-];
-
-export function VehicleTypeDetailRedesign({ category, routePrices, routes, airportRoutes, services, otherCategories }: {
-  category: VehicleCategory;
-  routePrices: VehicleCategoryRoutePrice[];
-  routes: Route[];
-  relatedRoutes: RouteLink[];
-  airportRoutes: RouteLink[];
-  services: ServiceLink[];
-  galleryImages: string[];
-  relatedPosts: BlogPost[];
-  otherCategories: VehicleCategory[];
+/** One template for every registered category; all vehicle facts remain per model. */
+export function VehicleTypeDetailRedesign({ category, vehicles, routePrices, routes, relatedPosts, otherCategories }: {
+  category: VehicleCategory; vehicles: Vehicle[]; routePrices: VehicleCategoryRoutePrice[];
+  routes: Route[]; relatedPosts: BlogPost[]; otherCategories: VehicleCategory[];
 }) {
-  const router = useRouter();
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [trip, setTrip] = useState("one_way");
-  const [query, setQuery] = useState("");
-  const [error, setError] = useState("");
-  const zalo = getZaloChatLink();
-  const categoryTitles: Record<string, string> = {
-    "4-cho": "Xe 4 chỗ cho hành trình riêng", "7-cho": "Xe 7 chỗ cho gia đình và nhóm bạn",
-    "16-cho": "Xe 16 chỗ cho cả đoàn đi cùng nhau", "29-cho": "Xe 29 chỗ cho hành trình tập thể",
-    "45-cho": "Xe 45 chỗ cho đoàn lớn", limousine: "Limousine cho hành trình riêng",
-  };
-  const title = categoryTitles[category.slug] || `Xe ${category.type} cho hành trình của bạn`;
-  const useCases = category.slug === "4-cho" ? needs : category.slug === "7-cho" ? [
-    { title: "Gia đình", description: "Xác nhận số khách và hành lý theo nhu cầu.", panel: "family", icon: UsersRound },
-    { title: "Nhóm bạn", description: "Cùng nhau đi chơi, chủ động điểm dừng.", panel: "couple", icon: Luggage },
-    { title: "Đi sân bay", description: "Thuận tiện cho chuyến bay và hành lý.", panel: "business", icon: BriefcaseBusiness },
-  ] : [
-    { title: "Đoàn công ty", description: "Đi chung xe, thuận tiện sắp lịch.", panel: "business", icon: BriefcaseBusiness },
-    { title: "Gia đình lớn", description: "Thoải mái cho nhiều thế hệ.", panel: "family", icon: UsersRound },
-    { title: "Đi du lịch", description: "Chủ động hành trình cùng cả đoàn.", panel: "couple", icon: Luggage },
-  ];
-  const locations = useMemo(() => Array.from(new Map(routes.flatMap((route) => [route.from, route.to]).filter((name) => !/^City Tour/i.test(name)).map((name) => [canonicalLocationKey(name), getPublicLocationLabel(name)])).values()).sort((a, b) => a.localeCompare(b, "vi")), [routes]);
-  const routeCards = useMemo(() => {
-    const rows = routePrices.map((row) => ({ ...row, routeData: routes.find((route) => routeComboHref(route, category.slug) === row.href) })).filter((row) => row.routeData);
-    return rows.sort((a, b) => {
-      const rank = (route?: Route) => route ? (/tp-hcm-vung-tau/i.test(route.slug) ? 0 : /tp-hcm-long-hai/i.test(route.slug) ? 1 : /phu-my/i.test(route.slug) ? 2 : /san-bay.*vung-tau/i.test(route.slug) ? 3 : 4) : 5;
-      return rank(a.routeData) - rank(b.routeData);
-    });
-  }, [routePrices, routes, category.slug]);
-  const matchingRoutes = routeCards.filter((row) => row.route.toLocaleLowerCase("vi").includes(query.toLocaleLowerCase("vi")));
-  const displayed = query.trim() ? matchingRoutes : matchingRoutes.slice(0, 4);
-  const seatOrder = ["4-cho", "7-cho", "16-cho", "29-cho", "45-cho", "limousine"];
-  const largerCategories = otherCategories.filter((other) => seatOrder.indexOf(other.slug) > seatOrder.indexOf(category.slug)).slice(0, 2);
-  const suggestions = largerCategories.length ? largerCategories : otherCategories.slice(-2);
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!from || !to) { setError("Vui lòng chọn điểm đón và điểm đến."); return; }
-    if (canonicalLocationKey(from) === canonicalLocationKey(to)) { setError("Điểm đón và điểm đến phải khác nhau."); return; }
-    setError("");
-    const direct = routes.find((route) => canonicalLocationKey(route.from) === canonicalLocationKey(from) && canonicalLocationKey(route.to) === canonicalLocationKey(to) && route.pricingV2?.outbound.enabled);
-    const reverse = routes.find((route) => canonicalLocationKey(route.to) === canonicalLocationKey(from) && canonicalLocationKey(route.from) === canonicalLocationKey(to) && route.pricingV2?.inbound.enabled);
-    const route = direct || reverse;
-    if (route) {
-      const direction = direct ? "outbound" : "inbound";
-      const available = route.pricingV2?.[direction].packages.some((row) => row.vehicleType === category.type && row.mode !== "disabled");
-      if (available) { router.push(`${routeComboHref(route, category.slug)}?direction=${direction}&package=${trip === "round_trip" ? "round_trip_day" : "one_way"}#pricing`); return; }
-    }
-    router.push(`/tuyen-duong?${new URLSearchParams({ from, to }).toString()}#route-catalog`);
-  }
-
-  return <main className="site-shell home-redesign vehicle-detail">
-    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={`tel:${SITE_HOTLINE_TEL}`} ctaLabel="Nhắn Zalo" ctaHref={zalo} homeDesign />
-    <section className="vehicle-detail-hero" aria-labelledby="vehicle-detail-title"><div className="vehicle-detail-hero-photo" role="img" aria-label="Xe riêng trên cung đường ven biển" /><div className="vehicle-detail-width vehicle-detail-hero-inner"><div className="vehicle-detail-hero-copy"><nav aria-label="Đường dẫn"><Link href="/loai-xe">Loại xe</Link><span>/</span><span>Xe {category.type}</span></nav><p className="home-eyebrow">XE RIÊNG CÓ TÀI XẾ</p><h1 id="vehicle-detail-title">{title}</h1><p>{category.description}</p><div className="vehicle-detail-pills"><span><UsersRound size={19} /> Cần tư vấn</span><span><CarFront size={19} /> Xe riêng có tài xế</span></div><div className="vehicle-detail-hero-actions"><a className="home-button home-button-primary zalo-cta" href={zalo} target="_blank" rel="noopener noreferrer"><ZaloIcon /> Nhắn Zalo tư vấn xe <ArrowRight size={16} /></a><a className="home-button home-button-outline" href="#vehicle-detail-routes">Xem tuyến và giá <ArrowRight size={16} /></a></div></div></div></section>
-    <div className="vehicle-detail-width vehicle-detail-content">
-      <section className="vehicle-detail-finder" aria-labelledby="vehicle-detail-finder-title"><div className="vehicle-detail-finder-heading"><h2 id="vehicle-detail-finder-title"><span><Search size={24} /></span>Bạn muốn đi đâu bằng xe {category.type}?</h2><p>Giá chưa có sẵn sẽ được báo theo lịch thực tế.</p></div><form onSubmit={submit}><label><MapPin size={22} /><span><strong className="form-field-label">Điểm đón <RequiredMark /></strong><select value={from} onChange={(event) => { setFrom(event.target.value); setError(""); }} required><option value="">Chọn điểm đón</option>{locations.map((name) => <option key={name} value={name}>{name}</option>)}</select></span><ChevronDown size={16} /></label><button type="button" className="vehicle-detail-swap" aria-label="Đổi chiều điểm đón và điểm đến" onClick={() => { setFrom(to); setTo(from); }}><ArrowRightLeft size={21} /></button><label><MapPin size={22} /><span><strong className="form-field-label">Điểm đến <RequiredMark /></strong><select value={to} onChange={(event) => { setTo(event.target.value); setError(""); }} required><option value="">Chọn điểm đến</option>{locations.map((name) => <option key={name} value={name}>{name}</option>)}</select></span><ChevronDown size={16} /></label><label><CarFront size={22} /><span><strong>Loại chuyến</strong><select value={trip} onChange={(event) => setTrip(event.target.value)}><option value="one_way">Một chiều</option><option value="round_trip">Khứ hồi</option></select></span><ChevronDown size={16} /></label><button type="submit" className="home-button home-button-primary">Xem giá chuyến xe <ArrowRight size={16} /></button></form>{error && <p className="vehicle-detail-error" role="alert">{error}</p>}</section>
-
-      <section className="vehicle-detail-needs"><header className="vehicle-detail-heading"><h2>Xe {category.type} phù hợp khi nào?</h2><p>Lựa chọn phù hợp với nhiều nhu cầu di chuyển.</p></header><div className="vehicle-detail-needs-grid">{useCases.map((need) => <article key={need.title}><div className={`vehicle-detail-need-image ${need.panel}`} role="img" aria-label={need.title} /><div><h3><need.icon size={19} /> {need.title}</h3><p>{need.description}</p></div></article>)}</div><div className="vehicle-detail-dots" aria-hidden="true"><i /><i /><i /></div></section>
-
-      <section className="vehicle-detail-space"><div className="vehicle-detail-space-photos"><div className="vehicle-detail-car-photo"><Image src="/images/home-coastal-fleet.webp" alt={`Xe ${category.type} trên đường ven biển`} fill sizes="(max-width: 700px) 60vw, 33vw" /></div><div className="vehicle-detail-car-photo"><Image src="/images/home-vehicle-trio.webp" alt="Các lựa chọn xe riêng" fill sizes="(max-width: 700px) 60vw, 33vw" /></div></div><div className="vehicle-detail-space-copy"><h2>Cấu hình được xác nhận,<br />chuyến đi chủ động</h2><ul><li><Check />Xe riêng, chỉ phục vụ đoàn của bạn</li><li><Check />Có tài xế giàu kinh nghiệm, thân thiện</li><li><Check />Điểm đón và trả được xác nhận khi đặt</li></ul><p><Luggage size={21} />Không gian hành lý tùy dòng xe, vui lòng xác nhận khi tư vấn.</p></div></section>
-
-      <section className="vehicle-detail-routes" id="vehicle-detail-routes"><div className="vehicle-detail-route-heading"><div><h2><Flame size={29} />Tuyến phổ biến bằng xe {category.type}</h2><p>Các tuyến được nhiều khách hàng lựa chọn.</p></div><label><span className="sr-only">Tìm tuyến trong danh sách phổ biến</span><input type="search" placeholder="Tìm tuyến khác (ví dụ: Sài Gòn, Vũng Tàu...)" value={query} onChange={(event) => setQuery(event.target.value)} /><Search size={20} /></label><Link href="/tuyen-duong">Xem tất cả tuyến <ArrowRight size={15} /></Link></div><div className="vehicle-detail-route-grid">{displayed.map((row) => <article key={row.href} className="vehicle-detail-route-card"><Link href={row.href} className="vehicle-detail-route-image" aria-label={`Xem tuyến ${row.route}`}><Image src={row.routeData?.featuredImage || "/images/destinations/ba-ria-vung-tau.webp"} alt="" fill sizes="(max-width: 700px) 30vw, 25vw" /></Link><div><h3><Link href={row.href}>{row.route}</Link></h3><p><UsersRound size={13} /> {row.routeData?.distance || "Lộ trình linh hoạt"}<span>◉</span> {row.routeData?.time || "Theo lịch thực tế"}</p><small>{row.price.toLocaleLowerCase("vi").includes("liên hệ") ? "Báo giá" : "Giá chỉ"}</small><strong>{row.price.toLocaleLowerCase("vi").includes("liên hệ") ? "Liên hệ báo giá" : row.price}</strong><em>{row.note.split(" · ")[0]} / chuyến</em></div><Link href={row.href} className="vehicle-detail-route-link">Xem tuyến <ArrowRight size={15} /></Link></article>)}</div>{displayed.length === 0 && <p className="vehicle-detail-empty">Không có tuyến trong danh sách phổ biến khớp với tìm kiếm. <Link href="/tuyen-duong">Xem tất cả tuyến</Link>.</p>}</section>
-
-      <section className="vehicle-detail-steps"><h2>Các bước đặt xe {category.type} đơn giản</h2><div>{[{ icon: Search, title: "Chọn tuyến", text: "Nhập điểm đón, điểm đến và loại chuyến." }, { icon: CalendarDays, title: "Chọn lịch đi", text: "Chọn ngày giờ phù hợp với kế hoạch của bạn." }, { icon: ClipboardCheck, title: "Xác nhận xe và giá", text: "Nhận thông tin xe và giá qua Zalo hoặc điện thoại." }].map((step, i) => <article key={step.title}><b>{i + 1}</b><step.icon size={33} /><span><strong>{step.title}</strong><small>{step.text}</small></span></article>)}</div></section>
-
-      <div className="vehicle-detail-lower"><section className="vehicle-detail-faq" id="vehicle-detail-faq"><h2>Câu hỏi thường gặp về xe {category.type}</h2><details><summary>Xe {category.type} đón tận nơi không?<ChevronDown size={18} /></summary><p>Có thể đón tại điểm phù hợp với hành trình. Vui lòng gửi địa chỉ cụ thể để được xác nhận khi đặt xe.</p></details><details><summary>Có thể đặt xe {category.type} đi về (khứ hồi) không?<ChevronDown size={18} /></summary><p>Có. Chọn loại chuyến khứ hồi hoặc liên hệ để được tư vấn giá và lịch xe theo hành trình thực tế.</p></details><details><summary>Giá xe {category.type} được xác nhận như thế nào?<ChevronDown size={18} /></summary><p>Giá hiện trên tuyến là mức tham khảo theo gói. Nhân viên sẽ xác nhận điểm đón, lịch trình và chi phí trước chuyến đi.</p></details></section><section className="vehicle-detail-alternatives"><h2>{largerCategories.length ? "Tham khảo loại xe khác" : "Khám phá thêm lựa chọn xe"}</h2><p>Tham khảo các lựa chọn xe khác để tìm không gian phù hợp với đoàn của bạn.</p><div>{suggestions.map((other) => <Link href={`/loai-xe/${other.slug}`} key={other.slug}><strong>Xe {other.type}</strong><span className="vehicle-detail-other-photo"><Image src="/images/home-vehicle-trio.webp" alt="" fill sizes="100px" style={{ objectPosition: other.slug === "7-cho" ? "center" : "right" }} /></span><small><UsersRound size={14} /> Cần tư vấn</small><b>Xem xe {other.type} <ArrowRight size={14} /></b></Link>)}</div></section></div>
-      {(airportRoutes.length > 0 || services.length > 0) && <details className="vehicle-detail-more"><summary>Khám phá thêm dịch vụ và tuyến sân bay <ChevronDown size={17} /></summary><div>{airportRoutes.slice(0, 5).map((item) => <Link key={item.href} href={item.href}>{item.label} <ArrowRight size={14} /></Link>)}{services.slice(0, 4).map((item) => <Link key={item.href} href={item.href}>{item.title} <ArrowRight size={14} /></Link>)}</div></details>}
-      <section className="vehicle-detail-contact"><div><h2>Cần tư vấn xe {category.type}?</h2><p>Liên hệ ngay để được tư vấn tuyến đường và báo giá nhanh nhất.</p></div><div><a href={zalo} target="_blank" rel="noopener noreferrer" className="home-button home-button-primary zalo-cta"><ZaloIcon /> Nhắn Zalo</a><Link href="/lien-he" className="home-button home-button-outline"><Mail size={18} /> Gửi yêu cầu</Link><a href={`tel:${SITE_HOTLINE_TEL}`} className="home-button home-button-outline"><Phone size={18} /> Gọi {SITE_HOTLINE}</a></div></section>
-    </div><SiteFooter tagline={<>Alo Đặt Xe cung cấp dịch vụ xe riêng có tài xế từ Sài Gòn và các tỉnh lân cận.<br />Đồng hành cùng bạn trên mọi hành trình.</>} phone={SITE_HOTLINE} phoneHref={`tel:${SITE_HOTLINE_TEL}`} linkGroups={[{ title: "Khám phá", links: [{ label: "Trang chủ", href: "/" }, { label: "Tuyến xe", href: "/tuyen-duong" }, { label: "Loại xe", href: "/loai-xe" }, { label: "Điểm đến", href: "/diem-den" }] }, { title: "Hỗ trợ", links: [{ label: "Câu hỏi thường gặp", href: "/loai-xe#vehicle-detail-faq" }, { label: "Liên hệ", href: "/lien-he" }] }]} socialLinks={[]} copyright={`© 2026 ${SITE_NAME}. Tất cả quyền được bảo lưu.`} madeFor="Điều khoản dịch vụ  |  Chính sách bảo mật" brandMark="A" brandName={SITE_NAME} />
+  const photos = Array.from(new Set(vehicles.flatMap((vehicle) => vehicle.images)));
+  const heroImage = photos[0];
+  const confirmed = vehicles.filter((vehicle) => vehicle.operationalFacts?.status === "confirmed");
+  const confirmedCapacity = confirmed.filter((vehicle) => vehicle.operationalFacts?.facts?.passenger_capacity != null);
+  const vehicleTitle = "Xe " + category.type;
+  return <main className="site-shell home-redesign vehicle-page">
+    <SiteHeader menuItems={navItems} hotline={SITE_HOTLINE} hotlineHref={"tel:" + SITE_HOTLINE_TEL} ctaLabel="Nhắn Zalo" ctaHref={getZaloChatLink()} homeDesign />
+    <div className="vehicle-page-width">
+      <PublicBreadcrumbs items={[{ label: "Trang chủ", href: "/" }, { label: "Loại xe", href: "/loai-xe" }, { label: vehicleTitle }]} />
+      <section className="vehicle-page-hero" aria-labelledby="vehicle-page-title">
+        <div><p className="home-eyebrow">XE RIÊNG CHO HÀNH TRÌNH CỦA BẠN</p><h1 id="vehicle-page-title">Thuê xe {category.type} có tài xế</h1></div>
+        <div className="vehicle-page-hero-media">{heroImage ? <Image src={heroImage} alt={"Ảnh tham khảo " + vehicleTitle.toLowerCase()} fill sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 1208px) calc(100vw - 48px), 1160px" preload /> : <div className="vehicle-page-no-photo"><CarFront size={64} /><span>Ảnh xe cần được xác nhận</span></div>}</div>
+        <div><p className="vehicle-page-lead">{category.description}</p>
+          {confirmedCapacity.length > 0 && <div className="vehicle-page-confirmed">{confirmedCapacity.map((vehicle) => <span key={vehicle.id}><UsersRound size={16} />{vehicle.name}: {vehicleFactsDisplay(vehicle).passengers}</span>)}</div>}
+          <VehiclePageActions />
+          <p className="vehicle-page-caption">Mẫu xe thực tế và lịch phục vụ được xác nhận khi tư vấn.</p>
+        </div>
+      </section>
+      <VehicleJourneyPicker vehicleType={category.type} vehicleSlug={category.slug} routes={routes} />
+      <section className="vehicle-page-section" id="vehicle-capacity" aria-labelledby="vehicle-capacity-title">
+        <header className="vehicle-page-section-heading"><p className="home-eyebrow">CHỌN XE THEO NHU CẦU THỰC TẾ</p><h2 id="vehicle-capacity-title">{vehicleTitle} có phù hợp với chuyến đi?</h2><p>Sức chứa và hành lý được xác nhận theo từng cấu hình xe.</p></header>
+        <div className="vehicle-page-fit-grid"><article><UsersRound size={24} /><h3>Số hành khách</h3><p>{confirmedCapacity.length ? "Số hành khách đã xác nhận không gồm tài xế." : "Cần tư vấn. Hãy trao đổi số khách của đoàn để xác nhận xe phù hợp."}</p>{confirmedCapacity.length > 0 && <ul>{confirmedCapacity.map((vehicle) => <li key={vehicle.id}>{vehicle.name}: {vehicleFactsDisplay(vehicle).passengers}</li>)}</ul>}</article><article><Luggage size={24} /><h3>Hành lý của đoàn</h3><p>{confirmed.some((vehicle) => vehicleFactsDisplay(vehicle).loadProfiles.length) ? "Đối chiếu số khách, số kiện và kích thước trong cùng cấu hình đã xác nhận." : "Cần tư vấn. Hãy cung cấp số kiện và kích thước để được xác nhận theo mẫu xe."}</p></article><article><CarFront size={24} /><h3>Nhu cầu phù hợp</h3><ul>{category.audience.map((item) => <li key={item}>{item}</li>)}</ul><p>Cấu hình cụ thể vẫn cần được đối chiếu với đoàn và hành trình.</p></article></div>
+        <div className="vehicle-page-notice"><strong>Khi nào nên cân nhắc loại xe khác?</strong><p>Khi số khách vượt sức chứa đã xác nhận, hoặc cấu hình hành lý chưa đáp ứng nhu cầu, hãy xem thêm lựa chọn và trao đổi với tư vấn viên.</p><div className="vehicle-page-comparison-links">{otherCategories.map((item) => <Link key={item.slug} href={"/loai-xe/" + item.slug}>Xe {item.type} <ArrowRight size={14} /></Link>)}</div></div>
+      </section>
+      <section className="vehicle-page-section" aria-labelledby="vehicle-models-title"><header className="vehicle-page-section-heading"><p className="home-eyebrow">XE VÀ HÌNH ẢNH</p><h2 id="vehicle-models-title">Mẫu xe {category.type} tham khảo</h2><p>Ảnh từ thư viện xe thuộc đúng loại đang xem. Xe giao thực tế và lịch xe được xác nhận khi tư vấn.</p></header>
+        {vehicles.length ? <div className="vehicle-page-models">{vehicles.map((vehicle) => <article key={vehicle.id} className="vehicle-page-model"><h3>{formatPublicLocationText(vehicle.name)}</h3>{vehicle.description && <p>{formatPublicLocationText(vehicle.description)}</p>}<VehicleFactsSummary facts={vehicleFactsDisplay(vehicle)} />{vehicle.images.length > 0 ? <VehicleRealGallery images={vehicle.images} /> : <p className="vehicle-page-caption">Ảnh mẫu xe: Cần tư vấn.</p>}</article>)}</div> : <p className="vehicle-page-notice">Chưa có mẫu xe được công bố cho loại này. Cần tư vấn.</p>}
+      </section>
+      <section className="vehicle-page-section" id="vehicle-detail-routes" aria-labelledby="vehicle-routes-title"><header className="vehicle-page-section-heading"><p className="home-eyebrow">GIÁ THEO HÀNH TRÌNH</p><h2 id="vehicle-routes-title">Một số tuyến bằng xe {category.type}</h2><p>Mỗi giá gắn với đúng chiều đi và gói dịch vụ. Chọn hành trình phía trên để xem đầy đủ.</p></header>
+        {routePrices.length ? <div className="vehicle-page-route-table">{routePrices.slice(0, 9).map((row) => <article key={row.href + ":" + row.vehicleId}><div><h3>{row.route}</h3><p>{row.packageLabel} · Xe {category.type}</p></div><div>{row.promotionView ? <PromotionPrice view={row.promotionView} /> : <strong>{row.price}</strong>}<small>Giá theo gói đang hiển thị</small></div><Link className="home-button home-button-outline" href={row.href}>Xem tuyến <ArrowRight size={16} /></Link></article>)}</div> : <p className="vehicle-page-notice">Chưa có giá phù hợp cho xe {category.type}. <Link href="/lien-he">Gửi nhu cầu để nhận báo giá</Link>.</p>}
+      </section>
+      <section className="vehicle-page-section" aria-labelledby="vehicle-cost-title"><header className="vehicle-page-section-heading"><h2 id="vehicle-cost-title">Chi phí và điều kiện chuyến đi</h2><p>Các khoản bao gồm, chưa bao gồm và điều kiện phát sinh cần được xác nhận theo đúng hành trình, xe và gói bạn chọn.</p></header><PriceExplanation compact /><p className="vehicle-page-caption">Điều kiện từ dữ liệu tuyến được đặt cạnh kết quả giá khi chọn hành trình. Các khoản chi phí và điều kiện riêng được xác nhận theo lịch thực tế.</p></section>
+      <section className="vehicle-page-section" aria-labelledby="vehicle-process-title"><header className="vehicle-page-section-heading"><h2 id="vehicle-process-title">Tiếp tục đặt chuyến cùng Alo Đặt Xe</h2><p>Chọn hành trình, gửi lịch trình và nhận xác nhận xe, giá theo quy trình hiện hành.</p></header><ServiceSteps /><p className="vehicle-page-caption">Liên hệ tư vấn: <a href={"tel:" + SITE_HOTLINE_TEL}>{SITE_HOTLINE}</a>. Mẫu xe và chi phí cuối cùng được xác nhận trước khi nhận chuyến.</p></section>
+      {relatedPosts.length > 0 && <section className="vehicle-page-section"><header className="vehicle-page-section-heading"><h2>Thông tin liên quan đến xe {category.type}</h2></header><div className="vehicle-page-article-grid">{relatedPosts.map((post) => <BlogCard key={post.slug} post={post} />)}</div></section>}
+      <section className="vehicle-page-section vehicle-page-faq" id="vehicle-detail-faq" aria-labelledby="vehicle-faq-title"><header className="vehicle-page-section-heading"><h2>Câu hỏi thường gặp</h2></header>
+        <details><summary>Xe {category.type} phục vụ được bao nhiêu hành khách?</summary><p>{confirmedCapacity.length ? "Sức chứa không gồm tài xế được ghi riêng trong hồ sơ từng mẫu xe ở phần trên." : "Cần tư vấn. Hãy cung cấp số khách của đoàn để xác nhận sức chứa theo mẫu xe thực tế."}</p></details>
+        <details><summary>Đoàn của tôi có nhiều hành lý thì nên chọn thế nào?</summary><p>{confirmed.some((vehicle) => vehicleFactsDisplay(vehicle).loadProfiles.length) ? "Đối chiếu cùng một cấu hình số khách và hành lý của mẫu xe; không cộng các mức tối đa từ những cấu hình khác nhau." : "Cần tư vấn. Hãy cung cấp số khách, số kiện và kích thước hành lý để xác nhận mẫu xe phù hợp."}</p></details>
+        <details><summary>Giá có đúng chiều đi và gói đang chọn không?</summary><p>Giá hiển thị theo hành trình, chiều, loại xe và gói bạn chọn. Bạn có thể xem thêm điều kiện tại trang tuyến trước khi tiếp tục đặt chuyến.</p></details>
+        <details><summary>Tôi tiếp tục đặt xe như thế nào?</summary><p>Chọn hành trình và gói được phục vụ, nhập điểm đón trả, lịch đi, sau đó dùng nút gửi yêu cầu để tiếp tục form đặt xe hiện hành. Lịch xe và chi phí được xác nhận trước chuyến.</p></details>
+      </section>
+      <section className="vehicle-page-final"><div><p className="home-eyebrow">SẴN SÀNG CHỌN HÀNH TRÌNH</p><h2>Trao đổi chuyến đi bằng xe {category.type}</h2><p>Xem giá theo lịch trình hoặc gọi để xác nhận xe phù hợp với đoàn.</p></div><VehiclePageActions /></section>
+    </div>
+    <SiteFooter />
   </main>;
 }

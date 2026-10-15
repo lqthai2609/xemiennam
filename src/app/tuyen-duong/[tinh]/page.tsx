@@ -10,7 +10,7 @@ import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildServiceSchema, buildFaqPageSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
-import { stripHtml } from "@/lib/wp";
+import { stripHtml } from "@/lib/wp-format";
 import { formatPublicLocationText, getPublicLocationLabel } from "@/lib/public-location-label";
 import { canSuggestRelatedRoute } from "@/lib/content-readiness";
 

@@ -1,7 +1,7 @@
 import type { DiemDen, DestinationCard } from "@/types/diem-den";
 import { fetchRawDiemDenBySlug, embeddedFeaturedImage, type WPDiemDen } from "./raw";
 import { fetchRawDiemDen } from "./raw";
-import { parseFaqItems, stripHtml } from "@/lib/wp";
+import { parseFaqItems, stripHtml } from "@/lib/wp-format";
 import { fetchRoutes } from "./routes";
 
 function publicDestinationText(value: string): string {

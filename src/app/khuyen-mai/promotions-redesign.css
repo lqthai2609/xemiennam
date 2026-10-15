@@ -1,0 +1,37 @@
+.promotions-width { width: min(1160px, calc(100% - 48px)); margin: auto; }
+.promotions-page .public-breadcrumbs { padding-top: 24px; }
+.promotions-hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: center; padding: 48px 0 60px; }
+.promotions-hero h1 { font-size: clamp(34px, 4.2vw, 56px); line-height: 1.13; margin: 14px 0 22px; letter-spacing: -.04em; }
+.promotions-hero p { color: var(--muted-foreground); line-height: 1.85; max-width: 560px; font-size: 16px; }
+.promotions-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.promotions-hero-info { padding: 38px; border-radius: var(--radius-xl); background: var(--secondary); border: 1px solid var(--border); }
+.promotions-hero-info > svg { color: var(--primary); margin-bottom: 24px; }
+.promotions-hero-info h2 { font-size: 27px; line-height: 1.35; margin: 0 0 16px; }
+.promotions-hero-info a { display: inline-flex; align-items: center; gap: 9px; color: var(--primary); font-size: 14px; font-weight: 600; margin-top: 15px; }
+.promotions-section { padding: 42px 0; border-top: 1px solid var(--border); }
+.promotions-section header { margin-bottom: 28px; }
+.promotions-section header h2 { font-size: clamp(25px, 2.8vw, 34px); line-height: 1.3; margin: 8px 0 12px; }
+.promotions-section header p { color: var(--muted-foreground); font-size: 15px; line-height: 1.8; }
+.promotions-empty { display: flex; align-items: center; gap: 24px; padding: 30px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--muted); }
+.promotions-empty > span { padding: 16px; background: var(--secondary); border-radius: var(--radius-lg); color: var(--primary); }
+.promotions-empty h3 { font-size: 20px; line-height: 1.6; margin: 0 0 9px; }
+.promotions-empty p { font-size: 14px; color: var(--muted-foreground); line-height: 1.85; }
+.promotions-empty > a { flex-shrink: 0; }
+.promotions-card-grid, .promotions-guide-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.promotions-guide-grid article { padding: 26px; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.promotions-guide-grid svg { color: var(--primary); }
+.promotions-guide-grid h3 { font-size: 20px; margin: 16px 0 12px; }
+.promotions-guide-grid p { font-size: 14px; color: var(--muted-foreground); line-height: 1.85; }
+.promotions-card-grid .promo-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.promotions-card-grid .promo-card h3 { font-size: 21px; line-height: 1.5; margin: 0; }
+.promotions-card-grid .promo-card p { color: var(--muted-foreground); font-size: 14px; line-height: 1.8; }
+.promotions-card-grid .promo-card > a { margin-top: auto; }
+.promotions-card-grid .promotion-price strong { color: var(--primary); }
+.promotions-faq details { padding: 22px 0; border-top: 1px solid var(--border); }
+.promotions-faq summary { font-weight: 600; line-height: 1.6; cursor: pointer; }
+.promotions-faq details p { font-size: 14px; color: var(--muted-foreground); line-height: 1.85; }
+.promotions-final { background: var(--secondary); border-radius: var(--radius-xl); padding: 38px; display: flex; justify-content: space-between; align-items: center; gap: 28px; margin: 26px 0 60px; }
+.promotions-final h2 { font-size: 28px; line-height: 1.4; margin: 0 0 12px; }
+.promotions-final p { color: var(--muted-foreground); line-height: 1.8; }
+@media (max-width: 900px) { .promotions-hero { gap: 28px; } .promotions-card-grid, .promotions-guide-grid { grid-template-columns: 1fr 1fr; } .promotions-empty { flex-wrap: wrap; } .promotions-final { flex-direction: column; align-items: start; } }
+@media (max-width: 600px) { .promotions-width { width: calc(100% - 32px); } .promotions-hero { grid-template-columns: 1fr; padding: 28px 0 34px; gap: 22px; } .promotions-hero h1 { font-size: 34px; } .promotions-hero p { font-size: 14px; } .promotions-hero-info { padding: 26px; } .promotions-hero-info h2 { font-size: 24px; } .promotions-actions { gap: 8px; } .promotions-actions a { min-height: 46px; padding: 12px 14px; font-size: 13px; flex: 1; justify-content: center; } .promotions-section { padding: 32px 0; } .promotions-card-grid, .promotions-guide-grid { grid-template-columns: 1fr; } .promotions-empty { padding: 22px; gap: 16px; } .promotions-empty > a { width: 100%; justify-content: center; } .promotions-final { padding: 24px; margin-bottom: 42px; } .promotions-final .promotions-actions { width: 100%; } }

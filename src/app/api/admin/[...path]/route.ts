@@ -9,6 +9,7 @@ import {
   isSameOriginMutation,
 } from "@/lib/admin-session";
 import { WP_CACHE_TAG } from "@/lib/wp";
+import { revalidateRoutePricing } from "@/lib/route-pricing-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -86,8 +87,13 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
   const data = await upstream.json().catch(() => ({ message: `WordPress HTTP ${upstream.status}` }));
 
   if (upstream.ok && mutating && /(?:apply|publish|archive|rollback|pricing)$/.test(path)) {
-    revalidateTag(WP_CACHE_TAG, { expire: 0 });
-    revalidatePath("/", "layout");
+    if (inlinePricing) {
+      await revalidateRoutePricing(segments[1]);
+    } else {
+      // Structural operations retain their existing consistency/rollback scope.
+      revalidateTag(WP_CACHE_TAG, { expire: 0 });
+      revalidatePath("/", "layout");
+    }
   }
 
   return NextResponse.json(data, { status: upstream.status, headers: { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex, nofollow" } });

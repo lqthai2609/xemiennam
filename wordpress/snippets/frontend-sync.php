@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 final class Alo_Dat_Xe_Frontend_Sync_V2 {
     private static array $pending = array();
+    private static array $pricing_routes = array();
     private const TYPES = array( 'post', 'route', 'vehicle', 'location', 'diem_den', 'dich_vu', 'promotion', 'testimonial', 'attachment' );
 
     public static function init(): void {
@@ -25,7 +26,7 @@ final class Alo_Dat_Xe_Frontend_Sync_V2 {
             add_action( $hook, array( __CLASS__, 'term_changed' ), 100, 3 );
         }
         add_action( 'shutdown', array( __CLASS__, 'flush' ), 100 );
-        add_action( 'alo_dat_xe_frontend_sync_retry', array( __CLASS__, 'send' ), 10, 2 );
+        add_action( 'alo_dat_xe_frontend_sync_retry', array( __CLASS__, 'send' ), 10, 3 );
         // First enabled request refreshes existing data without editing any route.
         if ( '2' !== get_option( 'alo_dat_xe_frontend_sync_bootstrap', '' ) ) {
             self::$pending['taxonomy'] = true;
@@ -36,6 +37,17 @@ final class Alo_Dat_Xe_Frontend_Sync_V2 {
     public static function post_saved( $post_id, $post, $update = false ): void {
         if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) { return; }
         if ( $post && in_array( $post->post_type, self::TYPES, true ) ) {
+            // Only the exact administrator-only inline-pricing endpoint has a
+            // price-only contract. Normal editor saves, deletions, slug/term
+            // changes and older API operations retain the existing broad scope.
+            $rest_route = (string) ( $GLOBALS['wp']->query_vars['rest_route'] ?? '' );
+            if ( 'route' === $post->post_type && defined( 'REST_REQUEST' ) && REST_REQUEST
+                && 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' )
+                && preg_match( '#^/gocar/v1/admin/routes/([1-9][0-9]*)/pricing/?$#', $rest_route, $match )
+                && (int) $match[1] === (int) $post_id && current_user_can( 'manage_options' ) ) {
+                self::$pricing_routes[ (int) $post_id ] = true;
+                return;
+            }
             self::$pending[ $post->post_type ] = true;
         }
     }
@@ -56,10 +68,17 @@ final class Alo_Dat_Xe_Frontend_Sync_V2 {
         $types = array_keys( self::$pending );
         self::$pending = array();
         foreach ( $types as $type ) { self::send( $type, 1 ); }
+        $pricing_routes = array_keys( self::$pricing_routes );
+        self::$pricing_routes = array();
+        // A broad route event already covers every price event in this request.
+        if ( ! in_array( 'route', $types, true ) && ! in_array( 'taxonomy', $types, true ) ) {
+            foreach ( $pricing_routes as $post_id ) { self::send( 'route', 1, $post_id ); }
+        }
     }
-    public static function send( $type, $attempt = 1 ): void {
+    public static function send( $type, $attempt = 1, $pricing_route_id = 0 ): void {
         if ( ! in_array( $type, array_merge( self::TYPES, array( 'taxonomy' ) ), true ) ) { return; }
         $attempt = max( 1, min( 3, (int) $attempt ) );
+        $pricing_route_id = 'route' === $type ? max( 0, (int) $pricing_route_id ) : 0;
         $secret = get_option( 'alo_dat_xe_frontend_sync_secret', '' );
         $code = 0;
         $reason = 'missing_secret';
@@ -67,7 +86,8 @@ final class Alo_Dat_Xe_Frontend_Sync_V2 {
             $response = wp_remote_post( 'https://alodatxe.com/api/revalidate', array(
                 'timeout' => 8, 'blocking' => true, 'redirection' => 0,
                 'headers' => array( 'Content-Type' => 'application/json' ),
-                'body' => wp_json_encode( array( 'secret' => $secret, 'post_type' => $type ) ),
+                'body' => wp_json_encode( array_merge( array( 'secret' => $secret, 'post_type' => $type ),
+                    $pricing_route_id ? array( 'pricing_route_id' => $pricing_route_id ) : array() ) ),
             ) );
             if ( is_wp_error( $response ) ) {
                 $reason = 'transport_error';
@@ -84,6 +104,7 @@ final class Alo_Dat_Xe_Frontend_Sync_V2 {
         // Bounded retry for network/server faults, not authentication/configuration errors.
         if ( $attempt < 3 && ( 'transport_error' === $reason || $code >= 500 || 429 === $code ) ) {
             $args = array( $type, $attempt + 1 );
+            if ( $pricing_route_id ) { $args[] = $pricing_route_id; }
             if ( ! wp_next_scheduled( 'alo_dat_xe_frontend_sync_retry', $args ) ) {
                 wp_schedule_single_event( time() + ( 1 === $attempt ? 60 : 300 ), 'alo_dat_xe_frontend_sync_retry', $args );
             }

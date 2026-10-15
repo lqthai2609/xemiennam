@@ -1,5 +1,5 @@
 import { fetchRawRoutes, fetchRawVehicles, embeddedTermName, embeddedTerms, type WPVehicle } from "./raw";
-import { formatPriceShort, parsePriceAmount } from "@/lib/wp";
+import { formatPriceShort, parsePriceAmount } from "@/lib/wp-format";
 import { normalizePriceType, priceTypeLabel, type PriceType } from "@/types/route";
 
 /**

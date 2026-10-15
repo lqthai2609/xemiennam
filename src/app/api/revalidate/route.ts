@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { WP_CACHE_TAG } from "@/lib/wp";
+import { revalidateRoutePricing } from "@/lib/route-pricing-cache";
 
 // WordPress sends at shutdown after post fields, meta and terms are committed.
 // PHP source: wordpress/snippets/frontend-sync.php. No secret defaults are accepted.
@@ -49,6 +50,16 @@ export async function POST(request: Request) {
   const postType = typeof payload.post_type === "string" ? payload.post_type : "";
   if (!Object.hasOwn(RESOURCES, postType)) {
     return NextResponse.json({ revalidated: false, error: "Loại dữ liệu không được hỗ trợ." }, { status: 400 });
+  }
+  // Updated WordPress sync identifies the administrator's inline-price request.
+  // Older callbacks omit this field and retain their existing safe behavior.
+  if (Object.hasOwn(payload, "pricing_route_id")) {
+    const routeId = payload.pricing_route_id;
+    if (postType !== "route" || typeof routeId !== "number" || !Number.isSafeInteger(routeId) || routeId <= 0) {
+      return NextResponse.json({ revalidated: false, error: "Mã tuyến sửa giá không hợp lệ." }, { status: 400 });
+    }
+    await revalidateRoutePricing(String(routeId));
+    return NextResponse.json({ revalidated: true, postType, scope: "route_pricing", routeId });
   }
   const tags = postType === "taxonomy" ? [WP_CACHE_TAG]
     : RESOURCES[postType].map((resource) => `${WP_CACHE_TAG}:${resource}`);

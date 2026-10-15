@@ -15,7 +15,7 @@ export function FloatingContactActions() {
   if (pathname === "/" || pathname === "/lien-he" || pathname === "/tuyen-duong" || pathname === "/diem-den" || pathname === "/loai-xe" || /^\/tuyen-duong\/[^/]+\/[^/]+(?:\/[^/]+)?$/.test(pathname)) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex flex-row gap-2 bg-background p-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:flex-col sm:bg-transparent sm:p-0">
+    <div className="floating-contact-bar fixed inset-x-0 bottom-0 z-40 flex flex-row gap-2 bg-background p-2 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:flex-col sm:bg-transparent sm:p-0">
       <a
         href={`tel:${SITE_CONTACT_PHONE_TEL}`}
         className="floating-action floating-action-call flex-1 justify-center sm:flex-none"

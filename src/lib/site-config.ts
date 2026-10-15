@@ -7,15 +7,15 @@
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://xemiennam.vercel.app").replace(/\/$/, "");
 
 export const SITE_NAME = "Alo Đặt Xe";
-export const SITE_HOTLINE = "0898 400 800";
+export const SITE_HOTLINE = "0559 633 457";
 /** Dạng E.164 không dấu cách — dùng cho JSON-LD `telephone` và tel links. */
-export const SITE_HOTLINE_TEL = "+84898400800";
+export const SITE_HOTLINE_TEL = "+84559633457";
 
 /**
- * Số tư vấn trực tiếp/Zalo. Cho phép override bằng environment để không phải hard-code
- * business config tại từng component. Fallback giữ đúng số đang dùng trên site hiện tại.
+ * Số liên hệ theo hotline đã xác nhận. Một nguồn chung cho header, footer,
+ * schema, nút gọi và Zalo; biến môi trường cũ không ghi đè số mới.
  */
-export const SITE_CONTACT_PHONE = (process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "0898400800").replace(/\D/g, "");
+export const SITE_CONTACT_PHONE = SITE_HOTLINE.replace(/\D/g, "");
 export const SITE_CONTACT_PHONE_DISPLAY =
   SITE_CONTACT_PHONE.length === 10
     ? `${SITE_CONTACT_PHONE.slice(0, 4)} ${SITE_CONTACT_PHONE.slice(4, 7)} ${SITE_CONTACT_PHONE.slice(7)}`

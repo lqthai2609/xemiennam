@@ -4,6 +4,7 @@ import { fetchRawVehicles, fetchRawVehicleBySlug, embeddedTermName, type WPVehic
 import { shouldUseMockFallback } from "./mock-fallback";
 import { stripHtml, wpFetch } from "@/lib/wp";
 import { readVehicleFacts, VEHICLE_CONSULTATION_LABEL } from "@/lib/vehicle-facts";
+import { readVehicleGalleries } from "@/lib/vehicle-gallery";
 
 const useMockFallback = shouldUseMockFallback();
 
@@ -34,8 +35,8 @@ async function resolveGalleryImages(mediaIds: number[] | undefined): Promise<str
   return ids.map((id) => urlById.get(id)).filter((url): url is string => Boolean(url));
 }
 
-export async function mapWPVehicleToVehicle(wp: WPVehicle): Promise<Vehicle> {
-  const images = await resolveGalleryImages(wp.meta.gallery_anh);
+export async function mapWPVehicleToVehicle(wp: WPVehicle, resolvedImages?: string[]): Promise<Vehicle> {
+  const images = resolvedImages ?? await resolveGalleryImages(wp.meta.gallery_anh);
   const type = embeddedTermName(wp._embedded, "vehicle_type") ?? VEHICLE_CONSULTATION_LABEL;
   const operationalFacts = readVehicleFacts(wp.gocar_vehicle_facts, wp.id);
 
@@ -70,7 +71,8 @@ export async function fetchVehicles(options: { freshFacts?: boolean } = {}): Pro
     }
     return [];
   }
-  return Promise.all(rawVehicles.map(mapWPVehicleToVehicle));
+  const galleries = await readVehicleGalleries(rawVehicles, (path) => wpFetch<{ id: number; source_url: string }[]>(path));
+  return Promise.all(rawVehicles.map((vehicle, index) => mapWPVehicleToVehicle(vehicle, galleries[index])));
 }
 
 export async function fetchVehicleBySlug(slug: string): Promise<Vehicle | undefined> {

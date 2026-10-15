@@ -4,14 +4,13 @@ import { VehicleTypeDetailRedesign } from "@/components/vehicle-type-detail-rede
 import { getVehicleCategory, vehicleCategories, withRealCategoryImage, withRealCategoryImages } from "@/data/vehicle-categories";
 import { fetchVehicles } from "@/lib/api/vehicles";
 import { fetchRoutes } from "@/lib/api/routes";
-import { fetchServices } from "@/lib/api/services";
 import { fetchPostsByVehicleType } from "@/lib/api/blog";
-import { fetchAirportRouteLinksForVehicleType } from "@/lib/api/airport-routes";
 import { JsonLd } from "@/components/json-ld";
 import { buildBreadcrumbListSchema, buildServiceSchema } from "@/lib/schema";
 import { buildPageMetadata } from "@/lib/metadata";
 import { SITE_NAME } from "@/lib/site-config";
 import { buildVehicleCategoryRoutePrices, getVehicleCategoryStartingPrice } from "@/lib/vehicle-category-pricing";
+import { projectVehicleJourneyRoutes } from "@/lib/vehicle-category-journey";
 import "../../home-redesign.css";
 import "./vehicle-detail-redesign.css";
 
@@ -42,31 +41,19 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
   const category = getVehicleCategory(slug);
   if (!category) notFound();
 
-  const [allVehicles, allRoutes, allServices, relatedPosts, airportRoutes] = await Promise.all([
+  const [allVehicles, allRoutes, relatedPosts] = await Promise.all([
     fetchVehicles(),
     fetchRoutes(),
-    fetchServices(),
     fetchPostsByVehicleType(category.slug, 3),
-    fetchAirportRouteLinksForVehicleType(category.type),
   ]);
 
   const vehicles = allVehicles.filter((vehicle) => vehicle.type === category.type);
   const displayCategory = withRealCategoryImage(category, vehicles);
-  const galleryImages = Array.from(new Set(vehicles.flatMap((vehicle) => vehicle.images))).slice(0, 7);
 
   const routePrices = buildVehicleCategoryRoutePrices(allRoutes, category.type, category.slug);
-  const relatedRoutes = routePrices.map((row) => ({ label: row.route, href: row.href }));
-
-  const services = allServices
-    .filter((service) => service.vehicleTypes.some((vehicleType) => vehicleType.slug === category.slug))
-    .map((service) => ({
-      title: service.name,
-      description: service.shortDescription,
-      href: `/dich-vu/${service.slug}`,
-    }));
 
   const otherCategories = withRealCategoryImages(
-    vehicleCategories.filter((item) => item.slug !== category.slug),
+    vehicleCategories.filter((item) => item.slug !== category.slug && allVehicles.some((vehicle) => vehicle.type === item.type)),
     allVehicles,
   )
     .map((item) => ({
@@ -92,12 +79,9 @@ export default async function VehicleTypeDetailPage({ params }: Props) {
       <JsonLd data={serviceSchema} />
       <VehicleTypeDetailRedesign
         category={displayCategory}
+        vehicles={vehicles}
         routePrices={routePrices}
-        routes={allRoutes}
-        relatedRoutes={relatedRoutes}
-        airportRoutes={airportRoutes}
-        services={services}
-        galleryImages={galleryImages}
+        routes={projectVehicleJourneyRoutes(allRoutes, category.type)}
         relatedPosts={relatedPosts}
         otherCategories={otherCategories}
       />

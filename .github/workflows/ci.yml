@@ -58,6 +58,10 @@ jobs:
           check_forbidden "Legacy hotline URI found in src" "19006789"
 
           for pattern in "0898 400 800" "0898400800" "+84898400800"; do
+            check_forbidden "Retired hotline found in src" "$pattern"
+          done
+
+          for pattern in "0559 633 457" "0559633457" "+84559633457"; do
             if grep -RniF --exclude="site-config.ts" -- "$pattern" src; then
               echo "::error::Hotline literal must be centralized in src/lib/site-config.ts: $pattern"
               fail=1
@@ -109,6 +113,7 @@ jobs:
       - name: Day 46 confirmed vehicle facts and loading suggestions
         run: |
           npm run test:vehicle-facts
+          node --test scripts/vehicle-gallery.test.mjs
           npm run test:vehicle-facts:php
           php -l wordpress/gocar-core/includes/class-gocar-vehicle-facts.php
 
@@ -180,10 +185,15 @@ jobs:
         run: npm run test:seo-url-map
 
       - name: Booking search regression guard
-        run: npm run test:booking-search
+        run: |
+          npm run test:booking-search
+          node --test scripts/booking-search-performance.test.mjs
+
+      - name: Booking acknowledgement and optional promotion code
+        run: node --test scripts/booking-receipt.test.mjs
 
       - name: Route direction and package navigation
-        run: node --test scripts/route-journey-selection.test.mjs
+        run: node --test scripts/route-journey-selection.test.mjs scripts/vehicle-category-journey.test.mjs
 
       - name: Sitemap lastmod date validity
         run: node --test scripts/sitemap-lastmod.test.mjs
@@ -207,7 +217,9 @@ jobs:
         run: npm run test:public-pricing
 
       - name: WordPress API failure and recovery
-        run: node --test scripts/wp-fetch-resilience.test.mjs scripts/wp-revalidate.test.mjs
+        run: |
+          node --test scripts/wp-fetch-resilience.test.mjs scripts/wp-revalidate.test.mjs scripts/route-pricing-cache.test.mjs
+          php scripts/wp-frontend-sync-php.test.php
 
       - name: Production build
         run: npm run build
