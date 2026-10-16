@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
-import { embeddedTermName, fetchRawRoutes, fetchRawVehicles } from "@/lib/api/raw";
-import { fetchLocationsV2, locationById } from "@/lib/api/locations";
-import { mapWPRouteToRoutePairV2 } from "@/lib/api/route-directions";
+import { resolveRouteContext, resolveBookingLocationId, resolveVehicleId } from "@/lib/api/booking-context";
 import { resolvePriceRulesWithPromotion } from "@/lib/api/promotion-pricing";
 import { bookingIntentHash, buildPromotionSnapshot, persistedBookingResponse, type PersistedBookingResult } from "@/lib/api/promotion-snapshot";
 import { wpAuthedFetch } from "@/lib/api/wp-auth";
 import { formatIntermediateStops, intermediateStopsInputSchema } from "@/lib/booking-stops";
 import { LEAD_MEASUREMENT_POLICY, normalizeAcquisition } from "@/lib/lead-measurement";
+
+import { applyCoupon, CouponError } from "@/lib/api/coupon";
 
 import { promotionCodeInput } from "@/lib/booking-promotion-code";
 
@@ -17,6 +17,7 @@ const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
 const bookingRequestSchema = z.object({
   promotionCode: promotionCodeInput.optional().transform((code) => code || undefined),
+  couponQuoteKey: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   fullName: z.string().trim().min(1, "Thiếu họ tên."),
   phone: z.string().trim().regex(phoneRegex, "Số điện thoại không đúng định dạng Việt Nam."),
   route: z.string().trim().min(1, "Thiếu tuyến quan tâm."),
@@ -36,78 +37,6 @@ const bookingRequestSchema = z.object({
   note: z.string().trim().max(500).optional().default(""),
   acquisition: z.unknown().optional(),
 });
-
-const OTHER_ROUTE_LABEL = "Tuyến khác";
-
-type ResolvedRouteContext = {
-  routeId: number | null;
-  originLocationId: number;
-  destinationLocationId: number;
-  validLocationIds: Set<number>;
-  route: Awaited<ReturnType<typeof fetchRawRoutes>>[number] | undefined;
-  locationsById: ReturnType<typeof locationById>;
-};
-
-async function resolveRouteContext(
-  routeId: string | undefined,
-  routeLabel: string,
-): Promise<ResolvedRouteContext> {
-  const [routes, locations] = await Promise.all([fetchRawRoutes(), fetchLocationsV2()]);
-  const locationsById = locationById(locations);
-  const validLocationIds = new Set(locations.map((location) => location.id));
-
-  let match = routeId
-    ? routes.find((route) => route.id === Number(routeId))
-    : undefined;
-
-  if (!match && routeLabel !== OTHER_ROUTE_LABEL) {
-    match = routes.find((route) => {
-      const pair = mapWPRouteToRoutePairV2(route);
-      const origin = pair.originLocationId > 0 ? locationsById.get(pair.originLocationId) : undefined;
-      const destination = pair.destinationLocationId > 0 ? locationsById.get(pair.destinationLocationId) : undefined;
-      const from = origin?.name || route.meta.diem_di || "";
-      const to = destination?.name || route.meta.diem_den || "";
-      return `${from} – ${to}` === routeLabel;
-    });
-  }
-
-  if (!match) {
-    return {
-      routeId: null,
-      originLocationId: 0,
-      destinationLocationId: 0,
-      validLocationIds,
-      route: undefined,
-      locationsById,
-    };
-  }
-
-  const pair = mapWPRouteToRoutePairV2(match);
-  return {
-    routeId: match.id,
-    originLocationId: pair.originLocationId,
-    destinationLocationId: pair.destinationLocationId,
-    validLocationIds,
-    route: match,
-    locationsById,
-  };
-}
-
-function resolveBookingLocationId(
-  requestedId: number | undefined,
-  fallbackId: number,
-  validLocationIds: Set<number>,
-): number {
-  if (requestedId && validLocationIds.has(requestedId)) return requestedId;
-  if (fallbackId > 0 && validLocationIds.has(fallbackId)) return fallbackId;
-  return 0;
-}
-
-async function resolveVehicleId(vehicleTypeLabel: string): Promise<number | null> {
-  const vehicles = await fetchRawVehicles();
-  const match = vehicles.find((v) => embeddedTermName(v._embedded, "vehicle_type") === vehicleTypeLabel);
-  return match?.id ?? null;
-}
 
 export async function POST(request: Request) {
   let json: unknown;
@@ -146,8 +75,8 @@ export async function POST(request: Request) {
   if (replay.data?.found !== false) return NextResponse.json({ ok: false, error: "Không xác nhận được trạng thái yêu cầu." }, { status: 502 });
 
   const [routeContext, vehicleId] = await Promise.all([
-    resolveRouteContext(data.routeId, data.route),
-    resolveVehicleId(data.vehicleType),
+    resolveRouteContext(data.routeId, data.route, Boolean(data.promotionCode)),
+    resolveVehicleId(data.vehicleType, Boolean(data.promotionCode)),
   ]);
 
   const direction = data.direction ?? "outbound";
@@ -181,7 +110,21 @@ export async function POST(request: Request) {
     departureDate: data.departureDate,
     departureTime: data.departureTime,
   };
-  const evaluation = await resolvePriceRulesWithPromotion(priceContext);
+  let evaluation = await resolvePriceRulesWithPromotion(priceContext);
+  let couponReceipt;
+  if (data.promotionCode) {
+    try {
+      const applied = await applyCoupon(data.promotionCode, evaluation, priceContext);
+      if (!data.couponQuoteKey || data.couponQuoteKey !== applied.quote.quoteKey) {
+        return NextResponse.json({ ok: false, error: "Giá hoặc điều kiện mã đã thay đổi. Hãy áp dụng lại mã và xác nhận giá mới.", quote: applied.quote }, { status: 409 });
+      }
+      evaluation = applied.evaluation; couponReceipt = applied.receipt;
+    } catch (error) {
+      return NextResponse.json({ ok: false, error: error instanceof CouponError ? error.message : "Chưa kiểm tra được mã khuyến mãi." }, { status: error instanceof CouponError ? error.status : 503 });
+    }
+  } else if (data.couponQuoteKey) {
+    return NextResponse.json({ ok: false, error: "Xác nhận giá không có mã tương ứng." }, { status: 400 });
+  }
   const priceRules = evaluation.pricing;
   const promotionSnapshot = buildPromotionSnapshot(evaluation, priceContext);
   const surcharge = priceRules.surcharge;
@@ -206,7 +149,7 @@ export async function POST(request: Request) {
     noteParts.push(`Điểm dừng trung gian: ${formatIntermediateStops(data.intermediateStops)}.`);
   }
   if (data.note) noteParts.push(data.note);
-  if (data.promotionCode) noteParts.push(`Mã khuyến mãi khách cung cấp (chờ xác nhận): ${data.promotionCode}.`);
+  if (couponReceipt) noteParts.push(`Mã khuyến mãi: ${couponReceipt.code}; giảm ${evaluation.promotion.discountAmount} VND; giá sau giảm ${evaluation.promotion.promotionalEstimatedTotal} VND.`);
 
   // Context is optional, sanitized and outside booking identity. Never infer a touch
   // from the API Referer, booking PII, an asserted source, channel or lead ID.
@@ -218,6 +161,7 @@ export async function POST(request: Request) {
       idempotency_key: idempotencyKey,
       intent_version: 2, intent_hash: intentHash, promotion_snapshot: promotionSnapshot,
       acquisition,
+      ...(couponReceipt ? { coupon_receipt: couponReceipt } : {}),
       booking: {
         title: data.fullName,
         status: "publish",

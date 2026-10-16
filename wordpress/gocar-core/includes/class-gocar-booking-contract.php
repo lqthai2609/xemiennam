@@ -14,6 +14,8 @@ final class Gocar_Booking_Contract {
     public static function read(): WP_REST_Response {
         $response = new WP_REST_Response( array(
             'contract_version' => 1,
+            'coupon_contract_version' => class_exists( 'Gocar_Coupon' ) ? 1 : 0,
+            'coupon_commercial_enabled' => class_exists( 'Gocar_Coupon' ) && Gocar_Coupon::enabled(),
             'intent_version' => 2,
             'snapshot_version' => 1,
             'replay_lookup' => is_callable( array( 'Gocar_Lead_Lifecycle', 'replay' ) ),

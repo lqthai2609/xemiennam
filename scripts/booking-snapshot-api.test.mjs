@@ -75,10 +75,11 @@ test('consented acquisition is sanitized outside stable booking identity; the AP
  } finally {if(previous===undefined)delete process.env.LEAD_MEASUREMENT_POLICY;else process.env.LEAD_MEASUREMENT_POLICY=previous;}
 });
 
-test('optional promotion code is persisted for manual review without changing the evaluator result', async () => {
- const h=harness();const response=await h.POST(request({promotionCode:'  SYNTHETIC10  '}));const body=await response.json();
- assert.equal(response.status,200);assert.match(h.calls.backend[1].body.booking.meta.ghi_chu,/Mã khuyến mãi khách cung cấp \(chờ xác nhận\): SYNTHETIC10\./);
- assert.equal(body.promotionSnapshot.promotion.reason,'disabled');assert.equal(body.promotionSnapshot.promotion.discount_amount,null);assert.equal(body.promotionSnapshot.pricing.estimated_total,null);
+test('a supplied code never silently falls back to a manually reviewed full-price booking', async () => {
+ const previous=process.env.ALO_COUPONS_ENABLED; delete process.env.ALO_COUPONS_ENABLED;
+ try {const h=harness();const response=await h.POST(request({promotionCode:'SYNTHETIC10'}));
+ assert.equal(response.status,503);assert.equal(h.calls.backend.length,1);}
+ finally {if(previous===undefined)delete process.env.ALO_COUPONS_ENABLED;else process.env.ALO_COUPONS_ENABLED=previous;}
 });
 test('absent and blank promotion codes keep the old intent identity; changing a code changes it',async()=>{
  const absent=harness(),blank=harness(),a=harness(),b=harness();await absent.POST(request());await blank.POST(request({promotionCode:' '}));await a.POST(request({promotionCode:'A10'}));await b.POST(request({promotionCode:'B10'}));

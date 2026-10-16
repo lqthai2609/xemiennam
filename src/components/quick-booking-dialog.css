@@ -37,3 +37,10 @@ body[data-booking-dialog-open="true"] .floating-contact-bar { display: none; }
   .quick-booking-progress li { font-size: 11px; gap: 5px; }
   .quick-booking-wizard .form-control { font-size: 16px; }
 }
+
+.quick-booking-coupon { border: 1px solid #dce1f0; border-radius: 12px; padding: 1rem; margin: 1rem 0; min-width: 0; }
+.quick-booking-coupon legend { font-weight: 600; padding: 0 .3rem; }
+.quick-booking-coupon-controls { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.quick-booking-coupon-controls input { flex: 1 1 150px; min-width: 0; }
+.quick-booking-coupon-controls > button:last-child { color: #0000d8; }
+.quick-booking-coupon .quick-booking-summary { margin-top: .75rem; }

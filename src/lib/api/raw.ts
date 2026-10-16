@@ -294,8 +294,8 @@ export type WPDiemDen = {
 
 const LIST_QUERY = "per_page=100&_embed=1";
 
-export async function fetchRawRoutes(): Promise<WPRoute[]> {
-  return (await wpFetch<WPRoute[]>(`/route?${LIST_QUERY}`)) ?? [];
+export async function fetchRawRoutes(revalidate?: number): Promise<WPRoute[]> {
+  return (await wpFetch<WPRoute[]>(`/route?${LIST_QUERY}`, revalidate)) ?? [];
 }
 
 export async function fetchRawRouteBySlug(slug: string): Promise<WPRoute | null> {

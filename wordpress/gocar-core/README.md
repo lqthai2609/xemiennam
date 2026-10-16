@@ -1,5 +1,16 @@
 # Gocar Core
 
+## 0.18.0 — Booking coupon codes (release disabled)
+
+- Private administrator coupon management, using the existing Promotion Model and evaluator.
+- Fixed/base-percentage discount with a mandatory percentage cap, exact trip scopes, minimum base fare, reception dates and optional trip dates.
+- SQL compare-and-swap preserves quota under concurrent requests. Pending holds and used slots are counted separately; uncertain writes require reconciliation and never expire automatically.
+- Booking persists the original server snapshot and private coupon receipt. Replay runs before pricing, expiry and feature checks.
+- `ALO_COUPONS_ENABLED` defaults off in both Next.js and WordPress. No coupon data is seeded on upgrade. Existing promotion/empty-leg commercial flags stay off.
+- Production build preflight checks coupon protocol and backend activation when the Next.js flag is enabled. No schema migration or new public SEO URL.
+- See `docs/coupon-v1-contract.md` and the technical receipt before activating.
+
+
 ## 0.17.6 — Existing public price edits on historically locked routes
 
 - Keeps legacy D35 route creation, archival/deletion and general wizard price-write locks.

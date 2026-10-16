@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const bookingApi = await readFile(new URL("../src/app/api/booking/route.ts", import.meta.url), "utf8");
+const bookingContext = await readFile(new URL("../src/lib/api/booking-context.ts", import.meta.url), "utf8");
 const bookingContract = await readFile(
   new URL("../wordpress/gocar-core/includes/class-gocar-booking-request.php", import.meta.url),
   "utf8",
@@ -45,7 +46,7 @@ test("Day 31 booking API persists structured pickup/dropoff meta", () => {
 });
 
 test("Day 31 derives Location V2 endpoints from canonical Route + direction", () => {
-  assert.match(bookingApi, /mapWPRouteToRoutePairV2/);
+  assert.match(bookingContext, /mapWPRouteToRoutePairV2/);
   assert.match(bookingApi, /direction === "inbound"/);
   assert.match(bookingApi, /resolveBookingLocationId/);
   assert.match(bookingApi, /validLocationIds/);

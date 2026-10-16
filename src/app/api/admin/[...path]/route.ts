@@ -14,6 +14,8 @@ import { revalidateRoutePricing } from "@/lib/route-pricing-cache";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_PATHS = [
+  /^coupons$/,
+  /^coupons\/options$/,
   /^measurement$/,
   /^empty-legs$/,
   /^empty-legs\/options$/,
@@ -60,6 +62,8 @@ async function proxy(request: NextRequest, context: AdminRouteContext) {
   const inlinePricing = /^routes\/[1-9]\d*\/pricing$/.test(path);
   if (inlinePricing && !session.canEditPricing) return privateJson({ message: "Chỉ quản trị viên được sửa giá." }, 403);
   if (inlinePricing && !["GET", "POST"].includes(request.method)) return privateJson({ message: "Thao tác không được phép." }, 405);
+
+  if (path.startsWith("coupons") && (!session.canEditPricing || !["GET", "POST"].includes(request.method) || (path.endsWith("options") && request.method !== "GET"))) return privateJson({ message: "Chỉ quản trị viên được quản lý mã." }, 403);
 
   const mutating = request.method !== "GET";
   if (mutating) {
