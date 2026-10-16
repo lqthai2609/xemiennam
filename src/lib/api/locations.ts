@@ -67,13 +67,13 @@ export function mapWPLocationToLocationV2(wp: WPLocation): LocationV2 {
  * Đọc toàn bộ Location theo trang 100 bản ghi. Không N+1 theo route; khi dữ liệu vượt 100
  * Location vẫn tiếp tục đọc trang kế tiếp cho tới khi gặp trang cuối.
  */
-export async function fetchLocationsV2(): Promise<LocationV2[]> {
+export async function fetchLocationsV2(revalidate?: number): Promise<LocationV2[]> {
   const output: LocationV2[] = [];
   const perPage = 100;
 
   for (let page = 1; page <= 20; page += 1) {
     const batch =
-      (await wpFetch<WPLocation[]>(`/location?per_page=${perPage}&page=${page}`)) ?? [];
+      (await wpFetch<WPLocation[]>(`/location?per_page=${perPage}&page=${page}`, revalidate)) ?? [];
     output.push(...batch.map(mapWPLocationToLocationV2));
     if (batch.length < perPage) break;
   }

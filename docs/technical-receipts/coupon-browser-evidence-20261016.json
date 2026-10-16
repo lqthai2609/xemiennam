@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "backend": "WordPress 6.8.3 / MariaDB 10.11.14; synthetic only",
+  "evidence": [
+    {
+      "viewport": "desktop",
+      "applied": true,
+      "dateInvalidates": true,
+      "remove": true,
+      "review": true,
+      "redirect": true,
+      "lostResponseReplay": true,
+      "noDuplicate": true
+    },
+    {
+      "viewport": "mobile",
+      "applied": true,
+      "dateInvalidates": true,
+      "remove": true,
+      "review": true,
+      "redirect": true,
+      "lostResponseReplay": false,
+      "noDuplicate": true
+    },
+    {
+      "adminCreate": true,
+      "percentCapConfigured": true,
+      "csrf": true,
+      "mobileOverflow": false
+    },
+    {
+      "workers": 4,
+      "concurrent": 12,
+      "lastSlotWinners": 1,
+      "used": 1,
+      "held": 0,
+      "replayAfterPauseAndPriceChange": true,
+      "persistedPrice": 1100000
+    }
+  ]
+}

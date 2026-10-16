@@ -229,9 +229,13 @@ final class Gocar_Lead_Lifecycle {
         if ( isset( $existing['snapshot'] ) && ! Gocar_Promotion_Snapshot::save( $id, $existing['snapshot'] ) ) {
             return new WP_Error( 'snapshot_unconfirmed', 'The original snapshot could not be confirmed.', array( 'status' => 502 ) );
         }
+        if ( isset( $existing['coupon_receipt'] ) ) {
+            $settled = Gocar_Coupon::settle( $existing['coupon_receipt'], $key_hash, $id );
+            if ( is_wp_error( $settled ) ) return $settled;
+        }
         $existing['id'] = $id;
         update_option( $option, $existing, false );
-        return rest_ensure_response( array( 'found' => true, 'id' => $id, 'lead_id' => $id, 'replayed' => true, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ), 'notification' => self::notification( $id ) ) );
+        return rest_ensure_response( array( 'found' => true, 'id' => $id, 'lead_id' => $id, 'replayed' => true, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ), 'coupon_receipt' => class_exists( 'Gocar_Coupon' ) ? Gocar_Coupon::receipt( $id ) : null, 'notification' => self::notification( $id ) ) );
     }
 
     /** Reservations are authoritative SQL state, never an option-cache lease. */
@@ -305,13 +309,21 @@ final class Gocar_Lead_Lifecycle {
             return self::existing_result( $option, $key_hash, $existing, $fingerprint, null !== $identity );
         }
         $snapshot = $request->get_param( 'promotion_snapshot' );
-        if ( null !== $identity && ( ! Gocar_Promotion_Snapshot::valid( $snapshot, Gocar_Promotion_Model::COMMERCIAL_ENABLED ) || ! Gocar_Promotion_Snapshot::matches_booking( $snapshot, $booking['meta'] ) ) ) {
+        $coupon = $request->get_param( 'coupon_receipt' );
+        $has_coupon = null !== $coupon;
+        if ( $has_coupon && ( null === $identity || ! class_exists( 'Gocar_Coupon' ) || ! Gocar_Coupon::valid_receipt( $coupon ) ) ) return new WP_Error( 'invalid_coupon', 'Thiếu xác nhận mã hợp lệ.', array( 'status' => 400 ) );
+        if ( null !== $identity && ( ! Gocar_Promotion_Snapshot::valid( $snapshot, ( Gocar_Promotion_Model::COMMERCIAL_ENABLED || $has_coupon ) ) || ! Gocar_Promotion_Snapshot::matches_booking( $snapshot, $booking['meta'] ) ) ) {
             return new WP_Error( 'invalid_snapshot', 'A valid server estimate snapshot is required.', array( 'status' => 400 ) );
         }
         // Legacy callers do not gain snapshots from untrusted post meta or payloads.
         if ( null === $identity && null !== $snapshot ) { return new WP_Error( 'invalid_snapshot', 'Versioned intent is required.', array( 'status' => 400 ) ); }
+        if ( $has_coupon ) {
+            $check = Gocar_Coupon::check( $coupon, $snapshot, $booking['meta'] );
+            if ( is_wp_error( $check ) ) return $check;
+        }
         $reservation = array( 'fingerprint' => $fingerprint, 'id' => null, 'reserved_at' => gmdate( 'c' ) );
         if ( null !== $identity ) { $reservation['intent_version'] = 2; $reservation['snapshot'] = $snapshot; }
+        if ( $has_coupon ) $reservation['coupon_receipt'] = $coupon;
         $reserved = self::reserve( $option, $reservation );
         if ( $reserved instanceof WP_Error ) { return $reserved; }
         if ( ! $reserved ) {
@@ -319,6 +331,15 @@ final class Gocar_Lead_Lifecycle {
             if ( $existing instanceof WP_Error ) { return $existing; }
             if ( false === $existing ) { return new WP_Error( 'lead_in_progress', 'Lead creation needs reconciliation; retry with the same key.', array( 'status' => 409 ) ); }
             return self::existing_result( $option, $key_hash, $existing, $fingerprint, null !== $identity );
+        }
+        if ( $has_coupon ) {
+            $held = Gocar_Coupon::hold( $coupon, $snapshot, $booking['meta'], $key_hash );
+            if ( is_wp_error( $held ) ) {
+                // This worker won the key and has not invoked booking insertion.
+                // No ambiguous insert exists, so removing just this reservation is safe.
+                if ( ! in_array( $held->get_error_code(), array( 'coupon_storage', 'coupon_busy' ), true ) ) delete_option( $option );
+                return $held;
+            }
         }
         $inner = new WP_REST_Request( 'POST', '/wp/v2/booking_request' );
         $inner->set_body_params( $booking );
@@ -341,14 +362,18 @@ final class Gocar_Lead_Lifecycle {
         if ( null !== $identity && ! Gocar_Promotion_Snapshot::save( (int) $record['id'], $reservation['snapshot'] ) ) {
             return new WP_Error( 'snapshot_unconfirmed', 'Lead exists but its original estimate needs reconciliation.', array( 'status' => 502 ) );
         }
+        if ( $has_coupon ) {
+            $settled = Gocar_Coupon::settle( $coupon, $key_hash, (int) $record['id'] );
+            if ( is_wp_error( $settled ) ) return $settled;
+        }
         $reservation['id'] = (int) $record['id'];
         update_option( $option, $reservation, false );
-        return rest_ensure_response( array( 'id' => (int) $record['id'], 'lead_id' => (int) $record['id'], 'replayed' => false, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( (int) $record['id'] ), 'notification' => self::notification( (int) $record['id'] ) ) );
+        return rest_ensure_response( array( 'id' => (int) $record['id'], 'lead_id' => (int) $record['id'], 'replayed' => false, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( (int) $record['id'] ), 'coupon_receipt' => $has_coupon ? Gocar_Coupon::receipt( (int) $record['id'] ) : null, 'notification' => self::notification( (int) $record['id'] ) ) );
     }
 
     public static function read( WP_REST_Request $request ) {
         $id = absint( $request['id'] );
-        $record = array( 'lead_id' => $id, 'state' => self::state( $id ), 'history' => get_post_meta( $id, '_gocar_lead_history_v1', false ), 'acquisition' => get_post_meta( $id, '_gocar_lead_context_v1', true ) ?: null, 'attribution' => get_post_meta( $id, '_gocar_lead_attribution_v1', true ) ?: null, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ), 'notification' => self::notification( $id ) );
+        $record = array( 'lead_id' => $id, 'state' => self::state( $id ), 'history' => get_post_meta( $id, '_gocar_lead_history_v1', false ), 'acquisition' => get_post_meta( $id, '_gocar_lead_context_v1', true ) ?: null, 'attribution' => get_post_meta( $id, '_gocar_lead_attribution_v1', true ) ?: null, 'promotion_snapshot' => Gocar_Promotion_Snapshot::read( $id ), 'coupon_receipt' => class_exists( 'Gocar_Coupon' ) ? Gocar_Coupon::receipt( $id ) : null, 'notification' => self::notification( $id ) );
         if ( class_exists( 'Gocar_Lead_Measurement' ) && Gocar_Lead_Measurement::expired( $id ) ) $record = Gocar_Lead_Measurement::redact( $record );
         return rest_ensure_response( $record );
     }

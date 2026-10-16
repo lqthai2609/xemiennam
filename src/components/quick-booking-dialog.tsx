@@ -7,6 +7,7 @@ import { RequiredMark } from "@/components/required-mark";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import type { CouponQuote } from "@/types/coupon";
 import { promotionCodeInput } from "@/lib/booking-promotion-code";
 import { rememberBookingReceipt } from "@/lib/booking-receipt";
 import "./quick-booking-dialog.css";
@@ -152,6 +153,7 @@ export function QuickBookingDialog({
     control,
     trigger,
     getValues,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<QuickBookingData>({
     resolver: zodResolver(schema),
@@ -171,19 +173,23 @@ export function QuickBookingDialog({
   const [confirmed, setConfirmed] = useState(false);
   const [submissionError, setSubmissionError] = useState("");
   const [sending, setSending] = useState(false);
-  const busy = isSubmitting || sending;
+  const [applyingCode, setApplyingCode] = useState(false);
+  const [codeError, setCodeError] = useState("");
+  const [couponEntry, setCouponEntry] = useState<{ contextKey: string; quote: CouponQuote } | null>(null);
+  const busy = isSubmitting || sending || applyingCode;
   const sendingRef = useRef(false);
   const panelRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const titleId = useId();
-  const contactFields = ["fullName", "phone", "promotionCode", "pickupNote"] as const;
-  const tripFields = ["pickupAddress", "dropoffAddress", "departureAt", "flightNumber", "landingAt", "airportTerminal", "flightKind", "flightAt", "airportArrivalAt", "passengerCount", "luggageCount", "requestNameplate", "nameplateName"] as const;
+  const contactFields = ["fullName", "phone", "pickupNote"] as const;
+  const tripFields = ["promotionCode", "pickupAddress", "dropoffAddress", "departureAt", "flightNumber", "landingAt", "airportTerminal", "flightKind", "flightAt", "airportArrivalAt", "passengerCount", "luggageCount", "requestNameplate", "nameplateName"] as const;
   const stepTitles = ["Xác nhận chuyến đi", "Thông tin liên hệ", "Kiểm tra trước khi gửi"];
 
   function goToStep(next: 1 | 2 | 3) { if (sendingRef.current) return; setConfirmed(false); setSubmissionError(""); setStep(next); }
   async function nextStep() {
+    if (step === 1 && getValues("promotionCode")?.trim() && !activeCoupon) { setCodeError("Vui lòng áp dụng mã hoặc bỏ mã trước khi tiếp tục."); return; }
     const valid = await trigger(step === 1 ? [...tripFields] : [...contactFields], { shouldFocus: true });
     if (valid) goToStep(step === 1 ? 2 : 3);
   }
@@ -199,6 +205,34 @@ export function QuickBookingDialog({
     flight_number: flightNumber?.trim() || null, flight_at: (airportContext === "pickup_from_airport" ? landingAt : flightAt) || null,
     airport_arrival_at: airportArrivalAt || null,
   };
+  const [promotionCode, departureAt] = useWatch({ control, name: ["promotionCode", "departureAt"] });
+  function couponContext(data: QuickBookingData) {
+    const schedule = airportContext === "pickup_from_airport" ? data.landingAt : airportContext === "dropoff_at_airport" ? data.airportArrivalAt || data.flightAt : data.departureAt;
+    return { promotionCode: data.promotionCode?.trim().toUpperCase() || "", routeId, vehicleType, direction, packageKey,
+      departureDate: datePart(schedule), departureTime: schedule?.split("T")[1]?.slice(0, 5) || "" };
+  }
+  // Derive validity from current selections; stale async replies cannot attach to a different trip.
+  const couponContextKey = JSON.stringify({ promotionCode: promotionCode?.trim().toUpperCase() || "", routeId, vehicleType, direction, packageKey,
+    departureDate: datePart(airportContext === "pickup_from_airport" ? landingAt : airportContext === "dropoff_at_airport" ? airportArrivalAt || flightAt : departureAt),
+    departureTime: (airportContext === "pickup_from_airport" ? landingAt : airportContext === "dropoff_at_airport" ? airportArrivalAt || flightAt : departureAt)?.split("T")[1]?.slice(0, 5) || "" });
+  const activeCoupon = couponEntry?.contextKey === couponContextKey ? couponEntry.quote : null;
+  const money = (amount: number) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
+  async function applyCode() {
+    if (busy || sendingRef.current) return;
+    setConfirmed(false); setCodeError(""); setCouponEntry(null);
+    if (!(await trigger("promotionCode"))) return;
+    const context = couponContext(getValues());
+    if (!context.promotionCode) { setCodeError("Vui lòng nhập mã khuyến mãi."); return; }
+    setApplyingCode(true);
+    try {
+      const response = await fetch("/api/booking/coupon", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(context) });
+      const result = await response.json();
+      if (!response.ok || result.ok !== true) throw new Error(result.error || "Chưa kiểm tra được mã.");
+      if (JSON.stringify(couponContext(getValues())) === JSON.stringify(context)) setCouponEntry({ contextKey: JSON.stringify(context), quote: result.quote });
+    } catch (error) { setCodeError(error instanceof Error ? error.message : "Chưa kiểm tra được mã. Vui lòng thử lại."); }
+    finally { setApplyingCode(false); }
+  }
+  function removeCode() { setValue("promotionCode", ""); setCouponEntry(null); setCodeError(""); setConfirmed(false); }
   const fixedAirportName = airportName || "Sân bay theo tuyến đã chọn";
 
   useEffect(() => {
@@ -243,7 +277,8 @@ export function QuickBookingDialog({
   useEffect(() => { headingRef.current?.focus(); if (bodyRef.current) bodyRef.current.scrollTop = 0; }, [step]);
 
   async function submitForm(data: QuickBookingData) {
-    if (step !== 3 || !confirmed || sendingRef.current) return;
+    if (step !== 3 || !confirmed || sendingRef.current || applyingCode) return;
+    if (data.promotionCode?.trim() && !activeCoupon) { setCodeError("Vui lòng áp dụng lại mã cho chuyến đã chọn."); goToStep(1); return; }
     sendingRef.current = true;
     setSending(true);
     setSubmissionError("");
@@ -288,7 +323,7 @@ export function QuickBookingDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...(data.promotionCode ? { promotionCode: data.promotionCode } : {}),
+          ...(activeCoupon ? { promotionCode: activeCoupon.code, couponQuoteKey: activeCoupon.quoteKey } : {}),
           fullName: data.fullName,
           phone: data.phone,
           route,
@@ -314,8 +349,9 @@ export function QuickBookingDialog({
       rememberBookingReceipt(leadId, isQuote ? "quote" : "booking");
       onClose();
       router.push("/cam-on");
-    } catch {
-      setSubmissionError("Gửi yêu cầu chưa thành công. Thông tin vẫn được giữ để bạn thử lại.");
+    } catch (error) {
+      setConfirmed(false);
+      setSubmissionError(error instanceof Error ? error.message : "Gửi yêu cầu chưa thành công. Thông tin vẫn được giữ để bạn thử lại.");
       toast.error("Gửi thông tin chưa thành công", {
         description: `Vui lòng thử lại hoặc gọi trực tiếp cho ${SITE_NAME}.`,
       });
@@ -531,6 +567,18 @@ export function QuickBookingDialog({
             <label className="flex flex-col gap-1.5 text-sm font-semibold"><span>Loại chuyến bay theo vé</span><select {...register("flightKind")} aria-label="Loại chuyến bay theo vé" className="form-control"><option value="">Chưa rõ, cần tư vấn</option><option value="domestic">Nội địa</option><option value="international">Quốc tế</option></select></label>
             <AirportPickupAdvice key={JSON.stringify([timingInput, pickupAddress, dropoffAddress, vehicleType, packageKey])} input={timingInput} />
           </fieldset>}
+              <fieldset className="quick-booking-coupon" disabled={busy}><legend>Mã khuyến mãi (nếu có)</legend>
+                <label className="sr-only" htmlFor={`${titleId}-code`}>Mã khuyến mãi</label>
+                <div className="quick-booking-coupon-controls"><input id={`${titleId}-code`} {...register("promotionCode")} maxLength={64} aria-invalid={!!errors.promotionCode || !!codeError} aria-describedby={`${titleId}-code-note`} className="form-control" autoComplete="off" autoCapitalize="characters" placeholder="Nhập mã bạn đang có" />
+                <Button type="button" variant="outline" onClick={applyCode} disabled={busy || isQuote}>{applyingCode ? "Đang kiểm tra..." : "Áp dụng"}</Button>
+                {promotionCode && <button type="button" onClick={removeCode}>Bỏ mã</button>}</div>
+                <FieldError message={errors.promotionCode?.message} />
+                <div id={`${titleId}-code-note`} aria-live="polite">
+                  {codeError ? <p className="quick-booking-error">{codeError}</p> : activeCoupon ? <p>Đã áp dụng mã {activeCoupon.code}.</p> : <p className="quick-booking-price-note">{isQuote ? "Chuyến cần tư vấn báo giá, chưa áp dụng mã tự động." : "Mã giảm trên giá chuyến cơ bản. Phụ phí tính riêng."}</p>}
+                </div>
+                {activeCoupon && <dl className="quick-booking-summary"><div><dt>Giá trước giảm</dt><dd>{money(activeCoupon.before)}</dd></div><div><dt>Giảm theo mã</dt><dd>−{money(activeCoupon.discount)}</dd></div><div><dt>Giá sau giảm</dt><dd>{money(activeCoupon.after)}</dd></div></dl>}
+                <p className="quick-booking-price-note">Mã được kiểm tra lại khi gửi yêu cầu đặt xe.</p>
+              </fieldset>
             </>}
             {step === 2 && <fieldset className="flex flex-col gap-3"><legend className="sr-only">Thông tin liên hệ</legend>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground">
@@ -556,8 +604,6 @@ export function QuickBookingDialog({
               />
               <FieldError message={errors.phone?.message} />
             </label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold"><span>Mã khuyến mãi (nếu có)</span><input {...register("promotionCode")} maxLength={64} aria-invalid={!!errors.promotionCode} aria-describedby="booking-code-note" className="form-control" autoComplete="off" placeholder="Nhập mã bạn đang có" /><FieldError message={errors.promotionCode?.message} /></label>
-              <p id="booking-code-note" className="quick-booking-price-note">Mã sẽ được gửi cùng yêu cầu để kiểm tra điều kiện áp dụng. Giá hiện tại chưa giảm theo mã này.</p>
               <details className="quick-booking-extra"><summary>Bổ sung hướng dẫn đón khách</summary>
             <label className="flex flex-col gap-1.5 text-sm font-semibold text-foreground sm:col-span-2">
               <span>Lưu ý điểm đón</span>
@@ -583,9 +629,9 @@ export function QuickBookingDialog({
                 {values.luggageCount && <div><dt>Hành lý</dt><dd>{values.luggageCount} kiện</dd></div>}
                 {values.requestNameplate && <div><dt>Hỏi về bảng tên</dt><dd>{values.nameplateName} · Cần xác nhận</dd></div>}
                 {values.pickupNote && <div><dt>Lưu ý điểm đón</dt><dd>{values.pickupNote}</dd></div>}
-                {values.promotionCode && <div><dt>Mã khuyến mãi</dt><dd>{values.promotionCode} · Chờ kiểm tra</dd></div>}
+                {activeCoupon && <><div><dt>Mã khuyến mãi</dt><dd>{activeCoupon.code}</dd></div><div><dt>Giá trước giảm</dt><dd>{money(activeCoupon.before)}</dd></div><div><dt>Số tiền giảm</dt><dd>−{money(activeCoupon.discount)}</dd></div><div><dt>Giá sau giảm</dt><dd>{money(activeCoupon.after)}</dd></div></>}
               </dl>
-              <p className="quick-booking-price-note">{values.promotionCode && "Mã khuyến mãi chưa được áp dụng vào giá trên. "}Alo Đặt Xe xác nhận lịch xe và chi phí cuối cùng trước khi nhận chuyến.</p>
+              <p className="quick-booking-price-note">Alo Đặt Xe xác nhận lịch xe và chi phí cuối cùng trước khi nhận chuyến.</p>
               <label className="quick-booking-agreement"><input type="checkbox" disabled={busy} checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} /> Tôi đã kiểm tra thông tin trên.</label>
             </>}
             {submissionError && <p className="quick-booking-error" role="alert">{submissionError}</p>}

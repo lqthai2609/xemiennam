@@ -1,11 +1,13 @@
 "use client";
 
+import type { PromotionSnapshot } from "@/lib/api/promotion-snapshot";
+import type { CouponReceipt } from "@/types/coupon";
 import Link from "next/link";
 import { useState } from "react";
 
 type State = "new" | "quote" | "sent" | "agreed" | "deposit" | "assigned" | "complete" | "lost";
 type Event = { from: State | null; to: State; at: string; actor: number; source: string; reason: string | null };
-type Lead = { lead_id: number; state: State; history: Event[]; acquisition: Record<string, string | null> | null;
+type Lead = { promotion_snapshot?: PromotionSnapshot; coupon_receipt?: CouponReceipt | null; lead_id: number; state: State; history: Event[]; acquisition: Record<string, string | null> | null;
   attribution?: { attribution_status: string; attributed_touch?: { source: string | null; campaign: string | null; landing_path: string | null } | null } };
 type Measurement = { retention_days: number; as_of_utc: string; contact_clicks: { phone: number; zalo: number }; saved_requests: number; by_channel: Record<string, number>; limited: boolean };
 const channels: Record<string, string> = { organic_search: "Tìm kiếm tự nhiên", paid_search: "Tìm kiếm trả phí", paid_social: "Mạng xã hội trả phí", organic_social: "Mạng xã hội", email: "Email", affiliate: "Đối tác giới thiệu", referral: "Trang giới thiệu", direct: "Truy cập trực tiếp", unknown: "Chưa rõ nguồn", retention_expired: "Nguồn đã hết hạn" };
@@ -82,6 +84,14 @@ export function LeadAdmin({ csrf, canPublish }: { csrf: string; canPublish: bool
     {error && <p role="alert">{error}</p>}
     {lead && <section style={{ display: "grid", gap: "1rem" }}>
       <h2>Yêu cầu #{lead.lead_id}: {labels[lead.state]}</h2>
+      {lead.coupon_receipt && lead.promotion_snapshot?.promotion.status === "applied" && <section aria-label="Giá và mã khuyến mãi đã lưu">
+        <h3>Giá tại thời điểm đặt xe</h3>
+        <p>Mã: <strong>{lead.coupon_receipt.code}</strong> · Phiên bản {lead.coupon_receipt.revision}</p>
+        <p>Trước giảm: {lead.promotion_snapshot.pricing.estimated_total?.toLocaleString("vi-VN")} đồng</p>
+        <p>Giảm: {lead.promotion_snapshot.promotion.discount_amount?.toLocaleString("vi-VN")} đồng</p>
+        <p><strong>Sau giảm: {lead.promotion_snapshot.promotion.promotional_estimated_total?.toLocaleString("vi-VN")} đồng</strong></p>
+        <p>Đây là bản giá đã lưu; chi phí phát sinh và lịch xe cần được xác nhận theo chuyến.</p>
+      </section>}
       <p>Nguồn ghi nhận: {lead.attribution?.attributed_touch?.source || "Chưa xác định"}; chiến dịch: {lead.attribution?.attributed_touch?.campaign || "Chưa xác định"}</p>
       <p>Trang bắt đầu ghi nhận: {lead.attribution?.attributed_touch?.landing_path || "Chưa xác định"}.{lead.attribution?.attribution_status === "retention_expired" ? " Thông tin nguồn đã hết hạn." : ""}</p>
       {choices.length > 0 && <>

@@ -56,7 +56,9 @@
     "build:production": "node scripts/booking-release-preflight.mjs --check && next build",
     "release:preflight": "node scripts/booking-release-preflight.mjs --check",
     "test:booking-release": "node --test scripts/booking-release-preflight.test.mjs",
-    "test:booking-contract:php": "php scripts/booking-contract-php.test.php"
+    "test:booking-contract:php": "php scripts/booking-contract-php.test.php",
+    "test:coupon": "node --test scripts/coupon.test.mjs",
+    "test:coupon:php": "php scripts/coupon-php.test.php"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

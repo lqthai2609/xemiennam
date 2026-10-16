@@ -52,6 +52,7 @@ export function buildPromotionSnapshot(result: PromotionEvaluation, context: Pri
 export type PromotionSnapshot = ReturnType<typeof buildPromotionSnapshot>;
 export interface PersistedBookingResult {
   id: number; lead_id: number; replayed: boolean; promotion_snapshot?: PromotionSnapshot | null;
+  coupon_receipt?: import("@/types/coupon").CouponReceipt | null;
   notification?: { version: 1; channel: "wordpress"; status: "accepted" | "unconfirmed" };
 }
 export function persistedBookingResponse(result: PersistedBookingResult) {
@@ -62,5 +63,5 @@ export function persistedBookingResponse(result: PersistedBookingResult) {
   // A missing receipt cannot prove failure; retain an explicit unconfirmed state.
   return { ok: true, id: result.lead_id, leadId: result.lead_id, notificationSent: accepted ? true : null,
     notificationChannel: "wordpress", notificationStatus: accepted ? "accepted" : "unconfirmed",
-    replayed: result.replayed, promotionSnapshot: result.promotion_snapshot ?? null };
+    replayed: result.replayed, couponReceipt: result.coupon_receipt ?? null, promotionSnapshot: result.promotion_snapshot ?? null };
 }

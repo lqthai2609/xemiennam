@@ -88,3 +88,12 @@ test('measurement activation requires its exact backend policy and intent endpoi
   assert.equal((await checkBookingBackend({base,measurementEnabled:true,...fakeRead([compatibleIndex,compatibleContract])})).status,'PASS');
   assert.equal((await checkBookingBackend({base,...fakeRead()})).status,'PASS');
 });
+
+test('coupon activation requires exact backend protocol, flag and lookup route',async()=>{
+ const idx={routes:{...index.routes,'/gocar/v1/coupons/lookup':{methods:['POST']}}};
+ const c={...contract,coupon_contract_version:1,coupon_commercial_enabled:true};
+ await assert.rejects(checkBookingBackend({base,couponsEnabled:true,...fakeRead()}),/coupon_backend_incompatible/);
+ await assert.rejects(checkBookingBackend({base,couponsEnabled:true,...fakeRead([index,c])}),/coupon_backend_incompatible/);
+ await assert.rejects(checkBookingBackend({base,couponsEnabled:true,...fakeRead([idx,{...c,coupon_commercial_enabled:false}])}),/coupon_backend_incompatible/);
+ assert.equal((await checkBookingBackend({base,couponsEnabled:true,...fakeRead([idx,c])})).status,'PASS');
+});
